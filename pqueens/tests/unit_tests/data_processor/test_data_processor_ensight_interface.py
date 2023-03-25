@@ -1,6 +1,5 @@
 """Tests for distance to surface measurement data_processor evaluation."""
 
-import os
 from re import I
 
 import numpy as np

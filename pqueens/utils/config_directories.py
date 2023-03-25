@@ -1,6 +1,6 @@
 """Configuration of folder structure of QUEENS experiments."""
 import logging
-import pathlib
+from pathlib import Path
 
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -11,14 +11,14 @@ EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
 
 
 def local_base_directory():
-    """Base directory holding all queens related data on local machine."""
-    base_dir = pathlib.Path().home() / BASE_DATA_DIR
+    """Hold all queens related data on local machine."""
+    base_dir = Path().home() / BASE_DATA_DIR
     create_directory(base_dir)
     return base_dir
 
 
 def remote_base_directory(remote_connect):
-    """Base directory holding all queens related data on remote machine."""
+    """Hold all queens related data on remote machine."""
     _, _, remote_home, _ = run_subprocess(
         "echo ~",
         subprocess_type="remote",
@@ -26,13 +26,13 @@ def remote_base_directory(remote_connect):
         additional_error_message=f"Unable to identify home on remote.\n"
         f"Tried to connect to {remote_connect}.",
     )
-    base_dir = pathlib.Path(remote_home.rstrip()) / BASE_DATA_DIR
+    base_dir = Path(remote_home.rstrip()) / BASE_DATA_DIR
     create_directory(base_dir, remote_connect=remote_connect)
     return base_dir
 
 
 def base_directory(remote_connect=None):
-    """Base directory holding all queens related data."""
+    """Hold all queens related data."""
     if remote_connect is None:
         return local_base_directory()
 
@@ -40,7 +40,7 @@ def base_directory(remote_connect=None):
 
 
 def experiments_base_directory(remote_connect=None):
-    """Base directory for all experiments on the computing machine."""
+    """Hold all experiment data on the computing machine."""
     base_dir = base_directory(remote_connect=remote_connect)
     experiments_base_dir = base_dir / EXPERIMENTS_BASE_FOLDER_NAME
     create_directory(experiments_base_dir, remote_connect=remote_connect)
@@ -77,26 +77,27 @@ def create_directory(dir_path, remote_connect=None):
         _logger.debug("%s already exists%s.", dir_path, location)
 
 
-ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
-
-LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
-
-
 def current_job_directory(experiment_dir, job_id):
     """Directory of the latest submitted job.
 
     Args:
-        experiment_dir (pathlib.Path): Experiment directory
+        experiment_dir (Path): Experiment directory
         job_id (str): Job ID of the current job
 
     Returns:
-        job_dir (pathlib.Path): Path to the current job directory.
+        job_dir (Path): Path to the current job directory.
     """
-    if not isinstance(experiment_dir, pathlib.Path):
-        raise TypeError(
-            "The 'experiment_dir' must be of type 'pathlib.Path'."
-            f"You provided the type {type(experiment_dir)}."
-        )
-
     job_dir = experiment_dir / str(job_id)
     return job_dir
+
+
+ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
+
+LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
+
+if __name__ == '__main__':
+    # this print statement is intended
+    # calling this file as a standalone Python script from the shell will return
+    # the absolute path to the singularity image as expected during a QUEENS run.
+    # This is needed to make the absolute path to the singularity image available in CI pipelines
+    print(f"{ABS_SINGULARITY_IMAGE_PATH}")

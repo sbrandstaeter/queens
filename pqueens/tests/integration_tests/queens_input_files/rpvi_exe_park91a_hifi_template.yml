@@ -12,8 +12,6 @@ method:
     variational_approximation_type: fullrank
     variational_family: normal
   stochastic_optimizer_name: optimizer
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 1000000.0
   natural_gradient: true
   FIM_dampening: true
   decay_start_iteration: 50
@@ -45,16 +43,18 @@ model:
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: experimental_data.csv
   experimental_csv_data_base_dir: {{ experimental_data_path }}
-gradient_model:
-  type: {{ gradient_model_type }}
-  forward_model_name: forward_model
+fd_model:
+  type: finite_differences
+  interface_name: interface
   finite_difference_method: 2-point
+adjoint_model:
+  type: adjoint
+  interface_name: interface
+  gradient_interface_name: gradient_interface
   adjoint_file_name: "grad_objective.csv"
-  gradient_interface_name: {{ gradient_interface }}
-forward_model:
+simulation_model:
   type: simulation_model
   interface_name: interface
-  parameters: parameters
 gradient_interface:
   type: job_interface
   driver_name: gradient_driver

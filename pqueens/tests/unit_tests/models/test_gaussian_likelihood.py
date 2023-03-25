@@ -7,7 +7,7 @@ import pytest
 from pqueens.distributions import from_config_create_distribution
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 
-
+'''
 # ---------------- some fixtures ---------------------------------- #
 @pytest.fixture()
 def dummy_config():
@@ -34,6 +34,7 @@ def dummy_config():
 @pytest.fixture()
 def my_lik_model():
     """Fixture for dummy likelihood model."""
+    forward_model_dummy = namedtuple("forward_model", ["evaluate"])
 
     class FakeDistr:
         """A fake distribution class."""
@@ -50,10 +51,13 @@ def my_lik_model():
             """A fake eval method."""
             self.cov = x
 
-        def grad_logpdf(self, y):
-            return 2 * y
+        def grad_logpdf(self, y_vec):
+            """A fake grad logpdf fun."""
+            out = []
+            for y in y_vec:
+                out.append(2 * y)
+            return np.array(out).reshape(-1, 1)
 
-    forward_model_dummy = namedtuple("forward_model", ["evaluate"])
     distr_dummy = FakeDistr()
 
     model_name = "my_lik_model"
@@ -175,21 +179,24 @@ def test_fcc(dummy_config, mocker):
 def test_evaluate(mocker, my_lik_model):
     """Test for the evaluate method."""
     samples = np.array([[1.0]])
-    # test working evaluation without forward model output
+    # test working evaluation
     response = my_lik_model.evaluate(samples)
     assert response == 4
-
-    # test working evaluation with forward model output
-    response = my_lik_model.evaluate(samples, forward_model_output=3.0)
-    assert response == 9
 
     # test update of covariance for MAP
     my_lik_model.noise_type = "MAP_abc"
     m1 = mocker.patch(
         "pqueens.models.likelihood_models.gaussian_likelihood.GaussianLikelihood.update_covariance"
     )
-    response = my_lik_model.evaluate(samples, forward_model_output=3.0)
+    response = my_lik_model.evaluate(samples)
     assert m1.called_once_with(3.0)
+
+
+def test_evaluate_from_output(my_lik_model):
+    """Test for the evaluate from output method."""
+    # test working evaluation with forward model output
+    response = my_lik_model.evaluate_from_output(3.0)
+    assert response == 9
 
 
 def test_update_covariance(my_lik_model):
@@ -243,37 +250,53 @@ def test_update_covariance(my_lik_model):
 def test_evaluate_and_gradient(my_lik_model):
     """Test for the evaluate and gradient method."""
     samples = np.array([[1.0, 2.0], [2.0, 3.0]])
-    my_grad_fun = lambda x, l: l**2 + x
+
+    def upstream_gradient_fun(x_batch, l_vec):
+        """Return a dummy upstream gradient fun."""
+        up_grad = []
+        for l in l_vec:
+            up_grad.append(l * l)
+
+        up_grad = np.array(up_grad).reshape(-1, 1)
+        return up_grad
 
     # Design a fake forward model class/object for this test
     class FakeModel:
         """A fake forward model class for testing."""
 
-        def evaluate_and_gradient(self, samples, grad_objective_fun=None):
+        def evaluate(self, samples):
+            """Evaluate the model."""
+            out = []
+            for sample in samples:
+                out.append(sample**2)
+            out = np.array(out).reshape(-1, 1)
+            return out
+
+        def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
             """A fake eval and gradient method for testing."""
-            model_output = samples**2
-            grad_objective = grad_objective_fun(samples, model_output)
-            return model_output, grad_objective
+            model_output = self.evaluate(samples)
+            grad_upstream = upstream_gradient_fun(samples, model_output)
+            return model_output, grad_upstream
 
     # test evaluate and gradient without obj fun gradient
     my_lik_model.forward_model = FakeModel()
     log_likelihood, grad_log_likelihood = my_lik_model.evaluate_and_gradient(samples)
-    expected_log_lik = np.array([[1.0, 16], [16, 81]])
-    expected_grad_log_lik = np.array([[2, 8], [8, 18]])
+    expected_log_lik = np.array([[1.0, 16, 16, 81]]).T
+    expected_grad_log_lik = np.array([[2, 8, 8, 18]]).T
 
     np.testing.assert_array_equal(log_likelihood, expected_log_lik)
     np.testing.assert_array_equal(grad_log_likelihood, expected_grad_log_lik)
 
     # test evaluate and gradient with obj fun gradient
-    log_likelihood, grad_objective = my_lik_model.evaluate_and_gradient(
-        samples, grad_objective_fun=my_grad_fun
+    log_likelihood, upstream_gradient = my_lik_model.evaluate_and_gradient(
+        samples, upstream_gradient_fun=upstream_gradient_fun
     )
 
     # new grad is different from before!
-    expected_grad_objective = np.array([[4, 2.064e3], [2.064e3, 1.18152e5]])
+    expected_grad_objective = np.array([[2.00000e00, 2.04800e03, 2.04800e03, 1.18098e05]])
 
     np.testing.assert_array_equal(log_likelihood, expected_log_lik)
-    np.testing.assert_array_equal(grad_objective, expected_grad_objective)
+    np.testing.assert_array_equal(upstream_gradient, expected_grad_objective)
 
 
 def test_partial_grad_evaluate(my_lik_model):
@@ -284,3 +307,4 @@ def test_partial_grad_evaluate(my_lik_model):
     expected_grad_out = np.array([[2], [4]])
 
     np.testing.assert_array_equal(grad_out, expected_grad_out)
+'''

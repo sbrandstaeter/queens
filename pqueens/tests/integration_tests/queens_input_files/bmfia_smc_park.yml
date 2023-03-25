@@ -9,6 +9,8 @@ method:
   model_name: model
   temper_type: bayes
   plot_trace_every: 0
+  mcmc_proposal_distribution_name: proposal_distribution
+  num_rejuvenation_steps: 2
   result_description:
     write_results: true
     plot_results: false
@@ -16,31 +18,23 @@ method:
 model:
   type: bmf_gaussian
   mf_approx_settings:
-    type: gp_precompiled
+    type: gp_jitted
+    kernel_type: squared_exponential
     num_processors_multi_processing: 4
     stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
     noise_var_lb: 1.0e-06
     data_scaling:
       type: standard_scaler
-    sigma_0_sq: 0.05
-    l_scale_sq: 1.0
-    sigma_n_sq: 0.05
-    hyper_prior_lengthscale:
-      hyper_prior_bool: false
-      fraction_standard_deviation: 0.15
-      fraction_mean_value: 0.25
-    prior_mean_function_type: lf-identity
+    initial_hyper_params_lst: [0.05, 1.0, 0.05]
+    mean_function_type: identity_multi_fidelity
     random_seed: 1
-    features_config: man_features
-    X_cols: [0]
-    num_features: 1
     mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
   output_label: y_obs
   coordinate_labels: [x3, x4]
-  likelihood_noise_type: jeffreys_prior
-  noise_value: 0.01
+  likelihood_noise_type: fixed
+  fixed_likelihood_noise_value: 0.001
   nugget_noise_var: 1.0e-08
   experimental_file_name_identifier: '*.csv'
   experimental_csv_data_base_dir: {{ experimental_data_path }}
@@ -56,16 +50,13 @@ optimizer:
   max_iterations: 1000
   rel_L1_change_threshold: 0.003
   rel_L2_change_threshold: 0.003
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 50
-  num_samples: 2
-  proposal_distribution: proposal_distribution
 bmfia_iterator:
   type: bmfia
   low_fidelity_model_name: lf_model
   high_fidelity_model_name: hf_model
+  features_config: man_features
+  X_cols: [0]
+  num_features: 1
   initial_design:
     type: random
     num_HF_eval: 20

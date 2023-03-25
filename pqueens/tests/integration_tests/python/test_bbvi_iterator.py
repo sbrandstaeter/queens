@@ -1,34 +1,26 @@
 """Integration tests for the BBVI iterator."""
-import os
 import pickle
 from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
-from mock import patch
+from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
+import pqueens.parameters.parameters as parameters_module
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens import run
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
-from pqueens.tests.integration_tests.example_simulator_functions.park91a import (
-    park91a_hifi_on_grid,
-    x3_vec,
-    x4_vec,
-)
-from pqueens.utils import injector, variational_inference_utils
-from pqueens.utils.collection_utils import CollectionObject
+from pqueens.utils import injector
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
 def test_bbvi_density_match(
     mocker,
     inputdir,
-    tmpdir,
+    tmp_path,
     dummy_bbvi_instance,
-    visualization_obj,
 ):
     """Matching a Gaussian distribution."""
     # fix the random seed
@@ -74,29 +66,29 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "bbvi_park91a_hifi_template.yml")
-    experimental_data_path = tmpdir
-    plot_dir = tmpdir
+    template = inputdir / "bbvi_park91a_hifi_template.yml"
+    experimental_data_path = tmp_path
+    plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
     }
-    input_file = os.path.join(tmpdir, "bbvi_park91a_hifi.yml")
+    input_file = tmp_path / "bbvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
-    # This seed is fixed so that the variational distribution is initalized so that the park
-    # function can be evaluted correctly
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
     np.random.seed(211)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_bbvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_bbvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
     elbo_list = results["iteration_data"]["elbo"]
@@ -110,7 +102,7 @@ def test_bbvi_iterator_park91a_hifi(
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
+def dummy_bbvi_instance(tmp_path, my_variational_distribution):
     """Create visualization module."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
@@ -119,7 +111,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     memory = 10
     natural_gradient_bool = False
     fim_dampening_bool = True
-    export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
     fim_decay_start_iter = 50
     fim_dampening_coefficient = 1e-2
@@ -128,13 +119,13 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     loo_cv_bool = False
     # ------ params we want to keep fixed -----------------------------------------
     variational_transformation = None
-    variational_family = 'normal'
     experiment_name = 'density_match'
     result_description = {
+        "iterative_field_names": ["elbo"],
         "write_results": False,
         "plotting_options": {
             "plot_boolean": False,
-            "plotting_dir": tmpdir,
+            "plotting_dir": tmp_path,
             "plot_name": "variational_params_convergence.eps",
             "save_bool": False,
         },
@@ -155,37 +146,33 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     model = namedtuple("model", "normal_distribution")(
         normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0)
     )
-    global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
-    db = 'dummy'
+    global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
     random_seed = 1
-    iteration_data = CollectionObject("elbo")
+
+    parameters_module.parameters = Mock()
+    parameters_module.parameters.num_parameters = num_variables
 
     bbvi_instance = BBVIIterator(
         global_settings=global_settings,
         model=model,
         result_description=result_description,
-        db=db,
-        experiment_name=experiment_name,
-        variational_params_initialization_approach=variational_params_initialization_approach,
+        variational_parameter_initialization=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
         random_seed=random_seed,
         max_feval=max_feval,
-        num_variables=num_variables,
         memory=memory,
-        natural_gradient_bool=natural_gradient_bool,
-        fim_dampening_bool=fim_dampening_bool,
-        fim_decay_start_iter=fim_decay_start_iter,
-        fim_dampening_coefficient=fim_dampening_coefficient,
-        fim_dampening_lower_bound=fim_dampening_lower_bound,
+        natural_gradient=natural_gradient_bool,
+        FIM_dampening=fim_dampening_bool,
+        decay_start_iteration=fim_decay_start_iter,
+        dampening_coefficient=fim_dampening_coefficient,
+        FIM_dampening_lower_bound=fim_dampening_lower_bound,
         control_variates_scaling_type=control_variates_scaling_type,
-        loo_cv_bool=loo_cv_bool,
-        variational_distribution_obj=my_variational_distribution_obj,
-        variational_family=variational_family,
+        loo_control_variates_scaling=loo_cv_bool,
+        variational_distribution=my_variational_distribution,
         stochastic_optimizer=stochastic_optimizer,
         model_eval_iteration_period=1,
         resample=True,
-        iteration_data=iteration_data,
     )
     return bbvi_instance
 
@@ -210,7 +197,7 @@ def target_density(self, x=None, pdf=False):
 
 
 @pytest.fixture()
-def my_variational_distribution_obj():
+def my_variational_distribution():
     """Create visualization module."""
     dimension = 5
     distribution_options = {
@@ -218,25 +205,4 @@ def my_variational_distribution_obj():
         "variational_approximation_type": "mean_field",
         "dimension": dimension,
     }
-    my_variational_object = variational_inference_utils.create_variational_distribution(
-        distribution_options
-    )
-    return my_variational_object
-
-
-@pytest.fixture()
-def visualization_obj(tmpdir):
-    """Create visualization module."""
-    visualization_dict = {
-        "method": {
-            "result_description": {
-                "plotting_options": {
-                    "plotting_dir": tmpdir,
-                    "save_bool": False,
-                    "plot_boolean": False,
-                    "plot_name": "variat_params_convergence.eps",
-                }
-            }
-        }
-    }
-    vis.from_config_create(visualization_dict)
+    return distribution_options

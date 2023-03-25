@@ -16,8 +16,6 @@ method:
   result_description:
     write_results: true
     plot_results: true
-MCMC_Kernel:
-  type: metropolis-hastings
 model:
   type: gaussian
   forward_model_name: forward_model

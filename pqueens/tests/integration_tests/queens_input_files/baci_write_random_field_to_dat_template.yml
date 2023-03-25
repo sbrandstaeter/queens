@@ -14,14 +14,14 @@ pre_processing:
   type: baci_dat
   list_geometric_sets: [DSURFACE 4]
   random_fields:
-  - name: random_inflow
-    type: dirichlet
-    external_instance: DSURFACE 4
-    dof_for_field: 3
-    funct_for_field: 0
-    dofs_deterministic: [1, 2]
-    value_dofs_deterministic: [0, 0]
-    funct_for_deterministic_dofs: [0, 0]
+    - name: random_inflow
+      type: dirichlet
+      external_instance: DSURFACE 4
+      dof_for_field: 3
+      funct_for_field: 0
+      dofs_deterministic: [1, 2]
+      value_dofs_deterministic: [0, 0]
+      funct_for_deterministic_dofs: [0, 0]
   input_template: {{ baci_input }}
   input_template_preprocessed: {{ baci_input_preprocessed }}
 model:

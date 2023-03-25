@@ -1,16 +1,15 @@
 """Collection of utility functions for post-processing."""
 
 import logging
-import pathlib
 import pickle
 import warnings
+from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
-from pqueens.utils.plot_outputs import plot_cdf, plot_failprob, plot_icdf, plot_pdf
+from pqueens.utils.plot_outputs import plot_cdf, plot_icdf, plot_pdf
 
 _logger = logging.getLogger(__name__)
 
@@ -128,7 +127,7 @@ def write_results(processed_results, path_to_file, file_name):
         path_to_file (str):        Path to write results to
         file_name (str):           Name of result file
     """
-    pickle_file = pathlib.Path(path_to_file, file_name + ".pickle")
+    pickle_file = Path(path_to_file, file_name + ".pickle")
 
     with open(pickle_file, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -1,5 +1,4 @@
 """Test Sobol indices estimation for Sobol G function."""
-import os
 import pickle
 from pathlib import Path
 
@@ -9,16 +8,16 @@ import pytest
 from pqueens import run
 
 
-def test_sobol_indices_sobol(inputdir, tmpdir):
+def test_sobol_indices_sobol(inputdir, tmp_path):
     """Test Sobol Index iterator with Sobol G-function.
 
     Including first, second and total order indices. The test should
     converge to the analytical solution defined in the Sobol G-function
     implementation (see *sobol.py*).
     """
-    run(Path(os.path.join(inputdir, 'sobol_indices_sobol.yml')), Path(tmpdir))
+    run(inputdir / 'sobol_indices_sobol.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

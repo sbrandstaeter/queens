@@ -2,8 +2,8 @@
 
 import getpass
 import logging
-import pathlib
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -74,7 +74,7 @@ def cluster_singularity_ip(cluster):
     elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
     elif cluster == CHARON_CLUSTER_TYPE:
-        cluster_singularity_ip = '192.168.1.254'
+        cluster_singularity_ip = '192.168.1.253'
     else:
         cluster_singularity_ip = None
     return cluster_singularity_ip
@@ -191,7 +191,7 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
 
     Checks also for existence of the executables.
     """
-    base_directory = pathlib.Path("/home", cluster_user, "workspace", "build")
+    base_directory = Path("/home", cluster_user, "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
     path_to_drt_monitor = base_directory / "post_drt_monitor"
@@ -245,7 +245,7 @@ def baci_cluster_paths_native(
     cluster_user, prepare_cluster_testing_environment_native
 ):  # pylint: disable=unused-argument
     """Paths to baci for native cluster tests."""
-    path_to_executable = pathlib.Path(
+    path_to_executable = Path(
         "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
     )
     if not path_to_executable.is_file():
@@ -254,7 +254,7 @@ def baci_cluster_paths_native(
             f"Was looking here: {path_to_executable}"
         )
 
-    path_to_drt_monitor = pathlib.Path(
+    path_to_drt_monitor = Path(
         "/home", cluster_user, "workspace_for_queens", "build", "post_drt_monitor"
     )
     if not path_to_drt_monitor.is_file():
@@ -298,3 +298,8 @@ def baci_elementary_effects_check_results():
         )
 
     return check_results
+
+
+def pytest_sessionfinish():
+    """Register a hook to suppress logging errors after the session."""
+    logging.raiseExceptions = False

@@ -1,7 +1,6 @@
 """Module for data processing of simulation results."""
 
 import abc
-import glob
 import logging
 from pathlib import Path
 
@@ -115,7 +114,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Get data of interest from file.
 
         Args:
-            base_dir_file (str): Path of the base directory that
+            base_dir_file (Path): Path of the base directory that
                                            contains the file of interest
 
         Returns:
@@ -126,14 +125,13 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The data processor requires a base_directory for the "
                 "files to operate on! Your input was empty! Abort..."
             )
-        if not isinstance(base_dir_file, str):
+        if not isinstance(base_dir_file, Path):
             raise TypeError(
-                "The argument 'base_dir_file' must be of type 'str' "
+                "The argument 'base_dir_file' must be of type 'Path' "
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
 
-        file_path_regex = self._generate_path_to_file(base_dir_file)
-        file_exists_bool = self._check_file_exist_and_is_unique(file_path_regex)
+        file_exists_bool = self._check_file_exist_and_is_unique(base_dir_file)
         if file_exists_bool:
             self._get_raw_data_from_file()
             self._filter_and_manipulate_raw_data()
@@ -142,32 +140,18 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self._clean_up(base_dir_file)
         return self.processed_data
 
-    def _generate_path_to_file(self, base_dir_file):
-        """Generate path to file.
-
-        Args:
-            base_dir_file (str): Path to base directory that contains file of interest
-
-        Returns:
-            file_path_regex (str): Path to file that still
-                                        contains wildcards or regex expressions
-        """
-        file_identifier = self.file_name_identifier
-        file_path_regex = Path(base_dir_file).joinpath(file_identifier)
-        return str(file_path_regex)
-
-    def _check_file_exist_and_is_unique(self, file_path_regex):
+    def _check_file_exist_and_is_unique(self, base_dir_file):
         """Check if file exists.
 
         Args:
-            file_path_regex (str): Path to file that still
-                                        contains wildcards or regex expressions
+            base_dir_file (Path): Path to base directory that contains file of interest
 
         Returns:
             file_exists (bool): Boolean determine whether file exists. If true, the file
-                                exists.
+                            exists.
         """
-        file_list = glob.glob(file_path_regex)
+        file_list = list(base_dir_file.glob(self.file_name_identifier))
+
         if len(file_list) > 1:
             raise RuntimeError(
                 "The data_processor module found several files for the "
@@ -179,7 +163,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
             self.file_path = file_list[0]
             file_exists = True
         else:
-            _logger.warning("The file '%s' does not exist!", file_path_regex)
+            _logger.warning(
+                "The file '%s' does not exist!", base_dir_file / self.file_name_identifier
+            )
             file_exists = False
 
         return file_exists
@@ -205,13 +191,13 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Clean-up files in the output directory.
 
         Args:
-            base_dir_file (str): Path of the base directory that
-                                 contains the file of interest.
+            base_dir_file (Path): Path of the base directory that
+                                    contains the file of interest.
         """
         current_file = None
         try:
             for regex in self.files_to_be_deleted_regex_lst:
-                for file in sorted(Path(base_dir_file).glob(regex)):
+                for file in sorted(base_dir_file.glob(regex)):
                     current_file = file
                     file.unlink()
         except Exception as exception:

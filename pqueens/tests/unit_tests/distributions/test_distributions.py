@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-import scipy.stats
 
 from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.normal import NormalDistribution

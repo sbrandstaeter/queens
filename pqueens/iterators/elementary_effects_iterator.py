@@ -14,7 +14,6 @@ from SALib.sample import morris
 import pqueens.visualization.sa_visualization as qvis
 from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 
 if not mpl.get_backend().lower() == 'agg':
@@ -51,7 +50,7 @@ class ElementaryEffectsIterator(Iterator):
         num_trajectories,
         local_optimization,
         num_optimal_trajectories,
-        num_levels,
+        number_of_levels,
         seed,
         confidence_level,
         num_bootstrap_samples,
@@ -69,19 +68,19 @@ class ElementaryEffectsIterator(Iterator):
                                        ``False`` brute force method is used.
             num_optimal_trajectories (int): number of optimal trajectories to sample (between 2
                                             and N)
-            num_levels (int): number of grid levels
+            number_of_levels (int): number of grid levels
             seed (int): seed for random number generation
             confidence_level (float): size of confidence interval
             num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
                                          intervals for sensitivity measures
             result_description (dict): dictionary with desired result description
-            global_settings (dict): dictionary with global (all) settings of the analysis
+            global_settings (dict): Global settings of the QUEENS simulations
         """
         super().__init__(model, global_settings)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories
-        self.num_levels = num_levels
+        self.num_levels = number_of_levels
         self.seed = seed
         self.confidence_level = confidence_level
         self.num_bootstrap_samples = num_bootstrap_samples
@@ -91,43 +90,8 @@ class ElementaryEffectsIterator(Iterator):
         self.output = None
         self.salib_problem = {}
         self.si = {}
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create ElementaryEffectsIterator iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model): Model to iterate (optional)
-
-        Returns:
-            iterator: ElementaryEffectsIterator iterator object
-        """
-        qvis.from_config_create(config)
-
-        method_options = config[iterator_name]
-
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-
-        if "num_traj_chosen" not in method_options:
-            method_options["num_traj_chosen"] = None
-
-        return cls(
-            model,
-            method_options["num_trajectories"],
-            method_options["local_optimization"],
-            method_options["num_optimal_trajectories"],
-            method_options["number_of_levels"],
-            method_options["seed"],
-            method_options["confidence_level"],
-            method_options["num_bootstrap_samples"],
-            method_options.get("result_description", None),
-            config["global_settings"],
-        )
+        if result_description.get('plotting_options'):
+            qvis.from_config_create(result_description.get('plotting_options'))
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""

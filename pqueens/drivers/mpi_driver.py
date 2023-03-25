@@ -1,7 +1,7 @@
 """Driver to run an executable with mpi."""
 
 import logging
-import pathlib
+from pathlib import Path
 
 import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
@@ -27,14 +27,14 @@ class MpiDriver(Driver):
                                      stream.
         cluster_job (bool): *True* if job is executed on a cluster.
         cluster_options (dict): Cluster options for pbs or slurm.
-        error_file (path): Path to error file.
-        executable (path): Path to main executable of respective software
+        error_file (Path): Path to error file.
+        executable (Path): Path to main executable of respective software
                            (e.g. BACI).
-        input_file (path): Path to input file.
-        log_file (path): Path to log file.
+        input_file (Path): Path to input file.
+        log_file (Path): Path to log file.
         mpi_cmd (str): mpi command.
         num_procs_post (int): Number of processors for post-processing.
-        output_file (path): Path to output file.
+        output_file (Path): Path to output file.
         output_prefix (str): Output prefix.
         pid (int): Unique process ID.
         post_file_prefix (str): Unique prefix to name the post-processed
@@ -45,7 +45,7 @@ class MpiDriver(Driver):
         simulation_input_template (str): Path to simulation input template
                                          (e.g. dat-file)
         singularity (bool): Flag for use of a singularity container.
-        experiment_dir (path): path to working directory
+        experiment_dir (Path): path to working directory
     """
 
     def __init__(
@@ -85,30 +85,30 @@ class MpiDriver(Driver):
         Args:
             batch (int): current batch of driver calls.
             driver_name (str): name of the driver used for the analysis
-            experiment_dir (path): path to QUEENS experiment directory
-            working_dir (path): folder were simulation is run in on compute node
+            experiment_dir (Path): path to QUEENS experiment directory
+            working_dir (Path): folder were simulation is run in on compute node
             experiment_name (str): name of QUEENS experiment
             job_id (int):  job ID as provided in database within range [1, n_jobs]
             num_procs (int): number of processors for processing
-            output_directory (path): path to output directory (on remote computing resource)
+            output_directory (Path): Path to output directory (on remote computing resource)
             singularity (bool): flag for use of a singularity container
             database (obj): database object
             cae_output_streaming (bool): flag for additional streaming to given stream
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
-            error_file (path): path to error file
-            executable (path): path to main executable of respective software (e.g. baci)
-            input_file (path): path to input file
-            log_file (path): path to log file
+            error_file (Path): Path to error file
+            executable (Path): Path to main executable of respective software (e.g. baci)
+            input_file (Path): Path to input file
+            log_file (Path): Path to log file
             num_procs_post (int): number of processors for post-processing
-            output_file (path): path to output file
+            output_file (Path): Path to output file
             output_prefix (str): output prefix
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
-            post_processor (path): path to post_processor
+            post_processor (Path): Path to post_processor
             cluster_job (bool): true if job is execute on cluster
             cluster_type (str): type of cluster
-            simulation_input_template (path): path to simulation input template (e.g. dat-file)
+            simulation_input_template (Path): Path to simulation input template (e.g. dat-file)
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
@@ -172,7 +172,7 @@ class MpiDriver(Driver):
             driver_name (str): Name of driver instance that should be realized
             working_dir (str): Path to working directory on remote resource
             cluster_options (dict): Cluster options for pbs or slurm
-            experiment_dir (path): path to QUEENS experiment directory
+            experiment_dir (Path): Path to QUEENS experiment directory
             cluster_config (ClusterConfig): configuration data of cluster
 
         Returns:
@@ -194,12 +194,12 @@ class MpiDriver(Driver):
         cluster_job = cluster_type in VALID_CLUSTER_CLUSTER_TYPES
 
         driver_options = config[driver_name]
-        simulation_input_template = pathlib.Path(driver_options['input_template'])
-        executable = pathlib.Path(driver_options['path_to_executable'])
+        simulation_input_template = Path(driver_options['input_template'])
+        executable = Path(driver_options['path_to_executable'])
         mpi_cmd = driver_options.get('mpi_cmd', 'mpirun --bind-to none -np')
         post_processor_str = driver_options.get('path_to_postprocessor', None)
         if post_processor_str:
-            post_processor = pathlib.Path(post_processor_str)
+            post_processor = Path(post_processor_str)
         else:
             post_processor = None
         post_file_prefix = driver_options.get('post_file_prefix', None)
@@ -229,14 +229,14 @@ class MpiDriver(Driver):
             working_dir = output_directory
 
         output_prefix = experiment_name + '_' + str(job_id)
-        output_file = output_directory.joinpath(output_prefix)
+        output_file = output_directory / output_prefix
 
-        file_extension_obj = pathlib.PurePosixPath(simulation_input_template)
+        file_extension_obj = Path(simulation_input_template)
         input_file_str = output_prefix + file_extension_obj.suffix
-        input_file = job_dir.joinpath(input_file_str)
+        input_file = job_dir / input_file_str
 
-        log_file = output_directory.joinpath(output_prefix + '.log')
-        error_file = output_directory.joinpath(output_prefix + '.err')
+        log_file = output_directory / f"{output_prefix}.log"
+        error_file = output_directory / f"{output_prefix}.err"
 
         return cls(
             batch=batch,
@@ -272,9 +272,7 @@ class MpiDriver(Driver):
 
     def prepare_input_files(self):
         """Prepare and parse data to input files."""
-        # check if file not already exists (might e.g., happen in restarts or adjoint runs)
-        if not pathlib.Path(self.input_file).is_file():
-            inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
+        inject(self.job['params'], self.simulation_input_template, self.input_file)
 
     def run_job(self):
         """Run executable."""
@@ -295,7 +293,7 @@ class MpiDriver(Driver):
     def post_processor_job(self):
         """Post-process job."""
         output_file = '--file=' + str(self.output_file)
-        target_file = '--output=' + str(self.output_directory.joinpath(self.post_file_prefix))
+        target_file = '--output=' + str(self.output_directory / self.post_file_prefix)
         post_processor_cmd = self._assemble_post_processor_cmd(output_file, target_file)
 
         _logger.debug("Start post-processor with command:")
@@ -392,9 +390,8 @@ class MpiDriver(Driver):
         self.cluster_options['INPUT'] = str(self.input_file)
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
 
-        submission_script_path = (
-            self.experiment_dir / str(self.job_id) / f"{self.experiment_name}_{self.job_id}.sh"
-        )
+        current_job_dir = current_job_directory(self.experiment_dir, self.job_id)
+        submission_script_path = current_job_dir / f"{self.experiment_name}_{self.job_id}.sh"
         inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
         command_list = [self.cluster_config.start_cmd, str(submission_script_path)]
@@ -429,7 +426,7 @@ class MpiDriver(Driver):
         return ' '.join(command_list)
 
     def __str__(self):
-        """String of mpi driver.
+        """Return string of mpi driver.
 
         Returns:
             str: String version of the mpi driver

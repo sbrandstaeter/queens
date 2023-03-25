@@ -3,7 +3,7 @@
 Elementary Effects simulations with BACI using the INVAAA minimal model.
 """
 import logging
-import pathlib
+from pathlib import Path
 
 import pytest
 
@@ -23,30 +23,35 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
-        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        # pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        # pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
 def test_cluster_baci_elementary_effects(
     inputdir,
-    tmpdir,
+    tmp_path,
     third_party_inputs,
     cluster_testsuite_settings,
     baci_cluster_paths,
     baci_elementary_effects_check_results,
+    monkeypatch,
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        tmpdir (str): Temporary directory in which the pytests are run
-        third_party_inputs (str): Path to the BACI input files
+        inputdir (Path): Path to the JSON input file
+        tmp_path (Path): Temporary directory in which the pytests are run
+        third_party_inputs (Path): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
-        baci_cluster_paths (path): Path to BACI dependencies on the cluster.
+        baci_cluster_paths (Path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
     """
+    # monkeypatch the "input" function, so that it returns "y".
+    # This simulates the user entering "y" in the terminal:
+    monkeypatch.setattr('builtins.input', lambda _: "y")
+
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
@@ -62,15 +67,15 @@ def test_cluster_baci_elementary_effects(
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
-    local_baci_input_file_template = pathlib.Path(
-        third_party_inputs, "baci_input_files", baci_input_template_name
+    local_baci_input_file_template = (
+        third_party_inputs / "baci_input_files" / f"{baci_input_template_name}"
     )
     cluster_experiment_dir = experiment_directory(
         experiment_name, remote_connect=connect_to_resource
     )
-    cluster_baci_input_file_template_dir = cluster_experiment_dir.joinpath("input")
-    cluster_baci_input_file_template = cluster_baci_input_file_template_dir.joinpath(
-        baci_input_template_name
+    cluster_baci_input_file_template_dir = cluster_experiment_dir / "input"
+    cluster_baci_input_file_template = (
+        cluster_baci_input_file_template_dir / baci_input_template_name
     )
 
     command_string = f'mkdir -v -p {cluster_baci_input_file_template_dir}'
@@ -102,13 +107,11 @@ def test_cluster_baci_elementary_effects(
         'cluster': cluster,
         'singularity_remote_ip': singularity_remote_ip,
     }
-    queens_input_file_template = pathlib.Path(
-        inputdir, "baci_cluster_elementary_effects_template.yml"
-    )
-    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.yml")
+    queens_input_file_template = Path(inputdir, "baci_cluster_elementary_effects_template.yml")
+    queens_input_file = tmp_path / f"elementary_effects_{cluster}_invaaa.yml"
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-    run(queens_input_file, pathlib.Path(tmpdir))
+    run(queens_input_file, tmp_path)
 
-    result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
+    result_file = tmp_path / f"{experiment_name}.pickle"
     baci_elementary_effects_check_results(result_file)

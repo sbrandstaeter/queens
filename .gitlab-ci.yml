@@ -1,10 +1,11 @@
+---
 #---------------------------------------------------------------------------------------------------
 # Define variables
 variables:
   # flags to turn on/ off tests for specific platforms
   UBUNTU_TESTS: "1"
-  CLUSTER_TESTS: "0"
-  CLUSTER_NATIVE_TESTS: "0"
+  CLUSTER_TESTS: "1"
+  CLUSTER_NATIVE_TESTS: "1"
   BENCHMARKS: "0"
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
@@ -25,49 +26,41 @@ stages:
 # in order to run at all any pipeline has to fulfill one of the  following conditions
 workflow:
   rules:
-      # for merge requests
-      - if: $CI_MERGE_REQUEST_IID
-      # for tags
-      - if: $CI_COMMIT_TAG
-      # for the master branch
-      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      # if manually triggered with the web interface's "run pipeline"
-      - if: '$CI_PIPELINE_SOURCE == "web"'
+    # check for draft status
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^(\[Draft\]|\(Draft\)|Draft:)/'
+      when: never
+    # for merge requests
+    - if: $CI_MERGE_REQUEST_IID
+    # for tags
+    - if: $CI_COMMIT_TAG
+    # for the master branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # if manually triggered with the web interface's "run pipeline"
+    - if: '$CI_PIPELINE_SOURCE == "web"'
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
 .ubuntu_build_conditions:
   rules:
-    - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
-      when: never
     - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - SINGULARITY_BASE_DIR="$HOME/queens"
-    - echo $SINGULARITY_BASE_DIR
-    - mkdir -p $SINGULARITY_BASE_DIR
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
+    - SINGULARITY_IMAGE_PATH="$(python pqueens/utils/config_directories.py)"
+    - echo $SINGULARITY_IMAGE_PATH
+    - SINGULARITY_DIR="$(dirname "$SINGULARITY_IMAGE_PATH")"
+    - mkdir -p $SINGULARITY_DIR
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_IMAGE_PATH
   rules:
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $CLUSTER_TESTS == "1"
-      when: never
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .default_test_conditions:
   rules:
-    - if: $CLUSTER_TESTS == "1"
-      when: never
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $BENCHMARKS == "1"
-      when: never
+    - if: $UBUNTU_TESTS == "1"
 #----------------------------------------------------------------------------------------------
 .default_test_conditions_default_branch:
   rules:
-    - !reference [.default_test_conditions, rules]
     - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
@@ -75,7 +68,6 @@ workflow:
     - conda activate queens-$CI_PIPELINE_ID
   rules:
     - !reference [.default_test_conditions, rules]
-    - if: $UBUNTU_TESTS == "1"
   stage: codechecks
   tags:
     - codechecks
@@ -165,13 +157,13 @@ update:
   script:
     - cd $CI_PROJECT_DIR
     # create a simple environment to use pip-tools
-    - conda create -n piptools-env pip --force -y
+    - conda create -n piptools-env python==3.10 -y
     - conda activate piptools-env
     - pip install pip-tools
-    - pip-compile --upgrade
+    - pip-compile --upgrade requirements.in --output-file requirements.txt
+    - pip-compile --upgrade dev-requirements.in --output-file dev-requirements.txt
     # Update singularity image requirements
-    - cd pqueens/singularity
-    - pip-compile --upgrade
+    - pip-compile --upgrade pqueens/singularity/requirements.in --output-file pqueens/singularity/requirements.txt
     - cd $CI_PROJECT_DIR
     - conda deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
@@ -180,7 +172,7 @@ update:
     - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
     # Checkout to a new branch so we push the changes to a new branch
     - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
-    - git add requirements.txt
+    - git add requirements.txt dev-requirements.txt pqueens/singularity/requirements.txt
     - git commit -m "Update requirements based on pip-tools"
     - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
     - >
@@ -256,42 +248,14 @@ license_check:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
-# ubuntu tests
+# Ubuntu tests
 #---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_develop:
-  stage: tests
-  extends:
-    - .ubuntu_settings
-  script:
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  coverage: '/TOTAL.*\s+(\d+%)/'
-
-lnm-ubuntu_full_test_suite_develop:
-  extends:
-    - .ubuntu_full_test_suite_develop
-  needs:
-    - lnm-build_conda_env
-    - lnm-build_singularity
-  tags:
-    - lnm-ubuntu
-
-imcs-ubuntu_full_test_suite_develop:
-  extends:
-    - .ubuntu_full_test_suite_develop
-  needs:
-    - imcs-build_conda_env
-    - imcs-build_singularity
-  tags:
-    - imcs-ubuntu
-#---------------------------------------------------------------------------------------------------
-# main tests
-#---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_main:
+.ubuntu_full_test_suite:
   extends:
     - .ubuntu_settings
   stage: tests
   rules:
-    - !reference [.default_test_conditions_default_branch, rules]
+    - !reference [.default_test_conditions, rules]
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
@@ -302,18 +266,18 @@ imcs-ubuntu_full_test_suite_develop:
     when: on_success
     expire_in: 3 days
 
-lnm-ubuntu_full_test_suite_main:
+lnm-ubuntu_full_test_suite:
   extends:
-    - .ubuntu_full_test_suite_main
+    - .ubuntu_full_test_suite
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
-imcs-ubuntu_full_test_suite_main:
+imcs-ubuntu_full_test_suite:
   extends:
-    - .ubuntu_full_test_suite_main
+    - .ubuntu_full_test_suite
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
@@ -334,24 +298,24 @@ imcs-ubuntu_full_test_suite_main:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest -v -m $CLUSTER_MARKER --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
 
-lnm-cluster_tests:
-  extends:
-    - .cluster_tests
-  variables:
-    CLUSTER_MARKER: 'lnm_cluster'
-  needs:
-    - lnm-build_conda_env
-    - lnm-build_singularity
-  tags:
-    - lnm-ubuntu
+#lnm-cluster_tests:
+#  extends:
+#    - .cluster_tests
+#  variables:
+#    CLUSTER_MARKER: 'lnm_cluster'
+#  needs:
+#    - lnm-build_conda_env
+#    - lnm-build_singularity
+#  tags:
+#    - lnm-ubuntu
 
 imcs-cluster_tests:
   extends:
     - .cluster_tests
   variables:
-    CLUSTER_MARKER: 'imcs_cluster'
+    CLUSTER_MARKER: "imcs_cluster"
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
@@ -464,9 +428,10 @@ trigger_benchmarks_badge_fail:
   extends:
     - .cluster_tests_conditions
   stage: badges
-  needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
+  # needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
+  needs: ["imcs-cluster_tests"]
   rules:
-    - if: ($CLUSTER_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: ($CLUSTER_TESTS == "1") && ($CLUSTER_NATIVE_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
@@ -496,7 +461,7 @@ pages:
     - !reference [.default_test_conditions_default_branch, rules]
   dependencies:
     - documentation
-    - lnm-ubuntu_full_test_suite_main
+    - lnm-ubuntu_full_test_suite
   script:
     - mkdir public
     - mv html_coverage_report public/coverage_report

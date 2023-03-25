@@ -38,10 +38,8 @@ class Model(metaclass=abc.ABCMeta):
         """Evaluate model with current set of samples.
 
         Args:
-            samples (np.array): Current sample batch for which the model response should be
-                                calculated.
+            samples (np.ndarray): Evaluated samples
         """
-        pass
 
     # @abc.abstractmethod
     def _grad(self, samples, upstream):
@@ -51,9 +49,17 @@ class Model(metaclass=abc.ABCMeta):
             samples (np.array): Evaluated samples
             upstream (np.array): Upstream gradient
         """
-        pass
 
     def evaluate_and_gradient(self, samples):
+        """Evaluate model output and gradient.
+
+        Args:
+            samples (np.array): Evaluated samples
+
+        Returns:
+            model_output (np.array): Model output
+            model_gradient (np.array): Model gradient
+        """
         model_output = self.evaluate(samples, gradient=True)
         model_gradient = self._grad(samples, np.ones((samples.shape[0], 1)))
         return model_output, model_gradient

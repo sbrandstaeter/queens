@@ -8,6 +8,8 @@ method:
   num_particles: 20
   model: model
   temper_type: bayes
+  mcmc_proposal_distribution_name: proposal_distribution
+  num_rejuvenation_steps: 3
   plot_trace_every: 0
   result_description:
     write_results: true
@@ -37,12 +39,6 @@ model:
         type: entire_file
   experimental_csv_data_base_dir: {experimental_data_path}
   parameters: parameters
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 20
-  num_samples: 3
-  proposal_distribution: proposal_distribution
 forward_model:
   type: simulation_model
   interface_name: interface

@@ -29,9 +29,9 @@ There are various prerequisites for QUEENS such as (an appropriately configured)
 [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
 
-- Create a new Anaconda environment, e.g., using Python 3.8:
+- Create a new Anaconda environment, e.g., using Python 3.10:
 ```
-conda create -n <name_of_your_environment> python=3.8
+conda create -n <name_of_your_environment> python=3.10
 ```
 
 - List all packages linked into an Anaconda environment:
@@ -41,7 +41,7 @@ conda list -n <name_of_your_environment>
 
 - Activate an environment:
 ```
-source activate <name_of_your_environment>
+conda activate <name_of_your_environment>
 ```
 [↑ Contents](#contents)
 
@@ -78,7 +78,6 @@ and your email address to your institute email address with the following comman
     ```bash
     pre-commit install --install-hooks --overwrite
     pre-commit install --hook-type commit-msg
-    pre-commit install --hook-type prepare-commit-msg
     ```
 
 1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab
@@ -92,7 +91,7 @@ user profile under the section `User settings - SSH keys`
         ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
         ```
     1. For further instruction on how to configure your SSH key correctly please have a look at the
-     [GitLab documentation](https://gitlab.lrz.de/help/ssh/README).
+     [GitLab documentation](https://docs.gitlab.com/ee/user/ssh.html#add-an-ssh-key-to-your-gitlab-account).
 
 [↑ Contents](#contents)
 
@@ -251,7 +250,7 @@ Updates from time to time are recommended:
 To start a *QUEENS* run with your *QUEENS* input file, run the following command in your activated python environment:
 ```
 queens --input <path-to-QUEENS-input> --output_dir <output-folder>
-``` 
+```
 
 Note: the output folder needs to be created by the user before starting the simulation.
 
@@ -363,7 +362,7 @@ ln -s <your/path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor
 ln -s <your/path/to/post_drt_ensight> <QUEENS_BaseDir>/config/post_drt_ensight
 ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
-The testing strategy is more closely described in [TESTING.md](TESTING.md)
+The testing strategy is more closely described in [TESTING.md](pqueens/tests/README.md)
 To run the test suite type:
 ```bash
 pytest pqueens/tests -W ignore::DeprecationWarning
@@ -389,4 +388,4 @@ The steps are as follows:
 1. Next, you have to register the runner with your gitlab repo as described
 [here](https://docs.gitlab.com/runner/register/index.html).
 
-[↑ Contents](#contents) 
+[↑ Contents](#contents)

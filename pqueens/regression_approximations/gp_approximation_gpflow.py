@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from gpflow.utilities import print_summary, set_trainable
-from sklearn.preprocessing import StandardScaler
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
@@ -174,7 +173,7 @@ class GPFlowRegression(RegressionApproximation):
                 opt_logs = opt.minimize(
                     self.model.training_loss,
                     self.model.trainable_variables,
-                    options=dict(maxiter=self.number_training_iterations),
+                    options={"maxiter": self.number_training_iterations},
                 )
                 loss[i] = opt_logs.fun
                 train_logs.append(opt_logs)

@@ -6,7 +6,6 @@ Test local simulations with BACI using a minimal FSI model and the
 """
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -18,21 +17,21 @@ from pqueens.utils import injector
 
 
 @pytest.fixture(scope="session")
-def output_directory_forward(tmpdir_factory):
+def output_directory_forward(tmp_path_factory):
     """Create two temporary output directories for test runs with singularity.
 
         * with singularity (<...>_true)
         * without singularity (<...>_false)
 
     Args:
-        tmpdir_factory: Fixture used to create arbitrary temporary directories
+        tmp_path_factory: Fixture used to create arbitrary temporary directories
 
     Returns:
         output_directory_forward (dict): Temporary output directories for simulation without and
                                          with singularity
     """
-    path_singularity_true = tmpdir_factory.mktemp("test_baci_lm_shape_singularity")
-    path_singularity_false = tmpdir_factory.mktemp("test_baci_lm_shape_nosingularity")
+    path_singularity_true = tmp_path_factory.mktemp("test_baci_lm_shape_singularity")
+    path_singularity_false = tmp_path_factory.mktemp("test_baci_lm_shape_nosingularity")
 
     return {True: path_singularity_true, False: path_singularity_false}
 
@@ -60,20 +59,21 @@ def test_baci_lm_shape(
     Singularity based BACI simulations.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        third_party_inputs (str): Path to the BACI input files
-        baci_link_paths (str): Symbolic links to executables including BACI
+        inputdir (Path): Path to QUEENS test input files
+        third_party_inputs (Path): Path to the BACI input files
+        baci_link_paths (Path): Symbolic links to executables including BACI
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
-    template = os.path.join(inputdir, "baci_local_shape_lm_template.yml")
-    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.yml")
-    third_party_input_file = os.path.join(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
+    template = inputdir / "baci_local_shape_lm_template.yml"
+    input_file = experiment_directory / "baci_local_shape_lm.yml"
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files" / "lm_tri_fsi_shape_template.dat"
     )
-    third_party_input_file_monitor = os.path.join(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_E2000_nue03_p.monitor"
+    third_party_input_file_monitor = (
+        third_party_inputs / "baci_input_files" / "lm_tri_fsi_shape_E2000_nue03_p.monitor"
     )
+
     experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
 
     baci_release, _, _, post_processor = baci_link_paths
@@ -88,10 +88,9 @@ def test_baci_lm_shape(
     }
 
     injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(experiment_directory))
+    run(input_file, experiment_directory)
 
-    result_file_name = experiment_name + ".csv"
-    result_file = os.path.join(experiment_directory, result_file_name)
+    result_file = experiment_directory / (experiment_name + ".csv")
 
     result_data = pd.read_csv(
         result_file,

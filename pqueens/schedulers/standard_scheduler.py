@@ -1,6 +1,6 @@
 """Standard scheduler for QUEENS runs."""
 import logging
-import pathlib
+from pathlib import Path
 from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
@@ -78,7 +78,7 @@ class StandardScheduler(Scheduler):
 
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = experiment_directory(experiment_name=experiment_name)
-        input_file = pathlib.Path(config["input_file"])
+        input_file = Path(config["input_file"])
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(

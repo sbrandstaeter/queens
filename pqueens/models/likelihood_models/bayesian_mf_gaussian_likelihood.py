@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 import pqueens.visualization.bmfia_visualization as qvis
-from pqueens.interfaces.bmfia_interface import BmfiaInterface
+from pqueens.interfaces import from_config_create_interface
 from pqueens.iterators import from_config_create_iterator
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.ascii_art import print_bmfia_acceleration
@@ -142,11 +142,6 @@ class BMFGaussianModel(LikelihoodModel):
             coord_labels,
         ) = super().get_base_attributes_from_config(model_name, config)
 
-        # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
-        #  random fields is prone to errors and should be changed! The implementation should
-        #  rather use the variable module and reconstruct the eigenfunctions of the random fields
-        #  if not provided in the data field
-
         # get model options
         model_options = config[model_name]
 
@@ -163,17 +158,29 @@ class BMFGaussianModel(LikelihoodModel):
             "mf_approx_settings": mf_approx_settings,
             stochastic_optimizer_name: config[stochastic_optimizer_name],
         }
-        approximation_settings_name = "mf_approx_settings"
-        num_processors_multi_processing = settings_probab_mapping['mf_approx_settings'].get(
-            "num_processors_multi_processing"
-        )
-        mf_interface = BmfiaInterface(
-            settings_probab_mapping, approximation_settings_name, num_processors_multi_processing
-        )
+
+        # ---------- create multi-fidelity interface --------------------------------------------
+        bmfia_interface_name = model_options.get("interface_name")
+        if config[bmfia_interface_name]["type"] != "bmfia":
+            raise ValueError("The interface type must be 'bmfia' for BMFGaussianModel!")
+        bmfia_interface = from_config_create_interface(bmfia_interface_name, config)
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
         bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator_name"]
+        approx_name = model_options["multi_fidelity_mapping_name"]
         bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
+
+        # ---------------------- initialize some model settings/train surrogates -----------------
+        BMFGaussianModel.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, bmfia_subiterator)
+        BMFGaussianModel._build_approximation(
+            bmfia_subiterator,
+            bmfia_interface,
+            config,
+            approx_name,
+            coord_labels,
+            time_vec,
+            coords_mat,
+        )
 
         # ----------------------- create visualization object(s) ---------------------------------
         qvis.from_config_create(config, model_name=model_name)
@@ -201,7 +208,7 @@ class BMFGaussianModel(LikelihoodModel):
             output_label,
             coord_labels,
             settings_probab_mapping,
-            mf_interface,
+            bmfia_interface,
             bmfia_subiterator,
             noise_upper_bound,
             x_train,
@@ -227,10 +234,6 @@ class BMFGaussianModel(LikelihoodModel):
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
-        # Initialize underlying models in the first call
-        if self.z_train is None:
-            self._initialize()
-
         # reshape the model output according to the number of coordinates
         num_coordinates = self.coords_mat.shape[0]
         num_samples = samples.shape[0]
@@ -243,6 +246,12 @@ class BMFGaussianModel(LikelihoodModel):
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood
+
+    def evaluate_and_gradient(self, _samples):
+        """Evaluate model and its gradient with current set of samples."""
+        raise NotImplementedError(
+            "The gradient response is not implemented for the multi-fidelity likelihood."
+        )
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
         """Evaluate the Bayesian multi-fidelity likelihood as described in [1].
@@ -301,7 +310,7 @@ class BMFGaussianModel(LikelihoodModel):
                                   high-fidelity predictions.
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator._set_feature_strategy(
+        z_mat = self.bmfia_subiterator.set_feature_strategy(
             y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
         )
         # Get the response matrices of the multi-fidelity mapping
@@ -431,36 +440,63 @@ class BMFGaussianModel(LikelihoodModel):
 
         return np.array(log_lik_mf)
 
-    def _initialize(self):
-        """Initialize the multi-fidelity likelihood model."""
+    @staticmethod
+    def initialize_bmfia_iterator(coords_mat, time_vec, y_obs, bmfia_subiterator):
+        """Initialize the bmfia iterator.
+
+        Args:
+            coords_mat (np.array): Coordinates of the experimental data.
+            time_vec (np.array): Time vector of the experimental data.
+            y_obs (np.array): Experimental data observations at coordinates
+            bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
+        """
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
         _logger.info("---------------------------------------------------------------------")
         print_bmfia_acceleration()
 
-        self.bmfia_subiterator.coords_experimental_data = self.coords_mat
-        self.bmfia_subiterator.time_vec = self.time_vec
-        self.bmfia_subiterator.y_obs = self.y_obs
-        self._build_approximation()
+        bmfia_subiterator.coords_experimental_data = coords_mat
+        bmfia_subiterator.time_vec = time_vec
+        bmfia_subiterator.y_obs = y_obs
 
-    def _build_approximation(self):
+    @staticmethod
+    def _build_approximation(
+        bmfia_subiterator,
+        bmfia_interface,
+        config,
+        approx_name,
+        coord_labels,
+        time_vec,
+        coords_mat,
+    ):
         """Construct the probabilistic surrogate / mapping.
 
         Surrogate is calculated based on the provided training-data and
         optimize the hyper-parameters by maximizing the data's evidence
         or its lower bound (ELBO).
+
+        Args:
+            bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
+            bmfia_interface (bmfia_interface): BMFIA interface object.
+            config (dict): Configuration dictionary.
+            approx_name (str): Name of the approximation for probabilistic mapping.
+            coord_labels (list): List of coordinate labels.
+            time_vec (np.array): Time vector of the experimental data.
+            coords_mat (np.array): (Spatial) Coordinates of the experimental data.
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
-        self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
+        z_train, y_hf_train = bmfia_subiterator.core_run()
         # ----- train regression model on the data ----------------------------------------
-        self.mf_interface.build_approximation(self.z_train, self.y_hf_train)
+        bmfia_interface.build_approximation(
+            z_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+        )
         _logger.info("---------------------------------------------------------------------")
         _logger.info('Probabilistic model was built successfully!')
         _logger.info("---------------------------------------------------------------------")
 
         # plot the surrogate model
         qvis.bmfia_visualization_instance.plot(
-            self.z_train, self.y_hf_train, self.mf_interface.probabilistic_mapping_obj_lst
+            z_train, y_hf_train, bmfia_interface.probabilistic_mapping_obj_lst
         )
 
     # ------- TODO: below not needed atm but something similar might be of interest lateron -----

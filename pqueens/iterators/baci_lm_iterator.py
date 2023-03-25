@@ -1,13 +1,12 @@
 """Levenberg Marquardt iterator."""
 import logging
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.fd_jacobian import fd_jacobian
 
 _logger = logging.getLogger(__name__)
@@ -41,43 +40,46 @@ class BaciLMIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
-        initial_guess,
-        bounds,
-        havebounds,
-        jac_rel_step,
-        jac_abs_step,
-        init_reg,
-        update_reg,
-        tolerance,
-        max_feval,
         model,
+        global_settings,
         result_description,
-        verbose_output,
+        initial_guess=None,
+        bounds=None,
+        jac_rel_step=1e-4,
+        jac_abs_step=0.0,
+        init_reg=1.0,
+        update_reg='grad',
+        convergence_tolerance=1e-6,
+        max_feval=1,
+        verbose_output=False,
     ):
         """TODO_doc.
 
         Args:
+            model: TODO_doc
             global_settings: TODO_doc
+            result_description: TODO_doc
             initial_guess: TODO_doc
             bounds: TODO_doc
-            havebounds: TODO_doc
             jac_rel_step: TODO_doc
             jac_abs_step: TODO_doc
             init_reg: TODO_doc
             update_reg: TODO_doc
-            tolerance: TODO_doc
+            convergence_tolerance: TODO_doc
             max_feval: TODO_doc
-            model: TODO_doc
-            result_description: TODO_doc
             verbose_output: TODO_doc
         """
         super().__init__(model, global_settings)
 
-        self.initial_guess = initial_guess
+        _logger.info("Baci LM Iterator for experiment: %s", self.global_settings['experiment_name'])
+
+        self.havebounds = True
+        if bounds is None:
+            self.havebounds = False
+
+        self.initial_guess = np.array(initial_guess, dtype=float)
         self.bounds = bounds
-        self.havebounds = havebounds
-        self.param_current = initial_guess
+        self.param_current = self.initial_guess
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
         self.result_description = result_description
@@ -86,71 +88,10 @@ class BaciLMIterator(Iterator):
         self.reg_param = init_reg
         self.init_reg = init_reg
         self.update_reg = update_reg
-        self.tolerance = tolerance
+        self.tolerance = convergence_tolerance
 
         self.verbose_output = verbose_output
         self.iter_opt = 0
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Levenberg Marquardt iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: OptimizationIterator object
-        """
-        _logger.info(
-            "Baci LM Iterator for experiment: %s",
-            config.get('global_settings').get('experiment_name'),
-        )
-
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        initial_guess = np.array(method_options.get('initial_guess'), dtype=float)
-
-        bounds = method_options.get("bounds", None)
-        havebounds = True
-        if bounds is None:
-            havebounds = False
-
-        max_feval = method_options.get('max_feval', 1)
-
-        jac_rel_step = method_options.get('jac_rel_step', 1e-4)
-        jac_abs_step = method_options.get('jac_abs_step', 0.0)
-
-        init_reg = method_options.get('init_reg', 1.0)
-        update_reg = method_options.get('update_reg', 'grad')
-
-        tolerance = method_options.get('convergence_tolerance', 1e-6)
-
-        verbose_output = method_options.get('verbose_output', False)
-
-        # initialize iterator
-        return cls(
-            global_settings=global_settings,
-            initial_guess=initial_guess,
-            bounds=bounds,
-            havebounds=havebounds,
-            jac_rel_step=jac_rel_step,
-            jac_abs_step=jac_abs_step,
-            init_reg=init_reg,
-            update_reg=update_reg,
-            tolerance=tolerance,
-            max_feval=max_feval,
-            model=model,
-            result_description=result_description,
-            verbose_output=verbose_output,
-        )
 
     def jacobian_and_residual(self, x0):
         """Evaluate Jacobian and residual of objective function at *x0*.
@@ -201,14 +142,11 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                with open(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
-                    'w',
-                ) as f:
-                    df.to_csv(f, sep='\t', index=None)
+                csv_file = Path(
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"] + '.csv',
+                )
+                df.to_csv(csv_file, mode="w", sep='\t', index=None)
 
     def core_run(self):
         """Core run of Levenberg Marquardt iterator."""
@@ -310,10 +248,10 @@ class BaciLMIterator(Iterator):
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.csv',
+                    ),
                     sep='\t',
                 )
                 xydata = data['params']
@@ -349,7 +287,7 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[1],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
+                    fig.update_traces(mode='lines+markers', marker={"size": 2}, line={"width": 4})
                 elif i == 1:
                     fig = px.line(
                         data,
@@ -364,15 +302,15 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[0],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=7), line=dict(width=3))
+                    fig.update_traces(mode='lines+markers', marker={"size": 7}, line={"width": 3})
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 
                 fig.write_html(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.html',
                     )
-                    + '.html'
                 )
 
     def get_positions_raw_2pointperturb(self, x0):
@@ -419,24 +357,23 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                with open(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
-                    'a',
-                ) as f:
-                    df = pd.DataFrame(
-                        {
-                            'iter': i,
-                            'resnorm': np.format_float_scientific(resnorm, precision=8),
-                            'gradnorm': np.format_float_scientific(gradnorm, precision=8),
-                            'params': [np.array2string(self.param_current, precision=8)],
-                            'delta_params': [np.array2string(param_delta, precision=8)],
-                            'mu': np.format_float_scientific(self.reg_param, precision=8),
-                        }
-                    )
-                    df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.8f')
+                csv_file = Path(
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"] + '.csv',
+                )
+                df = pd.DataFrame(
+                    {
+                        'iter': i,
+                        'resnorm': np.format_float_scientific(resnorm, precision=8),
+                        'gradnorm': np.format_float_scientific(gradnorm, precision=8),
+                        'params': [np.array2string(self.param_current, precision=8)],
+                        'delta_params': [np.array2string(param_delta, precision=8)],
+                        'mu': np.format_float_scientific(self.reg_param, precision=8),
+                    }
+                )
+                df.to_csv(
+                    csv_file, mode="a", sep='\t', header=None, index=None, float_format='%.8f'
+                )
 
     def checkbounds(self, param_delta, i):
         """Check if proposed step is in bounds.

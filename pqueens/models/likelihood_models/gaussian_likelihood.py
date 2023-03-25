@@ -149,10 +149,10 @@ class GaussianLikelihood(LikelihoodModel):
         """Evaluate likelihood with current set of samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.array): Evaluated samples
 
         Returns:
-            log_likelihood (np.ndarray): log-likelihood values per model input
+            log_likelihood (np.array): log-likelihood values per model input
         """
         self.response = self.forward_model.evaluate(samples, **kwargs)['mean']
         if self.noise_type.startswith('MAP'):

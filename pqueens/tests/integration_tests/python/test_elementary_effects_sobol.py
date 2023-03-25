@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_elementary_effects_sobol(inputdir, tmpdir):
+def test_elementary_effects_sobol(inputdir, tmp_path):
     """Test case for elementary effects on Sobol's G-function."""
-    run(Path(os.path.join(inputdir, 'elementary_effects_sobol.yml')), Path(tmpdir))
+    run(inputdir / 'elementary_effects_sobol.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

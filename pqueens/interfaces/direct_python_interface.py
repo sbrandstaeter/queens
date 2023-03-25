@@ -25,21 +25,24 @@ class DirectPythonInterface(Interface):
         function (function):    Function to evaluate.
         pool (pathos pool):     Multiprocessing pool.
         latest_job_id (int):    Latest job ID.
+        verbose (boolean):      Verbosity of evaluations.
     """
 
-    def __init__(self, interface_name, function, pool):
+    def __init__(self, interface_name, function, pool, verbose=True):
         """Create interface.
 
         Args:
             interface_name (string):    name of interface
             function (function):        function to evaluate
             pool (pathos pool):         multiprocessing pool
+            verbose (boolean):          verbosity of evaluations
         """
         super().__init__(interface_name)
         # Wrap function to clean the output
         self.function = self.function_wrapper(function)
         self.pool = pool
         self.latest_job_id = 1
+        self.verbose = verbose
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -57,6 +60,7 @@ class DirectPythonInterface(Interface):
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function", None)
         external_python_function = interface_options.get("external_python_module_function", None)
+        verbose = interface_options.get("verbose", True)
 
         if function_name is None:
             raise ValueError(f"Keyword 'function' is missing in interface '{interface_name}'")
@@ -70,10 +74,10 @@ class DirectPythonInterface(Interface):
 
         pool = create_pool(num_workers)
 
-        return cls(interface_name=interface_name, function=my_function, pool=pool)
+        return cls(interface_name=interface_name, function=my_function, pool=pool, verbose=verbose)
 
     def evaluate(self, samples):
-        """Mapping function which orchestrates call to simulator function.
+        """Orchestrate call to simulator function.
 
         Args:
             samples (list): List of variables objects
@@ -104,24 +108,22 @@ class DirectPythonInterface(Interface):
         # Pool or no pool
         if self.pool:
             results = self.pool.map(self.function, samples_list)
-        else:
+        elif self.verbose:
             results = list(map(self.function, tqdm(samples_list)))
+        else:
+            results = list(map(self.function, samples_list))
 
-        result_lst = []
-        gradient_lst = []
+        output = {}
+        # check if gradient is returned --> tuple
+        if isinstance(results[0], tuple):
+            results_iterator, gradient_iterator = zip(*results)
+            results_array = np.array(list(results_iterator))
+            gradients_array = np.array(list(gradient_iterator))
+            output["gradient"] = gradients_array
+        else:
+            results_array = np.array(results)
 
-        for result in results:
-            if isinstance(result, tuple):
-                result_lst.append(result[0])
-                gradient_lst.append(result[1].T)
-            else:
-                result_lst.append(result)
-
-        output = {'mean': np.array(result_lst)}
-
-        if gradient_lst:
-            output['gradient'] = np.array(gradient_lst)
-
+        output["mean"] = results_array
         return output
 
     @staticmethod
@@ -137,6 +139,7 @@ class DirectPythonInterface(Interface):
         Returns:
             reshaped_output_function (function): Wrapped function
         """
+        pass
 
         def reshaped_output_function(sample_dict):
             """Call function and reshape output.

@@ -4,7 +4,8 @@ import logging
 
 import numpy as np
 
-from pqueens.models.gradient_models.gradient_model import GradientModel
+from pqueens.interfaces import from_config_create_interface
+from pqueens.models.model import Model
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
 from pqueens.utils.valid_options_utils import get_option
 
@@ -17,7 +18,7 @@ VALID_FINITE_DIFFERENCE_METHODS = {
 }
 
 
-class FiniteDifferenceModel(GradientModel):
+class FiniteDifferenceModel(Model):
     """Finite difference model.
 
     Attributes:
@@ -29,12 +30,12 @@ class FiniteDifferenceModel(GradientModel):
                            approximation
     """
 
-    def __init__(self, model_name, forward_model, method, step_size):
+    def __init__(self, model_name, interface, method, step_size):
         """Initialize model.
 
         Args:
             model_name (str): Model name
-            forward_model (obj): Forward model on which the likelihood model is based
+            interface (Interface): TODO_doc
             method (str): Method to calculate a finite difference
                        based approximation of the Jacobian matrix:
                         - '2-point': a one-sided scheme by definition
@@ -42,7 +43,8 @@ class FiniteDifferenceModel(GradientModel):
             step_size (float): Step size for the finite difference
                                approximation
         """
-        super().__init__(model_name, forward_model)
+        super().__init__(model_name)
+        self.interface = interface
         self.method = method
         self.step_size = step_size
 
@@ -61,8 +63,10 @@ class FiniteDifferenceModel(GradientModel):
         Returns:
             instance of FiniteDifferenceModel class
         """
-        forward_model = super().get_base_attributes_from_config(model_name, config)
         model_options = config[model_name]
+        interface_name = model_options['interface_name']
+        interface = from_config_create_interface(interface_name, config)
+
         finite_difference_type = model_options.get("finite_difference_method")
         method = get_option(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_type)
         step_size = model_options.get("step_size", 1e-5)
@@ -71,14 +75,19 @@ class FiniteDifferenceModel(GradientModel):
             step_size,
         )
 
-        return cls(
-            model_name=model_name, forward_model=forward_model, method=method, step_size=step_size
-        )
+        return cls(model_name=model_name, interface=interface, method=method, step_size=step_size)
 
-    def evaluate(self, samples, gradient=False, **kwargs):
-        """Evaluate forward model with current set of variables."""
-        if not gradient:
-            self.response = self.forward_model.evaluate(samples)
+    def evaluate(self, samples, **kwargs):
+        """Evaluate model with current set of samples.
+
+        Args:
+            samples (np.ndarray): Evaluated samples
+
+        Returns:
+            self.response (np.array): Response of the underlying model at current variables
+        """
+        if not kwargs['gradient']:
+            self.response = self.interface.evaluate(samples)
         else:
             self.response = self.evaluate_finite_differences(samples)
         return self.response
@@ -95,7 +104,7 @@ class FiniteDifferenceModel(GradientModel):
         Returns:
             response (np.array): Array with model response for given input samples
             gradient_response (np.array): Array with row-wise model/objective fun gradients for
-                                       given samples.
+                                          given samples.
         """
         # check dimensions of samples
         if samples.ndim < 2:
@@ -124,7 +133,7 @@ class FiniteDifferenceModel(GradientModel):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.forward_model.evaluate(combined_samples)['mean']
+        all_responses = self.interface.evaluate(combined_samples)['mean']
 
         # make sure the dim of the array is at least 2d (note: np.atleast_2d would not work here,
         # as it transposes the array if ndim > 1 which is not desired.)

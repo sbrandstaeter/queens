@@ -20,8 +20,8 @@ def run(input_file, output_dir, debug=False):
     """Do a QUEENS run.
 
     Args:
-        input_file (pathlib.Path): Path object to the input file
-        output_dir (pathlib.Path): Path object to the output directory
+        input_file (Path): Path object to the input file
+        output_dir (Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
     """
     start_time_input = time.time()
@@ -78,14 +78,14 @@ def get_config_dict(input_file, output_dir, debug=False):
     """Create QUEENS run config from input file and output dir.
 
     Args:
-        input_file (pathlib.Path): Path object to the input file
-        output_dir (pathlib.Path): Path object to the output directory
+        input_file (Path): Path object to the input file
+        output_dir (Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
 
     Returns:
         dict: config dict
     """
-    if not output_dir.is_dir():
+    if not Path(output_dir).is_dir():
         raise FileNotFoundError(f"Output directory {output_dir} does not exist.")
 
     options = load_input_file(input_file)

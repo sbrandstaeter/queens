@@ -82,5 +82,5 @@ class VTKVisualization:
         if iteration % self.save_every == 0:
             vtk_obj = load_vtu_file(self.geometry_file)
             add_point_array_to_vtu_object(vtk_obj, self.field_name, field)
-            file_name = self.output_dir.joinpath(f"{self.field_name}_{iteration}.vtu")
+            file_name = self.output_dir / f"{self.field_name}_{iteration}.vtu"
             export_vtu_file(vtk_obj, str(file_name))

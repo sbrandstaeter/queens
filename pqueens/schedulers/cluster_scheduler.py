@@ -2,14 +2,19 @@
 import atexit
 import getpass
 import logging
-import pathlib
 import socket
 from dataclasses import dataclass
+from pathlib import Path
 
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
-from pqueens.utils.config_directories import base_directory, create_directory, experiment_directory
+from pqueens.utils.config_directories import (
+    base_directory,
+    create_directory,
+    current_job_directory,
+    experiment_directory,
+)
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.print_utils import get_str_table
@@ -20,7 +25,7 @@ _logger = logging.getLogger(__name__)
 
 DEEP_CLUSTER_TYPE = "deep"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
-CHARON_CLUSTER_TYPE = "hades"
+CHARON_CLUSTER_TYPE = "charon"
 
 VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
 VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
@@ -36,7 +41,7 @@ class ClusterConfig:
         name (str):                         name of cluster
         work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
         start_cmd (str):                    command to start a job on the cluster
-        jobscript_template (pathlib.Path):  absolute path to jobscript template file
+        jobscript_template (Path):          absolute path to jobscript template file
         job_status_command (str):           command to check job status on cluster
         job_status_location (int):          location of job status in return of job_status_command
         singularity_bind (str):             variable for binding directories on the host
@@ -46,7 +51,7 @@ class ClusterConfig:
     name: str
     work_load_scheduler: str
     start_cmd: str
-    jobscript_template: pathlib.Path
+    jobscript_template: Path
     job_status_command: str
     job_status_location: int
     job_status_incomplete: list
@@ -224,7 +229,7 @@ class ClusterScheduler(Scheduler):
         scheduler_options = config[scheduler_name]
 
         experiment_name = config['global_settings']['experiment_name']
-        input_file = pathlib.Path(config["input_file"])
+        input_file = Path(config["input_file"])
 
         scheduler_type = scheduler_options["type"]
 
@@ -338,7 +343,7 @@ class ClusterScheduler(Scheduler):
         )
 
     def __str__(self):
-        """String description of the ClusterScheduler object.
+        """Return string of the ClusterScheduler object.
 
         Returns:
             string (str): ClusterScheduler object description
@@ -381,7 +386,7 @@ class ClusterScheduler(Scheduler):
                 self._copy_input_file_to_remote()
 
     def _copy_input_file_to_remote(self):
-        """Copies a (temporary) JSON input-file to the remote machine.
+        """Copy a (temporary) JSON input-file to the remote machine.
 
         Is needed to execute some parts of QUEENS within the singularity
         image on the remote, given the input configurations.
@@ -421,15 +426,13 @@ class ClusterScheduler(Scheduler):
                 f"--working_dir"
             )
 
-            job_dir = self.experiment_dir / str(job_id)
+            job_dir = current_job_directory(self.experiment_dir, job_id)
             create_directory(job_dir, remote_connect=self.remote_connect)
 
             self.cluster_options['DESTDIR'] = str(job_dir / "output")
 
             # generate jobscript for submission
-            submission_script_path = (
-                self.experiment_dir / str(job_id) / f"{self.experiment_name}_{job_id}.sh"
-            )
+            submission_script_path = job_dir / f"{self.experiment_name}_{job_id}.sh"
             generate_submission_script(
                 self.cluster_options,
                 submission_script_path,

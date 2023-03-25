@@ -9,8 +9,7 @@ from pqueens.iterators.variational_inference import (
     VariationalInferenceIterator,
 )
 from pqueens.utils.collection_utils import CollectionObject
-from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
-from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
+from pqueens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 
@@ -53,39 +52,29 @@ class RPVIIterator(VariationalInferenceIterator):
 
     def __init__(
         self,
-        global_settings,
         model,
         result_description,
-        db,
-        experiment_name,
-        variational_family,
-        variational_params_initialization_approach,
+        variational_distribution,
         n_samples_per_iter,
         variational_transformation,
         random_seed,
         max_feval,
-        num_parameters,
-        natural_gradient_bool,
-        fim_dampening_bool,
-        fim_decay_start_iter,
-        fim_dampening_coefficient,
-        fim_dampening_lower_bound,
-        variational_distribution_obj,
         stochastic_optimizer,
-        score_function_bool,
-        iteration_data,
+        global_settings,
+        variational_parameter_initialization=None,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=1e-2,
+        FIM_dampening_lower_bound=1e-8,
+        score_function_bool=False,
     ):
         """Initialize RPVI iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
             result_description (dict): Settings for storing and visualizing the results
-            db (obj): QUEENS database object
-            experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variational approximation
-            variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational parameters
+            variational_distribution (dict): Description of variational distribution
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
@@ -93,105 +82,42 @@ class RPVIIterator(VariationalInferenceIterator):
                                               the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_parameters (int): Actual number of model input parameters that should be calibrated
-            natural_gradient_bool (boolean): True if natural gradient should be used
-            fim_dampening_bool (boolean): True if FIM dampening should be used
-            fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-            fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-            fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            variational_distribution_obj (VariationalDistribution): Variational distribution object
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            global_settings (dict): Global settings of the QUEENS simulations
+            variational_parameter_initialization (str): Flag to decide how to initialize the
+                                                        variational parameters
+            natural_gradient (boolean): True if natural gradient should be used
+            FIM_dampening (boolean): True if FIM dampening should be used
+            decay_start_iteration (int): Iteration at which the FIM dampening is started
+            dampening_coefficient (float): Initial nugget term value for the FIM dampening
+            FIM_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
             score_function_bool (bool): Boolean flag to decide whether the score function term
-                                    should be considered in the ELBO gradient. If true the
-                                    score function is considered.
-            iteration_data (CollectionObject): Object to store iteration data if desired
+                                        should be considered in the ELBO gradient. If true the
+                                        score function is considered.
         """
-        super().__init__(
-            global_settings,
-            model,
-            result_description,
-            db,
-            experiment_name,
-            variational_family,
-            variational_params_initialization_approach,
-            n_samples_per_iter,
-            variational_transformation,
-            random_seed,
-            max_feval,
-            num_parameters,
-            natural_gradient_bool,
-            fim_dampening_bool,
-            fim_decay_start_iter,
-            fim_dampening_coefficient,
-            fim_dampening_lower_bound,
-            variational_distribution_obj,
-            stochastic_optimizer,
-            iteration_data,
-        )
-        self.score_function_bool = score_function_bool
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create RPVI iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model): Model to use (optional)
-
-        Returns:
-            iterator (obj): RPVI object
-        """
-        method_options = config[iterator_name]
-        score_function_bool = method_options.get("score_function_bool", False)
-        (
-            global_settings,
-            model,
-            result_description,
-            db,
-            experiment_name,
-            variational_family,
-            variational_params_initialization_approach,
-            n_samples_per_iter,
-            variational_transformation,
-            random_seed,
-            max_feval,
-            num_parameters,
-            natural_gradient_bool,
-            fim_dampening_bool,
-            fim_decay_start_iter,
-            fim_dampening_coefficient,
-            fim_dampening_lower_bound,
-            variational_distribution_obj,
-            stochastic_optimizer,
-        ) = super().get_base_attributes_from_config(config, iterator_name)
-
-        iterative_data_names = method_options["result_description"].get("iterative_field_names", [])
+        iterative_data_names = result_description.get("iterative_field_names", [])
         check_if_valid_options(VALID_EXPORT_FIELDS, iterative_data_names)
         iteration_data = CollectionObject(*iterative_data_names)
-        return cls(
-            global_settings=global_settings,
+
+        super().__init__(
             model=model,
             result_description=result_description,
-            db=db,
-            experiment_name=experiment_name,
-            variational_family=variational_family,
-            variational_params_initialization_approach=variational_params_initialization_approach,
+            variational_distribution=variational_distribution,
+            variational_params_initialization=variational_parameter_initialization,
             n_samples_per_iter=n_samples_per_iter,
             variational_transformation=variational_transformation,
             random_seed=random_seed,
             max_feval=max_feval,
-            num_parameters=num_parameters,
-            natural_gradient_bool=natural_gradient_bool,
-            fim_dampening_bool=fim_dampening_bool,
-            fim_decay_start_iter=fim_decay_start_iter,
-            fim_dampening_coefficient=fim_dampening_coefficient,
-            fim_dampening_lower_bound=fim_dampening_lower_bound,
-            variational_distribution_obj=variational_distribution_obj,
+            natural_gradient=natural_gradient,
+            FIM_dampening=FIM_dampening,
+            decay_start_iter=decay_start_iteration,
+            dampening_coefficient=dampening_coefficient,
+            FIM_dampening_lower_bound=FIM_dampening_lower_bound,
             stochastic_optimizer=stochastic_optimizer,
-            score_function_bool=score_function_bool,
             iteration_data=iteration_data,
+            global_settings=global_settings,
         )
+        self.score_function_bool = score_function_bool
 
     def core_run(self):
         """Core run for variational inference with reparameterization trick."""
@@ -290,7 +216,7 @@ class RPVIIterator(VariationalInferenceIterator):
             )
 
     def _prepare_result_description(self):
-        """Creates the dictionary for the result pickle file.
+        """Create the dictionary for the result pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis

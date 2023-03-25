@@ -241,7 +241,7 @@ class GPGPyRegression(RegressionApproximation):
         # GPy returns 3d array middle dimension indicates number of outputs, i.e.
         # it is only != 1 for multi-output processes
         if post_samples.shape[1] != 1:
-            raise Exception("GPGPyRegression can not deal with multi-output GPs")
+            raise ValueError("GPGPyRegression can not deal with multi-output GPs")
         return np.reshape(post_samples, (x_test.shape[0], num_samples))
 
     @classmethod

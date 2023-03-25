@@ -1,7 +1,7 @@
 """TODO_doc."""
 
-import os
 import sys
+from pathlib import Path
 
 import GPy
 import matplotlib
@@ -128,7 +128,7 @@ class SurrogateVisualization(object):
 
         if plotting_options:
             paths = [
-                os.path.join(plotting_options.get("plotting_dir", None), name)
+                Path(plotting_options.get("plotting_dir", None), name)
                 for name in plotting_options["plot_names"]
             ]
             saving_paths = convert_to_dict(paths)
@@ -219,7 +219,7 @@ class SurrogateVisualization(object):
 
         figs[0].layout.yaxis.range = (y_min, y_max)
         figs[0].layout.xaxis.title = self.parameter_names[free_idx]
-        figs[0].update_layout(font=dict(family="Arial", size=18))
+        figs[0].update_layout(font={"family": 'Arial', "size": 18})
 
         return figs[0]
 

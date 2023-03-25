@@ -8,6 +8,8 @@ method:
   num_particles: 100
   model: model
   temper_type: bayes
+  mcmc_proposal_distribution_name: proposal_distribution
+  num_rejuvenation_steps: 30
   plot_trace_every: 0
   result_description:
     write_results: true
@@ -76,12 +78,6 @@ data_processor_experimental_data:
     returned_filter_format: dict
     filter:
       type: entire_file
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 15
-  num_samples: 30
-  proposal_distribution: proposal_distribution
 bmfia_iterator:
   type: bmfia
   low_fidelity_model: lf_model

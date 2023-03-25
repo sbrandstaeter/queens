@@ -69,4 +69,6 @@ class SimulationModel(Model):
                 'You have to define a Gradient model for Simulation model if the model '
                 'does not return the forward response and the gradient at once.'
             )
-        return np.sum(upstream[:, :, np.newaxis] * self.response['gradient'], axis=1)
+        # The shape of the returned gradient is weird
+        response_gradient = np.swapaxes(self.response['gradient'], 1, 2)
+        return np.sum(upstream[:, :, np.newaxis] * response_gradient, axis=1)

@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -12,22 +11,22 @@ from pqueens.utils import injector
 
 
 def test_geometry_from_dat(
-    inputdir, tmpdir, third_party_inputs, expected_node_coordinates, expected_surface_topology
+    inputdir, tmp_path, third_party_inputs, expected_node_coordinates, expected_surface_topology
 ):
     """TODO_doc."""
     # generate json input file from template
-    third_party_input_file = os.path.join(
-        third_party_inputs, "baci_input_files", "bending_wall_channel_flow_fsi_lofi.dat"
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files" / "bending_wall_channel_flow_fsi_lofi.dat"
     )
     dir_dict = {
         'baci_input': third_party_input_file,
     }
-    template = os.path.join(inputdir, "baci_mc_randomfields_from_geometry_template.yml")
-    input_file = os.path.join(tmpdir, "baci_mc_randomfields_from_geometry.yml")
+    template = inputdir / "baci_mc_randomfields_from_geometry_template.yml"
+    input_file = tmp_path / "baci_mc_randomfields_from_geometry.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    config = get_config_dict(Path(input_file), Path(tmpdir))
+    config = get_config_dict(input_file, tmp_path)
 
     # create pre-processing module form config
     preprocessor_obj = from_config_create_external_geometry(config, 'pre_processing')

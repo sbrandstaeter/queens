@@ -1,47 +1,57 @@
+default_stages: [commit, merge-commit, push, manual]
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+  - repo: local
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
--   repo: https://github.com/saygox/commitizen
-    rev: 09fa312b7846850f44f7860632685189e37c1bec
-    hooks:
-    -   id: commitizen-prepare-commit-msg
-        stages: [prepare-commit-msg]
-        additional_dependencies: ["markupsafe==2.0.1"]
-    -   id: commitizen
-        stages: [commit-msg]
-        additional_dependencies: ["markupsafe==2.0.1"]
--   repo: https://github.com/jendrikseipp/vulture
-    rev: v2.3
-    hooks:
-    -   id: vulture
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+        entry: trailing-whitespace-fixer
+        language: python
+        types: [text]
+      - id: end-of-file-fixer
+        name: fix end of files
+        entry: end-of-file-fixer
+        language: python
+        types: [text]
+      - id: check-added-large-files
+        name: check for added large files
+        entry: check-added-large-files
+        language: python
+        types: [text]
+      - id: vulture
+        name: vulture
+        entry: vulture
+        language: python
+        types: ["python"]
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
--   repo: https://github.com/myint/docformatter
-    rev: v1.4
-    hooks:
-    -   id: docformatter
-        args: [--in-place]
--   repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
-    hooks:
-    -   id: pydocstyle
+      - id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
+        language: python
+        types: ["python"]
         additional_dependencies: ["toml"]
--   repo: local
-    hooks:
-    -   id: isort
+      - id: docformatter
+        name: docformatter
+        entry: docformatter
+        args: [--in-place]
+        language: python
+        types: ["python"]
+      - id: commitizen
+        name: commitizen
+        entry: cz
+        args: ['check', '--commit-msg-file', '.git/COMMIT_EDITMSG']
+        pass_filenames: false
+        language: system
+        stages: [commit-msg, manual]
+      - id: isort
         name: isort (python)
         entry: isort
         language: python
         always_run: false
         pass_filenames: true
         additional_dependencies: ["toml"]
-    -   id: black
+      - id: black
         name: black
         entry: black
         language: python
@@ -49,7 +59,17 @@ repos:
         always_run: false
         pass_filenames: true
         additional_dependencies: ["toml"]
-    -   id: pylint
+      - id: yamllint
+        name: yamllint
+        entry: yamllint
+        args:
+          - > # This is needed to lint the jinja templates
+            -d={extends: default, rules: {braces: {max-spaces-inside: 1}
+            , brackets: disable, document-start: disable}}
+          - -f=colored
+        language: python
+        types: ["yaml"]
+      - id: pylint
         name: pylint
         entry: pylint
         language: python

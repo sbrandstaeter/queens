@@ -8,6 +8,7 @@ import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.utils.config_directories import experiment_directory
+from pqueens.utils.mongodb import create_experiment_field_name
 
 _logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class JobInterface(Interface):
         experiment_name (string): Name of experiment.
         db (mongodb): MongoDB to store results and job info.
         polling_time (int): How frequently do we check if jobs are done?
-        output_dir (path): Directory to write output to.
+        output_dir (Path): Directory to write output to.
         batch_number (int): Number of the current simulation batch.
         num_pending (int): Number of Jobs that are currently pending.
         remote (bool): *True* for remote computation.
@@ -43,6 +44,9 @@ class JobInterface(Interface):
                                     input file can finish, and we do not overload the network
         job_num (int):              Number of the current job
         _internal_batch_state (int): Helper attribute to compare batch_number with the internal
+        experiment_field_name (str): Name of the experiment field in the database to which the
+                                        current jobs are saved
+        job_ids (list): List of job ids
     """
 
     def __init__(
@@ -59,6 +63,7 @@ class JobInterface(Interface):
         direct_scheduling,
         time_for_data_copy,
         driver_name,
+        experiment_field_name,
     ):
         """Create JobInterface.
 
@@ -76,6 +81,8 @@ class JobInterface(Interface):
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                         input file can finish, and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
+            experiment_field_name (str): Name of the experiment field in the database to which the
+                                         current jobs are saved
         """
         super().__init__(interface_name)
         self.name = interface_name
@@ -94,6 +101,8 @@ class JobInterface(Interface):
         self.driver_name = driver_name
         self._internal_batch_state = 0
         self.job_num = 0
+        self.experiment_field_name = experiment_field_name
+        self.job_ids = []
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -113,7 +122,7 @@ class JobInterface(Interface):
         interface_options = config[interface_name]
         driver_name = interface_options.get('driver_name', None)
         if driver_name is None:
-            raise Exception("No driver_name specified for the JobInterface.")
+            raise ValueError("No driver_name specified for the JobInterface.")
 
         # get resources from config
         resources = parse_resources_from_configuration(config, driver_name)
@@ -153,6 +162,9 @@ class JobInterface(Interface):
         # get waiting time for copying data
         time_for_data_copy = interface_options.get('time_for_data_copy')
 
+        # get the experiment field name
+        experiment_field_name = create_experiment_field_name(driver_name)
+
         # instantiate object
         return cls(
             interface_name,
@@ -167,6 +179,7 @@ class JobInterface(Interface):
             direct_scheduling,
             time_for_data_copy,
             driver_name,
+            experiment_field_name,
         )
 
     def evaluate(self, samples):
@@ -246,7 +259,7 @@ class JobInterface(Interface):
         total_num_jobs = 0
         for batch_num in range(1, self.batch_number + 1):
             num_jobs_in_batch = self.db.count_documents(
-                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
+                self.experiment_name, str(batch_num), self.experiment_field_name, field_filters
             )
             total_num_jobs += num_jobs_in_batch
 
@@ -263,7 +276,7 @@ class JobInterface(Interface):
         jobs = []
         for batch_num in range(1, self.batch_number + 1):
             job = self.db.load(
-                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
+                self.experiment_name, str(batch_num), self.experiment_field_name, field_filters
             )
             if isinstance(job, list):
                 jobs.extend(job)
@@ -282,7 +295,7 @@ class JobInterface(Interface):
         self.db.save(
             job,
             self.experiment_name,
-            'jobs_' + self.driver_name,
+            self.experiment_field_name,
             str(self.batch_number),
             {
                 'id': job['id'],
@@ -304,7 +317,7 @@ class JobInterface(Interface):
         """
         if new_id is None:
             _logger.info('Created new job')
-            num_jobs = self.count_jobs()
+            num_jobs = len(self.job_ids)
             job_id = num_jobs + 1
         else:
             job_id = int(new_id)
@@ -379,10 +392,10 @@ class JobInterface(Interface):
             )
 
             # Sort job IDs in ascending order to match ordering of samples
-            jobids = [job['id'] for job in jobs]
-            jobids.sort()
+            self.job_ids = [job['id'] for job in jobs]
+            self.job_ids.sort()
 
-            for current_job_id in jobids:
+            for current_job_id in self.job_ids:
                 current_job = next(job for job in jobs if job['id'] == current_job_id)
                 mean_value = np.squeeze(current_job['result'])
                 gradient_value = np.squeeze(current_job.get('gradient', None))
@@ -412,7 +425,7 @@ class JobInterface(Interface):
         Returns:
             jobid_for_data_processor(ndarray): jobids for data-processing
         """
-        num_jobs = self.count_jobs()
+        num_jobs = len(self.job_ids)
         if not num_jobs or self.batch_number == 1:
             job_ids_generator = range(1, samples.shape[0] + 1, 1)
         else:

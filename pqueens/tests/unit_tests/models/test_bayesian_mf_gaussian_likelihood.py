@@ -69,7 +69,24 @@ def approximation_name():
 def default_interface(config, approximation_name):
     """Dummy BMFIA interface for testing."""
     num_processors_multi_processing = 2
-    interface = BmfiaInterface(config, approximation_name, num_processors_multi_processing)
+    coord_labels = ["x1", "x2"]
+    time_vec = None
+    coords_mat = np.array([[1, 0], [1, 0]])
+    instantiate_probabilistic_mappings = BmfiaInterface._instantiate_per_coordinate
+    evaluate_method = BmfiaInterface._evaluate_per_coordinate
+    evaluate_and_gradient_method = BmfiaInterface._evaluate_and_gradient_per_coordinate
+    update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
+
+    interface = BmfiaInterface(
+        instantiate_probabilistic_mappings,
+        num_processors_multi_processing,
+        evaluate_method,
+        evaluate_and_gradient_method,
+        update_mappings_method,
+    )
+    interface.time_vec = time_vec
+    interface.coords_mat = coords_mat
+    interface.coord_labels = coord_labels
     return interface
 
 
@@ -81,17 +98,12 @@ def settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture()
-def default_bmfia_iterator(result_description, global_settings):
+def default_bmfia_iterator(global_settings):
     """Dummy iterator for testing."""
-    result_description = result_description
     global_settings = global_settings
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
     lf_model = 'dummy_lf_model'
-    output_label = ['y']
-    coord_labels = ['x_1', 'x_2']
-    settings_probab_mapping = {'features_config': 'no_features'}
-    db = 'dummy_db'
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -99,17 +111,15 @@ def default_bmfia_iterator(result_description, global_settings):
     coords_experimental_data = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 3])
     y_obs = np.array([[2.1], [3.1]])
+    x_cols = None
+    num_features = None
+    coord_cols = None
 
     iterator = BMFIAIterator(
-        result_description,
         global_settings,
         features_config,
         hf_model,
         lf_model,
-        output_label,
-        coord_labels,
-        settings_probab_mapping,
-        db,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -117,6 +127,9 @@ def default_bmfia_iterator(result_description, global_settings):
         coords_experimental_data,
         time_vec,
         y_obs,
+        x_cols,
+        num_features,
+        coord_cols,
     )
 
     return iterator
@@ -301,18 +314,13 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     mf_log_likelihood_exp = np.array([1, 2])
     y_lf_mat = np.array([[1, 2]])
     # pylint: disable=line-too-long
-    mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._initialize',
-        return_value=None,
-    )
-
     # on purpose transpose y_lf_mat here to check if this is wrong orientation is corrected
-    mp2 = mocker.patch(
+    mp1 = mocker.patch(
         'pqueens.models.simulation_model.SimulationModel.evaluate',
         return_value={"mean": y_lf_mat.T},
     )
 
-    mp3 = mocker.patch(
+    mp2 = mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
     )
@@ -324,8 +332,7 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     # assert statements
     mp1.assert_called_once()
     mp2.assert_called_once()
-    mp3.assert_called_once()
-    np.testing.assert_array_equal(y_lf_mat, mp3.call_args[0][0])
+    np.testing.assert_array_equal(y_lf_mat, mp2.call_args[0][0])
     np.testing.assert_array_equal(mf_log_likelihood, mf_log_likelihood_exp)
 
 
@@ -379,7 +386,7 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     diff_mat_exp = np.array([[1, 0], [0, -1]])
 
     mp1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._set_feature_strategy',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy',
         return_value=z_mat,
     )
     mp2 = mocker.patch(
@@ -507,46 +514,38 @@ def test_log_likelihood_fun(default_mf_likelihood):
         log_mf_lik = default_mf_likelihood._log_likelihood_fun(mf_variance_vec, diff_vec)
 
 
-def test_initialize(default_mf_likelihood, mocker):
-    """Test the initialization of the mf likelihood model."""
+def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
+    """Test the initialization of the bmfia iterator."""
     coords_mat = np.array([[1, 2, 3], [2, 2, 2]])
     time_vec = np.linspace(1, 10, 3)
     y_obs = np.array([[5, 5, 5], [6, 6, 6]])
-
-    default_mf_likelihood.coords_mat = coords_mat
-    default_mf_likelihood.time_vec = time_vec
-    default_mf_likelihood.y_obs = y_obs
 
     # pylint: disable=line-too-long
     mo_1 = mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration',
         return_value=None,
     )
-    mo_2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._build_approximation',
-        return_value=None,
-    )
+
     # pylint: enable=line-too-long
-    default_mf_likelihood._initialize()
+    BMFGaussianModel.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, default_bmfia_iterator)
 
     # actual tests / asserts
     mo_1.assert_called_once()
-    mo_2.assert_called_once()
     np.testing.assert_array_almost_equal(
-        default_mf_likelihood.bmfia_subiterator.coords_experimental_data, coords_mat, decimal=4
+        default_bmfia_iterator.coords_experimental_data, coords_mat, decimal=4
     )
-    np.testing.assert_array_almost_equal(
-        default_mf_likelihood.bmfia_subiterator.time_vec, time_vec, decimal=4
-    )
-    np.testing.assert_array_almost_equal(
-        default_mf_likelihood.bmfia_subiterator.y_obs, y_obs, decimal=4
-    )
+    np.testing.assert_array_almost_equal(default_bmfia_iterator.time_vec, time_vec, decimal=4)
+    np.testing.assert_array_almost_equal(default_bmfia_iterator.y_obs, y_obs, decimal=4)
 
 
-def test_build_approximation(default_mf_likelihood, mocker):
+def test_build_approximation(default_bmfia_iterator, default_interface, config, mocker):
     """Test for the build stage of the probabilistic regression model."""
     z_train = np.array([[1, 1, 1], [2, 2, 2]])
     y_hf_train = np.array([[1, 1], [2, 2]])
+    coord_labels = ['x', 'y', 'z']
+    time_vec = default_bmfia_iterator.time_vec
+    coords_mat = default_bmfia_iterator.coords_experimental_data
+    approx_name = 'bmfia'
 
     # pylint: disable=line-too-long
     mo_1 = mocker.patch(
@@ -566,18 +565,26 @@ def test_build_approximation(default_mf_likelihood, mocker):
     )
     # pylint: enable=line-too-long
 
-    default_mf_likelihood._build_approximation()
+    BMFGaussianModel._build_approximation(
+        default_bmfia_iterator,
+        default_interface,
+        config,
+        approx_name,
+        coord_labels,
+        time_vec,
+        coords_mat,
+    )
 
     # actual asserts/tests
     mo_1.assert_called_once()
-    mo_2.assert_called_once()
-    np.testing.assert_array_almost_equal(mo_2.call_args[0][0], default_mf_likelihood.z_train)
-    np.testing.assert_array_almost_equal(mo_2.call_args[0][1], default_mf_likelihood.y_hf_train)
+    mo_2.assert_called_once_with(
+        z_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+    )
     mo_4.assert_called_once()
-    np.testing.assert_array_almost_equal(mo_4.call_args[0][0], default_mf_likelihood.z_train)
-    np.testing.assert_array_almost_equal(mo_4.call_args[0][1], default_mf_likelihood.y_hf_train)
+    np.testing.assert_array_almost_equal(mo_4.call_args[0][0], z_train)
+    np.testing.assert_array_almost_equal(mo_4.call_args[0][1], y_hf_train)
     np.testing.assert_array_almost_equal(
-        mo_4.call_args[0][2], default_mf_likelihood.mf_interface.probabilistic_mapping_obj_lst
+        mo_4.call_args[0][2], default_interface.probabilistic_mapping_obj_lst
     )
 
 

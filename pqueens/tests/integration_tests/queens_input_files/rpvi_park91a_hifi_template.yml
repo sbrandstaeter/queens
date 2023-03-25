@@ -5,15 +5,13 @@ database:
 method:
   type: rpvi
   model_name: model
-  max_feval: 3000
-  n_samples_per_iter: 3
+  max_feval: 1000
+  n_samples_per_iter: 2
   score_function_bool: true
   variational_distribution:
     variational_approximation_type: mean_field
     variational_family: normal
   stochastic_optimizer_name: optimizer
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 1000000.0
   natural_gradient: true
   FIM_dampening: true
   decay_start_iteration: 50
@@ -35,7 +33,7 @@ optimizer:
   learning_rate: 0.025
   rel_L1_change_threshold: -1
   rel_L2_change_threshold: -1
-  max_iter: 10000000
+  max_iter: 500
 model:
   type: {{ likelihood_model_type }}
   external_python_module: {{ external_python_module }}
@@ -46,12 +44,12 @@ model:
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: '*.csv'
   experimental_csv_data_base_dir: {{ experimental_data_path }}
-gradient_model:
-  type: {{ gradient_model_type }}
-  forward_model_name: forward_model
+fd_model:
+  type: finite_differences
+  interface_name: interface
   finite_difference_method: 2-point
   step_size: 1.0e-07
-forward_model:
+simulation_model:
   type: simulation_model
   interface_name: interface
 interface:

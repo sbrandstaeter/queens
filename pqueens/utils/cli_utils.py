@@ -25,8 +25,7 @@ def build_singularity_cli():
         create_singularity_image()
         _logger.info('Done!')
     except Exception as cli_singularity_error:
-        CLIError("Building singularity failed!\n\n")
-        raise cli_singularity_error
+        raise CLIError("Building singularity failed!\n\n") from cli_singularity_error
 
 
 def print_pickle_data_cli():
@@ -80,7 +79,7 @@ def str_to_bool(value):
     true_options = ('true', 't', '1', 'yes', 'y')
     if value.lower() in false_options:
         return False
-    elif value.lower() in true_options:
+    if value.lower() in true_options:
         return True
     raise CLIError(
         f"{value} is not a valid boolean value. Valid options are:\n"
@@ -95,9 +94,9 @@ def get_cli_options(args):
         args (list): cli arguments
 
     Returns:
-        input_file (pathlib.Path): Path object to input file
-        output_dir (pathlib.Path): Path object to the output directory
-        debug (bool): *True* if debug mode is to be used
+        input_file (Path): Path object to input file
+        output_dir (Path): Path object to the output directory
+        debug (bool):      *True* if debug mode is to be used
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(

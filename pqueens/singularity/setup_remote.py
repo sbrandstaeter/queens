@@ -1,5 +1,5 @@
 """QUEENS setup file for remote runs."""
-import os
+from pathlib import Path
 
 from setuptools import setup
 
@@ -14,7 +14,8 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
+    file_path = Path(__file__).parent / fname
+    with open(file_path, encoding="utf-8") as f:
         for line in f:
             line = line.partition('#')[0].rstrip()
             if line:

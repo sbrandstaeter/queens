@@ -1,20 +1,23 @@
 """QUEENS setup file."""
-import os
 import sys
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
 
 def read(fname):
-    """Function to read the README file.
+    """Read text file.
+
+    used e.g. to read the README.md and the requirements.txt files during setup.
 
     Args:
-        fname (str): File name to be read
+        fname (str | Path): File name to be read
 
     Returns:
         The content of the file fname
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
+    text_file = Path(__file__).parent / fname
+    return text_file.read_text(encoding="utf-8")
 
 
 def read_requirements(fname):
@@ -27,11 +30,11 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
-        for line in f:
-            line = line.partition('#')[0].rstrip()
-            if line:
-                packages.append(line)
+    requirements_file = read(fname)
+    for line in iter(requirements_file.splitlines()):
+        requirement = line.partition('#')[0].rstrip()
+        if requirement:
+            packages.append(requirement)
     return packages
 
 
@@ -41,21 +44,6 @@ QUEENS_DESCRIPTION = (
     ", Bayesian Optimization, Inverse Problems and Simulation Analytics"
 )
 
-# Packages useful for developing and documentation not needed to run QUEENS
-DEVELOPER_EXTRAS = [
-    'pylint>=2.12',
-    'pylint-exit',
-    'isort>=5.0',
-    'black==22.3.0',
-    'pre-commit',
-    'liccheck',
-    'sphinx',
-    'nbsphinx',
-    'pandoc',
-    'pip-tools',
-    'vulture>=2.3',
-]
-
 # Keywords
 KEYWORDS = (
     "Gaussian Processes, Uncertainty Quantification, Inverse analysis, Optimization, Sensitivity"
@@ -63,7 +51,7 @@ KEYWORDS = (
 )
 
 # Exit the installation process in case of incompatibility of the python version
-REQUIRED_PYTHON_VERSION = '3.8'
+REQUIRED_PYTHON_VERSION = '3.10'
 SYSTEM_PYTHON_VERSION = f"{sys.version_info[0]}.{sys.version_info[1]}"
 if SYSTEM_PYTHON_VERSION != REQUIRED_PYTHON_VERSION:
     MESSAGE = (
@@ -81,7 +69,7 @@ setup(
     keywords=KEYWORDS,
     packages=find_packages(exclude=["pqueens/tests"]),
     install_requires=read_requirements("requirements.txt"),
-    extras_require={"develop": DEVELOPER_EXTRAS},
+    extras_require={"develop": read_requirements("dev-requirements.txt")},
     long_description=read('README.md'),
     setup_requires='pytest-runner',
     tests_require='pytest',

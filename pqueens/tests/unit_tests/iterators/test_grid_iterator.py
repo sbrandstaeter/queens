@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from mock import Mock
 
 import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.grid_iterator import GridIterator
@@ -138,13 +139,11 @@ def default_grid_iterator(
 ):
     """TODO_doc."""
     # create iterator object
-    num_parameters = 2
     my_grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_two,
-        num_parameters,
+        model=default_model,
+        result_description=result_description,
+        global_settings=global_settings,
+        grid_design=grid_dict_two,
     )
     return my_grid_iterator
 
@@ -157,13 +156,14 @@ def test_init(
     # some default input for testing
     num_parameters = 2
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
+    GridIterator.parameters = Mock()
+    GridIterator.parameters.num_parameters = num_parameters
 
     my_grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_two,
-        num_parameters,
+        model=default_model,
+        result_description=result_description,
+        grid_design=grid_dict_two,
+        global_settings=global_settings,
     )
 
     # tests / asserts
@@ -192,30 +192,31 @@ def test_pre_run_one(
     global_settings,
 ):
     """TODO_doc."""
-    num_params = 1
     parameters_one()
     grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_one,
-        num_params,
+        model=default_model,
+        result_description=result_description,
+        global_settings=global_settings,
+        grid_design=grid_dict_one,
     )
     grid_iterator.pre_run()
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_one)
 
 
 def test_pre_run_two(
-    grid_dict_two, parameters_two, expected_samples_two, default_model, global_settings
+    grid_dict_two,
+    parameters_two,
+    result_description,
+    expected_samples_two,
+    default_model,
+    global_settings,
 ):
     """TODO_doc."""
-    num_params = 2
     grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_two,
-        num_params,
+        model=default_model,
+        result_description={},
+        global_settings=global_settings,
+        grid_design=grid_dict_two,
     )
     grid_iterator.pre_run()
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_two)
@@ -232,11 +233,10 @@ def test_pre_run_three(
     num_params = 3
     parameters_three()
     grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_three,
-        num_params,
+        model=default_model,
+        result_description=result_description,
+        global_settings=global_settings,
+        grid_design=grid_dict_three,
     )
     grid_iterator.pre_run()
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_three)
