@@ -24,7 +24,7 @@ class ExponentialDistribution(Distribution):
             rate (np.ndarray): rate parameter(s) of the distribution
         """
         rate = np.array(rate).reshape(-1)
-        super().check_positivity({'rate': rate})
+        super().check_positivity(rate=rate)
         scale = 1 / rate
 
         mean = scale
