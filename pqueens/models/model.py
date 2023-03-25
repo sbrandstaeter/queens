@@ -41,7 +41,7 @@ class Model(metaclass=abc.ABCMeta):
             samples (np.ndarray): Evaluated samples
         """
 
-    @abc.abstractmethod
+    # @abc.abstractmethod
     def grad(self, samples, upstream):
         """Evaluate gradient of model with current set of samples.
 
