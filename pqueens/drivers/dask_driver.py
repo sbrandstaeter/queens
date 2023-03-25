@@ -129,11 +129,11 @@ class Driver(metaclass=abc.ABCMeta):
             result (np.array): Result from the driver run
             gradient (np.array, None): Gradient from the driver run (potentially None)
         """
-        result = self.data_processor.get_data_from_file(str(output_dir))
+        result = self.data_processor.get_data_from_file(output_dir)
         _logger.debug("Got result: %s", result)
 
         gradient = None
         if self.gradient_data_processor:
-            gradient = self.gradient_data_processor.get_data_from_file(str(output_dir))
+            gradient = self.gradient_data_processor.get_data_from_file(output_dir)
             _logger.debug("Got gradient: %s", gradient)
         return result, gradient
