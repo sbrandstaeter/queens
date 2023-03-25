@@ -41,8 +41,8 @@ class Model(metaclass=abc.ABCMeta):
             samples (np.ndarray): Evaluated samples
         """
 
-    # @abc.abstractmethod
-    def _grad(self, samples, upstream):
+    @abc.abstractmethod
+    def grad(self, samples, upstream):
         """Evaluate gradient of model with current set of samples.
 
         Args:
@@ -61,5 +61,5 @@ class Model(metaclass=abc.ABCMeta):
             model_gradient (np.array): Model gradient
         """
         model_output = self.evaluate(samples, gradient=True)
-        model_gradient = self._grad(samples, np.ones((samples.shape[0], 1)))
+        model_gradient = self.grad(samples, np.ones((samples.shape[0], 1)))
         return model_output, model_gradient

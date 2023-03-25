@@ -77,7 +77,7 @@ class AdjointModel(Model):
         self.response = self.interface.evaluate(samples)
         return self.response
 
-    def _grad(self, samples, upstream):
+    def grad(self, samples, upstream):
         """Evaluate gradient of model with current set of samples.
 
         Args:
