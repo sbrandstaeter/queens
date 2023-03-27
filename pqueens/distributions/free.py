@@ -1,9 +1,9 @@
 """Free Variable."""
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class FreeVariable(Distribution):
+class FreeVariable(ContinuousDistribution):
     """Free variable class.
 
     This is not a proper distribution class. It is used for variables

@@ -5,12 +5,12 @@ import numpy as np
 from scipy.special import logsumexp
 
 from pqueens.distributions import from_config_create_distribution as fcc
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 _logger = logging.getLogger(__name__)
 
 
-class MixtureDistribution(Distribution):
+class MixtureDistribution(ContinuousDistribution):
     """Mixture models."""
 
     def __init__(self, weights, component_distributions):
@@ -26,6 +26,7 @@ class MixtureDistribution(Distribution):
                 f" {len(component_distributions)}"
             )
 
+        weights = np.array(weights)
         super().check_positivity(weights=weights)
 
         if np.sum(weights) != 1:

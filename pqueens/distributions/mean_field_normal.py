@@ -3,10 +3,10 @@ import numpy as np
 import scipy.stats
 from scipy.special import erf
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class MeanFieldNormalDistribution(Distribution):
+class MeanFieldNormalDistribution(ContinuousDistribution):
     """Mean-field normal distribution.
 
     Attributes:
