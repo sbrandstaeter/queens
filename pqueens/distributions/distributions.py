@@ -1,13 +1,89 @@
 """Distributions."""
 import abc
+from abc import abstractmethod
 
 import numpy as np
 
 from pqueens.utils.print_utils import get_str_table
 
 
-class Distribution:
-    """Base class for probability distributions.
+class Distribution(abc.ABC):
+    """Base class for probability distributions."""
+
+    @classmethod
+    def from_config_create_distribution(cls, distribution_options):
+        """Create distribution object from parameter dictionary.
+
+        Args:
+            distribution_options (dict): Dictionary with distribution description
+
+        Returns:
+            distribution: Distribution object
+        """
+        distribution_options.pop("type", None)
+        return cls(**distribution_options)
+
+    @abstractmethod
+    def draw(self, num_draws=1):
+        """Draw samples.
+
+        Args:
+            num_draws (int, optional): Number of draws
+        """
+
+    @abstractmethod
+    def logpdf(self, x):  # pylint: disable=C0103
+        """Log of the probability *mass* function.
+
+        In order to keep the interfaces unified the PMF is also accessed via the pdf.
+
+        Args:
+            x (np.ndarray): Positions at which the log pdf is evaluated
+        """
+
+    @abstractmethod
+    def pdf(self, x):  # pylint: disable=C0103
+        """Probability density function.
+
+        Args:
+            x (np.ndarray): Positions at which the pdf is evaluated
+        """
+
+    def export_dict(self):
+        """Create a dict of the distribution.
+
+        Returns:
+            export_dict (dict): Dict containing distribution information
+        """
+        export_dict = vars(self)
+        export_dict = {'type': self.__class__.__name__, **export_dict}
+        return export_dict
+
+    def __str__(self):
+        """Get string for the given distribution.
+
+        Returns:
+            str: Table with distribution information
+        """
+        return get_str_table(type(self).__name__, self.export_dict())
+
+    @staticmethod
+    def check_positivity(**parameters):
+        """Check if parameters are positive.
+
+        Args:
+            parameters (dict): Checked parameters
+        """
+        for name, value in parameters.items():
+            if (np.array(value) <= 0).any():
+                raise ValueError(
+                    f"The parameter \'{name}\' has to be positive. "
+                    f"You specified {name}={value}."
+                )
+
+
+class ContinuousDistribution(Distribution):
+    """Base class for continuous probability distributions.
 
     Attributes:
         mean (np.ndarray): Mean of the distribution.
@@ -41,15 +117,15 @@ class Distribution:
         distribution_options_copy.pop("type", None)
         return cls(**distribution_options_copy)
 
-    @abc.abstractmethod
-    def cdf(self, x):
+    @abstractmethod
+    def cdf(self, x):  # pylint: disable=C0103
         """Cumulative distribution function.
 
         Args:
             x (np.ndarray): Positions at which the cdf is evaluated
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def draw(self, num_draws=1):
         """Draw samples.
 
@@ -57,7 +133,7 @@ class Distribution:
             num_draws (int, optional): Number of draws
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def logpdf(self, x):
         """Log of the probability density function.
 
@@ -65,15 +141,15 @@ class Distribution:
             x (np.ndarray): Positions at which the log pdf is evaluated
         """
 
-    @abc.abstractmethod
-    def grad_logpdf(self, x):
+    @abstractmethod
+    def grad_logpdf(self, x):  # pylint: disable=C0103
         """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def pdf(self, x):
         """Probability density function.
 
@@ -81,8 +157,8 @@ class Distribution:
             x (np.ndarray): Positions at which the pdf is evaluated
         """
 
-    @abc.abstractmethod
-    def ppf(self, q):
+    @abstractmethod
+    def ppf(self, q):  # pylint: disable=C0103
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
@@ -93,20 +169,6 @@ class Distribution:
         """Check if distribution is one-dimensional."""
         if self.dimension != 1:
             raise ValueError("Method does not support multivariate distributions!")
-
-    @staticmethod
-    def check_positivity(**parameters):
-        """Check if parameters are positive.
-
-        Args:
-            parameters (dict): Checked parameters
-        """
-        for name, value in parameters.items():
-            if (np.array(value) <= 0).any():
-                raise ValueError(
-                    f"The parameter \'{name}\' has to be positive. "
-                    f"You specified {name}={value}."
-                )
 
     @staticmethod
     def check_bounds(lower_bound, upper_bound):
@@ -121,21 +183,3 @@ class Distribution:
                 f"Lower bound must be smaller than upper bound. "
                 f"You specified lower_bound={lower_bound} and upper_bound={upper_bound}"
             )
-
-    def export_dict(self):
-        """Create a dict of the distribution.
-
-        Returns:
-            export_dict (dict): Dict containing distribution information
-        """
-        export_dict = vars(self)
-        export_dict = {'type': self.__class__.__name__, **export_dict}
-        return export_dict
-
-    def __str__(self):
-        """Get string for the given distribution.
-
-        Returns:
-            str: Table with distribution information
-        """
-        return get_str_table(type(self).__name__, self.export_dict())
