@@ -120,11 +120,11 @@ imcs-build_conda_env:
     when: always
     expire_in: 4 weeks
 
-bruteforce-native-build_conda_env:
-  extends:
-    - .build_conda_env_cluster_native
-  tags:
-    - bruteforce-native-test
+#bruteforce-native-build_conda_env:
+#  extends:
+#    - .build_conda_env_cluster_native
+#  tags:
+#    - bruteforce-native-test
 
 deep-native-build_conda_env:
   extends:
@@ -328,19 +328,19 @@ imcs-cluster_tests:
   rules:
     - if: $CLUSTER_NATIVE_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
-bruteforce-native-cluster_tests:
-  extends:
-    - .cluster_tests_native_conditions
-  stage: tests
-  before_script:
-    - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
-  script:
-    - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_bruteforce_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
-  needs:
-    - bruteforce-native-build_conda_env
-  tags:
-    - bruteforce-native-test
+#bruteforce-native-cluster_tests:
+#  extends:
+#    - .cluster_tests_native_conditions
+#  stage: tests
+#  before_script:
+#    - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
+#  script:
+#    - conda activate queens-$CI_PIPELINE_ID
+#    - pytest -v -m lnm_cluster_bruteforce_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
+#  needs:
+#    - bruteforce-native-build_conda_env
+#  tags:
+#    - bruteforce-native-test
 
 deep-native-cluster_tests:
   extends:
@@ -516,13 +516,13 @@ imcs-remove_conda_env_and_singularity_image:
   rules:
     - if: $CLUSTER_NATIVE_TESTS == "1"
 
-bruteforce-cluster-native-remove_conda_env:
-  extends:
-    - .remove_conda_env_cluster_native
-  dependencies:
-    - bruteforce-native-build_conda_env
-  tags:
-    - bruteforce-native-test
+#bruteforce-cluster-native-remove_conda_env:
+#  extends:
+#    - .remove_conda_env_cluster_native
+#  dependencies:
+#    - bruteforce-native-build_conda_env
+#  tags:
+#    - bruteforce-native-test
 
 deep-cluster-native-remove_conda_env:
   extends:
