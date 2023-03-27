@@ -84,7 +84,7 @@ class JobscriptDriver(Driver):
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
 
-        inject(sample_dict, experiment_dir / self.simulation_input_template, str(input_file))
+        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
 
         final_jobscript_options = {
             **self.jobscript_options,

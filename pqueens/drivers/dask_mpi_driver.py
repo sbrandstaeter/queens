@@ -75,7 +75,7 @@ class MpiDriver(Driver):
             job_id, experiment_dir, experiment_name
         )
 
-        inject(sample_dict, experiment_dir / self.simulation_input_template, str(input_file))
+        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
 
         self._run_executable(job_id, num_procs, input_file, output_file, log_file, error_file)
         self._run_post_processing(num_procs_post, output_file, output_dir)
