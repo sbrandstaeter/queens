@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from mock import patch
 
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
@@ -115,22 +116,23 @@ def default_bmfia_iterator(global_settings):
     num_features = None
     coord_cols = None
 
-    iterator = BMFIAIterator(
-        global_settings,
-        features_config,
-        hf_model,
-        lf_model,
-        x_train,
-        Y_LF_train,
-        Y_HF_train,
-        Z_train,
-        coords_experimental_data,
-        time_vec,
-        y_obs,
-        x_cols,
-        num_features,
-        coord_cols,
-    )
+    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+        iterator = BMFIAIterator(
+            global_settings,
+            features_config,
+            hf_model,
+            lf_model,
+            initial_design={},
+            X_cols=x_cols,
+            num_features=num_features,
+            coord_cols=coord_cols,
+        )
+    iterator.Y_LF_train = Y_LF_train
+    iterator.Y_HF_train = Y_HF_train
+    iterator.Z_train = Z_train
+    iterator.coords_experimental_data = coords_experimental_data
+    iterator.time_vec = time_vec
+    iterator.y_obs_vec = y_obs
 
     return iterator
 
