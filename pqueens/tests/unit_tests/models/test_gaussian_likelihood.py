@@ -3,11 +3,12 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+from mock import Mock
 
 from pqueens.distributions import from_config_create_distribution
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 
-'''
+
 # ---------------- some fixtures ---------------------------------- #
 @pytest.fixture()
 def dummy_config():
@@ -55,7 +56,7 @@ def my_lik_model():
             """A fake grad logpdf fun."""
             out = []
             for y in y_vec:
-                out.append(2 * y)
+                out.append(-2 * np.linalg.norm(y))
             return np.array(out).reshape(-1, 1)
 
     distr_dummy = FakeDistr()
@@ -192,13 +193,6 @@ def test_evaluate(mocker, my_lik_model):
     assert m1.called_once_with(3.0)
 
 
-def test_evaluate_from_output(my_lik_model):
-    """Test for the evaluate from output method."""
-    # test working evaluation with forward model output
-    response = my_lik_model.evaluate_from_output(3.0)
-    assert response == 9
-
-
 def test_update_covariance(my_lik_model):
     """Test for update of covariance."""
     y_model = np.array([[1.0, 7.0]])
@@ -247,64 +241,13 @@ def test_update_covariance(my_lik_model):
     np.testing.assert_array_equal(my_lik_model.noise_var_iterative_averaging.cov, expected_cov)
 
 
-def test_evaluate_and_gradient(my_lik_model):
-    """Test for the evaluate and gradient method."""
+def test_grad(my_lik_model):
+    """Test grad method."""
     samples = np.array([[1.0, 2.0], [2.0, 3.0]])
-
-    def upstream_gradient_fun(x_batch, l_vec):
-        """Return a dummy upstream gradient fun."""
-        up_grad = []
-        for l in l_vec:
-            up_grad.append(l * l)
-
-        up_grad = np.array(up_grad).reshape(-1, 1)
-        return up_grad
-
-    # Design a fake forward model class/object for this test
-    class FakeModel:
-        """A fake forward model class for testing."""
-
-        def evaluate(self, samples):
-            """Evaluate the model."""
-            out = []
-            for sample in samples:
-                out.append(sample**2)
-            out = np.array(out).reshape(-1, 1)
-            return out
-
-        def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-            """A fake eval and gradient method for testing."""
-            model_output = self.evaluate(samples)
-            grad_upstream = upstream_gradient_fun(samples, model_output)
-            return model_output, grad_upstream
-
-    # test evaluate and gradient without obj fun gradient
-    my_lik_model.forward_model = FakeModel()
-    log_likelihood, grad_log_likelihood = my_lik_model.evaluate_and_gradient(samples)
-    expected_log_lik = np.array([[1.0, 16, 16, 81]]).T
-    expected_grad_log_lik = np.array([[2, 8, 8, 18]]).T
-
-    np.testing.assert_array_equal(log_likelihood, expected_log_lik)
-    np.testing.assert_array_equal(grad_log_likelihood, expected_grad_log_lik)
-
-    # test evaluate and gradient with obj fun gradient
-    log_likelihood, upstream_gradient = my_lik_model.evaluate_and_gradient(
-        samples, upstream_gradient_fun=upstream_gradient_fun
-    )
-
-    # new grad is different from before!
-    expected_grad_objective = np.array([[2.00000e00, 2.04800e03, 2.04800e03, 1.18098e05]])
-
-    np.testing.assert_array_equal(log_likelihood, expected_log_lik)
-    np.testing.assert_array_equal(upstream_gradient, expected_grad_objective)
-
-
-def test_partial_grad_evaluate(my_lik_model):
-    """Test partial gradient of evaluation method."""
-    samples = np.array([[1.0, 2.0], [2.0, 3.0]])
-    forward_model_output = np.array([[1], [2]])
-    grad_out = my_lik_model.partial_grad_evaluate(samples, forward_model_output)
-    expected_grad_out = np.array([[2], [4]])
-
-    np.testing.assert_array_equal(grad_out, expected_grad_out)
-'''
+    my_lik_model.evaluate(samples)
+    my_lik_model.forward_model = Mock()
+    my_lik_model.forward_model.grad = lambda _samples, _upstream: _samples + _upstream
+    upstream = np.array([[6], [7]])
+    grad = my_lik_model.grad(samples, upstream=upstream)
+    expected_grad = np.array([[-42.2666153056, -41.2666153056], [-68.0000000000, -67.0000000000]])
+    np.testing.assert_almost_equal(expected_grad, grad)
