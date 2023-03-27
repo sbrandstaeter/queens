@@ -39,7 +39,7 @@ class CategoricalDistribution(Distribution):
 
         super().check_positivity(probabilities=probabilities)
 
-        if np.sum(probabilities) != 1:
+        if not np.isclose(np.sum(probabilities), 1, atol=0):
             _logger.info("Probabilities do not sum up to one, they are going to be normalized.")
             probabilities = probabilities / np.sum(probabilities)
 
