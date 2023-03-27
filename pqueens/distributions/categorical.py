@@ -22,7 +22,12 @@ class CategoricalDistribution(Distribution):
     """
 
     def __init__(self, probabilities, categories):
-        """Initialize categorical distribution."""
+        """Initialize categorical distribution.
+
+        Args:
+            probabilities (np.ndarray): Probabilities associated with the categories
+            categories (np.ndarray): Categories
+        """
         categories = np.array(categories, dtype=object)
         probabilities = np.array(probabilities)
 
@@ -32,15 +37,14 @@ class CategoricalDistribution(Distribution):
                 f" categories {len(categories)}"
             )
 
-        probabilities = np.array(probabilities)
         super().check_positivity(probabilities=probabilities)
 
         if np.sum(probabilities) != 1:
             _logger.info("Probabilities do not sum up to one, they are going to be normalized.")
             probabilities = probabilities / np.sum(probabilities)
 
-        self.probabilities = np.array(probabilities)
-        self.categories = np.array(categories, dtype=object)
+        self.probabilities = probabilities
+        self.categories = categories
 
     def draw(self, num_draws=1):
         """Draw samples.
@@ -66,7 +70,7 @@ class CategoricalDistribution(Distribution):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
-    def logpdf(self, x):  # pylint: disable=C0103
+    def logpdf(self, x):  # pylint: disable=invalid-name
         """Log of the probability *mass* function.
 
         Args:
@@ -77,7 +81,7 @@ class CategoricalDistribution(Distribution):
         """
         return np.log(self.pdf(x))
 
-    def pdf(self, x):  # pylint: disable=C0103
+    def pdf(self, x):  # pylint: disable=invalid-name
         """Probability *mass* function.
 
         Args:
