@@ -145,7 +145,8 @@ class ElementaryEffectsIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
 
-            qvis.sa_visualization_instance.plot(results)
+            if qvis.sa_visualization_instance:
+                qvis.sa_visualization_instance.plot(results)
 
     def process_results(self):
         """Write all results to self contained dictionary."""
