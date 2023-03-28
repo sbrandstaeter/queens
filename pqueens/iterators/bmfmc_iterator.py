@@ -143,7 +143,8 @@ class BMFMCIterator(Iterator):
             model = BMFMCModel.from_config_create_model(model_name, config)
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        qvis.from_config_create(config)
+        if result_description.get("plotting_options"):
+            qvis.from_config_create(config)
 
         return cls(
             model=model,
@@ -317,11 +318,11 @@ class BMFMCIterator(Iterator):
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
         """Saving and plotting the results."""
-        # plot the figures
-        qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
-        qvis.bmfmc_visualization_instance.plot_manifold(
-            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
-        )
+        if qvis.bmfmc_visualization_instance:
+            qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
+            qvis.bmfmc_visualization_instance.plot_manifold(
+                self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
+            )
 
         if self.result_description['write_results'] is True:
             results = process_outputs(self.output, self.result_description)
