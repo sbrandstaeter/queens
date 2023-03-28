@@ -32,7 +32,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def logpdf(self, x):  # pylint: disable=C0103
+    def logpdf(self, x):  # pylint: disable=invalid-name
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified the PMF is also accessed via the pdf.
@@ -42,7 +42,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def pdf(self, x):  # pylint: disable=C0103
+    def pdf(self, x):  # pylint: disable=invalid-name
         """Probability density function.
 
         Args:
@@ -118,7 +118,7 @@ class ContinuousDistribution(Distribution):
         return cls(**distribution_options_copy)
 
     @abstractmethod
-    def cdf(self, x):  # pylint: disable=C0103
+    def cdf(self, x):  # pylint: disable=invalid-name
         """Cumulative distribution function.
 
         Args:
@@ -142,7 +142,7 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def grad_logpdf(self, x):  # pylint: disable=C0103
+    def grad_logpdf(self, x):  # pylint: disable=invalid-name
         """Gradient of the log pdf with respect to *x*.
 
         Args:
@@ -150,7 +150,7 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def pdf(self, x):
+    def pdf(self, x):  # pylint: disable=invalid-name
         """Probability density function.
 
         Args:
@@ -158,7 +158,7 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, q):  # pylint: disable=C0103
+    def ppf(self, q):  # pylint: disable=invalid-name
         """Percent point function (inverse of cdf — quantiles).
 
         Args:

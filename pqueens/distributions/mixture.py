@@ -171,7 +171,7 @@ class MixtureDistribution(ContinuousDistribution):
         """
         raise NotImplementedError("PPF not available for mixture models.")
 
-    def responsibilities(self, x):  # pylint: disable=C0103
+    def responsibilities(self, x):  # pylint: disable=invalid-name
         r"""Compute the responsibilities.
 
         The responsibilities are defined as [1]:
