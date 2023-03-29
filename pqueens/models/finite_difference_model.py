@@ -7,45 +7,65 @@ import numpy as np
 from pqueens.interfaces import from_config_create_interface
 from pqueens.models.model import Model
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
-from pqueens.utils.valid_options_utils import get_option
+from pqueens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 
-VALID_FINITE_DIFFERENCE_METHODS = {
-    "2-point": "2-point",
-    "3-point": "3-point",
-}
+VALID_FINITE_DIFFERENCE_METHODS = ["2-point", "3-point"]
 
 
 class FiniteDifferenceModel(Model):
     """Finite difference model.
 
     Attributes:
-        method (str): Method to calculate a finite difference
-                       based approximation of the Jacobian matrix:
-                        - '2-point': a one-sided scheme by definition
-                        - '3-point': more exact but needs twice as many function evaluations
+        finite_difference_method (str): Method to calculate a finite difference
+                                        based approximation of the Jacobian matrix:
+                                         - '2-point': a one-sided scheme by definition
+                                         - '3-point': more exact but needs twice as many function
+                                                      evaluations
         step_size (float): Step size for the finite difference
                            approximation
+        bounds (np.array): Lower and upper bounds on independent variables.
+                           Defaults to no bounds meaning: [-inf, inf]
+                           Each bound must match the size of *x0* or be a scalar, in the latter case
+                           the bound will be the same for all variables. Use it to limit the range
+                           of function evaluation.
     """
 
-    def __init__(self, model_name, interface, method, step_size):
+    def __init__(
+        self, model_name, interface, finite_difference_method, step_size=1e-5, bounds=None
+    ):
         """Initialize model.
 
         Args:
-            model_name (str): Model name
-            interface (Interface): TODO_doc
-            method (str): Method to calculate a finite difference
-                       based approximation of the Jacobian matrix:
-                        - '2-point': a one-sided scheme by definition
-                        - '3-point': more exact but needs twice as many function evaluations
-            step_size (float): Step size for the finite difference
-                               approximation
+            model_name (str): Name of the model
+            interface (Interface): Interface object for simulation run
+            finite_difference_method (str): Method to calculate a finite difference
+                                            based approximation of the Jacobian matrix:
+                                             - '2-point': a one-sided scheme by definition
+                                             - '3-point': more exact but needs twice as many
+                                                          function evaluations
+            step_size (float, opt): Step size for the finite difference approximation
+            bounds (tuple of array_like, opt): Lower and upper bounds on independent variables.
+                                               Defaults to no bounds meaning: [-inf, inf]
+                                               Each bound must match the size of *x0* or be a
+                                               scalar, in the latter case the bound will be the
+                                               same for all variables. Use it to limit the
+                                               range of function evaluation.
         """
         super().__init__(model_name)
+
+        check_if_valid_options(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_method)
         self.interface = interface
-        self.method = method
+        self.finite_difference_method = finite_difference_method
         self.step_size = step_size
+        _logger.debug(
+            "The gradient calculation via finite differences uses a step size of %s.",
+            step_size,
+        )
+        if bounds is None:
+            bounds = [-np.inf, np.inf]
+        self.bounds = np.array(bounds)
 
     @classmethod
     def from_config_create_model(
@@ -63,18 +83,11 @@ class FiniteDifferenceModel(Model):
             instance of FiniteDifferenceModel class
         """
         model_options = config[model_name]
-        interface_name = model_options['interface_name']
+        interface_name = model_options.pop('interface_name')
         interface = from_config_create_interface(interface_name, config)
+        model_options.pop('type')
 
-        finite_difference_type = model_options.get("finite_difference_method")
-        method = get_option(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_type)
-        step_size = model_options.get("step_size", 1e-5)
-        _logger.debug(
-            "The gradient calculation via finite differences uses the step size of %s.",
-            step_size,
-        )
-
-        return cls(model_name=model_name, interface=interface, method=method, step_size=step_size)
+        return cls(model_name=model_name, interface=interface, **model_options)
 
     def evaluate(self, samples, **kwargs):
         """Evaluate model with current set of samples.
@@ -85,7 +98,7 @@ class FiniteDifferenceModel(Model):
         Returns:
             self.response (np.array): Response of the underlying model at current variables
         """
-        if 'gradient' not in kwargs:
+        if not kwargs.get('gradient', False):
             self.response = self.interface.evaluate(samples)
         else:
             self.response = self.evaluate_finite_differences(samples)
@@ -126,9 +139,9 @@ class FiniteDifferenceModel(Model):
         for sample in samples:
             stencil_sample, delta_positions = get_positions(
                 sample,
-                method=self.method,
+                method=self.finite_difference_method,
                 rel_step=self.step_size,
-                bounds=[-np.inf, np.inf],
+                bounds=self.bounds,
             )
             stencil_samples_lst.append(stencil_sample)
             delta_positions_lst.append(delta_positions)
@@ -138,12 +151,9 @@ class FiniteDifferenceModel(Model):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.interface.evaluate(combined_samples)['mean']
-
-        # make sure the dim of the array is at least 2d (note: np.atleast_2d would not work here,
-        # as it transposes the array if ndim > 1 which is not desired.)
-        if all_responses.ndim < 2:
-            all_responses = all_responses.reshape(-1, 1)
+        all_responses = self.interface.evaluate(combined_samples)['mean'].reshape(
+            combined_samples.shape[0], -1
+        )
 
         response = all_responses[:num_samples, :]
         additional_response_lst = np.array_split(all_responses[num_samples:, :], num_samples)
@@ -159,8 +169,8 @@ class FiniteDifferenceModel(Model):
                     additional_model_output_stencil,
                     delta_positions,
                     False,
-                    method=self.method,
-                )
+                    method=self.finite_difference_method,
+                ).reshape(output.size, -1)
             )
 
         gradient_response = np.array(model_gradients_lst)

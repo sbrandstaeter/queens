@@ -1,8 +1,7 @@
 """Unit tests for the simulation model."""
-from collections import namedtuple
-
 import numpy as np
 import pytest
+from mock import Mock
 
 from pqueens.models.simulation_model import SimulationModel
 
@@ -43,12 +42,26 @@ def test_fcc(dummy_config, mocker):
 
 def test_evaluate():
     """Test the evaluation method."""
-    interface_dummy = namedtuple("interface", ["resources", "evaluate"])
-    model_name = "model_name"
-    interface = interface_dummy("some_resource", lambda x: x**2)
-    model_obj = SimulationModel(model_name, interface)
+    model_obj = SimulationModel("my_model_name", Mock())
+    model_obj.interface.evaluate = lambda x: {"mean": x**2, "gradient": 2 * x}
 
     samples = np.array([[2.0]])
     response = model_obj.evaluate(samples)
-    assert response == 4.0
-    assert model_obj.response == 4.0
+    expected_response = {"mean": samples**2, "gradient": 2 * samples}
+    assert response == expected_response
+    assert model_obj.response == expected_response
+
+
+def test_grad():
+    """Test grad method."""
+    model = SimulationModel("model", 'dummy_interface')
+    upstream = np.random.random((2, 4))
+    gradient = np.random.random((2, 3, 4))
+    model.response = {"mean": None, "gradient": gradient}
+    grad_out = model.grad(None, upstream=upstream)
+    expected_grad = np.sum(upstream[:, :, np.newaxis] * np.swapaxes(gradient, 1, 2), axis=1)
+    np.testing.assert_almost_equal(expected_grad, grad_out)
+
+    model.response = {"mean": None}
+    with pytest.raises(ValueError):
+        model.grad(None, upstream=upstream)

@@ -2,8 +2,6 @@
 
 import logging
 
-import numpy as np
-
 from pqueens.interfaces import from_config_create_interface
 from pqueens.models.model import Model
 from pqueens.utils.config_directories import current_job_directory
@@ -16,30 +14,35 @@ class AdjointModel(Model):
     """Adjoint model.
 
     Attributes:
-        adjoint_file_name (str): Name of the adjoint file that contains the evaluated
-                                 derivative of the functional w.r.t. to the simulation output.
+        adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of the
+                            functional w.r.t. to the simulation output.
         gradient_interface (obj): Interface object for the adjoint simulation run.
         experiment_name (str): Name of the current QUEENS experiment
     """
 
     def __init__(
-        self, model_name, interface, gradient_interface, adjoint_file_name, experiment_name
+        self,
+        model_name,
+        global_settings,
+        interface,
+        gradient_interface,
+        adjoint_file="adjoint_grad_objective.csv",
     ):
         """Initialize model.
 
         Args:
+            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             model_name (str): Model name
             interface (obj): Interface object for forward simulation run
             gradient_interface (obj): Interface object for the adjoint simulation run.
-            adjoint_file_name (str): Name of the adjoint file that contains the evaluated
-                                     derivative of the functional w.r.t. to the simulation output.
-            experiment_name (str): Name of the current QUEENS experiment
+            adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
+                                the functional w.r.t. to the simulation output.
         """
         super().__init__(model_name)
         self.interface = interface
         self.gradient_interface = gradient_interface
-        self.adjoint_file_name = adjoint_file_name
-        self.experiment_name = experiment_name
+        self.adjoint_file = adjoint_file
+        self.experiment_name = global_settings['experiment_name']
 
     @classmethod
     def from_config_create_model(
@@ -56,20 +59,21 @@ class AdjointModel(Model):
         Returns:
             instance of AdjointModel class
         """
-        model_options = config[model_name]
-        interface_name = model_options['interface_name']
-        interface = from_config_create_interface(interface_name, config)
-        gradient_interface_name = model_options["gradient_interface_name"]
-        gradient_interface = from_config_create_interface(gradient_interface_name, config)
+        global_settings = config["global_settings"]
 
-        adjoint_file_name = model_options.get("adjoint_file_name", "adjoint_grad_objective.csv")
-        experiment_name = config["global_settings"]["experiment_name"]
+        model_options = config[model_name]
+        interface_name = model_options.pop('interface_name')
+        interface = from_config_create_interface(interface_name, config)
+        gradient_interface_name = model_options.pop("gradient_interface_name")
+        gradient_interface = from_config_create_interface(gradient_interface_name, config)
+        model_options.pop('type')
+
         return cls(
             model_name=model_name,
             interface=interface,
             gradient_interface=gradient_interface,
-            adjoint_file_name=adjoint_file_name,
-            experiment_name=experiment_name,
+            global_settings=global_settings,
+            **model_options
         )
 
     def evaluate(self, samples, **kwargs):
@@ -90,8 +94,8 @@ class AdjointModel(Model):
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_objective in zip(last_job_ids, upstream):
             job_dir = current_job_directory(self.gradient_interface.experiment_dir, job_id)
-            adjoint_file_path = job_dir.joinpath(self.adjoint_file_name)
-            write_to_csv(adjoint_file_path, np.atleast_2d(grad_objective))
+            adjoint_file_path = job_dir.joinpath(self.adjoint_file)
+            write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
         gradient_response = self.gradient_interface.evaluate(samples)['mean']

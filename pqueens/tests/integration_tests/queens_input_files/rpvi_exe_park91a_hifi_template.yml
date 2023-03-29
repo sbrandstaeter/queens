@@ -51,7 +51,7 @@ adjoint_model:
   type: adjoint
   interface_name: interface
   gradient_interface_name: gradient_interface
-  adjoint_file_name: "grad_objective.csv"
+  adjoint_file: "grad_objective.csv"
 simulation_model:
   type: simulation_model
   interface_name: interface

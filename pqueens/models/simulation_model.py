@@ -65,10 +65,7 @@ class SimulationModel(Model):
             upstream (np.array): Upstream gradient
         """
         if self.response.get('gradient') is None:
-            raise ValueError(
-                'You have to define a Gradient model for Simulation model if the model '
-                'does not return the forward response and the gradient at once.'
-            )
+            raise ValueError('Gradient information not available.')
         # The shape of the returned gradient is weird
         response_gradient = np.swapaxes(self.response['gradient'], 1, 2)
         return np.sum(upstream[:, :, np.newaxis] * response_gradient, axis=1)
