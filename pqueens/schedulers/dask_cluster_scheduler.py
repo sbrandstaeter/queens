@@ -96,8 +96,8 @@ class ClusterScheduler(Scheduler):
         login_cluster = SSHCluster(
             hosts=[cluster_address, cluster_address],
             remote_python=[cluster_python_path, cluster_python_path],
-            ssh_username=cluster_user
-            # connect_options={'username': cluster_user},
+            connect_options={'username': cluster_user},
+            asynchronous=True,
         )
         login_client = Client(login_cluster)  # links to cluster login node
         atexit.register(login_client.shutdown)
