@@ -99,11 +99,15 @@ class BMFIAIterator(Iterator):
         # Get appropriate sections in the config file
         global_settings = config.get('global_settings', None)
         bmfia_iterator_dict = config[iterator_name]
+        bmfia_iterator_dict.pop("type")
 
         hf_model_name = bmfia_iterator_dict["high_fidelity_model_name"]
         lf_model_name = bmfia_iterator_dict["low_fidelity_model_name"]
         hf_model = from_config_create_model(hf_model_name, config)
         lf_model = from_config_create_model(lf_model_name, config)
+
+        bmfia_iterator_dict.pop("high_fidelity_model_name")
+        bmfia_iterator_dict.pop("low_fidelity_model_name")
 
         return cls(
             global_settings=global_settings,
