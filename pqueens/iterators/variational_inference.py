@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-import pqueens.visualization.variational_inference_visualization as vis
+import pqueens.visualization.variational_inference_visualization as qvis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
@@ -132,7 +132,8 @@ class VariationalInferenceIterator(Iterator):
         self.nan_in_gradient_counter = 0
         self.iteration_data = iteration_data
 
-        vis.from_config_create(result_description['plotting_options'])
+        if result_description.get("plotting_options"):
+            qvis.from_config_create(result_description['plotting_options'])
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -228,7 +229,9 @@ class VariationalInferenceIterator(Iterator):
                 self.global_settings['output_dir'],
                 self.global_settings['experiment_name'],
             )
-        vis.vi_visualization_instance.save_plots()
+
+        if qvis.vi_visualization_instance:
+            qvis.vi_visualization_instance.save_plots()
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
@@ -388,8 +391,8 @@ class VariationalInferenceIterator(Iterator):
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
         # some plotting and output
-        if vis.vi_visualization_instance.plot_boolean:
-            vis.vi_visualization_instance.plot_convergence(
+        if qvis.vi_visualization_instance and qvis.vi_visualization_instance.plot_boolean:
+            qvis.vi_visualization_instance.plot_convergence(
                 self.stochastic_optimizer.iteration,
                 self.iteration_data.variational_parameters,
                 self.iteration_data.elbo,

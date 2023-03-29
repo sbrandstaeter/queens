@@ -644,9 +644,10 @@ class BMFMCModel(Model):
             # --------- plot the rankings/scores for first iteration -------------------------------
             if counter == 0:
                 ele = np.arange(1, x_iter_test.shape[1] + 1)
-                qvis.bmfmc_visualization_instance.plot_feature_ranking(
-                    ele, corr_coef_unnorm, counter
-                )
+                if qvis.bmfmc_visualization_instance:
+                    qvis.bmfmc_visualization_instance.plot_feature_ranking(
+                        ele, corr_coef_unnorm, counter
+                    )
             # --------------------------------------------------------------------------------------
 
             # select input feature with the highest score
