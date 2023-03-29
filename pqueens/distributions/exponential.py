@@ -1,10 +1,10 @@
 """Exponential distribution."""
 import numpy as np
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class ExponentialDistribution(Distribution):
+class ExponentialDistribution(ContinuousDistribution):
     r"""Exponential distribution class.
 
     For a multivariate distribution the components are assumed to be independent.
