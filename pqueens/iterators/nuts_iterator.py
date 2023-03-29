@@ -90,8 +90,6 @@ class NUTSIterator(PyMCIterator):
             is_cov (boolean): Setting if the scaling is a mass or covariance matrix
             init_strategy (str): Strategy to tune mass damping matrix
             advi_iterations (int): Number of iteration steps of ADVI based init strategies
-        Returns:
-            Initialise pymc iterator
         """
         _logger.info("NUTS Iterator for experiment: %s", global_settings.get('experiment_name'))
         super().__init__(

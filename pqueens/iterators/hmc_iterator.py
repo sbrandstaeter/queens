@@ -83,8 +83,6 @@ class HMCIterator(PyMCIterator):
             is_cov (boolean, opt): Setting if the scaling is a mass or covariance matrix
             init_strategy (str, opt): Strategy to tune mass damping matrix
             advi_iterations (int, opt): Number of iteration steps of ADVI based init strategies
-        Returns:
-            Initialise pymc iterator
         """
         _logger.info("HMC Iterator for experiment: %s", global_settings.get('experiment_name'))
 

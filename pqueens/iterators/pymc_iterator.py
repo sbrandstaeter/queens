@@ -78,17 +78,15 @@ class PyMCIterator(Iterator):
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
+            discard_tuned_samples (boolean): If true, samples of the burin-in period are discarded
             result_description (dict): Settings for storing and visualizing the results
             summary (bool):  Print sampler summary
             pymc_sampler_stats (bool): Compute additional sampler statistics
             as_inference_dict (bool): Return inference_data object instead of trace object
             seed (int): Seed for rng
             use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior
-            functions
+                                        functions
             progressbar (boolean): Setting for printing progress bar while sampling
-        Returns:
-            Initialise pymc iterator
         """
         super().__init__(model, global_settings)
         self.result_description = result_description
