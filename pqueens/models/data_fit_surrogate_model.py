@@ -117,11 +117,11 @@ class DataFitSurrogateModel(Model):
             nash_sutcliffe_efficiency,
         )
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, **kwargs):
         """Evaluate model with current set of variables.
 
         Args:
-            samples: TODO_doc
+            samples (np.ndarray): Evaluated samples
 
         Returns:
             np.array: Results corresponding to current set of variables

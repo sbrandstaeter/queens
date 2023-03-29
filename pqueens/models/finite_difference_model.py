@@ -14,7 +14,6 @@ _logger = logging.getLogger(__name__)
 VALID_FINITE_DIFFERENCE_METHODS = {
     "2-point": "2-point",
     "3-point": "3-point",
-    "cs": "cs",
 }
 
 
@@ -86,7 +85,7 @@ class FiniteDifferenceModel(Model):
         Returns:
             self.response (np.array): Response of the underlying model at current variables
         """
-        if not kwargs['gradient']:
+        if 'gradient' not in kwargs:
             self.response = self.interface.evaluate(samples)
         else:
             self.response = self.evaluate_finite_differences(samples)

@@ -260,7 +260,7 @@ class BMFMCModel(Model):
             no_features_comparison_bool=no_features_comparison_bool,
         )
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, **kwargs):
         """Evaluate.
 
         Construct the probabilistic mapping between HF model and LF features

@@ -1,5 +1,6 @@
 """Model class."""
 import abc
+from typing import final
 
 import numpy as np
 
@@ -20,7 +21,7 @@ class Model(metaclass=abc.ABCMeta):
     Attributes:
         name (str): Name of the model.
         parameters (obj): Parameters object.
-        response (np.array): Response corresponding to parameters.
+        response (dict): Response corresponding to parameters.
     """
 
     def __init__(self, name=None):
@@ -50,6 +51,7 @@ class Model(metaclass=abc.ABCMeta):
             upstream (np.array): Upstream gradient
         """
 
+    @final
     def evaluate_and_gradient(self, samples):
         """Evaluate model output and gradient.
 
