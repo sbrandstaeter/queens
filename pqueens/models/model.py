@@ -52,16 +52,19 @@ class Model(metaclass=abc.ABCMeta):
         """
 
     @final
-    def evaluate_and_gradient(self, samples):
+    def evaluate_and_gradient(self, samples, upstream=None):
         """Evaluate model output and gradient.
 
         Args:
             samples (np.array): Evaluated samples
+            upstream (np.array, opt): upstream gradient
 
         Returns:
             model_output (np.array): Model output
-            model_gradient (np.array): Model gradient
+            model_gradient (np.array): Model gradient w.r.t. the samples
         """
         model_output = self.evaluate(samples, gradient=True)
-        model_gradient = self.grad(samples, np.ones((samples.shape[0], 1)))
+        if upstream is None:
+            upstream = np.ones((samples.shape[0], 1))
+        model_gradient = self.grad(samples, upstream=upstream)
         return model_output, model_gradient
