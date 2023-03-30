@@ -3,10 +3,10 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class UniformDistribution(Distribution):
+class UniformDistribution(ContinuousDistribution):
     """Uniform distribution class.
 
     Attributes:

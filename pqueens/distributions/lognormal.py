@@ -3,11 +3,11 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 from pqueens.distributions.normal import NormalDistribution
 
 
-class LogNormalDistribution(Distribution):
+class LogNormalDistribution(ContinuousDistribution):
     """LogNormal distribution.
 
     Support in (0, +inf).

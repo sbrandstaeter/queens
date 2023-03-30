@@ -3,10 +3,10 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class BetaDistribution(Distribution):
+class BetaDistribution(ContinuousDistribution):
     """Beta distribution.
 
     A generalized one-dimensional beta distribution based on scipy stats. The generalized beta

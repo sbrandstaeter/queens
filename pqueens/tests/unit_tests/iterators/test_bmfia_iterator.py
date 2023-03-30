@@ -50,32 +50,28 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     hf_model = dummy_model
     lf_model = dummy_model
     x_train = np.array([[1, 2], [3, 4]])
-    Y_LF_train = np.array([[2], [3]])
-    Y_HF_train = np.array([[2.2], [3.3]])
-    Z_train = np.array([[4], [5]])
-    coords_experimental_data = np.array([[1, 2], [3, 4]])
-    time_vec = np.array([1, 3])
-    y_obs_vec = np.array([[2.1], [3.1]])
     x_cols = None
     num_features = None
     coord_cols = None
 
-    iterator = BMFIAIterator(
-        global_settings,
-        features_config,
-        hf_model,
-        lf_model,
-        x_train,
-        Y_LF_train,
-        Y_HF_train,
-        Z_train,
-        coords_experimental_data,
-        time_vec,
-        y_obs_vec,
-        x_cols,
-        num_features,
-        coord_cols,
-    )
+    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+        iterator = BMFIAIterator(
+            global_settings=global_settings,
+            features_config=features_config,
+            hf_model=hf_model,
+            lf_model=lf_model,
+            initial_design={},
+            X_cols=x_cols,
+            num_features=num_features,
+            coord_cols=coord_cols,
+        )
+
+    iterator.Y_LF_train = np.array([[2], [3]])
+    iterator.Y_HF_train = np.array([[2.2], [3.3]])
+    iterator.Z_train = np.array([[4], [5]])
+    iterator.coords_experimental_data = np.array([[1, 2], [3, 4]])
+    iterator.time_vec = np.array([1, 3])
+    iterator.y_obs_vec = np.array([[2.1], [3.1]])
 
     return iterator
 
@@ -120,48 +116,34 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     features_config = 'no_features'
     hf_model = dummy_model
     lf_model = dummy_model
-    output_label = 'y'
-    coord_labels = ['x1', 'x2', 'x3']
-    settings_probab_mapping = settings_probab_mapping
     x_train = np.array([[1, 1, 1], [2, 2, 2]])
-    Y_LF_train = np.array([[1, 2, 3], [4, 5, 6]])
-    Y_HF_train = np.array([[1.1, 2.1, 3.1], [4.1, 5.1, 6.1]])
-    Z_train = np.array([[7, 7, 7], [8, 8, 8]])
-    coords_experimental_data = np.array([[2, 2, 2], [9, 9, 9]])
-    time_vec = np.linspace(1, 10, 3)
-    y_obs_vec = np.array([[2.2, 3.2, 4.2], [5.2, 6.2, 7.2]])
     x_cols = [1, 2]
     num_features = 2
     coord_cols = [1, 2, 3]
 
-    iterator = BMFIAIterator(
-        global_settings,
-        features_config,
-        hf_model,
-        lf_model,
-        x_train,
-        Y_LF_train,
-        Y_HF_train,
-        Z_train,
-        coords_experimental_data,
-        time_vec,
-        y_obs_vec,
-        x_cols,
-        num_features,
-        coord_cols,
-    )
+    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+        iterator = BMFIAIterator(
+            global_settings=global_settings,
+            features_config=features_config,
+            hf_model=hf_model,
+            lf_model=lf_model,
+            initial_design={},
+            X_cols=x_cols,
+            num_features=num_features,
+            coord_cols=coord_cols,
+        )
 
     # ---- tests / asserts -------------------------
     np.testing.assert_array_equal(iterator.X_train, x_train)
-    np.testing.assert_array_equal(iterator.Y_LF_train, Y_LF_train)
-    np.testing.assert_array_equal(iterator.Y_HF_train, Y_HF_train)
-    np.testing.assert_array_equal(iterator.Z_train, Z_train)
+    assert iterator.Y_LF_train is None
+    assert iterator.Y_HF_train is None
+    assert iterator.Z_train is None
     assert iterator.features_config == features_config
     assert iterator.hf_model == hf_model
     assert iterator.lf_model == lf_model
-    np.testing.assert_array_equal(iterator.coords_experimental_data, coords_experimental_data)
-    np.testing.assert_array_equal(iterator.time_vec, time_vec)
-    np.testing.assert_array_equal(iterator.y_obs_vec, y_obs_vec)
+    assert iterator.coords_experimental_data is None
+    assert iterator.time_vec is None
+    assert iterator.y_obs_vec is None
     assert iterator.x_cols == x_cols
     assert iterator.num_features == num_features
     assert iterator.coord_cols == coord_cols
