@@ -36,54 +36,56 @@ class HMCIterator(PyMCIterator):
         self,
         global_settings,
         model,
-        num_burn_in,
-        num_chains,
         num_samples,
-        discard_tuned_samples,
-        result_description,
-        summary,
-        pymc_sampler_stats,
-        as_inference_dict,
         seed,
-        use_queens_prior,
-        progressbar,
-        max_steps,
-        target_accept,
-        path_length,
-        step_size,
-        scaling,
-        is_cov,
-        init_strategy,
-        advi_iterations,
+        num_burn_in=100,
+        num_chains=1,
+        discard_tuned_samples=True,
+        result_description=None,
+        summary=True,
+        pymc_sampler_stats=False,
+        as_inference_dict=False,
+        use_queens_prior=False,
+        progressbar=False,
+        max_steps=100,
+        target_accept=0.65,
+        path_length=2.0,
+        step_size=0.25,
+        scaling=None,
+        is_cov=False,
+        init_strategy='auto',
+        advi_iterations=50_000,
     ):
         """Initialize HMC iterator.
 
         Args:
             global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            num_burn_in (int): Number of burn-in steps
-            num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
-            result_description (dict): Settings for storing and visualizing the results
-            summary (bool):  Print sampler summary
-            pymc_sampler_stats (bool): Compute additional sampler statistics
-            as_inference_dict (bool): Return inference_data object instead of trace object
             seed (int): Seed for rng
-            use_queens_prior (boolean): Setting for using the PyMC
-                                        priors or the QUEENS prior functions
-            progressbar (boolean): Setting for printing progress bar while sampling
-            max_steps (int): Maximum of leapfrog steps to take in one iteration
-            target_accept (float): Target accpetance rate which should be conistent after burn-in
-            path_length (float): Maximum length of particle trajectory
-            step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
-            scaling (np.array): The inverse mass, or precision matrix
-            is_cov (boolean): Setting if the scaling is a mass or covariance matrix
-            init_strategy (str): Strategy to tune mass damping matrix
-            advi_iterations (int): Number of iteration steps of ADVI based init strategies
-        Returns:
-            Initialise pymc iterator
+            num_burn_in (int, opt): Number of burn-in steps
+            num_chains (int, opt): Number of chains to sample
+            discard_tuned_samples (boolean, opt): Setting to discard the samples of the burin-in
+                                                  period
+            result_description (dict, opt): Settings for storing and visualizing the results
+            summary (bool, opt):  Print sampler summary
+            pymc_sampler_stats (bool, opt): Compute additional sampler statistics
+            as_inference_dict (bool, opt): Return inference_data object instead of trace object
+            use_queens_prior (boolean, opt): Setting for using the PyMC priors or the QUEENS prior
+                                             functions
+            progressbar (boolean, opt): Setting for printing progress bar while sampling
+            max_steps (int, opt): Maximum of leapfrog steps to take in one iteration
+            target_accept (float, opt): Target accpetance rate which should be conistent after
+                                        burn-in
+            path_length (float, opt): Maximum length of particle trajectory
+            step_size (float, opt): Step size, scaled by 1/(parameter dimension **0.25)
+            scaling (np.array, opt): The inverse mass, or precision matrix
+            is_cov (boolean, opt): Setting if the scaling is a mass or covariance matrix
+            init_strategy (str, opt): Strategy to tune mass damping matrix
+            advi_iterations (int, opt): Number of iteration steps of ADVI based init strategies
         """
+        _logger.info("HMC Iterator for experiment: %s", global_settings.get('experiment_name'))
+
         super().__init__(
             global_settings,
             model,
@@ -107,72 +109,6 @@ class HMCIterator(PyMCIterator):
         self.is_cov = is_cov
         self.init_strategy = init_strategy
         self.advi_iterations = advi_iterations
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create HMC iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator:HMCIterator object
-        """
-        _logger.info(
-            "HMC Iterator for experiment: %s", config.get('global_settings').get('experiment_name')
-        )
-
-        (
-            global_settings,
-            model,
-            num_burn_in,
-            num_chains,
-            num_samples,
-            discard_tuned_samples,
-            result_description,
-            summary,
-            pymc_sampler_stats,
-            as_inference_dict,
-            seed,
-            use_queens_prior,
-            progressbar,
-        ) = super().get_base_attributes_from_config(config, iterator_name, model)
-
-        method_options = config[iterator_name]
-        max_steps = method_options.get('max_steps', 100)
-        target_accept = method_options.get('target_accept', 0.65)
-        path_length = method_options.get('path_length', 2.0)
-        step_size = method_options.get('step_size', 0.25)
-        scaling = method_options.get('scaling', None)
-        is_cov = method_options.get('is_cov', False)
-        init_strategy = method_options.get('init_strategy', 'auto')
-        advi_iterations = method_options.get('advi_iterations', 50000)
-
-        return cls(
-            global_settings=global_settings,
-            model=model,
-            num_burn_in=num_burn_in,
-            num_chains=num_chains,
-            num_samples=num_samples,
-            discard_tuned_samples=discard_tuned_samples,
-            result_description=result_description,
-            summary=summary,
-            pymc_sampler_stats=pymc_sampler_stats,
-            as_inference_dict=as_inference_dict,
-            seed=seed,
-            use_queens_prior=use_queens_prior,
-            progressbar=progressbar,
-            max_steps=max_steps,
-            target_accept=target_accept,
-            path_length=path_length,
-            step_size=step_size,
-            scaling=scaling,
-            is_cov=is_cov,
-            init_strategy=init_strategy,
-            advi_iterations=advi_iterations,
-        )
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.

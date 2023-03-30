@@ -32,44 +32,52 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self,
         global_settings,
         model,
-        num_burn_in,
-        num_chains,
         num_samples,
-        discard_tuned_samples,
-        result_description,
-        summary,
-        pymc_sampler_stats,
-        as_inference_dict,
         seed,
-        use_queens_prior,
-        progressbar,
-        covariance,
-        tune_interval,
-        scaling,
+        num_burn_in=100,
+        num_chains=1,
+        discard_tuned_samples=True,
+        result_description=None,
+        summary=True,
+        pymc_sampler_stats=False,
+        as_inference_dict=False,
+        use_queens_prior=False,
+        progressbar=False,
+        covariance=None,
+        tune_interval=100,
+        scaling=1.0,
     ):
         """Initialize Metropolis Hastings iterator.
 
         Args:
             global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            num_burn_in (int): Number of burn-in steps
-            num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
-            result_description (dict): Settings for storing and visualizing the results
-            summary (bool):  Print sampler summary
-            pymc_sampler_stats (bool): Compute additional sampler statistics
-            as_inference_dict (bool): Return inference_data object instead of trace object
             seed (int): Seed for rng
-            use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior
-            functions
-            progressbar (boolean): Setting for printing progress bar while sampling
+            num_burn_in (int, opt): Number of burn-in steps
+            num_chains (int, opt): Number of chains to sample
+            discard_tuned_samples (boolean, opt): Setting to discard the samples of the burin-in
+                                                  period
+            result_description (dict, opt): Settings for storing and visualizing the results
+            summary (bool, opt):  Print sampler summary
+            pymc_sampler_stats (bool, opt): Compute additional sampler statistics
+            as_inference_dict (bool, opt): Return inference_data object instead of trace object
+            use_queens_prior (boolean, opt): Setting for using the PyMC priors or the QUEENS prior
+                                             functions
+            progressbar (boolean, opt): Setting for printing progress bar while sampling
             covariance (np.array): Covariance for proposal distribution
             tune_interval: frequency of tuning
             scaling (float): Initial scale factor for proposal
         Returns:
             Initialise pymc iterator
         """
+        _logger.info(
+            "PyMC Metropolis-Hastings Iterator for experiment: %s",
+            global_settings.get('experiment_name'),
+        )
+        if covariance is not None:
+            covariance = np.array(covariance)
+
         super().__init__(
             global_settings,
             model,
@@ -96,65 +104,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
                 "using QUEENS prior instead."
             )
             self.use_queens_prior = True
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Metropolis Hastings iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator:MetropolisHastingsPyMCIterator object
-        """
-        _logger.info(
-            "PyMC Metropolis-Hastings Iterator for experiment: %s",
-            config.get('global_settings').get('experiment_name'),
-        )
-
-        (
-            global_settings,
-            model,
-            num_burn_in,
-            num_chains,
-            num_samples,
-            discard_tuned_samples,
-            result_description,
-            summary,
-            pymc_sampler_stats,
-            as_inference_dict,
-            seed,
-            use_queens_prior,
-            progressbar,
-        ) = super().get_base_attributes_from_config(config, iterator_name, model)
-
-        method_options = config[iterator_name]
-        covariance = method_options.get('covariance', None)
-        if covariance is not None:
-            covariance = np.array(covariance)
-        tune_interval = method_options.get('tune_interval', 100)
-        scaling = method_options.get('scaling', 1.0)
-
-        return cls(
-            global_settings=global_settings,
-            model=model,
-            num_burn_in=num_burn_in,
-            num_chains=num_chains,
-            num_samples=num_samples,
-            discard_tuned_samples=discard_tuned_samples,
-            result_description=result_description,
-            summary=summary,
-            pymc_sampler_stats=pymc_sampler_stats,
-            as_inference_dict=as_inference_dict,
-            seed=seed,
-            use_queens_prior=use_queens_prior,
-            progressbar=progressbar,
-            covariance=covariance,
-            tune_interval=tune_interval,
-            scaling=scaling,
-        )
 
     def eval_log_prior_grad(self, samples):
         """Evaluate the gradient of the log-prior."""

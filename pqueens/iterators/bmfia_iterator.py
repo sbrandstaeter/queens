@@ -48,16 +48,10 @@ class BMFIAIterator(Iterator):
         features_config,
         hf_model,
         lf_model,
-        x_train,
-        Y_LF_train,
-        Y_HF_train,
-        Z_train,
-        coords_experimental_data,
-        time_vec,
-        y_obs_vec,
-        x_cols,
-        num_features,
-        coord_cols,
+        initial_design,
+        X_cols=None,
+        num_features=None,
+        coord_cols=None,
     ):
         """Instantiate the BMFIAIterator object.
 
@@ -66,91 +60,57 @@ class BMFIAIterator(Iterator):
             features_config (str): Type of feature selection method.
             hf_model (obj): High-fidelity model object.
             lf_model (obj): Low-fidelity model object.
-            x_train (np.array): Input training matrix for HF and LF model.
-            Y_LF_train (np.array): Corresponding LF model response to *X_train* input.
-            Y_HF_train (np.array): Corresponding HF model response to *X_train* input.
-            Z_train (np.array): Corresponding LF informative features to *X_train* input.
-            coords_experimental_data (np.array): Coordinates of the experimental data.
-            time_vec (np.array): Time vector of experimental observations.
-            y_obs_vec (np.array): Output data of experimental observations.
-            x_cols (list): List of columns for features taken from input variables.
-            num_features (int): Number of features to be selected.
-            coord_cols (list): List of columns for coordinates taken from input variables.
+            initial_design (dict): Dictionary describing initial design.
+            X_cols (list, opt): List of columns for features taken from input variables.
+            num_features (int, opt): Number of features to be selected.
+            coord_cols (list, opt): List of columns for coordinates taken from input variables.
         """
         super().__init__(None, global_settings)  # Input prescribed by iterator.py
 
+        # ---------- calculate the initial training samples via classmethods ----------
+        x_train = self._calculate_initial_x_train(initial_design, lf_model)
+
         self.X_train = x_train
-        self.Y_LF_train = Y_LF_train
-        self.Y_HF_train = Y_HF_train
-        self.Z_train = Z_train
+        self.Y_LF_train = None
+        self.Y_HF_train = None
+        self.Z_train = None
         self.features_config = features_config
         self.hf_model = hf_model
         self.lf_model = lf_model
-        self.coords_experimental_data = coords_experimental_data
-        self.time_vec = time_vec
-        self.y_obs_vec = y_obs_vec
-        self.x_cols = x_cols
+        self.coords_experimental_data = None
+        self.time_vec = None
+        self.y_obs_vec = None
+        self.x_cols = X_cols
         self.num_features = num_features
         self.coord_cols = coord_cols
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, _model_name=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Build a BMFIAIterator object from the problem description.
 
         Args:
             config (dict): Configuration/input file for QUEENS as dictionary
             iterator_name (str): Name of the Iterator (here not used)
-            _model_name(str): Name of the underlying model (here not used)
+            model (model, opt): Model to use
 
         Returns:
             iterator (obj): BMFIAIterator object
         """
         # Get appropriate sections in the config file
-        method_options = config["method"]
-        model_name = method_options["model_name"]
         global_settings = config.get('global_settings', None)
         bmfia_iterator_dict = config[iterator_name]
+        bmfia_iterator_dict.pop("type")
 
-        # get mf approx settings
-        features_config = bmfia_iterator_dict["features_config"]
-        x_cols = bmfia_iterator_dict.get("X_cols")
-        num_features = bmfia_iterator_dict.get("num_features")
-        coord_cols = bmfia_iterator_dict.get("coord_cols")
-
-        # get the mf subiterator settings
-        hf_model_name = bmfia_iterator_dict["high_fidelity_model_name"]
-        lf_model_name = bmfia_iterator_dict["low_fidelity_model_name"]
-        initial_design_dict = bmfia_iterator_dict["initial_design"]
-
+        hf_model_name = bmfia_iterator_dict.pop("high_fidelity_model_name")
+        lf_model_name = bmfia_iterator_dict.pop("low_fidelity_model_name")
         hf_model = from_config_create_model(hf_model_name, config)
         lf_model = from_config_create_model(lf_model_name, config)
 
-        # ---------- calculate the initial training samples via classmethods ----------
-        x_train = cls._calculate_initial_x_train(initial_design_dict, lf_model)
-
-        # ---------------------- initialize some variables / attributes ---------------
-        Y_LF_train = None
-        Y_HF_train = None
-        Z_train = None
-        coords_experimental_data = None
-        time_vec = None
-        y_obs_vec = None
-
         return cls(
-            global_settings,
-            features_config,
-            hf_model,
-            lf_model,
-            x_train,
-            Y_LF_train,
-            Y_HF_train,
-            Z_train,
-            coords_experimental_data,
-            time_vec,
-            y_obs_vec,
-            x_cols,
-            num_features,
-            coord_cols,
+            global_settings=global_settings,
+            hf_model=hf_model,
+            lf_model=lf_model,
+            **bmfia_iterator_dict,
         )
 
     @classmethod
@@ -209,8 +169,8 @@ class BMFIAIterator(Iterator):
 
         return run_design_method
 
-    @classmethod
-    def _random_design(cls, initial_design_dict, model):
+    @staticmethod
+    def _random_design(initial_design_dict, model):
         """Generate a uniformly random design strategy.
 
         Get a random initial design using the Monte-Carlo sampler with a uniform distribution.
@@ -239,8 +199,8 @@ class BMFIAIterator(Iterator):
         x_train = mc_iterator.samples
         return x_train
 
-    @classmethod
-    def _sobol_design(cls, initial_design_dict, model):
+    @staticmethod
+    def _sobol_design(initial_design_dict, model):
         """Generate  quasi random design using the Sobol sequence.
 
         Args:
@@ -255,7 +215,6 @@ class BMFIAIterator(Iterator):
         dummy_model = model
         dummy_result_description = {}
         dummy_global_settings = {}
-        randomize = True
 
         sobol_iterator = SobolSequenceIterator(
             model=dummy_model,
@@ -529,7 +488,6 @@ class BMFIAIterator(Iterator):
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
         """
-        grad_gamma_mat = None
         time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
         time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
 
