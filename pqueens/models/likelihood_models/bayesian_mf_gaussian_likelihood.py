@@ -222,7 +222,7 @@ class BMFGaussianModel(LikelihoodModel):
             noise_var_lst,
         )
 
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
@@ -240,9 +240,9 @@ class BMFGaussianModel(LikelihoodModel):
 
         # we explicitly cut the array at the variable size as within one batch several chains
         # e.g., in MCMC might be calculated; we only want the last chain here
-        Y_LF_mat = self.forward_model.evaluate(samples, **kwargs)['mean'].reshape(
-            -1, num_coordinates
-        )[:num_samples, :]
+        Y_LF_mat = self.forward_model.evaluate(samples)['mean'].reshape(-1, num_coordinates)[
+            :num_samples, :
+        ]
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood

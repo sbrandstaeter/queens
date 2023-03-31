@@ -94,7 +94,7 @@ class LikelihoodModel(Model):
         return forward_model, coords_mat, time_vec, y_obs, output_label, coord_labels
 
     @abc.abstractmethod
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate model with current set of samples.
 
         Args:

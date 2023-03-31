@@ -89,7 +89,7 @@ class FiniteDifferenceModel(Model):
 
         return cls(model_name=model_name, interface=interface, **model_options)
 
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate model with current set of samples.
 
         Args:
@@ -98,7 +98,7 @@ class FiniteDifferenceModel(Model):
         Returns:
             self.response (np.array): Response of the underlying model at current variables
         """
-        if not kwargs.get('gradient', False):
+        if not self._evaluate_and_gradient_bool:
             self.response = self.interface.evaluate(samples)
         else:
             self.response = self.evaluate_finite_differences(samples)

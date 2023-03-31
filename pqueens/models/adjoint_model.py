@@ -76,7 +76,7 @@ class AdjointModel(Model):
             **model_options
         )
 
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate forward model with current set of variables."""
         self.response = self.interface.evaluate(samples)
         return self.response

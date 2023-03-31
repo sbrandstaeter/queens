@@ -5,6 +5,7 @@ import pytest
 from mock import Mock
 
 from pqueens.models.finite_difference_model import FiniteDifferenceModel
+from pqueens.models.model import Model
 from pqueens.utils.valid_options_utils import InvalidOptionError
 
 
@@ -65,13 +66,15 @@ def test_evaluate(default_fd_model):
     assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
 
-    response = default_fd_model.evaluate(samples, gradient=False)
+    Model._evaluate_and_gradient_bool = False
+    response = default_fd_model.evaluate(samples)
     assert len(response) == 1
     np.testing.assert_array_equal(response['mean'], expected_mean)
     assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
 
-    response = default_fd_model.evaluate(samples, gradient=True)
+    Model._evaluate_and_gradient_bool = True
+    response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=5)
 
@@ -82,9 +85,10 @@ def test_evaluate(default_fd_model):
 
     expected_grad = np.swapaxes(np.array([2 * samples, 4 * samples]), 0, 1)
     expected_mean = np.array([np.sum(samples**2, axis=1), np.sum(2 * samples**2, axis=1)]).T
-    response = default_fd_model.evaluate(samples, gradient=True)
+    response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=4)
+    Model._evaluate_and_gradient_bool = False
 
 
 def test_grad(default_fd_model):

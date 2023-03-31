@@ -45,7 +45,7 @@ class SimulationModel(Model):
 
         return cls(model_name, interface)
 
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate model with current set of samples.
 
         Args:

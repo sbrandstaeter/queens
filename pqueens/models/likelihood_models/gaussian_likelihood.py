@@ -145,7 +145,7 @@ class GaussianLikelihood(LikelihoodModel):
             coord_labels=coord_labels,
         )
 
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate likelihood with current set of samples.
 
         Args:
@@ -154,7 +154,7 @@ class GaussianLikelihood(LikelihoodModel):
         Returns:
             log_likelihood (np.array): log-likelihood values per model input
         """
-        self.response = self.forward_model.evaluate(samples, **kwargs)['mean']
+        self.response = self.forward_model.evaluate(samples)['mean']
         if self.noise_type.startswith('MAP'):
             self.update_covariance(self.response)
         log_likelihood = self.normal_distribution.logpdf(self.response)

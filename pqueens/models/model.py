@@ -24,6 +24,8 @@ class Model(metaclass=abc.ABCMeta):
         response (dict): Response corresponding to parameters.
     """
 
+    _evaluate_and_gradient_bool = False
+
     def __init__(self, name=None):
         """Init model object.
 
@@ -35,7 +37,7 @@ class Model(metaclass=abc.ABCMeta):
         self.response = None
 
     @abc.abstractmethod
-    def evaluate(self, samples, **kwargs):
+    def evaluate(self, samples):
         """Evaluate model with current set of samples.
 
         Args:
@@ -63,8 +65,10 @@ class Model(metaclass=abc.ABCMeta):
             model_output (np.array): Model output
             model_gradient (np.array): Model gradient w.r.t. the samples
         """
-        model_output = self.evaluate(samples, gradient=True)
+        Model._evaluate_and_gradient_bool = True
+        model_output = self.evaluate(samples)
         if upstream is None:
             upstream = np.ones((samples.shape[0], 1))
-        model_gradient = self.grad(samples, upstream=upstream)
+        model_gradient = self.grad(samples, upstream=upstream.reshape(samples.shape[0], 1))
+        Model._evaluate_and_gradient_bool = False
         return model_output, model_gradient
