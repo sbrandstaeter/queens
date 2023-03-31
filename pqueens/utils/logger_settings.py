@@ -69,15 +69,18 @@ class NewLineFormatter(logging.Formatter):
         return formatted_message
 
 
-def setup_basic_logging(output_dir, experiment_name):
+def setup_basic_logging(output_dir, experiment_name, debug=False):
     """Setup basic logging.
 
     Args:
         output_dir (Path): Output directory where to save the log-file
         experiment_name (str): Experiment name used as file name for the log-file
+        debug (bool): Indicates debug mode and controls level of logging
     """
-    file_level_min = logging.DEBUG
-    console_level_min = logging.INFO
+    if debug:
+        logging_level = logging.DEBUG
+    else:
+        logging_level = logging.INFO
 
     library_logger = logging.getLogger("pqueens")
     # call setLevel() for basic initialisation (this is needed not sure why)
@@ -90,7 +93,7 @@ def setup_basic_logging(output_dir, experiment_name):
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
     )
     file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(file_level_min)
+    file_handler.setLevel(logging_level)
     library_logger.addHandler(file_handler)
 
     # a plain, minimal formatter for streamhandlers
@@ -101,14 +104,14 @@ def setup_basic_logging(output_dir, experiment_name):
     # messages lower than and including WARNING go to stdout
     log_filter = LogFilter(logging.WARNING)
     console_stdout.addFilter(log_filter)
-    console_stdout.setLevel(console_level_min)
+    console_stdout.setLevel(logging_level)
     console_stdout.setFormatter(stream_formatter)
     library_logger.addHandler(console_stdout)
 
     # set up logging to stderr
     console_stderr = logging.StreamHandler(stream=sys.stderr)
     # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
-    console_stderr.setLevel(max(console_level_min, logging.ERROR))
+    console_stderr.setLevel(max(logging_level, logging.ERROR))
     console_stderr.setFormatter(stream_formatter)
     library_logger.addHandler(console_stderr)
 
