@@ -10,6 +10,11 @@ VALID_TYPES = {
     'exponential': ['pqueens.distributions.exponential', 'ExponentialDistribution'],
     'free': ['pqueens.distributions.free', 'FreeVariable'],
     'mixture': ['pqueens.distributions.mixture', 'MixtureDistribution'],
+    'categorical': ['pqueens.distributions.categorical', 'CategoricalDistribution'],
+    'bernoulli': ['pqueens.distributions.bernoulli', 'BernoulliDistribution'],
+    'multinomial': ['pqueens.distributions.multinomial', 'MultinomialDistribution'],
+    'particles': ['pqueens.distributions.particles', 'ParticleDiscreteDistribution'],
+    'uniform_discrete': ['pqueens.distributions.uniform_discrete', 'UniformDiscreteDistribution'],
 }
 
 
