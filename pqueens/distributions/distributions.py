@@ -23,8 +23,9 @@ class Distribution(abc.ABC):
         Returns:
             distribution: Distribution object
         """
-        distribution_options.pop("type", None)
-        return cls(**distribution_options)
+        distribution_options_copy = distribution_options.copy()
+        distribution_options_copy.pop("type", None)
+        return cls(**distribution_options_copy)
 
     @abstractmethod
     def draw(self, num_draws=1):
