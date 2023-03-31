@@ -70,17 +70,15 @@ class BMFIAVisualization:
         self.plot_booleans = plot_booleans
 
     @classmethod
-    def from_config_create(cls, config, model_name):
+    def from_config_create(cls, plotting_options):
         """Create the BMFIA visualization object from the problem description.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            model_name (str): Name of the BMFIA model in the config file
+            plotting_options (dict): Dictionary with plotting options
 
         Returns:
             Instance of BMFIA visualization (obj)
         """
-        plotting_options = config[model_name].get("plotting_options")
         paths = [
             plotting_options.get("plotting_dir") / name for name in plotting_options["plot_names"]
         ]
