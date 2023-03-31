@@ -28,7 +28,7 @@ VALID_TYPES = {
         'pqueens.interfaces.approximation_interface_mf',
         'ApproximationInterfaceMF',
     ],
-    'bmfia': ['pqueens.interfaces.bmfia_interface', 'BMFIAInterface'],
+    'bmfia': ['pqueens.interfaces.bmfia_interface', 'BmfiaInterface'],
 }
 
 
