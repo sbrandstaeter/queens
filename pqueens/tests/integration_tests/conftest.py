@@ -15,6 +15,7 @@ from pqueens.schedulers.cluster_scheduler import (
 )
 from pqueens.utils import config_directories
 from pqueens.utils.io_utils import load_result
+from pqueens.utils.logger_settings import reset_logging
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -303,3 +304,18 @@ def baci_elementary_effects_check_results():
 def pytest_sessionfinish():
     """Register a hook to suppress logging errors after the session."""
     logging.raiseExceptions = False
+
+
+@pytest.fixture(name="reset_loggers", autouse=True)
+def fixture_reset_logger():
+    """Reset loggers.
+
+    This fixture is called at every test due to `autouse=True`. It acts
+    as a generator and allows us to close all loggers after each test.
+    This should avoid duplicate logger output.
+    """
+    # Do the test.
+    yield
+
+    # Test is done, now reset the loggers.
+    reset_logging()
