@@ -33,6 +33,7 @@ def run(input_file, output_dir, debug=False):
     setup_basic_logging(
         Path(config["global_settings"]["output_dir"]),
         config["global_settings"]["experiment_name"],
+        debug=debug,
     )
 
     print_banner_and_description()
