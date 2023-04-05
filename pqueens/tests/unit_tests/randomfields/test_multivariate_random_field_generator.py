@@ -6,8 +6,6 @@
 import unittest
 
 import numpy as np
-import pytest
-from scipy import stats
 from scipy.stats import norm
 
 from pqueens.randomfields.multivariate_random_field_generator import (

@@ -1,7 +1,6 @@
 """TODO_doc."""
 
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,6 @@ import pytest
 from mock import patch
 
 from pqueens import run
-from pqueens.interfaces import from_config_create_interface
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (

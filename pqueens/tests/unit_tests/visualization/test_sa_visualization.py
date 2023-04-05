@@ -1,7 +1,5 @@
 """TODO_doc."""
 
-from pathlib import Path
-
 import pytest
 
 from pqueens.visualization.sa_visualization import SAVisualization

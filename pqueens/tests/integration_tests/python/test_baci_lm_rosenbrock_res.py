@@ -1,10 +1,7 @@
 """TODO_doc."""
 
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
-import pytest
 
 from pqueens import run
 

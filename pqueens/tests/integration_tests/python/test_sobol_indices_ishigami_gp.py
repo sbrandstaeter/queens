@@ -1,6 +1,5 @@
 """Test Sobol indices estimation with Gaussian process surrogate."""
 import pickle
-from pathlib import Path
 
 import numpy as np
 
