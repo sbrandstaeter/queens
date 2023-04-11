@@ -40,7 +40,7 @@ class NewLineFormatter(logging.Formatter):
 
     A logged message that consists of more than one line - contains a new line char - is split
     into multiple single line messages that all have the same format. Without this the overall
-     format of the logging is broken for by multiline messages.
+     format of the logging is broken for multiline messages.
     """
 
     def __init__(self, fmt, datefmt=None):
