@@ -11,7 +11,7 @@ class LogFilter(logging.Filter):
     """Filters (lets through) all messages with level <= LEVEL.
 
     Attributes:
-        level: TODO_doc
+        level: Logging level
     """
 
     def __init__(self, level):
@@ -39,8 +39,8 @@ class NewLineFormatter(logging.Formatter):
     """Formatter splitting multiline messages into single line messages.
 
     A logged message that consists of more than one line - contains a new line char - is split
-    into multiple single line messages that all have the same format.
-    Without this the overall format of the logging is broken for by multiline messages.
+    into multiple single line messages that all have the same format. Without this the overall
+     format of the logging is broken for multiline messages.
     """
 
     def __init__(self, fmt, datefmt=None):
@@ -58,7 +58,7 @@ class NewLineFormatter(logging.Formatter):
         Args:
             record (LogRecord obj): Logging record object
         Returns:
-            formatted_message (str): logged message in supplied format split into single lines
+            formatted_message (str): Logged message in supplied format split into single lines
         """
         formatted_message = logging.Formatter.format(self, record)
 
@@ -165,7 +165,10 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
         propagate (bool): Flag for propagation of stream (default: *False*)
 
     Returns:
-        TODO_doc
+        joblogger (logging.logger): Job logger
+        lfh (logging.FileHandler): Logging file handler
+        efh (logging.FileHandler): Error logging file handler
+        stream_handler (logging.StreamHandler): Streaming handler, i.e. logging to console
     """
     # get job logger
     joblogger = logging.getLogger(logger_name)
@@ -216,7 +219,7 @@ def job_logging(command_string, process, joblogger, terminate_expr):
         terminate_expr (str): Expression on which to terminate
 
     Returns:
-        TODO_doc
+        stderr (str): Error messages
     """
     # initialize stderr to None
     stderr = None
@@ -266,10 +269,10 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     (to prevent OSError: [Errno 24] Too many open files)
 
     Args:
-        joblogger: TODO_doc
-        lfh: TODO_doc
-        efh: TODO_doc
-        stream_handler: TODO_doc
+        joblogger (logging.logger): Job logger
+        lfh (logging.FileHandler): Logging file handler
+        efh (logging.FileHandler): Error logging file handler
+        stream_handler (logging.StreamHandler): Streaming handler, i.e. logging to console
     """
     # we need to close the FileHandlers to
     lfh.close()
@@ -279,3 +282,33 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     if stream_handler is not None:
         stream_handler.close()
         joblogger.removeHandler(stream_handler)
+
+
+def reset_logging():
+    """Reset loggers.
+
+    This is only needed during testing, as otherwise the loggers are not destroyed resulting in the
+    same output multiple time. This is taken from:
+
+    https://stackoverflow.com/a/56810619
+    """
+    manager = logging.root.manager
+    manager.disabled = logging.NOTSET
+    for logger in manager.loggerDict.values():  # pylint: disable=no-member
+        if isinstance(logger, logging.Logger):
+            logger.setLevel(logging.NOTSET)
+            logger.propagate = True
+            logger.disabled = False
+            logger.filters.clear()
+            handlers = logger.handlers.copy()
+            for handler in handlers:
+                # Copied from `logging.shutdown`.
+                try:
+                    handler.acquire()
+                    handler.flush()
+                    handler.close()
+                except (OSError, ValueError):
+                    pass
+                finally:
+                    handler.release()
+                logger.removeHandler(handler)
