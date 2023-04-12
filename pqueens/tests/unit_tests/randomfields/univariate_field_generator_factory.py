@@ -6,7 +6,6 @@
 import unittest
 
 import numpy as np
-import pytest
 from scipy.stats import beta, norm
 
 from pqueens.randomfields.univariate_field_generator_factory import (

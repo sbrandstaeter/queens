@@ -4,9 +4,6 @@
 """
 import unittest
 
-import mock
-import pytest
-
 from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.approximation_interface import ApproximationInterface
 

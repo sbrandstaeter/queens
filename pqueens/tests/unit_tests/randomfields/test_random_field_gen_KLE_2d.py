@@ -6,11 +6,9 @@
 import unittest
 
 import numpy as np
-import pytest
 from scipy import stats
 from scipy.stats import norm
 
-from pqueens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
