@@ -183,7 +183,7 @@ class BMFGaussianModel(LikelihoodModel):
             likelihood_evals_for_refinement,
         )
 
-    def evaluate(self, samples, sample_fun=None):
+    def evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
@@ -191,8 +191,6 @@ class BMFGaussianModel(LikelihoodModel):
 
         Args:
             samples (np.ndarray): Evaluated samples
-            sample_fun (obj, optional): Sample function to generate samples from current
-                                        posterior
 
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
@@ -207,40 +205,35 @@ class BMFGaussianModel(LikelihoodModel):
             -1, num_coordinates
         )[:num_samples, :]
 
-        mf_log_likelihood = self.evaluate_from_output(samples, forward_model_output, sample_fun)
+        mf_log_likelihood = self.evaluate_from_output(samples, forward_model_output)
 
         return mf_log_likelihood
 
-    def evaluate_from_output(self, samples, forward_model_output, sample_fun=None):
+    def evaluate_from_output(self, samples, forward_model_output):
         """Evaluate multi-fidelity likelihood from forward model output.
 
         Args:
             samples (np.ndarray): Samples to evaluate
             forward_model_output (np.ndarray): Forward model output
-            sample_fun (obj, optional): Sample function to generate samples from current
-                                        posterior
 
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
         if self._adaptivity_trigger():
-            additional_x_train = sample_fun(self.num_refinement_samples)
-            self._refine_mf_likelihood(additional_x_train)
+            raise NotImplementedError("Adaptivity is not yet implemented for BMFGaussianModel!")
 
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self._evaluate_mf_likelihood(samples, forward_model_output)
         self.likelihood_counter += 1
         return mf_log_likelihood
 
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None, sample_fun=None):
+    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
         """Evaluate model and its gradient with current set of samples.
 
         Args:
             samples (np.ndarray): Samples to evaluate
             upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
                                          model output.
-            sample_fun (obj, optional): Sample function to generate samples from current
-                                        posterior
 
         Returns:
             log_likelihood (np.array): Vector of log-likelihood values for different input samples.
@@ -261,7 +254,7 @@ class BMFGaussianModel(LikelihoodModel):
             samples, upstream_gradient_fun=upstream_gradient_fun
         )
         # evaluate log-likelihood reusing the sub model evaluations
-        log_likelihood = self.evaluate_from_output(samples, sub_model_output, sample_fun)
+        log_likelihood = self.evaluate_from_output(samples, sub_model_output)
 
         return log_likelihood, grad_objective_samples
 

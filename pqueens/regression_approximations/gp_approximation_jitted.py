@@ -398,10 +398,9 @@ class GPJitted(RegressionApproximation):
             )
 
         output = {"x_test": x_test_mat}
-        output["mean"] = (
-            self.scaler_y.inverse_transform_mean(posterior_mean_test_vec)
-            + self.mean_function(x_test_mat)
-        ).reshape(-1, 1)
+        output["mean"] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
+            -1, 1
+        ) + self.mean_function(x_test_mat)
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2).reshape(-1, 1)
 
         if gradient_bool:

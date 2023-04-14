@@ -11,6 +11,7 @@ Attributes:
 """
 
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,18 +23,19 @@ this = sys.modules[__name__]
 this.bmfia_visualization_instance = None
 
 
-def from_config_create(config, model_name):
-    """TODO_doc: add a one-line explanation.
+def from_config_create(plotting_options):
+    """Call the class function `from_config_create`.
 
-    Module function that calls the class function *from_config_create* and
-    creates instance of the BMFIAVisualization class from the problem
-    description.
+    It creates an instance of the BMFIAVisualization class
+    from the problem description.
 
     Args:
-        config (dict): Dictionary created from the input file, containing the problem description
-        model_name: TODO_doc
+        plotting_options (dict): Dictionary with plotting options
+
+    Returns:
+        None
     """
-    this.bmfia_visualization_instance = BMFIAVisualization.from_config_create(config, model_name)
+    this.bmfia_visualization_instance = BMFIAVisualization.from_config_create(plotting_options)
 
 
 class BMFIAVisualization:
@@ -80,7 +82,8 @@ class BMFIAVisualization:
             Instance of BMFIA visualization (obj)
         """
         paths = [
-            plotting_options.get("plotting_dir") / name for name in plotting_options["plot_names"]
+            Path(plotting_options.get("plotting_dir")) / name
+            for name in plotting_options["plot_names"]
         ]
         save_bools = plotting_options.get("save_bool")
         plot_booleans = plotting_options.get("plot_booleans")
