@@ -304,7 +304,6 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     samples = np.array([[1, 2], [3, 4]])
     forward_model_output = np.array([[5], [6]])
     mf_log_likelihood_exp = np.array([[7], [9]])
-    sample_fun = lambda x: x
     mp1 = mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
@@ -320,21 +319,17 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     assert default_mf_likelihood.likelihood_counter == 2
 
     # test with adaptivity
-    m2 = mocker.patch(
+    mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._adaptivity_trigger',
         return_value=True,
     )
-    m3 = mocker.patch(
+    mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood'
     )
-
-    mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
-        mf_log_likelihood_exp, y_lf_mat, sample_fun
-    )
-
-    assert m2.call_count == 1
-    assert m3.call_count == 1
-    np.testing.assert_array_equal(mf_log_likelihood, mf_log_likelihood_exp)
+    with pytest.raises(NotImplementedError):
+        mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
+            mf_log_likelihood_exp, y_lf_mat
+        )
 
 
 def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
@@ -436,7 +431,7 @@ def test_evaluate_and_gradient(default_mf_likelihood):
 
     # test evaluate from output fun
     mp3.assert_called_once()
-    mp3.assert_called_with(samples, sub_model_output[0], None)
+    mp3.assert_called_with(samples, sub_model_output[0])
 
     # test final method output
     np.testing.assert_array_equal(log_likelihood, log_lik_out)

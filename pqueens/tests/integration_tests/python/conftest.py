@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Global fixtures and configurations for integration tests."""
 
 
 import numpy as np
