@@ -6,11 +6,9 @@
 import unittest
 
 import numpy as np
-import pytest
 from scipy import stats
 from scipy.stats import norm
 
-from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )

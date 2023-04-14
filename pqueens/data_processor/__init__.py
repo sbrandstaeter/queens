@@ -11,6 +11,7 @@ VALID_TYPES = {
         'pqueens.data_processor.data_processor_ensight_interface',
         'DataProcessorEnsightInterfaceDiscrepancy',
     ],
+    'numpy': ['pqueens.data_processor.data_processor_numpy', 'DataProcessorNumpy'],
 }
 
 

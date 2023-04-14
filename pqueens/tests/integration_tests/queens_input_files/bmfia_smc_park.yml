@@ -5,7 +5,7 @@ database:
 method:
   type: smc
   seed: 41
-  num_particles: 50
+  num_particles: 10
   model_name: model
   temper_type: bayes
   plot_trace_every: 0
@@ -17,25 +17,13 @@ method:
     cov: true
 model:
   type: bmf_gaussian
-  mf_approx_settings:
-    type: gp_jitted
-    kernel_type: squared_exponential
-    num_processors_multi_processing: 4
-    stochastic_optimizer_name: optimizer
-    plot_refresh_rate: 10
-    noise_var_lb: 1.0e-06
-    data_scaling:
-      type: standard_scaler
-    initial_hyper_params_lst: [0.05, 1.0, 0.05]
-    mean_function_type: identity_multi_fidelity
-    random_seed: 1
-    mf_subiterator_name: bmfia_iterator
+  interface_name: bmfia_interface
+  mf_approx_name: mf_approx
+  mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
   output_label: y_obs
   coordinate_labels: [x3, x4]
-  likelihood_noise_type: fixed
-  fixed_likelihood_noise_value: 0.001
-  nugget_noise_var: 1.0e-08
+  noise_value: 0.001
   experimental_file_name_identifier: '*.csv'
   experimental_csv_data_base_dir: {{ experimental_data_path }}
   plotting_options:
@@ -43,20 +31,41 @@ model:
     plot_names: [bmfia_plot.png, posterior.png]
     save_bool: [false, false]
     plot_booleans: [false, false]
+mf_approx:
+  type: gp_jitted
+  kernel_type: squared_exponential
+  stochastic_optimizer_name: optimizer
+  plot_refresh_rate: null
+  noise_var_lb: 1.0e-06
+  data_scaling:
+    type: standard_scaler
+  initial_hyper_params_lst: [0.05, 1.0, 0.05]
+  mean_function_type: identity_multi_fidelity
+  random_seed: 1
+bmfia_interface:
+  type: bmfia
+  num_processors_multi_processing: 4
+  probabilistic_mapping_type: per_coordinate
 optimizer:
   type: adam
   learning_rate: 0.008
   optimization_type: max
   max_iterations: 1000
-  rel_L1_change_threshold: 0.003
-  rel_L2_change_threshold: 0.003
+  rel_L1_change_threshold: 0.004
+  rel_L2_change_threshold: 0.004
+MCMC_Kernel:
+  type: metropolis-hastings
+  as_mcmc_kernel: true
+  num_chains: 50
+  num_samples: 2
+  proposal_distribution: proposal_distribution
 bmfia_iterator:
   type: bmfia
-  low_fidelity_model_name: lf_model
-  high_fidelity_model_name: hf_model
   features_config: man_features
   X_cols: [0]
   num_features: 1
+  low_fidelity_model_name: lf_model
+  high_fidelity_model_name: hf_model
   initial_design:
     type: random
     num_HF_eval: 20

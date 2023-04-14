@@ -1,7 +1,6 @@
 import unittest
 
 import numpy as np
-import pytest
 
 import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface

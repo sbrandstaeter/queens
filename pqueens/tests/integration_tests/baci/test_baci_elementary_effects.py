@@ -5,15 +5,12 @@ INVAAA minimal model.
 """
 
 import json
-import pickle
-from pathlib import Path
 import shutil
 
 import pytest
 
 from pqueens import run
 from pqueens.utils import injector
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope="session")

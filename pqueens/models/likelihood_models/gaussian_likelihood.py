@@ -154,10 +154,10 @@ class GaussianLikelihood(LikelihoodModel):
         Returns:
             log_likelihood (np.array): log-likelihood values per model input
         """
-        self.response = self.forward_model.evaluate(samples)['mean']
+        self.response = self.forward_model.evaluate(samples)
         if self.noise_type.startswith('MAP'):
-            self.update_covariance(self.response)
-        log_likelihood = self.normal_distribution.logpdf(self.response)
+            self.update_covariance(self.response['mean'])
+        log_likelihood = self.normal_distribution.logpdf(self.response['mean'])
 
         return log_likelihood
 
@@ -169,7 +169,7 @@ class GaussianLikelihood(LikelihoodModel):
             upstream (np.array): Upstream gradient
         """
         # shape convention: num_samples x jacobian_shape
-        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response)
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['mean'])
         return self.forward_model.grad(samples, upstream * log_likelihood_grad)
 
     def update_covariance(self, y_model):

@@ -34,6 +34,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
     park91a_hifi_on_grid_with_gradients,
     park91a_lofi,
     park91a_lofi_on_grid,
+    park91a_lofi_on_grid_with_gradients,
 )
 from pqueens.tests.integration_tests.example_simulator_functions.park91b import (
     park91b_hifi,
@@ -72,6 +73,7 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "park91a_lofi_on_grid": park91a_lofi_on_grid,
     "park91a_hifi_on_grid": park91a_hifi_on_grid,
     "park91a_hifi_on_grid_with_gradients": park91a_hifi_on_grid_with_gradients,
+    "park91a_lofi_on_grid_with_gradients": park91a_lofi_on_grid_with_gradients,
     "park91a_lofi": park91a_lofi,
     "park91a_hifi": park91a_hifi,
     "park91b_lofi": park91b_lofi,
