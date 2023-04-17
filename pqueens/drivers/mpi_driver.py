@@ -211,7 +211,7 @@ class MpiDriver(Driver):
         else:
             data_processor = None
 
-        verbose = driver_options.get("verbose", True)
+        verbose = driver_options.get("verbose", False)
         gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
         if gradient_data_processor_name:
             gradient_data_processor = from_config_create_data_processor(
