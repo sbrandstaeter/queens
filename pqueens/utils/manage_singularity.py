@@ -372,14 +372,18 @@ def _files_changed():
             f"singularity exec {ABS_SINGULARITY_IMAGE_PATH} "
             + f"cmp {file} {filepath_in_singularity}"
         )
-        _, _, stdout, stderr = run_subprocess(
-            command_string, raise_error_on_subprocess_failure=False
-        )
-
-        # If file is different or missing stop iteration and build the image
-        if stdout or stderr:
+        try:
+            _, _, stdout, _ = run_subprocess(command_string)
+            # If file is different or missing stop iteration and build the image
+            if stdout:
+                files_changed = True
+                break
+        except SubprocessError as sp_error:
+            if str(sp_error).find("FATAL: ") > -1:
+                raise SingularityError() from sp_error
             files_changed = True
             break
+
     return files_changed
 
 
