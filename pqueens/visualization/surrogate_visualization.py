@@ -6,7 +6,7 @@ from pathlib import Path
 import GPy
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.style as style
+from matplotlib import style
 import numpy as np
 import seaborn as sns
 from GPy.models.gp_regression import GPRegression

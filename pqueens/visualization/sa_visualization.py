@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.style as style
+from matplotlib import style
 import pandas as pd
 import seaborn as sns
 
