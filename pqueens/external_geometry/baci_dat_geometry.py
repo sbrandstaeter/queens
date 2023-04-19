@@ -459,8 +459,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
             design_list = line.split()
             if len(design_list) != 2:
                 raise IndexError(
-                    f'Unexpected number of list entries in design '
-                    f'description! The '
+                    'Unexpected number of list entries in design '
+                    'description! The '
                     'returned list should have length 2 but the returned '
                     'list was {design_list}.'
                     'Abort...'
@@ -729,7 +729,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             else:
                 raise RuntimeError(
-                    f"At the moment we can only handle one nested material but you "
+                    "At the moment we can only handle one nested material but you "
                     "provided {len(materials_copy[0])} material nestings. Abort..."
                 )
 
@@ -851,9 +851,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             else:
                 raise RuntimeError(
-                    f"At the moment we can only handle one nested material but "
+                    "At the moment we can only handle one nested material but "
                     "you provided "
-                    "{len(self.list_associated_material_numbers[0])} nested "
+                    f"{len(self.list_associated_material_numbers[0])} nested "
                     "materials. Abort...."
                 )
 
