@@ -1,6 +1,6 @@
 """Unit tests for Bayesian multi-fidelity Gaussian likelihood function."""
 
-import unittest.mock as mock
+from unittest import mock
 
 import numpy as np
 import pytest
