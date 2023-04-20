@@ -1,6 +1,7 @@
 """Module supplies functions to conduct operation on remote resource."""
-
+import atexit
 import pickle
+import subprocess
 import uuid
 from functools import partial
 from pathlib import Path
@@ -58,6 +59,7 @@ class RemoteConnection(Connection):
 
     def __init__(self, host, remote_python, user=None):
         super().__init__(host, user=user)
+        self.tunnels = []
         self.func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
         self.output_file_name = f"output_{str(uuid.uuid4())}.pickle"
         self.python_cmd = (
@@ -92,3 +94,11 @@ class RemoteConnection(Connection):
         Path(self.output_file_name).unlink()  # delete local output file
 
         return return_value
+
+    def open_port_forwarding(self, local_port, remote_port):
+        """Open port forwarding."""
+        cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
+        subprocess.run(cmd, shell=True, check=True)
+
+        kill_cmd = f'pkill -f "{cmd}"'
+        atexit.register(run_subprocess, kill_cmd, shell=True)

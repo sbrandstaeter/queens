@@ -123,24 +123,18 @@ class ClusterScheduler(Scheduler):
 
         remote_port = connection.run_function(self.get_port)
         connection.run_function(start_cluster_on_login_node, remote_port, asynchronously=True)
+        local_port = self.get_port()
 
-        # local_port = self.get_port()
+        connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
+        for i in range(10, 0, -1):  # 10 tries to connect
+            try:
+                client = Client(address=f"localhost:{local_port}", timeout=10)
+                break
+            except OSError:
+                if i == 1:
+                    raise
+                time.sleep(1)
 
-        '''
-        ----- Using fabric: ------
-        port_forward = connection.forward_remote(local_port=local_port, remote_port=remote_port)
-        port_forward.__enter__()
-        atexit.register(port_forward.__exit__)
-
-        ----- Using manual port forwarding: -----
-        import subprocess
-        port_forwarding_command = f"ssh -f -N -L {local_port}:{cluster_address}:{remote_port} " \
-                                  f"{cluster_user}@{cluster_address}"
-        subprocess.run(port_forwarding_command, shell=True)
-        client = Client(address=f"tcp://127.0.0.1:{local_port}", timeout=10)
-        '''
-
-        client = Client(address=f"{cluster_address}:{remote_port}", timeout=10)
         atexit.register(client.shutdown)
         client.submit(lambda: "Dummy job").result(timeout=60)
 
