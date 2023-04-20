@@ -9,11 +9,11 @@ numpy==1.21.5
 pandas==1.4.3
 
 # Dask packages
-asyncssh
 dask
 distributed # dask.distributed
 dask-jobqueue
 bokeh<3 # for dask dashboard
+fabric  # for ssh connection
 
 # Others
 pymongo # MongoDB

@@ -5,12 +5,13 @@ import pathlib
 import socket
 import time
 
-from dask.distributed import Client, SSHCluster
+from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
 from pqueens.utils.config_directories_dask import experiment_directory
 from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.remote_operations import RemoteConnection
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.valid_options_utils import get_option
 
@@ -93,15 +94,11 @@ class ClusterScheduler(Scheduler):
         job_directives_skip = dask_cluster_options['job_directives_skip']
         cluster_python_path = cluster_python_path.replace('$HOME', f'/home/{cluster_user}')
 
-        login_cluster = SSHCluster(
-            hosts=[cluster_address, cluster_address],
-            remote_python=[cluster_python_path, cluster_python_path],
-            connect_options={'username': cluster_user},
-        )
-        login_client = Client(login_cluster)  # links to cluster login node
-        atexit.register(login_client.shutdown)
+        connection = RemoteConnection(cluster_address, cluster_python_path, user=cluster_user)
+        connection.open()
+        atexit.register(connection.close)
 
-        experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
+        experiment_dir = connection.run_function(experiment_directory, experiment_name)
 
         def start_cluster_on_login_node(port):
             """Start dask cluster object on login node."""
@@ -124,16 +121,28 @@ class ClusterScheduler(Scheduler):
             while True:
                 time.sleep(1)
 
-        scheduler_port = login_client.submit(self.get_port).result()
-        # Start PBS Cluster on login node
-        cluster_future = login_client.submit(start_cluster_on_login_node, scheduler_port)
-        try:
-            client = Client(address=f"{cluster_address}:{scheduler_port}", timeout=10)
-            atexit.register(client.shutdown)
-            client.submit(lambda: "Dummy job").result(timeout=60)
-        except OSError as error:
-            cluster_future.result(timeout=10)
-            raise error
+        remote_port = connection.run_function(self.get_port)
+        connection.run_function(start_cluster_on_login_node, remote_port, asynchronously=True)
+
+        # local_port = self.get_port()
+
+        '''
+        ----- Using fabric: ------
+        port_forward = connection.forward_remote(local_port=local_port, remote_port=remote_port)
+        port_forward.__enter__()
+        atexit.register(port_forward.__exit__)
+
+        ----- Using manual port forwarding: -----
+        import subprocess
+        port_forwarding_command = f"ssh -f -N -L {local_port}:{cluster_address}:{remote_port} " \
+                                  f"{cluster_user}@{cluster_address}"
+        subprocess.run(port_forwarding_command, shell=True)
+        client = Client(address=f"tcp://127.0.0.1:{local_port}", timeout=10)
+        '''
+
+        client = Client(address=f"{cluster_address}:{remote_port}", timeout=10)
+        atexit.register(client.shutdown)
+        client.submit(lambda: "Dummy job").result(timeout=60)
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 
