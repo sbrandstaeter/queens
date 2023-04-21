@@ -1,7 +1,7 @@
 """Module supplies functions to conduct operation on remote resource."""
 import atexit
+import logging
 import pickle
-import subprocess
 import uuid
 from functools import partial
 from pathlib import Path
@@ -10,6 +10,8 @@ import cloudpickle
 from fabric import Connection
 
 from pqueens.utils.run_subprocess import run_subprocess
+
+_logger = logging.getLogger(__name__)
 
 
 def make_directory_on_remote(remote_connect, directory):
@@ -72,7 +74,8 @@ class RemoteConnection(Connection):
         )
 
     def run_function(self, func, *func_args, asynchronously=False, **func_kwargs):
-        """Run a python function remotely using a ssh connection."""
+        """Run a python function remotely using an ssh connection."""
+        _logger.info("Running %s on %s", func.__name__, self.host)
         partial_func = partial(func, *func_args, **func_kwargs)  # insert function arguments
         with open(self.func_file_name, "wb") as file:
             cloudpickle.dump(partial_func, file)  # pickle function by value
@@ -83,10 +86,10 @@ class RemoteConnection(Connection):
         if asynchronously:
             return self.client.exec_command(self.python_cmd, get_pty=True)
 
-        self.run(self.python_cmd)  # run function remote
+        self.run(self.python_cmd, in_stream=False)  # run function remote
         self.get(self.output_file_name)  # download result
 
-        self.run(f'rm {self.output_file_name}')  # delete remote files
+        self.run(f'rm {self.output_file_name}', in_stream=False)  # delete remote files
 
         with open(self.output_file_name, 'rb') as file:  # read return value from output file
             return_value = pickle.load(file)
@@ -98,7 +101,7 @@ class RemoteConnection(Connection):
     def open_port_forwarding(self, local_port, remote_port):
         """Open port forwarding."""
         cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
-        subprocess.run(cmd, shell=True, check=True)
+        run_subprocess(cmd, subprocess_type='submit')
 
         kill_cmd = f'pkill -f "{cmd}"'
-        atexit.register(run_subprocess, kill_cmd, shell=True)
+        atexit.register(run_subprocess, kill_cmd, subprocess_type='submit')
