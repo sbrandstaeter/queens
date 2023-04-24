@@ -122,7 +122,7 @@ class ClusterScheduler(Scheduler):
                 time.sleep(1)
 
         remote_port = connection.run_function(self.get_port)
-        connection.run_function(start_cluster_on_login_node, remote_port, asynchronously=True)
+        connection.run_function(start_cluster_on_login_node, remote_port, wait=False)
         local_port = self.get_port()
 
         connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)

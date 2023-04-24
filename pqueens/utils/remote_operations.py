@@ -57,11 +57,23 @@ def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
 
 
 class RemoteConnection(Connection):
-    """This is class wrapper around fabric.Connection."""
+    """This is class wrapper around the Connection class of fabric.
+
+    Attributes:
+        func_file_name (str): Filename of temporary pickle file for the deployed function
+        output_file_name (str): Filename of temporary pickle file for the output
+        python_cmd (str): Command that is executed on remote machine to run python function
+    """
 
     def __init__(self, host, remote_python, user=None):
+        """Initialize RemoteConnection object.
+
+        Args:
+            host (str): address of remote host
+            remote_python (str): Path to remote python
+            user (str): User name on remote machine
+        """
         super().__init__(host, user=user)
-        self.tunnels = []
         self.func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
         self.output_file_name = f"output_{str(uuid.uuid4())}.pickle"
         self.python_cmd = (
@@ -73,8 +85,15 @@ class RemoteConnection(Connection):
             f"pickle.dump(result, file); file.close();'"
         )
 
-    def run_function(self, func, *func_args, asynchronously=False, **func_kwargs):
-        """Run a python function remotely using an ssh connection."""
+    def run_function(self, func, *func_args, wait=True, **func_kwargs):
+        """Run a python function remotely using an ssh connection.
+
+        Args:
+            func (Function): function that is executed
+            wait (bool): Flag to decide whether to wait for result of function
+        Returns:
+            return_value (obj): Return value of function
+        """
         _logger.info("Running %s on %s", func.__name__, self.host)
         partial_func = partial(func, *func_args, **func_kwargs)  # insert function arguments
         with open(self.func_file_name, "wb") as file:
@@ -83,7 +102,7 @@ class RemoteConnection(Connection):
         self.put(self.func_file_name)  # upload local function file
         Path(self.func_file_name).unlink()  # delete local function file
 
-        if asynchronously:
+        if not wait:
             return self.client.exec_command(self.python_cmd, get_pty=True)
 
         self.run(self.python_cmd, in_stream=False)  # run function remote
@@ -99,7 +118,12 @@ class RemoteConnection(Connection):
         return return_value
 
     def open_port_forwarding(self, local_port, remote_port):
-        """Open port forwarding."""
+        """Open port forwarding.
+
+        Args:
+            local_port (int): Local port
+            remote_port (int): Remote port
+        """
         cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
         run_subprocess(cmd, subprocess_type='submit')
 
