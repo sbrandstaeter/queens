@@ -18,7 +18,7 @@ class MultinomialDistribution(DiscreteDistribution):
                             adds up to.
         """
         if not isinstance(n_trials, int) or n_trials <= 0:
-            raise ValueError(f"n_trials was set to {n_trials} needs to be an positive integer.")
+            raise ValueError(f"n_trials was set to {n_trials} needs to be a positive integer.")
 
         self.n_trials = n_trials
 
