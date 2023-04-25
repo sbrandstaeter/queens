@@ -12,16 +12,19 @@ _logger = logging.getLogger(__name__)
 class ParticleDiscreteDistribution(DiscreteDistribution):
     """Discrete probability distributions.
 
-    Similar to particles in SMC, we use the approach where a discrete numerical distribution is
-    approximated as particles, so the events in the sample space, and weights, so the probabilities
-    associated with the particles. This class can be used directly, but is also used as parent
-    class for other 1d discrete distributions as the computation of expectations is done in the
-    same fashion.
+    Similar to particles in SMC, we use the approach where a distribution is approximated as
+    particles:
+
+      - The particles are the events of the sample space
+      - The weights are denoted by the probabilities of the events
+
+    This class can be used directly, but is also used as parent class for other 1d discrete
+    distributions as the computation of expectations is done in the same fashion.
 
     Attributes:
-        mean (np.ndarray): Mean of the distribution.
-        covariance (np.ndarray): Covariance of the distribution.
-        dimension (int): Dimensionality of the distribution.
+        mean (np.ndarray): Mean of the distribution
+        covariance (np.ndarray): Covariance of the distribution
+        dimension (int): Dimensionality of the distribution
         probabilities (np.ndarray): Probabilities associated to all the events in the sample space
         sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
     """
