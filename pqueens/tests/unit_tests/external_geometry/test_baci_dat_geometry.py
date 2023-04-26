@@ -44,7 +44,7 @@ def default_geo_obj(tmp_path):
 
 def write_to_file(data, filepath):
     """TODO_doc."""
-    with open(filepath, 'w') as fp:
+    with open(filepath, 'w', encoding='utf-8') as fp:
         fp.write(data)
 
 

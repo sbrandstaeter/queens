@@ -146,7 +146,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         Returns:
             monfile_data (list): Data from monitor file in numbers
         """
-        with open(path_to_experimental_reference_data) as my_file:
+        with open(path_to_experimental_reference_data, encoding='utf-8') as my_file:
             lines = my_file.readlines()
             i = 0
             npoints = 0
