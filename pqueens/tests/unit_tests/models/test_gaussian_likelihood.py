@@ -127,7 +127,7 @@ def test_init():
     assert gauss_lik_obj.y_obs == y_obs
     assert gauss_lik_obj.output_label == output_label
     assert gauss_lik_obj.coord_labels == coord_labels
-    assert gauss_lik_obj.__class__.__name__ == "GM.GaussianLikelihood"
+    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
 
 
 def test_fcc(dummy_config, mocker):
@@ -157,7 +157,7 @@ def test_fcc(dummy_config, mocker):
 
     # test valid configuration
     gauss_lik_obj = GM.GaussianLikelihood.from_config_create_model(model_name, dummy_config)
-    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
+    assert gauss_lik_obj.__class__.__name__ == "GM.GaussianLikelihood"
     assert gauss_lik_obj.name == model_name
     assert gauss_lik_obj.nugget_noise_variance == dummy_config[model_name]["nugget_noise_variance"]
     assert gauss_lik_obj.forward_model == forward_model
