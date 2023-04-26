@@ -113,7 +113,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         if retained_energy < self.des_energy_frac:
             raise RuntimeError(
                 'Energy fraction retained by KLE expansion is '
-                ' only {}, not {}'.format(retained_energy, self.des_energy_frac)
+                f' only {retained_energy}, not {self.des_energy_frac}'
             )
 
         self.act_energy_frac = retained_energy

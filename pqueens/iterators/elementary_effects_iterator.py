@@ -160,18 +160,16 @@ class ElementaryEffectsIterator(Iterator):
             results: TODO_doc
         """
         _logger.info(
-            "{0:<20} {1:>10} {2:>10} {3:>15} {4:>10}".format(
-                "Parameter", "Mu_Star", "Mu", "Mu_Star_Conf", "Sigma"
-            )
+            f"{'Parameter':<20} {'Mu_star':>10.2e} {'Mu':>10.2e} {'Mu_star_conf':>15.2e} {'Sigma':>10.2e}"
+
         )
 
         for j in range(self.parameters.num_parameters):
             _logger.info(
-                "{0!s:20} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
-                    results['sensitivity_indices']['names'][j],
-                    results['sensitivity_indices']['mu_star'][j],
-                    results['sensitivity_indices']['mu'][j],
-                    results['sensitivity_indices']['mu_star_conf'][j],
-                    results['sensitivity_indices']['sigma'][j],
-                )
+                f"{results['sensitivity_indices']['names'][j]:<20} \
+                {results['sensitivity_indices']['mu_star'][j]:>10.2e} \
+                {results['sensitivity_indices']['mu'][j]:>10.2e} \
+                {results['sensitivity_indices']['mu_star_conf'][j]:>15.2e} \
+                {results['sensitivity_indices']['sigma'][j]:>10.2e}"
+
             )

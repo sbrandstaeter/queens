@@ -503,7 +503,8 @@ def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
     assert default_baci_lm_iterator.reg_param == 2.0
 
     expected_warning = (
-        'WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration.\n declined step was: %s'
-        % (3, np.array([1.1, 2.3]))
+        f"WARNING: STEP #{3} IS OUT OF BOUNDS; double reg_param and compute new iteration.\n "
+        f"declined step was: {np.array([1.1, 2.3])}"
+
     )
     assert expected_warning in caplog.text

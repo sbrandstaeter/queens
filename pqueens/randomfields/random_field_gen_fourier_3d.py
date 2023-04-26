@@ -99,13 +99,13 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
         """
         if len(phase_angles) != self.stoch_dim:
             raise RuntimeError(
-                'Number of random phase angles {} does not match '
-                'stochastic dimension {} of the field!'.format(len(phase_angles), self.stoch_dim)
+                f'Number of random phase angles {len(phase_angles)} does not match '
+                f'stochastic dimension {self.stoch_dim} of the field!'
             )
 
         if len(loc[0, :]) != 3:
             raise RuntimeError(
-                'Dimension of location vector must be two, not {}'.format(len(loc[0, :]))
+                f'Dimension of location vector must be two, not {len(loc[0, :])}'
             )
 
         # reorder phase angles in matrix

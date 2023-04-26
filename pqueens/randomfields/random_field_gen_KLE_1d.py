@@ -15,14 +15,14 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
     """
 
     def __init__(
-        self,
-        marginal_distribution,
-        corr_length,
-        energy_frac,
-        field_bbox,
-        dimension,
-        num_ex_term_per_dim,
-        num_terms,
+            self,
+            marginal_distribution,
+            corr_length,
+            energy_frac,
+            field_bbox,
+            dimension,
+            num_ex_term_per_dim,
+            num_terms,
     ):
         """TODO_doc.
 
@@ -59,7 +59,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         self.lambda_n = np.zeros((self.trunc_thres, 2))
         for k in range(self.trunc_thres):
             self.lambda_n[k, :] = [
-                2 * self.corr_length / ((self.corr_length**2 * self.w_n[k] ** 2 + 1)),
+                2 * self.corr_length / ((self.corr_length ** 2 * self.w_n[k] ** 2 + 1)),
                 k,
             ]
             sum_lambda = sum_lambda + self.lambda_n[k, 0]
@@ -67,7 +67,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         if sum_lambda / self.largest_length < self.des_energy_frac:
             raise RuntimeError(
                 'Energy fraction retained by KLE expansion is '
-                ' only {}, not {}'.format(sum_lambda / self.largest_length, self.des_energy_frac)
+                f'only {sum_lambda / self.largest_length}, not {self.des_energy_frac}'
             )
 
         self.act_energy_frac = sum_lambda / self.largest_length
