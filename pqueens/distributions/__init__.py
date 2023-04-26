@@ -28,5 +28,7 @@ def from_config_create_distribution(distribution_options):
         distribution: Distribution object
     """
     distribution_class = get_module_class(distribution_options, VALID_TYPES, "type")
-    distribution = distribution_class.from_config_create_distribution(distribution_options)
+    distribution_options_copy = distribution_options.copy()
+    distribution_options_copy.pop("type")
+    distribution = distribution_class.from_config_create_distribution(distribution_options_copy)
     return distribution
