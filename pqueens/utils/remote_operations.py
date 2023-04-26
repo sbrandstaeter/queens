@@ -103,7 +103,8 @@ class RemoteConnection(Connection):
         Path(self.func_file_name).unlink()  # delete local function file
 
         if not wait:
-            return self.client.exec_command(self.python_cmd, get_pty=True)
+            _, stdout, stderr = self.client.exec_command(self.python_cmd, get_pty=True)
+            return stdout, stderr
 
         self.run(self.python_cmd, in_stream=False)  # run function remote
         self.get(self.output_file_name)  # download result
