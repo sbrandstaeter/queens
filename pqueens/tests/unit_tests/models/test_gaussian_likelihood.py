@@ -127,7 +127,7 @@ def test_init():
     assert gauss_lik_obj.y_obs == y_obs
     assert gauss_lik_obj.output_label == output_label
     assert gauss_lik_obj.coord_labels == coord_labels
-    assert gauss_lik_obj.__class__.__name__ == "GM.GaussianLikelihood"
+    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
 
 
 def test_fcc(dummy_config, mocker):
@@ -140,7 +140,7 @@ def test_fcc(dummy_config, mocker):
     output_label = ["y_obs"]
     coord_labels = ["c1", "c2"]
     m1 = mocker.patch(
-        "GM.LikelihoodModel.get_base_attributes_from_config",
+        "LikelihoodModel.get_base_attributes_from_config",
         return_value=(
             forward_model,
             coords_mat,
