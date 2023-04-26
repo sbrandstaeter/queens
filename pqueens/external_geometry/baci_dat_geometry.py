@@ -225,7 +225,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     # -------------- helper methods ---------------------------------------------------------------
     def _read_geometry_from_dat_file(self):
         """Read the dat-file line by line to be memory efficient."""
-        with open(self.path_to_dat_file) as my_dat:
+        with open(self.path_to_dat_file, encoding='utf-8') as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 line = line.strip()
