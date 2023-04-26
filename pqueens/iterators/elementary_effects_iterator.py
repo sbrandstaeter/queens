@@ -161,7 +161,6 @@ class ElementaryEffectsIterator(Iterator):
         """
         _logger.info(
             f"{'Parameter':<20} {'Mu_star':>10.2e} {'Mu':>10.2e} {'Mu_star_conf':>15.2e} {'Sigma':>10.2e}"
-
         )
 
         for j in range(self.parameters.num_parameters):
@@ -171,5 +170,4 @@ class ElementaryEffectsIterator(Iterator):
                 {results['sensitivity_indices']['mu'][j]:>10.2e} \
                 {results['sensitivity_indices']['mu_star_conf'][j]:>15.2e} \
                 {results['sensitivity_indices']['sigma'][j]:>10.2e}"
-
             )

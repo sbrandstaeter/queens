@@ -331,6 +331,5 @@ class SobolIndexIterator(Iterator):
             sa_lib_distribution_name = 'lognorm'
         else:
             valid_dists = ['uniform', 'normal', 'lognormal']
-            raise ValueError(f'Distributions: choose one of {", ".join(valid_dists)}'
-)
+            raise ValueError(f'Distributions: choose one of {", ".join(valid_dists)}')
         return sa_lib_distribution_name

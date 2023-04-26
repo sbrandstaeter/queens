@@ -104,9 +104,7 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
             )
 
         if len(loc[0, :]) != 3:
-            raise RuntimeError(
-                f'Dimension of location vector must be two, not {len(loc[0, :])}'
-            )
+            raise RuntimeError(f'Dimension of location vector must be two, not {len(loc[0, :])}')
 
         # reorder phase angles in matrix
         xi = np.reshape(phase_angles, (-1, 8))
