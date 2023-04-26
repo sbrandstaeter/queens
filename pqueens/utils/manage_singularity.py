@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH
+from pqueens.utils.exceptions import SingularityError
 from pqueens.utils.path_utils import PATH_TO_QUEENS, relative_path_from_pqueens
 from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
@@ -37,8 +38,8 @@ def create_singularity_image():
         )
     except SubprocessError as sp_error:
         # Check if build was successful
-        if str(sp_error).find("INFO:    Build complete:") < 0:
-            raise sp_error
+        if str(sp_error).find("INFO:    Build complete:") < 0 or str(sp_error).find("FATAL:") >= 0:
+            raise SingularityError("Could not build singularity") from sp_error
 
     if not ABS_SINGULARITY_IMAGE_PATH.is_file():
         raise FileNotFoundError(f'No singularity image "{ABS_SINGULARITY_IMAGE_PATH}" found')
@@ -371,14 +372,18 @@ def _files_changed():
             f"singularity exec {ABS_SINGULARITY_IMAGE_PATH} "
             + f"cmp {file} {filepath_in_singularity}"
         )
-        _, _, stdout, stderr = run_subprocess(
-            command_string, raise_error_on_subprocess_failure=False
-        )
-
-        # If file is different or missing stop iteration and build the image
-        if stdout or stderr:
+        try:
+            _, _, stdout, _ = run_subprocess(command_string)
+            # If file is different or missing stop iteration and build the image
+            if stdout:
+                files_changed = True
+                break
+        except SubprocessError as sp_error:
+            if str(sp_error).find("FATAL: ") > -1:
+                raise SingularityError() from sp_error
             files_changed = True
             break
+
     return files_changed
 
 

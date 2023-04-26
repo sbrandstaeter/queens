@@ -110,11 +110,6 @@ class BmfiaInterface(Interface):
         # prepare LF and HF training array
         z_lf_array = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf_train, t_size, coords_mat)
 
-        if y_hf_train.T.shape[0] != t_size:
-            raise IndexError(
-                "The number of time steps must be equal to the number of time steps in the "
-                "high-fidelity model."
-            )
         y_hf_lst = np.array_split(y_hf_train.T, t_size)
         y_hf_array = np.array([y_hf.T.reshape(-1, 1) for y_hf in y_hf_lst])
 

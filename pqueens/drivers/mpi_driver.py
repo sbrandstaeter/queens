@@ -23,7 +23,7 @@ class MpiDriver(Driver):
     """Driver to run an executable with mpi.
 
     Attributes:
-        cae_output_streaming (bool): Flag for additional streaming to given
+        verbose (bool): Flag for additional streaming to given
                                      stream.
         cluster_job (bool): *True* if job is executed on a cluster.
         cluster_options (dict): Cluster options for pbs or slurm.
@@ -60,7 +60,7 @@ class MpiDriver(Driver):
         output_directory,
         singularity,
         database,
-        cae_output_streaming,
+        verbose,
         cluster_config,
         cluster_options,
         error_file,
@@ -93,7 +93,7 @@ class MpiDriver(Driver):
             output_directory (Path): Path to output directory (on remote computing resource)
             singularity (bool): flag for use of a singularity container
             database (obj): database object
-            cae_output_streaming (bool): flag for additional streaming to given stream
+            verbose (bool): flag for additional streaming to given stream
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
             error_file (Path): Path to error file
@@ -129,7 +129,7 @@ class MpiDriver(Driver):
             gradient_data_processor=gradient_data_processor,
             data_processor=data_processor,
         )
-        self.cae_output_streaming = cae_output_streaming
+        self.verbose = verbose
         self.cluster_job = cluster_job
         self.cluster_config = cluster_config
         self.cluster_options = cluster_options
@@ -208,11 +208,10 @@ class MpiDriver(Driver):
         data_processor_name = driver_options.get('data_processor_name', None)
         if data_processor_name:
             data_processor = from_config_create_data_processor(config, data_processor_name)
-            cae_output_streaming = False
         else:
             data_processor = None
-            cae_output_streaming = True
 
+        verbose = driver_options.get("verbose", False)
         gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
         if gradient_data_processor_name:
             gradient_data_processor = from_config_create_data_processor(
@@ -249,7 +248,7 @@ class MpiDriver(Driver):
             output_directory=output_directory,
             singularity=singularity,
             database=database,
-            cae_output_streaming=cae_output_streaming,
+            verbose=verbose,
             cluster_config=cluster_config,
             cluster_options=cluster_options,
             error_file=error_file,
@@ -317,7 +316,7 @@ class MpiDriver(Driver):
             loggername=__name__ + f'_{self.job_id}',
             log_file=str(self.log_file),
             error_file=str(self.error_file),
-            streaming=self.cae_output_streaming,
+            streaming=self.verbose,
             raise_error_on_subprocess_failure=False,
         )
 

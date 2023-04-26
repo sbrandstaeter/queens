@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from mock import patch
 
-import pqueens.models.bmfmc_model as bmfmc_model
+from pqueens.models import bmfmc_model
 import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator

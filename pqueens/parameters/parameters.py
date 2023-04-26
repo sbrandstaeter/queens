@@ -35,7 +35,15 @@ def from_config_create_parameters(config, pre_processor=None):
 
         for parameter_name, parameter_dict in parameters_options.items():
             parameter_type = parameter_dict['type']
-            if parameter_type in ['normal', 'uniform', 'lognormal', 'beta', 'exponential', 'free']:
+            if parameter_type in [
+                'normal',
+                'uniform',
+                'lognormal',
+                'beta',
+                'exponential',
+                'free',
+                'mean_field_normal',
+            ]:
                 distribution = from_config_create_distribution(parameter_dict)
                 joint_parameters_dict[parameter_name] = distribution
                 joint_parameters_keys = _add_parameters_keys(

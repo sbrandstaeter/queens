@@ -1,10 +1,10 @@
 """Exponential distribution."""
 import numpy as np
 
-from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.distributions import ContinuousDistribution
 
 
-class ExponentialDistribution(Distribution):
+class ExponentialDistribution(ContinuousDistribution):
     r"""Exponential distribution class.
 
     For a multivariate distribution the components are assumed to be independent.
@@ -24,7 +24,7 @@ class ExponentialDistribution(Distribution):
             rate (np.ndarray): rate parameter(s) of the distribution
         """
         rate = np.array(rate).reshape(-1)
-        super().check_positivity({'rate': rate})
+        super().check_positivity(rate=rate)
         scale = 1 / rate
 
         mean = scale

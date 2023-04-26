@@ -153,9 +153,10 @@ class GridIterator(Iterator):
                 )
 
         # plot QoI over grid
-        qvis.grid_iterator_visualization_instance.plot_QoI_grid(
-            self.output,
-            self.samples,
-            self.num_parameters,
-            self.num_grid_points_per_axis,
-        )
+        if qvis.grid_iterator_visualization_instance:
+            qvis.grid_iterator_visualization_instance.plot_QoI_grid(
+                self.output,
+                self.samples,
+                self.num_parameters,
+                self.num_grid_points_per_axis,
+            )

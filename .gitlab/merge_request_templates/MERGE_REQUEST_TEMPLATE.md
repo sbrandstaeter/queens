@@ -26,10 +26,11 @@ Feel free to provide further information if useful or necessary.
 <!--
 Go over all the following points, and put an `x` in all the boxes that apply. If you are unsure about any of these, please ask; we are here to help.
 -->
-- [ ] My commit messages mention the appropriate GitLab issue numbers.
-- [ ] My change requires a change to the documentation.
+- [ ] My commit messages mention the appropriate GitLab issue numbers (advised but optional).
+- [ ] I mention the appropriate GitLab issue numbers in this MR.
+- [ ] I updated documentation where necessary.
+- [ ] I updated the README where necessary
 - [ ] I have added as (few,) small and fast tests as possible to cover my changes.
-- [ ] All new and existing tests passed.
 
 ## Additional Information
 <!--

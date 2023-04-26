@@ -1,7 +1,6 @@
 """Integration tests for the BBVI iterator."""
 import pickle
 from collections import namedtuple
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -9,7 +8,6 @@ from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
 import pqueens.parameters.parameters as parameters_module
-import pqueens.visualization.variational_inference_visualization as vis
 from pqueens import run
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import injector

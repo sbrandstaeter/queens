@@ -1,6 +1,5 @@
 """Test chaospy wrapper."""
 import pickle
-from pathlib import Path
 
 import pytest
 

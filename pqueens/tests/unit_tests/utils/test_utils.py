@@ -5,7 +5,6 @@
 import unittest
 
 import numpy as np
-import pytest
 
 from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
 

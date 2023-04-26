@@ -1,7 +1,6 @@
 """Integration test for reparametrization trick VI as executable."""
 
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pytest

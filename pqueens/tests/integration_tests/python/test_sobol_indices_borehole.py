@@ -1,9 +1,7 @@
 """Test Sobol indices estimation for borehole function."""
 import pickle
-from pathlib import Path
 
 import numpy as np
-import pytest
 
 from pqueens import run
 

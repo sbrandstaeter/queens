@@ -58,7 +58,7 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **kwargs):
         return np.array(y_vec)
 
 
-def park91a_lofi(x1, x2, x3, x4, **kwargs):
+def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
     r"""Low-fidelity Park91a function.
 
     Simple four-dimensional benchmark function as proposed in [1] to mimic
@@ -75,9 +75,13 @@ def park91a_lofi(x1, x2, x3, x4, **kwargs):
         x2 (float):  Input parameter 2 [0,1)
         x3 (float):  Input parameter 3 [0,1)
         x4 (float):  Input parameter 4 [0,1)
+        gradient_bool (bool, optional): Switch to return gradient value w.r.t. x1 and x2
 
     Returns:
-        float: Value of function at parameters
+        y (float): Value of function at parameters
+        dy_dx1 (float): Gradient of the function w.r.t. x1
+        dy_dx2 (float): Gradient of the function w.r.t. x2
+
 
     References:
         [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
@@ -91,11 +95,28 @@ def park91a_lofi(x1, x2, x3, x4, **kwargs):
             high-accuracy and low-accuracy computer codes. Technometrics.
             http://doi.org/10.1080/00401706.2012.723572
     """
-    yh = park91a_hifi(x1, x2, x3, x4)
-    term1 = (1 + np.sin(x1) / 10) * yh
-    term2 = -2 * x1 + x2**2 + x3**2
-    y = term1 + term2 + 0.5
-    return y
+    if gradient_bool:
+        yh, (dyh_dx1, dyh_dx2) = park91a_hifi(x1, x2, x3, x4, gradient_bool=True)
+        term1 = (1 + np.sin(x1) / 10) * yh
+        term2 = -2 * x1 + x2**2 + x3**2
+        y = term1 + term2 + 0.5
+
+        dy_dx1_term1 = dyh_dx1 * (1 + np.sin(x1) / 10) + np.cos(x1) / 10 * yh
+        dy_dx1_term2 = -2
+
+        dy_dx2_term1 = dyh_dx2 * (1 + np.sin(x1) / 10)
+        dy_dx2_term2 = 2 * x2
+
+        dy_dx1 = dy_dx1_term1 + dy_dx1_term2
+        dy_dx2 = dy_dx2_term1 + dy_dx2_term2
+        return y, (dy_dx1, dy_dx2)
+    else:
+        yh = park91a_hifi(x1, x2, x3, x4)
+        term1 = (1 + np.sin(x1) / 10) * yh
+        term2 = -2 * x1 + x2**2 + x3**2
+        y = term1 + term2 + 0.5
+
+        return y
 
 
 def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
@@ -222,7 +243,6 @@ def park91a_hifi_on_grid_with_gradients(x1, x2, **kwargs):
         y (float): Value of function at parameters
         dy_dx1 (float): Gradient of the function w.r.t. *x1*
         dy_dx2 (float): Gradient of the function w.r.t. *x2*
-
     """
     y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_hifi, x1, x2, gradient_bool=True, **kwargs)
     return y, (dy_dx1, dy_dx2)
@@ -240,3 +260,19 @@ def park91a_lofi_on_grid(x1, x2, **kwargs):
     """
     y = x3_x4_grid_eval(park91a_lofi, x1, x2, **kwargs)
     return y
+
+
+def park91a_lofi_on_grid_with_gradients(x1, x2, **kwargs):
+    r"""Low-fidelity Park91a function on x3 and x4 grid with gradients.
+
+    Args:
+        x1 (float): Input parameter 1 [0,1)
+        x2 (float): Input parameter 2 [0,1)
+
+    Returns:
+        y (float): Value of function at parameters
+        dy_dx1 (float): Gradient of the function w.r.t. x1
+        dy_dx2 (float): Gradient of the function w.r.t. x2
+    """
+    y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_lofi, x1, x2, gradient_bool=True, **kwargs)
+    return y, (dy_dx1, dy_dx2)
