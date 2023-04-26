@@ -89,14 +89,20 @@ def test_fcc(reference_data, distribution):
     np.testing.assert_allclose(reference_covariance, distribution.covariance)
 
 
-def test_init_failure():
-    """Test if invalid options lead to errors."""
+def test_init_failure_mismatching_probabilities():
+    """Test if mismatching number of probability leads to failure."""
     with pytest.raises(ValueError, match="The number of probabilities"):
         ParticleDiscreteDistribution([0.1, 1], [[1], [2], [3]])
 
+
+def test_init_failure_negative_probabilities():
+    """Test if negative values lead to errors."""
     with pytest.raises(ValueError, match="The parameter 'probabilities' has to be positive."):
         ParticleDiscreteDistribution([0.1, -1], [[1], [2]])
 
+
+def test_init_failure_mismatching_dimension():
+    """Test if mismatching dimensions of the event sa."""
     with pytest.raises(ValueError, match="Dimensions of the sample events do not match."):
         ParticleDiscreteDistribution([0.1, 1], [[1], [1, 2]])
 
