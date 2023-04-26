@@ -1,4 +1,5 @@
 """Local scheduler for QUEENS runs."""
+import atexit
 import logging
 
 from dask.distributed import Client, LocalCluster
@@ -38,4 +39,5 @@ class LocalScheduler(Scheduler):
             silence_logs=False,
         )
         client = Client(cluster)
+        atexit.register(client.shutdown)
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
