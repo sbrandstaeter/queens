@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from mock import patch
 
+import pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood as BMF
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
-from pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
 from pqueens.models.simulation_model import SimulationModel
 
 
@@ -161,7 +161,7 @@ def default_mf_likelihood(
     likelihood_evals_for_refinement_lst = []
     dummy_normal_distr = "dummy"
 
-    mf_likelihood = BMFGaussianModel(
+    mf_likelihood = BMF.BMFGaussianModel(
         model_name,
         forward_model,
         coords_mat,
@@ -236,7 +236,7 @@ def test_init(dummy_model, parameters, default_interface, default_bmfia_iterator
     num_refinement_samples = 0
     likelihood_evals_for_refinement_lst = []
 
-    model = BMFGaussianModel(
+    model = BMF.BMFGaussianModel(
         model_name,
         forward_model,
         coords_mat,
@@ -305,7 +305,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     forward_model_output = np.array([[5], [6]])
     mf_log_likelihood_exp = np.array([[7], [9]])
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',
+        'BMF.BMFGaussianModel._evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
     )
 
@@ -320,12 +320,10 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
 
     # test with adaptivity
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._adaptivity_trigger',
+        'BMF.BMFGaussianModel._adaptivity_trigger',
         return_value=True,
     )
-    mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood'
-    )
+    mocker.patch('BMF.BMFGaussianModel._refine_mf_likelihood')
     with pytest.raises(NotImplementedError):
         mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
             mf_log_likelihood_exp, y_lf_mat
@@ -577,7 +575,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
     )
     # pylint: enable=line-too-long
 
-    BMFGaussianModel._build_approximation(
+    BMF.BMFGaussianModel._build_approximation(
         default_bmfia_iterator,
         default_interface,
         config,

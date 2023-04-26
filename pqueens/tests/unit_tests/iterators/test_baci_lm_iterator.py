@@ -438,9 +438,11 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     with caplog.at_level(logging.WARNING):
         default_baci_lm_iterator.post_run()
 
-    expected_warning = """write_results for more than 2 parameters not implemented, because we are
-    limited to 3 dimensions. You have: 3.
-    Plotting is skipped."""
+    expected_warning = (
+        "write_results for more than 2 parameters not implemented, "
+        "because we are limited to 3 dimensions. "
+        "You have: 3. Plotting is skipped."
+    )
     assert expected_warning in caplog.text
 
     m4.assert_not_called()

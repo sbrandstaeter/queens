@@ -4,8 +4,8 @@ from collections import namedtuple
 import numpy as np
 import pytest
 
+import pqueens.models.likelihood_models.gaussian_likelihood as GM
 from pqueens.distributions import from_config_create_distribution
-from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 
 
 # ---------------- some fixtures ---------------------------------- #
@@ -72,7 +72,7 @@ def my_lik_model():
     output_label = ["out"]
     coord_labels = ["c1", "c2"]
 
-    gauss_lik_obj = GaussianLikelihood(
+    gauss_lik_obj = GM.GaussianLikelihood(
         model_name,
         nugget_noise_variance,
         forward_model,
@@ -103,7 +103,7 @@ def test_init():
     output_label = ["out"]
     coord_labels = ["c1", "c2"]
 
-    gauss_lik_obj = GaussianLikelihood(
+    gauss_lik_obj = GM.GaussianLikelihood(
         model_name,
         nugget_noise_variance,
         forward_model,
@@ -127,7 +127,7 @@ def test_init():
     assert gauss_lik_obj.y_obs == y_obs
     assert gauss_lik_obj.output_label == output_label
     assert gauss_lik_obj.coord_labels == coord_labels
-    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
+    assert gauss_lik_obj.__class__.__name__ == "GM.GaussianLikelihood"
 
 
 def test_fcc(dummy_config, mocker):
@@ -140,7 +140,7 @@ def test_fcc(dummy_config, mocker):
     output_label = ["y_obs"]
     coord_labels = ["c1", "c2"]
     m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.LikelihoodModel.get_base_attributes_from_config",
+        "GM.LikelihoodModel.get_base_attributes_from_config",
         return_value=(
             forward_model,
             coords_mat,
@@ -156,8 +156,8 @@ def test_fcc(dummy_config, mocker):
     normal_distribution = from_config_create_distribution(distribution_options)
 
     # test valid configuration
-    gauss_lik_obj = GaussianLikelihood.from_config_create_model(model_name, dummy_config)
-    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
+    gauss_lik_obj = GM.GaussianLikelihood.from_config_create_model(model_name, dummy_config)
+    assert gauss_lik_obj.__class__.__name__ == "GM.GaussianLikelihood"
     assert gauss_lik_obj.name == model_name
     assert gauss_lik_obj.nugget_noise_variance == dummy_config[model_name]["nugget_noise_variance"]
     assert gauss_lik_obj.forward_model == forward_model
@@ -185,9 +185,7 @@ def test_evaluate(mocker, my_lik_model):
 
     # test update of covariance for MAP
     my_lik_model.noise_type = "MAP_abc"
-    m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.GaussianLikelihood.update_covariance"
-    )
+    m1 = mocker.patch("GM.GaussianLikelihood.update_covariance")
     response = my_lik_model.evaluate(samples)
     assert m1.called_once_with(3.0)
 
