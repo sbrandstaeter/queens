@@ -29,23 +29,21 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
         sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
     """
 
-    @staticmethod
-    def _compute_mean_and_covariance(probabilities, sample_space):
+    def _compute_mean_and_covariance(self):
         """Compute the mean value and covariance of the mixture model.
-
-        Args:
-            probabilities (np.ndarray): Probabilities associated to all the events in the sample
-                                        space
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
 
         Returns:
             mean (np.ndarray): Mean value of the distribution
             covariance (np.ndarray): Covariance of the distribution
         """
         mean = np.sum(
-            sample_space * np.tile(probabilities.reshape(-1, 1), len(sample_space[0])), axis=0
+            self.sample_space
+            * np.tile(self.probabilities.reshape(-1, 1), len(self.sample_space[0])),
+            axis=0,
         )
-        covariance = np.cov(sample_space, ddof=0, aweights=probabilities.flatten(), rowvar=False)
+        covariance = np.cov(
+            self.sample_space, ddof=0, aweights=self.probabilities.flatten(), rowvar=False
+        )
         return mean, covariance
 
     def cdf(self, x):  # pylint: disable=invalid-name

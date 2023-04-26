@@ -27,22 +27,18 @@ class MultinomialDistribution(DiscreteDistribution):
         super().__init__(probabilities, sample_space, dimension=len(probabilities))
         self.scipy_multinomial = multinomial(self.n_trials, self.probabilities)
 
-    @staticmethod
-    def _compute_mean_and_covariance(probabilities, sample_space):
+    def _compute_mean_and_covariance(self):
         """Compute the mean value and covariance of the mixture model.
-
-        Args:
-            probabilities (np.ndarray): Probabilities associated to all the events in the sample
-                                        space
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
 
         Returns:
             mean (np.ndarray): Mean value of the distribution
             covariance (np.ndarray): Covariance of the distribution
         """
-        n_trials = sample_space[0]
-        mean = n_trials * probabilities
-        covariance = n_trials * (np.diag(probabilities) - np.outer(probabilities, probabilities))
+        n_trials = self.sample_space[0]
+        mean = n_trials * self.probabilities
+        covariance = n_trials * (
+            np.diag(self.probabilities) - np.outer(self.probabilities, self.probabilities)
+        )
         return mean, covariance
 
     def draw(self, num_draws=1):

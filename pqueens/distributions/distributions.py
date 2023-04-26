@@ -228,7 +228,7 @@ class DiscreteDistribution(Distribution):
             self.probabilities = probabilities
             self.sample_space = sample_space
 
-        self.mean, self.covariance = self._compute_mean_and_covariance(probabilities, sample_space)
+        self.mean, self.covariance = self._compute_mean_and_covariance()
 
     @abstractmethod
     def draw(self, num_draws=1):
@@ -272,14 +272,9 @@ class DiscreteDistribution(Distribution):
             q (np.ndarray): Quantiles at which the ppf is evaluated
         """
 
-    @staticmethod
-    def _compute_mean_and_covariance(probabilities, sample_space):
+    @abstractmethod
+    def _compute_mean_and_covariance(self):
         """Compute the mean value and covariance of the distribution.
-
-        Args:
-            probabilities (np.ndarray): Probabilities associated to all the events in the sample
-                                        space
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
 
         Returns:
             mean (np.ndarray): Mean value of the distribution
