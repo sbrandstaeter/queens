@@ -283,7 +283,7 @@ def test_evaluate(default_mf_likelihood, mocker):
     )
 
     mp2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output',  # pylint: disable=line-too-long
         return_value=likelihood_output,
     )
 
@@ -305,7 +305,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     forward_model_output = np.array([[5], [6]])
     mf_log_likelihood_exp = np.array([[7], [9]])
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',  # pylint: disable=line-too-long
         return_value=mf_log_likelihood_exp,
     )
 
@@ -320,10 +320,12 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
 
     # test with adaptivity
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._adaptivity_trigger', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._adaptivity_trigger',  # pylint: disable=line-too-long
         return_value=True,
     )
-    mocker.patch('pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood') # pylint: disable=line-too-long
+    mocker.patch(
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood'
+    )  # pylint: disable=line-too-long
     with pytest.raises(NotImplementedError):
         mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
             mf_log_likelihood_exp, y_lf_mat
@@ -401,12 +403,12 @@ def test_evaluate_and_gradient(default_mf_likelihood):
 
     # pylint: disable=line-too-long
     with mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.prepare_downstream_gradient_fun', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.prepare_downstream_gradient_fun',  # pylint: disable=line-too-long
         mp1,
     ), mock.patch(
         'pqueens.models.simulation_model.SimulationModel.evaluate_and_gradient', mp2
     ), mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output',  # pylint: disable=line-too-long
         mp3,
     ):
         log_likelihood, grad_objective_samples = default_mf_likelihood.evaluate_and_gradient(
@@ -471,7 +473,7 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
         return_value=0.1,
     )
     mp3 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.grad_log_pdf_d_ylf', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.grad_log_pdf_d_ylf',  # pylint: disable=line-too-long
         return_value=np.array([[0.2]]),
     )
     # pylint: enable=line-too-long
@@ -539,13 +541,14 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
 
     # pylint: disable=line-too-long
     mo_1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration', # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration',  # pylint: disable=line-too-long
         return_value=None,
     )
 
     # pylint: enable=line-too-long
     BMF.BMFGaussianModel.initialize_bmfia_iterator(
-        coords_mat, time_vec, y_obs, default_bmfia_iterator)
+        coords_mat, time_vec, y_obs, default_bmfia_iterator
+    )
 
     # actual tests / asserts
     mo_1.assert_called_once()

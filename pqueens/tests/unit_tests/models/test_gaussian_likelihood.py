@@ -140,7 +140,7 @@ def test_fcc(dummy_config, mocker):
     output_label = ["y_obs"]
     coord_labels = ["c1", "c2"]
     m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.LikelihoodModel.get_base_attributes_from_config", # pylint: disable=line-too-long
+        "pqueens.models.likelihood_models.gaussian_likelihood.LikelihoodModel.get_base_attributes_from_config",  # pylint: disable=line-too-long
         return_value=(
             forward_model,
             coords_mat,
@@ -185,7 +185,9 @@ def test_evaluate(mocker, my_lik_model):
 
     # test update of covariance for MAP
     my_lik_model.noise_type = "MAP_abc"
-    m1 = mocker.patch("pqueens.models.likelihood_models.gaussian_likelihood.GaussianLikelihood.update_covariance") # pylint: disable=line-too-long
+    m1 = mocker.patch(
+        "pqueens.models.likelihood_models.gaussian_likelihood.GaussianLikelihood.update_covariance"
+    )  # pylint: disable=line-too-long
     response = my_lik_model.evaluate(samples)
     assert m1.called_once_with(3.0)
 
