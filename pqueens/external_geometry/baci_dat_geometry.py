@@ -1259,7 +1259,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             or realized_random_field_3 is None
         ):
             raise ValueError(
-                "One random fields realization for a Dirichlet BC was not " "defined. Abort..."
+                "One random fields realization for a Dirichlet BC was not defined. Abort..."
             )
 
         return (

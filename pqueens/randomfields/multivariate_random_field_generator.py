@@ -67,11 +67,11 @@ class MultiVariateRandomFieldGenerator(object):
         if num_fields == len(crosscorr[:, 0]) and num_fields == len(crosscorr[0, :]):
             self.var_dim = num_fields
         else:
-            raise RuntimeError('Size of cross-correlation matrix must ' 'match number of fields')
+            raise RuntimeError('Size of cross-correlation matrix must match number of fields')
 
         if num_fields != len(marginal_distributions):
             raise RuntimeError(
-                'Number of input distributions does not ' ' match number of univariate fields'
+                'Number of input distributions does not match number of uni-variate fields'
             )
 
         temp = 0
