@@ -258,7 +258,7 @@ class ExponentialAveraging(IterativeAveraging):
             coefficient = config.get("coefficient")
 
         if coefficient < 0 or coefficient > 1:
-            raise ValueError(f"Coefficient for exponential averaging needs to be in (0,1)")
+            raise ValueError("Coefficient for exponential averaging needs to be in (0,1)")
         return cls(coefficient=coefficient)
 
     def average_computation(self, new_value):
