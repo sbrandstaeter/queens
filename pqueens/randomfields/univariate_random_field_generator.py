@@ -52,7 +52,7 @@ class UnivariateRandomFieldSimulator(object):
             marginal_distribution.dist.name != 'norm'
             and marginal_distribution.dist.name != 'lognorm'
         ):
-            raise RuntimeError('Error: marginal_distribution must be either ' 'Normal or Lognormal')
+            raise RuntimeError('Error: marginal_distribution must be either Normal or Lognormal')
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, x, xi):

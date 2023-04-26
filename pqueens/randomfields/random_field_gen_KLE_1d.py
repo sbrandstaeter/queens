@@ -88,7 +88,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         """
         if len(phase_angles) is not self.stoch_dim:
             raise RuntimeError(
-                'Number of random phase angles does not match ' 'stochastic dimension of the field!'
+                'Number of random phase angles does not match stochastic dimension of the field!'
             )
 
         # if length(loc(1,:))~=1

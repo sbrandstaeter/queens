@@ -202,7 +202,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                     file.unlink()
         except Exception as exception:
             _logger.debug(
-                "Could not remove file with path: '%s'. " "The following error was raised: %s",
+                "Could not remove file with path: '%s'. The following error was raised: %s",
                 str(current_file.resolve()),
                 exception,
             )
