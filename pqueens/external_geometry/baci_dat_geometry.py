@@ -459,8 +459,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
             design_list = line.split()
             if len(design_list) != 2:
                 raise IndexError(
-                    f"""Unexpected number of list entries in design description! The returned list
-                     should have length 2 but the returned list was {design_list}. Abort..."""
+                    "Unexpected number of list entries in design "
+                    "description! The "
+                    "returned list should have length 2 but the returned "
+                    f"list was {design_list}. "
+                    "Abort..."
                 )
 
             self.design_description[design_list[0]] = design_list[1]
@@ -848,8 +851,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             else:
                 raise RuntimeError(
-                    f"""At the moment we can only handle one nested material but you provided 
-                    {len(self.list_associated_material_numbers[0])} nested materials. Abort..."""
+                    "At the moment we can only handle one nested material but "
+                    "you provided "
+                    f"{len(self.list_associated_material_numbers[0])} nested"
+                    " materials. Abort...."
                 )
 
     def _write_nested_materials(self, line, material_fields):
