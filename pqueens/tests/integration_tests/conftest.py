@@ -215,12 +215,10 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
     exists_on_remote(path_to_post_processor)
     exists_on_remote(path_to_drt_ensight)
 
-    baci_cluster_paths = dict(
-        path_to_executable=path_to_executable,
-        path_to_drt_monitor=path_to_drt_monitor,
-        path_to_drt_ensight=path_to_drt_ensight,
-        path_to_post_processor=path_to_post_processor,
-    )
+    baci_cluster_paths = {'path_to_executable': path_to_executable,
+                          'path_to_drt_monitor': path_to_drt_monitor,
+                          'path_to_drt_ensight': path_to_drt_ensight,
+                          'path_to_post_processor': path_to_post_processor}
     return baci_cluster_paths
 
 
@@ -264,10 +262,8 @@ def baci_cluster_paths_native(
             f"Was looking here: {path_to_drt_monitor}"
         )
 
-    baci_cluster_paths_native = dict(
-        path_to_executable=path_to_executable,
-        path_to_drt_monitor=path_to_drt_monitor,
-    )
+    baci_cluster_paths_native = {'path_to_executable': path_to_executable,
+                                 'path_to_drt_monitor': path_to_drt_monitor}
     return baci_cluster_paths_native
 
 
