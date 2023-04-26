@@ -324,8 +324,8 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
         return_value=True,
     )
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood'
-    )  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood' # pylint: disable=line-too-long
+    )  
     with pytest.raises(NotImplementedError):
         mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
             mf_log_likelihood_exp, y_lf_mat
