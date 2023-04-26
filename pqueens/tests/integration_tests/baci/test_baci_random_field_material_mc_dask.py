@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -51,6 +52,7 @@ def test_write_random_material_to_dat(
     np.testing.assert_array_almost_equal(
         results['raw_output_data']['mean'], expected_result, decimal=1
     )
+    sys.exit(0)  # Trigger dask client shutdown
 
 
 @pytest.fixture()

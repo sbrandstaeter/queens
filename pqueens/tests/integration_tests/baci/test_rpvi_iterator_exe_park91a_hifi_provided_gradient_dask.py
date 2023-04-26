@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -59,6 +60,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.15
     assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+    sys.exit(0)  # Trigger dask client shutdown
 
 
 def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(

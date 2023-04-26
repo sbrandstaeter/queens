@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -43,6 +44,7 @@ def test_dask_ensight_reader_writer(
     # assert statements
     np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=4)
     np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=4)
+    sys.exit(0)  # Trigger dask client shutdown
 
 
 @pytest.fixture()

@@ -5,6 +5,7 @@ INVAAA minimal model.
 """
 
 import os
+import sys
 from pathlib import Path
 
 from pqueens import run
@@ -51,3 +52,4 @@ def test_baci_elementary_effects(
     result_file_name = experiment_name + ".pickle"
     result_file = os.path.join(tmpdir, result_file_name)
     baci_elementary_effects_check_results(result_file)
+    sys.exit(0)  # Trigger dask client shutdown
