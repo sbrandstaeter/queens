@@ -6,7 +6,6 @@ Test local simulations with BACI using a minimal FSI model and the
 """
 
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -80,4 +79,3 @@ def test_baci_lm_shape(
     )
 
     np.testing.assert_allclose(result_data['mu'][1], 1.0, 1.0e-5)
-    sys.exit(0)  # Trigger dask client shutdown

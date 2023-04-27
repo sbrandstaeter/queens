@@ -1,7 +1,6 @@
 """TODO_doc."""
 
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -42,7 +41,6 @@ def test_geometry_from_dat(
         expected_node_coordinates['coordinates'],
         rtol=1.0e-3,
     )
-    sys.exit(0)  # Trigger dask client shutdown
 
 
 # some lengthy result data as fixtures
