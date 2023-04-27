@@ -21,6 +21,7 @@ def sync_remote_repository(remote_address, remote_user, remote_queens_repository
         remote_queens_repository (str): Path to queens repository on remote host
     """
     _logger.info("Syncing remote QUEENS repository with local one...")
+    run_subprocess(f"ssh {remote_user}@{remote_address} mkdir -p {remote_queens_repository}")
     command_list = [
         "rsync --out-format='%n' --archive --checksum --verbose --verbose",
         "--filter=':- .gitignore' --exclude '.git'",
