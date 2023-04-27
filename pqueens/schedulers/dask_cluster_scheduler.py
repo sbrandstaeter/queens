@@ -1,7 +1,6 @@
 """Cluster scheduler for QUEENS runs."""
 import atexit
 import logging
-import pathlib
 import socket
 import time
 
@@ -10,9 +9,8 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
 from pqueens.utils.config_directories_dask import experiment_directory
-from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.remote_build import build_remote_environment, sync_remote_repository
 from pqueens.utils.remote_operations import RemoteConnection
-from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -81,9 +79,9 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
         experiment_name = global_settings['experiment_name']
 
-        self.sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
+        sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
         if cluster_build_environment:
-            self.build_environment(
+            build_remote_environment(
                 cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
             )
 
@@ -145,71 +143,6 @@ class ClusterScheduler(Scheduler):
         client.submit(lambda: "Dummy job").result(timeout=60)
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
-
-    @staticmethod
-    def sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository):
-        """Synchronize local and remote QUEENS source files.
-
-        Args:
-            cluster_address (str): address of cluster
-            cluster_user (str): cluster username
-            cluster_queens_repository (str): Path to queens repository on cluster
-        """
-        _logger.info("Syncing remote QUEENS repository with local one...")
-        command_list = [
-            "rsync --out-format='%n' --archive --checksum --verbose --verbose",
-            "--exclude '.git'",
-            "--exclude '.eggs'",
-            "--exclude '.gitlab'",
-            "--exclude '.idea'",
-            "--exclude '.vscode'",
-            "--exclude '.pytest_cache'",
-            "--exclude '__pycache__'",
-            "--exclude 'doc'",
-            "--exclude 'html_coverage_report'",
-            "--exclude 'config'",
-            f"{PATH_TO_QUEENS}/",
-            f"{cluster_user}@{cluster_address}:{cluster_queens_repository}",
-        ]
-        command_string = ' '.join(command_list)
-        start_time = time.time()
-        _, _, stdout, _ = run_subprocess(
-            command_string,
-            additional_error_message="Error during sync of local and remote QUEENS repositories! ",
-        )
-        _logger.debug(stdout)
-        _logger.info("Sync of remote repository was successful.")
-        _logger.info("It took: %s s.\n", time.time() - start_time)
-
-    @staticmethod
-    def build_environment(
-        cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
-    ):
-        """Build remote QUEENS environment.
-
-        Args:
-            cluster_address (str): address of cluster
-            cluster_user (str): cluster username
-            cluster_queens_repository (str): Path to queens repository on cluster
-            cluster_python_path (str): Path to Python on cluster
-        """
-        _logger.info("Build remote QUEENS environment...")
-        environment_name = pathlib.Path(cluster_python_path).parents[1].name
-        command_string = (
-            f'ssh {cluster_user}@{cluster_address} "'
-            f'cd {cluster_queens_repository}; '
-            f'conda env create -f environment.yml --name {environment_name} --force; '
-            f'conda activate {environment_name}; which python; '
-            f'pip install -e ."'
-        )
-        start_time = time.time()
-        _, _, stdout, _ = run_subprocess(
-            command_string,
-            raise_error_on_subprocess_failure=False,
-        )
-        _logger.debug(stdout)
-        _logger.info("Build of remote queens environment was successful.")
-        _logger.info("It took: %s s.\n", time.time() - start_time)
 
     @staticmethod
     def get_port():

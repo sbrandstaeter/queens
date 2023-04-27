@@ -104,6 +104,50 @@ imcs-build_conda_env:
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
+.build_conda_env_cluster:
+  stage: build
+  before_script:
+    - conda activate queens-$CI_PIPELINE_ID
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+  script:
+    - python pqueens/utils/remote_build.py
+      --remote_address=$REMOTE_ADDRESS --remote_user=queens --remote_python=$REMOTE_PYTHON
+      --remote_queens_repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+
+bruteforce-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
+  needs:
+    - lnm-build_conda_env
+  tags:
+    - lnm-build
+
+deep-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
+  needs:
+    - lnm-build_conda_env
+  tags:
+    - lnm-build
+
+charon-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+    REMOTE_PYTHON: '/home/queens/miniconda3/envs/queens-$CI_PIPELINE_ID/bin/python'
+  needs:
+    - imcs-build_conda_env
+  tags:
+    - imcs-build
+#----------------------------------------------------------------------------------------------
 .build_conda_env_cluster_native:
   stage: build
   script:
@@ -299,16 +343,21 @@ imcs-ubuntu_full_test_suite:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
+      --remote_python=$REMOTE_PYTHON
+      --remote_queens_repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
 lnm-cluster_tests:
   extends:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: 'lnm_cluster'
+    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
+    - bruteforce-build_conda_env
+    - deep-build_conda_env
   tags:
     - lnm-ubuntu
 
@@ -317,9 +366,11 @@ imcs-cluster_tests:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: "imcs_cluster"
+    REMOTE_PYTHON: '/home/queens/miniconda3/envs/queens-$CI_PIPELINE_ID/bin/python'
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
+    - charon-build_conda_env
   tags:
     - imcs-ubuntu
 #---------------------------------------------------------------------------------------------------

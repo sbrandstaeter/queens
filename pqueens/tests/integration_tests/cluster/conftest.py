@@ -1,4 +1,5 @@
 """Settings used by the cluster tests."""
+import pytest
 
 from pqueens.utils.path_utils import relative_path_from_queens
 
@@ -33,3 +34,21 @@ charon_cluster_settings = {
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_dask_charon.sh'),
     'cluster_script_path': 'null',
 }
+
+
+def pytest_addoption(parser):
+    """Add pytest options."""
+    parser.addoption("--remote_python", action="store", default=None)
+    parser.addoption("--remote_queens_repository", action="store", default=None)
+
+
+@pytest.fixture(scope="session")
+def remote_python(pytestconfig):
+    """Path to Python environment on remote host."""
+    return pytestconfig.getoption("remote_pyhon")
+
+
+@pytest.fixture(scope="session")
+def remote_queens_repository(pytestconfig):
+    """Path to queens repository on remote host."""
+    return pytestconfig.getoption("remote_queens_repository")

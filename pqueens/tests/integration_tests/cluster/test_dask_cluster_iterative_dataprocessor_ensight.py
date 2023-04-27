@@ -28,7 +28,14 @@ _logger = logging.getLogger(__name__)
     ],
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, monkeypatch, dask_cluster_settings, cluster_user
+    inputdir,
+    tmpdir,
+    third_party_inputs,
+    monkeypatch,
+    dask_cluster_settings,
+    cluster_user,
+    remote_queens_repository,
+    remote_python,
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -49,6 +56,8 @@ def test_cluster_baci_data_processor_ensight(
         monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
         cluster_user (str): Cluster user
+        remote_queens_repository (str): Path to queens repository on remote host
+        remote_python (str): Path to Python environment on remote host
     """
     # monkeypatch the "input" function, so that it returns "y".
     # This simulates the user entering "y" in the terminal:
@@ -77,13 +86,19 @@ def test_cluster_baci_data_processor_ensight(
         third_party_inputs, "baci_input_files", baci_input_template_name
     )
 
+    if remote_python is None:
+        remote_python = dask_cluster_settings['cluster_python_path']
+    if remote_queens_repository is None:
+        remote_queens_repository = 'null'
+
     template_options = {
         'experiment_name': str(experiment_name),
         'workload_manager': dask_cluster_settings['workload_manager'],
         'cluster_address': dask_cluster_settings['cluster_address'],
         'cluster_internal_address': dask_cluster_settings['cluster_internal_address'],
         'cluster_user': cluster_user,
-        'cluster_python_path': dask_cluster_settings['cluster_python_path'],
+        'cluster_python_path': remote_python,
+        'cluster_queens_repository': remote_queens_repository,
         'path_to_jobscript': dask_cluster_settings['path_to_jobscript'],
         'cluster_script_path': dask_cluster_settings['cluster_script_path'],
         'input_template': str(baci_input_file_template),
