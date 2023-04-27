@@ -1,54 +1,60 @@
-#!/bin/sh -f
-
-# Setup shell environment
+#!/bin/bash
+# Setup shell environment and start from home dir
 echo $HOME
 cd $HOME
 source /etc/profile.d/modules.sh
-source $HOME/queens_cluster_suite/load_queens_baci_environment.sh
+source /home/opt/cluster_tools/core/load_baci_environment.sh
 
-########################
-# GENERAL SPECIFICATIONS
-########################
-BUILD_DIR=""
-RUN_BACI="OFF"
-RUN_ENSIGHT_FILTER="OFF"
-RUN_QUEENS="ON"
+module list
+##########################################
+#                                        #
+#  Specify the paths                     #
+#                                        #
+##########################################
 
-EXE='{{ EXE }}'
+RUN_BACI="ON"
+BACI_BUILD_DIR={{ BUILDDIR }}
+EXE={{ EXE }}
 
-#####################
-# INPUT SPECIFICATION
-#####################
-INPUT='{{ INPUT }}'
-
-######################
-# OUTPUT SPECIFICATION
-######################
-OUTPUT_PREFIX={{ OUTPUTPREFIX }}
+INPUT={{ INPUT }}
 BACI_OUTPUT_DIR={{ DESTDIR }}
-WORKDIR=$BACI_OUTPUT_DIR
-ENSIGHT_OUTPUT_DIR=""
-ENSIGHT_OPTIONS=""
-#######################
-# RESTART SPECIFICATION
-#######################
-RESTART=0
-RESTART_FROM_STEP=0                 # <= specify your restart step
-RESTART_FROM_DIR=""
-RESTART_FROM_PREFIX="" # <= specify the result prefix from which restart is to be read
+OUTPUT_PREFIX={{ OUTPUTPREFIX }}
+
+
+##########################################
+#                                        #
+#  Postprocessing                        #
+#                                        #
+##########################################
+
+RUN_ENSIGHT_FILTER="ON"
+ENSIGHT_OUTPUT_DIR={{ DESTDIR }}
+ENSIGHT_OPTIONS='{{ POSTOPTIONS }}'
+
+
+##########################################
+#                                        #
+#  RESTART SPECIFICATION                 #
+#                                        #
+##########################################
+
+RESTART_FROM_STEP=0                 	# specify the restart step here and in .datfile
+RESTART_FROM_DIR=""			# same as output
+RESTART_FROM_PREFIX="" 		# prefix typically s
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
 #################################################################
+
 # execute program
-source $HOME/queens_cluster_suite/queens_job_core
-trap 'early; stageout' 2 9 15 18
-dochecks
-stagein
-runprogram
+source /home/opt/cluster_tools/core/charon_job_core
+trap 'EarlyTermination; StageOut' 2 9 15 18
+DoChecks
+StageIn
+RunProgram
 wait
-stageout
-show
+StageOut
+# show
 # END ################## DO NOT TOUCH ME #########################
 echo
 echo "Job finished with exit code $? at: `date`"

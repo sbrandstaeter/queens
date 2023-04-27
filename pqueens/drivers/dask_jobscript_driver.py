@@ -1,6 +1,6 @@
 """Driver to run a jobscript."""
-
 import logging
+from pathlib import Path
 
 from pqueens.drivers.dask_driver import Driver
 from pqueens.utils.injector import inject, inject_in_template, read_file
@@ -54,6 +54,7 @@ class JobscriptDriver(Driver):
 
         jobscript_options = {
             "EXE": path_to_executable,
+            "BUILDDIR": Path(path_to_executable).parent,
             "OUTPUTPREFIX": post_file_prefix,
             "POSTPROCESS": bool(post_processor),
             "POSTEXE": str(post_processor),

@@ -43,7 +43,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs = num_procs
         self.num_procs_post = num_procs_post
         self.client = client
-        print(client.dashboard_link)
+        _logger.info(client.dashboard_link)
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
