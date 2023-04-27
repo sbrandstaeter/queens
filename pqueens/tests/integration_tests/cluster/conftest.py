@@ -45,7 +45,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def remote_python(pytestconfig):
     """Path to Python environment on remote host."""
-    return pytestconfig.getoption("remote_pyhon")
+    return pytestconfig.getoption("remote_python")
 
 
 @pytest.fixture(scope="session")
