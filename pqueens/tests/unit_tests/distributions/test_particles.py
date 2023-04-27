@@ -11,68 +11,91 @@ def fixture_reference_data(request):
     """Data for the distribution."""
     reference_weights = [1, 2, 3, 4]
     reference_probabilities = np.array([0.1, 0.2, 0.3, 0.4])
+
     if request.param == 1:
-        return reference_weights, reference_probabilities, [[0], [1], [2], [3]], 1
-    return reference_weights, reference_probabilities, [[1, 2], [3, 4], [2, 2], [0, 3]], 2
+        reference_sample_space = [[0], [1], [2], [3]]
+        reference_dimension = 1
+    else:
+        reference_sample_space = [[1, 2], [3, 4], [2, 2], [0, 3]]
+        reference_dimension = 2
+
+    reference_mean = np.sum(
+        [
+            probability * np.array(value)
+            for probability, value in zip(reference_probabilities, reference_sample_space)
+        ],
+        axis=0,
+    )
+    return (
+        reference_weights,
+        reference_probabilities,
+        reference_sample_space,
+        reference_dimension,
+        reference_mean,
+    )
 
 
 @pytest.fixture(name="distribution")
 def fixture_distribution(reference_data):
     """Distribution fixture."""
-    _, probabilities, sample_space, _ = reference_data
+    _, probabilities, sample_space, _, _ = reference_data
     return ParticleDiscreteDistribution(probabilities, sample_space)
 
 
-def test_init_success(reference_data, distribution):
-    """Test init method."""
-    _, reference_probabilities, reference_sample_space, reference_dimension = reference_data
-
-    reference_mean = np.sum(
-        [
-            probability * np.array(value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    )
-
-    reference_covariance = np.sum(
-        [
-            probability * np.outer(value, value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    ) - np.outer(reference_mean, reference_mean)
-
-    np.testing.assert_allclose(reference_probabilities, distribution.probabilities)
-    np.testing.assert_allclose(reference_sample_space, distribution.sample_space)
-    np.testing.assert_allclose(reference_dimension, distribution.dimension)
-    np.testing.assert_allclose(reference_mean, distribution.mean)
-    np.testing.assert_allclose(reference_covariance, distribution.covariance)
-
-
-def test_fcc(reference_data, distribution):
-    """Test fcc function."""
-    (
-        reference_weights,
-        reference_probabilities,
-        reference_sample_space,
-        reference_dimension,
-    ) = reference_data
+@pytest.fixture(name="distribution_fcc")
+def fixture_distribution_fcc(reference_data):
+    """Distribution fixture."""
+    reference_probabilities, _, reference_sample_space, _, _ = reference_data
 
     distribution = from_config_create_distribution(
         {
             "type": "particles",
-            "probabilities": reference_weights,
+            "probabilities": reference_probabilities,
             "sample_space": reference_sample_space,
         }
     )
-    reference_mean = np.sum(
-        [
-            probability * np.array(value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    )
+    return distribution
+
+
+@pytest.fixture(name="distributions", params=['init', 'fcc'])
+def fixture_distributions(request, distribution, distribution_fcc):
+    """Distributions fixture once from init once from fcc."""
+    if request.param == "init":
+        return distribution
+    return distribution_fcc
+
+
+def test_init_probabilities(reference_data, distributions):
+    """Test probabilities in the init method."""
+    _, reference_probabilities, _, _, _ = reference_data
+
+    np.testing.assert_allclose(reference_probabilities, distributions.probabilities)
+
+
+def test_init_sample_space(reference_data, distributions):
+    """Test sample_space in the init method."""
+    _, _, reference_sample_space, _, _ = reference_data
+
+    np.testing.assert_allclose(reference_sample_space, distributions.sample_space)
+
+
+def test_init_dimension(reference_data, distributions):
+    """Test dimension in the init method."""
+    _, _, _, reference_dimension, _ = reference_data
+
+    np.testing.assert_allclose(reference_dimension, distributions.dimension)
+
+
+def test_init_mean(reference_data, distributions):
+    """Test mean in the init method."""
+    _, _, _, _, reference_mean = reference_data
+
+    np.testing.assert_allclose(reference_mean, distributions.mean)
+
+
+def test_init_covariance(reference_data, distributions):
+    """Test covariance in the init method."""
+    _, reference_probabilities, reference_sample_space, _, reference_mean = reference_data
 
     reference_covariance = np.sum(
         [
@@ -82,11 +105,7 @@ def test_fcc(reference_data, distribution):
         axis=0,
     ) - np.outer(reference_mean, reference_mean)
 
-    np.testing.assert_allclose(reference_probabilities, distribution.probabilities)
-    np.testing.assert_allclose(reference_sample_space, distribution.sample_space)
-    np.testing.assert_allclose(reference_dimension, distribution.dimension)
-    np.testing.assert_allclose(reference_mean, distribution.mean)
-    np.testing.assert_allclose(reference_covariance, distribution.covariance)
+    np.testing.assert_allclose(reference_covariance, distributions.covariance)
 
 
 def test_init_failure_mismatching_probabilities():
@@ -109,7 +128,7 @@ def test_init_failure_mismatching_dimension():
 
 def test_draw(mocker, reference_data, distribution):
     """Test draw."""
-    _, _, reference_sample_space, _ = reference_data
+    _, _, reference_sample_space, _, _ = reference_data
     first_sample_event = 2
     second_sample_event = 3
     third_sample_event = 1
@@ -129,14 +148,14 @@ def test_draw(mocker, reference_data, distribution):
 
 def test_pdf(reference_data, distribution):
     """Test pdf."""
-    _, reference_probabilities, reference_sample_space, _ = reference_data
+    _, reference_probabilities, reference_sample_space, _, _ = reference_data
     sample_location = np.array(reference_sample_space[::-1])
     np.testing.assert_allclose(reference_probabilities[::-1], distribution.pdf(sample_location))
 
 
 def test_logpdf(reference_data, distribution):
     """Test logpdf."""
-    _, reference_probabilities, reference_sample_space, _ = reference_data
+    _, reference_probabilities, reference_sample_space, _, _ = reference_data
     sample_location = np.array(reference_sample_space[::-1])
     np.testing.assert_allclose(
         np.log(reference_probabilities[::-1]), distribution.logpdf(sample_location)
@@ -145,7 +164,7 @@ def test_logpdf(reference_data, distribution):
 
 def test_cdf(reference_data, distribution):
     """Test cdf."""
-    _, reference_probabilities, reference_sample_space, reference_dimension = reference_data
+    _, reference_probabilities, reference_sample_space, reference_dimension, _ = reference_data
     sample_location = np.array(reference_sample_space[::-1])
 
     if reference_dimension == 1:
@@ -159,7 +178,7 @@ def test_cdf(reference_data, distribution):
 
 def test_ppf(reference_data, distribution):
     """Test ppf."""
-    _, reference_probabilities, reference_sample_space, reference_dimension = reference_data
+    _, reference_probabilities, reference_sample_space, reference_dimension, _ = reference_data
     quantiles = np.array(np.cumsum(reference_probabilities)[::-1])
 
     if reference_dimension == 1:

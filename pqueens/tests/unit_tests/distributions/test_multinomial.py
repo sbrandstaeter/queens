@@ -12,59 +12,86 @@ def fixture_reference_data():
     reference_n_trials = 10
     reference_probabilities = [0.1, 0.2, 0.3, 0.4]
     reference_dimension = 4
-    return reference_n_trials, reference_probabilities, reference_dimension
+    reference_mean = reference_n_trials * np.array(reference_probabilities)
+    return reference_n_trials, reference_probabilities, reference_dimension, reference_mean
 
 
 @pytest.fixture(name="distribution")
 def fixture_distribution(reference_data):
     """Distribution fixture."""
-    n_trials, probabilities, _ = reference_data
+    n_trials, probabilities, _, _ = reference_data
     return MultinomialDistribution(n_trials, probabilities)
 
 
-def test_init_success(reference_data, distribution):
-    """Test init method."""
-    reference_n_trials, reference_probabilities, reference_dimension = reference_data
-    reference_mean = reference_n_trials * np.array(reference_probabilities)
-    reference_covariance = reference_n_trials * (
-        np.diag(reference_probabilities)
-        - np.outer(reference_probabilities, reference_probabilities)
-    )
-    reference_sample_space = np.ones((reference_dimension, 1)) * reference_n_trials
-    np.testing.assert_allclose(reference_probabilities, distribution.probabilities)
-    np.testing.assert_allclose(reference_sample_space, distribution.sample_space)
-    np.testing.assert_allclose(reference_dimension, distribution.dimension)
-    np.testing.assert_allclose(reference_mean, distribution.mean)
-    np.testing.assert_allclose(reference_covariance, distribution.covariance)
-
-
-def test_fcc(reference_data, distribution):
-    """Test fcc function."""
-    reference_n_trials, reference_probabilities, reference_dimension = reference_data
-    reference_mean = reference_n_trials * np.array(reference_probabilities)
-    reference_covariance = reference_n_trials * (
-        np.diag(reference_probabilities)
-        - np.outer(reference_probabilities, reference_probabilities)
-    )
-    reference_sample_space = np.ones((reference_dimension, 1)) * reference_n_trials
-
-    distribution = from_config_create_distribution(
+@pytest.fixture(name="distribution_fcc")
+def fixture_distribution_fcc(reference_data):
+    """Distribution fixture."""
+    reference_n_trials, reference_probabilities, _, _ = reference_data
+    return from_config_create_distribution(
         {
             "type": "multinomial",
             "probabilities": reference_probabilities,
             "n_trials": reference_n_trials,
         }
     )
-    np.testing.assert_allclose(reference_probabilities, distribution.probabilities)
-    np.testing.assert_allclose(reference_sample_space, distribution.sample_space)
-    np.testing.assert_allclose(reference_dimension, distribution.dimension)
-    np.testing.assert_allclose(reference_mean, distribution.mean)
-    np.testing.assert_allclose(reference_covariance, distribution.covariance)
+
+
+# pylint: disable=duplicate-code
+@pytest.fixture(name="distributions", params=["init", "fcc"])
+def fixture_distributions(request, distribution, distribution_fcc):
+    """Distributions fixture."""
+    if request.param == "init":
+        return distribution
+    return distribution_fcc
+
+
+# pylint: enable=duplicate-code
+
+
+def test_init_probabilities(reference_data, distributions):
+    """Test probabilities in the init method."""
+    _, reference_probabilities, _, _ = reference_data
+
+    np.testing.assert_allclose(reference_probabilities, distributions.probabilities)
+
+
+def test_init_sample_space(reference_data, distributions):
+    """Test sample_space in the init method."""
+    reference_n_trials, _, reference_dimension, _ = reference_data
+    reference_sample_space = np.ones((reference_dimension, 1)) * reference_n_trials
+
+    np.testing.assert_allclose(reference_sample_space, distributions.sample_space)
+
+
+def test_init_dimension(reference_data, distributions):
+    """Test dimension in the init method."""
+    _, _, reference_dimension, _ = reference_data
+
+    np.testing.assert_allclose(reference_dimension, distributions.dimension)
+
+
+def test_init_mean(reference_data, distributions):
+    """Test mean in the init method."""
+    _, _, _, reference_mean = reference_data
+
+    np.testing.assert_allclose(reference_mean, distributions.mean)
+
+
+def test_init_covariance(reference_data, distributions):
+    """Test covariance in the init method."""
+    reference_n_trials, reference_probabilities, _, _ = reference_data
+
+    reference_covariance = reference_n_trials * (
+        np.diag(reference_probabilities)
+        - np.outer(reference_probabilities, reference_probabilities)
+    )
+
+    np.testing.assert_allclose(reference_covariance, distributions.covariance)
 
 
 def test_draw(reference_data, distribution):
     """Test draw method."""
-    reference_n_trials, _, reference_dimension = reference_data
+    reference_n_trials, _, reference_dimension, _ = reference_data
     n_draws = 5
     samples = distribution.draw(n_draws)
 
