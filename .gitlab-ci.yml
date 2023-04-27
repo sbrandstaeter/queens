@@ -583,3 +583,43 @@ deep-cluster-native-remove_conda_env:
     - deep-native-build_conda_env
   tags:
     - deep-native-test
+#---------------------------------------------------------------------------------------------------
+# Remove conda env and repository on cluster
+.remove_conda_env_cluster:
+  stage: cleanup
+  script:
+    - ssh queens@$REMOTE_ADDRESS "conda env remove -n queens-$CI_PIPELINE_ID; 
+      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID"
+  when: always
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+
+bruteforce-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - bruteforce-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+  tags:
+    - lnm-build
+
+deep-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - deep-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+  tags:
+    - lnm-build
+
+charon-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - charon-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+  tags:
+    - imcs-build
