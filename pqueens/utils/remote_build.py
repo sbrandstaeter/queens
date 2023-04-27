@@ -70,7 +70,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Build queens environment on remote machine.")
     parser.add_argument('--remote_address', type=str, default=None, help='address of remote host')
     parser.add_argument('--remote_user', type=str, default=None, help='remote username')
-    parser.add_argument('--remote_address', type=str, default=None, help='address of remote host')
     parser.add_argument(
         '--remote_queens_repository',
         type=str,
