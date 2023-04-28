@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Unit tests for the elementary effects iterator."""
 import unittest
 
 import numpy as np
@@ -13,7 +13,10 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
+    """TODO.doc."""
+
     def setUp(self):
+        """TODO.doc."""
         uncertain_parameter = {
             "type": "uniform",
             "upper_bound": 3.14159265359,
