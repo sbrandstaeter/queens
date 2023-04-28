@@ -29,7 +29,7 @@ _logger = logging.getLogger(__name__)
 )
 def test_cluster_baci_data_processor_ensight(
     inputdir,
-    tmpdir,
+    tmp_path,
     third_party_inputs,
     monkeypatch,
     dask_cluster_settings,
@@ -51,7 +51,7 @@ def test_cluster_baci_data_processor_ensight(
 
     Args:
         inputdir (Path): Path to the JSON input file
-        tmpdir (Path): Temporary directory in which the pytests are run
+        tmp_path (Path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
@@ -69,7 +69,7 @@ def test_cluster_baci_data_processor_ensight(
     path_to_drt_ensight = base_directory / "post_drt_ensight"
 
     # unique experiment name
-    pytest_name = pathlib.Path(tmpdir).parents[0].stem
+    pytest_name = pathlib.Path(tmp_path).parents[0].stem
     experiment_name = f"test_{dask_cluster_settings['name']}_data_processor_ensight"
 
     def patch_experiments_directory(_):
@@ -105,16 +105,14 @@ def test_cluster_baci_data_processor_ensight(
         'path_to_executable': str(path_to_executable),
         'path_to_drt_ensight': str(path_to_drt_ensight),
     }
-    queens_input_file_template = pathlib.Path(
-        inputdir, "baci_dask_cluster_data_processor_ensight.yml"
-    )
-    queens_input_file = pathlib.Path(
-        tmpdir, f"baci_cluster_data_processor_ensight_{dask_cluster_settings['name']}.yml"
+    queens_input_file_template = inputdir / "baci_dask_cluster_data_processor_ensight.yml"
+    queens_input_file = (
+        tmp_path / f"baci_cluster_data_processor_ensight_{dask_cluster_settings['name']}.yml"
     )
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments
-    config = get_config_dict(queens_input_file, pathlib.Path(tmpdir))
+    config = get_config_dict(queens_input_file, pathlib.Path(tmp_path))
 
     # Initialise db module
     DB_module.from_config_create_database(config)
@@ -172,7 +170,7 @@ def test_cluster_baci_data_processor_ensight(
 
     result_file_name = experiment_name + ".pickle"
 
-    result_file = tmpdir / result_file_name
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
