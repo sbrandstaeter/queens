@@ -67,7 +67,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         if sum_lambda / self.largest_length < self.des_energy_frac:
             raise RuntimeError(
                 'Energy fraction retained by KLE expansion is '
-                ' only {}, not {}'.format(sum_lambda / self.largest_length, self.des_energy_frac)
+                f'only {sum_lambda / self.largest_length}, not {self.des_energy_frac}'
             )
 
         self.act_energy_frac = sum_lambda / self.largest_length
