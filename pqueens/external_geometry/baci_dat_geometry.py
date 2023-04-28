@@ -665,11 +665,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                 'NEUMANN CONDITIONS\n'
                             )
                             self._write_design_point_neumann_conditions()
-                        # pylint: disable=line-too-long
                         print(
-                            '-------------------------------------------------------------------------END\n'
+                            '---------------------------------------------------------------------'
+                            '----END\n'
                         )
-                        # pylint: enable=line-too-long
                     else:
                         print(old_line, end='')
 

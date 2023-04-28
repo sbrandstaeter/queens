@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from mock import patch
 
-import pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood as BMF
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
+from pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
 from pqueens.models.simulation_model import SimulationModel
 
 
@@ -161,7 +161,7 @@ def default_mf_likelihood(
     likelihood_evals_for_refinement_lst = []
     dummy_normal_distr = "dummy"
 
-    mf_likelihood = BMF.BMFGaussianModel(
+    mf_likelihood = BMFGaussianModel(
         model_name,
         forward_model,
         coords_mat,
@@ -236,7 +236,7 @@ def test_init(dummy_model, parameters, default_interface, default_bmfia_iterator
     num_refinement_samples = 0
     likelihood_evals_for_refinement_lst = []
 
-    model = BMF.BMFGaussianModel(
+    model = BMFGaussianModel(
         model_name,
         forward_model,
         coords_mat,
@@ -275,7 +275,6 @@ def test_evaluate(default_mf_likelihood, mocker):
     likelihood_output = np.array(np.array([7, 7]))
     y_lf_mat = np.array([[1, 2]])
     samples = np.array([[2, 3]])
-    # pylint: disable=line-too-long
     # on purpose transpose y_lf_mat here to check if this is wrong orientation is corrected
     mp1 = mocker.patch(
         'pqueens.models.simulation_model.SimulationModel.evaluate',
@@ -283,11 +282,11 @@ def test_evaluate(default_mf_likelihood, mocker):
     )
 
     mp2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel.evaluate_from_output',
         return_value=likelihood_output,
     )
 
-    # pylint: enable=line-too-long
     mf_log_likelihood = default_mf_likelihood.evaluate(samples)
 
     # assert statements
@@ -305,7 +304,8 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     forward_model_output = np.array([[5], [6]])
     mf_log_likelihood_exp = np.array([[7], [9]])
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel._evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
     )
 
@@ -320,11 +320,13 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
 
     # test with adaptivity
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._adaptivity_trigger',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel._adaptivity_trigger',
         return_value=True,
     )
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._refine_mf_likelihood'  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel._refine_mf_likelihood'
     )
     with pytest.raises(NotImplementedError):
         mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
@@ -350,7 +352,6 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     distribution_mock.logpdf.return_value = np.array([[1.0]])
     default_mf_likelihood.normal_distribution = distribution_mock
 
-    # pylint: disable=line-too-long
     mp1 = mocker.patch(
         'pqueens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy',
         return_value=(z_mat),
@@ -359,7 +360,6 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.evaluate',
         return_value=(m_f_mat, var_y_mat),
     )
-    # pylint: enable=line-too-long
 
     log_lik_mf = default_mf_likelihood._evaluate_mf_likelihood(x_batch, y_lf_mat)
 
@@ -401,20 +401,20 @@ def test_evaluate_and_gradient(default_mf_likelihood):
     log_lik_out = np.array([[11], [12]])
     mp3 = mock.MagicMock(return_value=log_lik_out)
 
-    # pylint: disable=line-too-long
     with mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.prepare_downstream_gradient_fun',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'prepare_downstream_gradient_fun',
         mp1,
     ), mock.patch(
         'pqueens.models.simulation_model.SimulationModel.evaluate_and_gradient', mp2
     ), mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.evaluate_from_output',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel.evaluate_from_output',
         mp3,
     ):
         log_likelihood, grad_objective_samples = default_mf_likelihood.evaluate_and_gradient(
             samples, upstream_gradient_fun
         )
-    # pylint: enable=line-too-long
 
     # --- assert and test statements ------------------------------------
     # test prepare downstream gradient fun
@@ -458,7 +458,6 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
     distribution_mock.logpdf.return_value = np.array([[1]])
     default_mf_likelihood.normal_distribution = distribution_mock
 
-    # pylint: disable=line-too-long
     mp1 = mocker.patch(
         'pqueens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy',
         return_value=z_mat,
@@ -473,10 +472,10 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
         return_value=0.1,
     )
     mp3 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.grad_log_pdf_d_ylf',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'BMFGaussianModel.grad_log_pdf_d_ylf',
         return_value=np.array([[0.2]]),
     )
-    # pylint: enable=line-too-long
     grad_out = default_mf_likelihood.partial_grad_evaluate(
         forward_model_input, forward_model_output
     )
@@ -539,16 +538,13 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
     time_vec = np.linspace(1, 10, 3)
     y_obs = np.array([[5, 5, 5], [6, 6, 6]])
 
-    # pylint: disable=line-too-long
     mo_1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration',  # pylint: disable=line-too-long
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
+        'print_bmfia_acceleration',
         return_value=None,
     )
 
-    # pylint: enable=line-too-long
-    BMF.BMFGaussianModel.initialize_bmfia_iterator(
-        coords_mat, time_vec, y_obs, default_bmfia_iterator
-    )
+    BMFGaussianModel.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, default_bmfia_iterator)
 
     # actual tests / asserts
     mo_1.assert_called_once()
@@ -568,7 +564,6 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
     coords_mat = default_bmfia_iterator.coords_experimental_data
     approx_name = 'bmfia'
 
-    # pylint: disable=line-too-long
     mo_1 = mocker.patch(
         'pqueens.iterators.bmfia_iterator.BMFIAIterator.core_run',
         return_value=(z_train, y_hf_train),
@@ -577,9 +572,8 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.build_approximation',
         return_value=None,
     )
-    # pylint: enable=line-too-long
 
-    BMF.BMFGaussianModel._build_approximation(
+    BMFGaussianModel._build_approximation(
         default_bmfia_iterator,
         default_interface,
         config,
