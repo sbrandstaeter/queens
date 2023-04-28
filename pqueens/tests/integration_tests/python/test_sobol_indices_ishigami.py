@@ -14,7 +14,7 @@ def test_sobol_indices_ishigami(inputdir, tmp_path):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    expected_result = dict()
+    expected_result = {}
 
     expected_result["S1"] = np.array([0.12572757495660558, 0.3888444532476749, -0.1701023677236496])
 

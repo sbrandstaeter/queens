@@ -34,7 +34,7 @@ def load_input_file(input_file_path):
         raise FileTypeError(
             f"Only json or yaml/yml files allowed, not of type '{file_type}' ({input_file_path})"
         )
-    with open(input_file_path, "r") as stream:
+    with open(input_file_path, "r", encoding='utf-8') as stream:
         try:
             options = loader(stream)
         except Exception as exception:

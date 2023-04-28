@@ -4,9 +4,9 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.style as style
 import pandas as pd
 import seaborn as sns
+from matplotlib import style
 
 cycle_colors = sns.color_palette()
 style.use('seaborn')

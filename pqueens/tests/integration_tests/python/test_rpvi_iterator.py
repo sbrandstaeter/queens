@@ -224,6 +224,6 @@ def write_custom_likelihood_model(module_path):
         "class MyLikelihood(GaussianLikelihood):\n",
         "   pass",
     ]
-    with open(module_path, 'w') as f:
+    with open(module_path, 'w', encoding='utf-8') as f:
         for my_string in custom_class_lst:
             f.writelines(my_string)
