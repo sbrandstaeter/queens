@@ -139,7 +139,6 @@ class ClusterScheduler(Scheduler):
                     raise
                 time.sleep(1)
 
-        atexit.register(client.shutdown)
         client.submit(lambda: "Dummy job").result(timeout=60)
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
