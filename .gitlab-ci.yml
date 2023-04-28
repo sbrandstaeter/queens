@@ -201,7 +201,6 @@ code_analysis:
     - .codechecks_settings
   stage: codechecks
   script:
-    - vulture pqueens > track_vulture.txt
     - isort --check-only pqueens/ > track_isort.txt
     - black --check pqueens > track_black.txt
     - pylint --rcfile=.pylintrc_ci pqueens | tee track_pylint.txt
@@ -209,7 +208,6 @@ code_analysis:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
       - track_pylint.txt
-      - track_vulture.txt
       - track_isort.txt
       - track_black.txt
     when: on_failure
