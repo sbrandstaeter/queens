@@ -165,7 +165,7 @@ class ElementaryEffectsIterator(Iterator):
 
         for j in range(self.parameters.num_parameters):
             _logger.info(
-                "%-20s %10s %10s %15s %10s",
+                "%-20s %10.2e %10.2e %15.2e %10.2e",
                 results['sensitivity_indices']['names'][j],
                 results['sensitivity_indices']['mu_star'][j],
                 results['sensitivity_indices']['mu'][j],
