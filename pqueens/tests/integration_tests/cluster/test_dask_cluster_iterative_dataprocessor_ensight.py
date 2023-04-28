@@ -34,7 +34,6 @@ def test_cluster_baci_data_processor_ensight(
     monkeypatch,
     dask_cluster_settings,
     cluster_user,
-    baci_cluster_paths,
     remote_queens_repository,
     remote_python,
 ):
@@ -57,7 +56,6 @@ def test_cluster_baci_data_processor_ensight(
         monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
         cluster_user (str): Cluster user
-        baci_cluster_paths (Path): Path to BACI dependencies on the cluster.
         remote_queens_repository (str): Path to queens repository on remote host
         remote_python (str): Path to Python environment on remote host
     """
@@ -65,8 +63,10 @@ def test_cluster_baci_data_processor_ensight(
     # This simulates the user entering "y" in the terminal:
     monkeypatch.setattr('builtins.input', lambda _: "y")
 
-    path_to_executable = baci_cluster_paths["path_to_executable"]
-    path_to_drt_ensight = baci_cluster_paths["path_to_drt_ensight"]
+    base_directory = pathlib.Path("$HOME", "workspace", "build")
+
+    path_to_executable = base_directory / "baci-release"
+    path_to_drt_ensight = base_directory / "post_drt_ensight"
 
     # unique experiment name
     pytest_name = pathlib.Path(tmpdir).parents[0].stem
