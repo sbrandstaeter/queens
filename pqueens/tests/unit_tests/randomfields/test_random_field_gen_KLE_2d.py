@@ -31,7 +31,6 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         self.loc = np.array([[0, 0], [0, 10], [10, 0], [0, 25], [25, 0], [0, 100], [100, 0]])
         self.seed = 42
 
-        # pylint: disable=line-too-long
         self.my_field_generator = (
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -44,7 +43,6 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
                 total_terms=self.total_terms,
             )
         )
-        # pylint: enable=line-too-long
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
