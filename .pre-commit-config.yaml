@@ -17,14 +17,6 @@ repos:
         entry: check-added-large-files
         language: python
         types: [text]
-      - id: vulture
-        name: vulture
-        entry: vulture
-        language: python
-        types: ["python"]
-        additional_dependencies: ["toml"]
-        always_run: false
-        pass_filenames: true
       - id: pydocstyle
         name: pydocstyle
         entry: pydocstyle

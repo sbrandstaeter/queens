@@ -13,7 +13,7 @@ We do welcome contributions to QUEENS. However, the project is deliberately of l
   - [Preparing a commit](#preparing-a-commit)
   - [Staying up-to-date with the main branch](#staying-up-to-date-with-the-main-branch)
   - [Pushing your development branch to the remote](#pushing-your-development-branch-to-the-remote)
-  - [Merging another branch into main (merge requests, (MR))](#merging-another-branch-into-main-merge-requests-mr)
+  - [Merging another branch into main: merge requests (MR)](#merging-another-branch-into-main-merge-requests-mr)
   - [Keep things clean](#keep-things-clean)
   - [Actively watch the pipeline / continuous integration (CI)](#actively-watch-the-pipeline--continuous-integration-ci)
   - [Working with epics and milestones](#working-with-epics-and-milestones)
@@ -149,7 +149,6 @@ We follow the fork-based workflow as described in [Atlassian Bitbucket](https://
 ## Coding style in *QUEENS*
  Python code should follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style. We check coding style in our testing pipeline in the **codecheck stage**, such that uncompliant code will lead to failing pipelines and you won't be able to merge your contributions into the main branch. The following code checks are conducted in the **codecheck stage**:
 
- - [vulture](https://github.com/jendrikseipp/vulture) to detect unreachable code
  - [pylint](https://pylint.org/), to check if code is compliant to PEP 8
  - [isort](https://github.com/PyCQA/isort), to check if imported modules are sorted correctly
  - [black](https://github.com/psf/black), to check if your code is formatted according to the google coding style and PEP 8
