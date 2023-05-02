@@ -1,5 +1,6 @@
 """QUEENS scheduler parent class."""
 import abc
+import atexit
 import copy
 import logging
 
@@ -44,6 +45,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs_post = num_procs_post
         self.client = client
         _logger.info(client.dashboard_link)
+        atexit.register(self.shutdown_client)
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
@@ -121,3 +123,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         file = read_file(file_path)
         destination = self.experiment_dir / file_path.name
         self.client.submit(destination.write_text, file, encoding='utf-8').result()
+
+    async def shutdown_client(self):
+        """Shutdown the DASK client."""
+        await self.client.shutdown()
