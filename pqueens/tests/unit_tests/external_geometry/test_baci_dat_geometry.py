@@ -44,7 +44,7 @@ def default_geo_obj(tmp_path):
 
 def write_to_file(data, filepath):
     """TODO_doc."""
-    with open(filepath, 'w') as fp:
+    with open(filepath, 'w', encoding='utf-8') as fp:
         fp.write(data)
 
 
@@ -322,7 +322,7 @@ def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, d
     )
 
     mocker.patch(
-        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry' '._get_materials',
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_materials',
         return_value=1,
     )
 
@@ -436,7 +436,7 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
         return_value=True,
     )
     mp1 = mocker.patch(
-        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry' '._get_topology',
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_topology',
         return_value=None,
     )
     default_geo_obj._get_only_desired_topology(line)

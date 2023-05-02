@@ -10,7 +10,6 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_bmfia_smc_park(
     inputdir,
     tmpdir,
@@ -87,7 +86,6 @@ def expected_weights():
     return weights
 
 
-@pytest.mark.integration_tests
 def test_bmfia_rpvi_gp_park(
     inputdir,
     tmpdir,
@@ -140,7 +138,6 @@ def expected_variational_cov():
     return exp_var_cov
 
 
-@pytest.mark.integration_tests
 def test_bmfia_rpvi_NN_park(
     inputdir,
     tmpdir,

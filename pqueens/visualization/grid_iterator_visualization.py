@@ -53,7 +53,7 @@ def _log_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(10**val)
+    return f"{10**val:.2e}"
 
 
 def _ln_tick_formatter(val):
@@ -65,7 +65,7 @@ def _ln_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(np.e**val)
+    return f"{np.e**val:.2e}"
 
 
 def _linear_tick_formatter(val):
@@ -77,7 +77,7 @@ def _linear_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(val)
+    return f"{val:.2e}"
 
 
 class GridIteratorVisualization(object):

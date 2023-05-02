@@ -3,6 +3,7 @@
 import math
 
 import numpy as np
+from particles import smc_samplers as ssp
 
 
 def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
@@ -120,9 +121,6 @@ def calc_ess(weights):
     """
     ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights**2)))
     return ess
-
-
-from particles import smc_samplers as ssp
 
 
 class StaticStateSpaceModel(ssp.StaticModel):

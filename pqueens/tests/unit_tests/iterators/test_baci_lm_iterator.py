@@ -241,7 +241,7 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
     m1 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator' '.get_positions_raw_2pointperturb',
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
 
@@ -438,7 +438,11 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     with caplog.at_level(logging.WARNING):
         default_baci_lm_iterator.post_run()
 
-    expected_warning = 'write_results for more than 2 parameters not implemented, because we are limited to 3 dimensions. You have: 3. Plotting is skipped.'
+    expected_warning = (
+        "write_results for more than 2 parameters not implemented, "
+        "because we are limited to 3 dimensions. "
+        "You have: 3. Plotting is skipped."
+    )
     assert expected_warning in caplog.text
 
     m4.assert_not_called()
@@ -503,7 +507,7 @@ def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
     assert default_baci_lm_iterator.reg_param == 2.0
 
     expected_warning = (
-        'WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration.\n declined step was: %s'
-        % (3, np.array([1.1, 2.3]))
+        f"WARNING: STEP #{3} IS OUT OF BOUNDS; double reg_param and compute new iteration.\n "
+        f"declined step was: {np.array([1.1, 2.3])}"
     )
     assert expected_warning in caplog.text

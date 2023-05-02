@@ -1,6 +1,7 @@
 """Unit tests for the collection utils."""
-import pytest
 import logging
+
+import pytest
 
 from pqueens.utils.collection_utils import CollectionObject
 

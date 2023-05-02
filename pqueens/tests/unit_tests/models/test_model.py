@@ -15,13 +15,13 @@ from pqueens.models.model import Model
 @pytest.fixture(scope='module')
 def uncertain_parameters():
     """Possible uncertain parameters dictionary."""
-    uncertain_parameters = dict()
+    uncertain_parameters = {}
 
-    x1 = dict()
+    x1 = {}
     x1['type'] = 'free'
     x1['dimension'] = 1
 
-    x2 = dict()
+    x2 = {}
     x2['type'] = 'free'
     x2['dimension'] = 2
 
@@ -74,7 +74,7 @@ def data_batch(data_vector):
 @pytest.fixture(scope='module')
 def responses():
     """Possible responses for vector valued model."""
-    responses = dict()
+    responses = {}
     responses['mean'] = np.array([[1.0, 1.0], [2.0, 2.0]])
 
     return responses

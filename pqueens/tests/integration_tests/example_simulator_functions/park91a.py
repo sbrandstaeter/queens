@@ -122,39 +122,39 @@ def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
 def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
     r"""High-fidelity Park91a function.
 
-    Simple four-dimensional benchmark function as proposed in [1] to mimic
-    a computer model. For the purpose of multi-fidelity simulation, [3]
-    defined a corresponding lower fidelity function, which is  implemented
-    in *park91a_lofi*.
+     Simple four-dimensional benchmark function as proposed in [1] to mimic
+     a computer model. For the purpose of multi-fidelity simulation, [3]
+     defined a corresponding lower fidelity function, which is  implemented
+     in *park91a_lofi*.
 
-    The high-fidelity version is defined as:
+     The high-fidelity version is defined as:
 
-    :math:`f({\bf x}) =
-    \frac{x_1}{2}\left[ \sqrt{1+(x_2+x_3^2)\frac{x_4}{x_1^2}}-1 \right] +(x_1+3x_4)\exp \left[1-\sin(x_3) \right]`
+    .. math:: f({\bf x}) = \frac{x_1}{2}\left[ \sqrt{1+(x_2+x_3^2)\frac{x_4}{x_1^2}}-1 \right]
+               +(x_1+3x_4)\exp \left[1-\sin(x_3) \right]
 
-    Args:
-        x1 (float): Input parameter 1 [0,1)
-        x2 (float): Input parameter 2 [0,1)
-        x3 (float): Input parameter 3 [0,1)
-        x4 (float): Input parameter 4 [0,1)
-        gradient_bool (bool, optional): Switch to return gradient value w.r.t. `x1` and `x2`
+     Args:
+         x1 (float): Input parameter 1 [0,1)
+         x2 (float): Input parameter 2 [0,1)
+         x3 (float): Input parameter 3 [0,1)
+         x4 (float): Input parameter 4 [0,1)
+         gradient_bool (bool, optional): Switch to return gradient value w.r.t. `x1` and `x2`
 
-    Returns:
-        y (float): Value of function at parameters
-        dy_dx1 (float): Gradient of the function w.r.t. *x1*
-        dy_dx2 (float): Gradient of the function w.r.t. *x2*
+     Returns:
+         y (float): Value of function at parameters
+         dy_dx1 (float): Gradient of the function w.r.t. *x1*
+         dy_dx2 (float): Gradient of the function w.r.t. *x2*
 
-    References:
-        [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
-            designs, Ph.D. Thesis
+     References:
+         [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
+             designs, Ph.D. Thesis
 
-        [2] Cox, D. D., Park, J.-S., & Singer, C. E. (2001). A statistical method
-            for tuning a computer code to a database. Computational Statistics &
-            Data Analysis, 37(1), 77?92. http://doi.org/10.1016/S0167-9473(00)00057-8
+         [2] Cox, D. D., Park, J.-S., & Singer, C. E. (2001). A statistical method
+             for tuning a computer code to a database. Computational Statistics &
+             Data Analysis, 37(1), 77?92. http://doi.org/10.1016/S0167-9473(00)00057-8
 
-        [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
-            high-accuracy and low-accuracy computer codes. Technometrics.
-            http://doi.org/10.1080/00401706.2012.723572
+         [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
+             high-accuracy and low-accuracy computer codes. Technometrics.
+             http://doi.org/10.1080/00401706.2012.723572
     """
     term1a = x1 / 2
     term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1

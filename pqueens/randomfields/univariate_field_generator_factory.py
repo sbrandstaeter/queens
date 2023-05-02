@@ -111,8 +111,7 @@ class UniVarRandomFieldGeneratorFactory(object):
                 )
             else:
                 raise ValueError(
-                    'Spatial dimension must be either 1,2, or 3,'
-                    ' not {}'.format(spatial_dimension)
+                    f"Spatial dimension must be either 1, 2, or 3, not {spatial_dimension}"
                 )
 
         elif corrstruct == 'exp':
@@ -148,13 +147,12 @@ class UniVarRandomFieldGeneratorFactory(object):
                 )
             else:
                 raise ValueError(
-                    'Spatial dimension must be either 1,2, or 3,'
-                    ' not {}'.format(spatial_dimension)
+                    f'Spatial dimension must be either 1,2, or 3, not {spatial_dimension}'
                 )
         else:
             raise RuntimeError(
-                'Autocorrelation structure has to be either'
-                ' "squared_exp" or "exp", not {}'.format(corrstruct)
+                'Auto-correlation structure has to be'
+                f' either "squared_exp" or "exp", not {corrstruct}'
             )
         return rf
 
