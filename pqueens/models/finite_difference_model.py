@@ -4,7 +4,6 @@ import logging
 
 import numpy as np
 
-from pqueens.interfaces import from_config_create_interface
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
 from pqueens.utils.valid_options_utils import check_if_valid_options
@@ -65,28 +64,6 @@ class FiniteDifferenceModel(SimulationModel):
         if bounds is None:
             bounds = [-np.inf, np.inf]
         self.bounds = np.array(bounds)
-
-    @classmethod
-    def from_config_create_model(
-        cls,
-        model_name,
-        config,
-    ):
-        """Create Finite difference model from problem description.
-
-        Args:
-            model_name (str): Name of the model
-            config (dict): Dictionary containing problem description
-
-        Returns:
-            instance of FiniteDifferenceModel class
-        """
-        model_options = config[model_name]
-        interface_name = model_options.pop('interface_name')
-        interface = from_config_create_interface(interface_name, config)
-        model_options.pop('type')
-
-        return cls(model_name=model_name, interface=interface, **model_options)
 
     def evaluate(self, samples):
         """Evaluate model with current set of samples.

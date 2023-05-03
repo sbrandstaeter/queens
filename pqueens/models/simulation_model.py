@@ -36,14 +36,12 @@ class SimulationModel(Model):
         Returns:
             simulation_model: Instance of SimulationModel
         """
-        # get options
         model_options = config[model_name]
-        interface_name = model_options["interface_name"]
-
-        # create interface
+        interface_name = model_options.pop('interface_name')
         interface = from_config_create_interface(interface_name, config)
+        model_options.pop('type')
 
-        return cls(model_name, interface)
+        return cls(model_name=model_name, interface=interface, **model_options)
 
     def evaluate(self, samples):
         """Evaluate model with current set of samples.
