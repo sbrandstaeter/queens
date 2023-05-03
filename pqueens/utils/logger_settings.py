@@ -231,10 +231,9 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     joblogger.info('run_subprocess started with:\n')
     joblogger.info(command_string + '\n')
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
-        if line == '' and process.poll() is not None:
-            joblogger.info(
-                'subprocess.Popen() -info: stdout is finished and process.poll() not None.\n'
-            )
+        exit_code = process.poll()
+        if line == '' and exit_code is not None:
+            joblogger.info("subprocess exited with code %s.\n", exit_code)
             # This line waits for termination and puts together stdout not yet consumed from the
             # stream by the logger and finally the stderr.
             stdout, stderr = process.communicate()
