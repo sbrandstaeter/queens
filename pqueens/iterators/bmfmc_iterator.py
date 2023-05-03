@@ -177,6 +177,10 @@ class BMFMCIterator(Iterator):
         self.calculate_optimal_X_train()
 
         # ----- build model on training points and evaluate it -----------------------
+        # r"""Evaluate the BMFMCModel which means that the posterior statistics.
+        #:math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+        #:math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
+        # on the BMFMC algorithm which is implemented in the BMFMCModel"""
         self.output = self.model.evaluate(self.X_train)
 
     def calculate_optimal_X_train(self):
