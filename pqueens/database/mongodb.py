@@ -339,7 +339,7 @@ class MongoDB(Database):
             dbdocs (list): documents from database
         """
         # TODO: we should use a return statement, reference based is a dangerous game
-        for idx in range(len(dbdocs)):
+        for idx in range(len(dbdocs)):  # pylint: disable=consider-using-enumerate
             current_doc = dbdocs[idx]
             current_result = current_doc.get('result', None)
 
