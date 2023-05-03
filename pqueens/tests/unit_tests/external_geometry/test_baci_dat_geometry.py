@@ -229,11 +229,11 @@ def test_init(mocker, tmp_path):
     assert geo_obj.list_geometric_sets == list_geometric_sets
     assert geo_obj.current_dat_section is None
     assert geo_obj.current_dat_section is None
-    assert geo_obj.design_description == {}
+    assert not geo_obj.design_description
     assert geo_obj.node_topology == node_topology
     assert geo_obj.surface_topology == surface_topology
     assert geo_obj.volume_topology == volume_topology
-    assert geo_obj.desired_dat_sections == {}
+    assert not geo_obj.desired_dat_sections
     assert geo_obj.nodes_of_interest is None
     assert geo_obj.node_coordinates == node_coordinates
     assert geo_obj.path_to_preprocessed_dat_file == path_to_preprocessed_dat_file

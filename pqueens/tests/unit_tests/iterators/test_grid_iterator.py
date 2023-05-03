@@ -172,9 +172,9 @@ def test_init(
     assert my_grid_iterator.result_description == result_description
     assert my_grid_iterator.samples is None
     assert my_grid_iterator.output is None
-    assert my_grid_iterator.num_grid_points_per_axis == []
+    assert not my_grid_iterator.num_grid_points_per_axis
     assert my_grid_iterator.num_parameters == num_parameters
-    assert my_grid_iterator.scale_type == []
+    assert not my_grid_iterator.scale_type
 
 
 def test_model_evaluate(default_grid_iterator, mocker):
