@@ -52,7 +52,7 @@ class NewLineFormatter(logging.Formatter):
             fmt (str): Use the specified format string for the handler.
             datefmt (str): Use the specified date/time format, as accepted by time.strftime().
         """
-        logging.Formatter.__init__(self, fmt, datefmt)
+        super().__init__(fmt, datefmt)
 
     def format(self, record):
         """Override format function.
@@ -62,7 +62,7 @@ class NewLineFormatter(logging.Formatter):
         Returns:
             formatted_message (str): Logged message in supplied format split into single lines
         """
-        formatted_message = logging.Formatter.format(self, record)
+        formatted_message = super().format(record)
 
         if record.message != "":
             parts = formatted_message.split(record.message)
