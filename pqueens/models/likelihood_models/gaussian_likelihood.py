@@ -1,7 +1,7 @@
 """Gaussian likelihood."""
 import numpy as np
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.gradient_handler import prepare_downstream_gradient_fun
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
@@ -130,8 +130,7 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        distribution_options = {"type": "normal", "mean": y_obs, "covariance": covariance}
-        normal_distribution = from_config_create_distribution(distribution_options)
+        normal_distribution = NormalDistribution(y_obs, covariance)
         return cls(
             model_name=model_name,
             nugget_noise_variance=nugget_noise_variance,

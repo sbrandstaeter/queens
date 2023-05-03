@@ -14,7 +14,8 @@ be changed to [2]?
 
 import numpy as np
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.mixture import MixtureDistribution
+from pqueens.distributions.normal import NormalDistribution
 
 dim = 4
 
@@ -27,10 +28,12 @@ cov = (std**2) * np.eye(dim)
 weight1 = 0.1
 weight2 = 1 - weight1
 
-dist_options_1 = {'type': 'normal', 'mean': mean1, 'covariance': cov}
-dist_options_2 = {'type': 'normal', 'mean': mean2, 'covariance': cov}
-gaussian_component_1 = from_config_create_distribution(dist_options_1)
-gaussian_component_2 = from_config_create_distribution(dist_options_2)
+gaussian_component_1 = NormalDistribution(mean1, cov)
+gaussian_component_2 = NormalDistribution(mean2, cov)
+
+gaussian_mixture = MixtureDistribution(
+    [weight1, weight2], [gaussian_component_1, gaussian_component_2]
+)
 
 
 def gaussian_mixture_4d_logpdf(samples):
@@ -51,10 +54,7 @@ def gaussian_mixture_4d_logpdf(samples):
     References:
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
-    y = np.log(
-        weight1 * gaussian_component_1.pdf(samples) + weight2 * gaussian_component_2.pdf(samples)
-    )
-    return y
+    return gaussian_mixture.logpdf(samples)
 
 
 if __name__ == "__main__":
