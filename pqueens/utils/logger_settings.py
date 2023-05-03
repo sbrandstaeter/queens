@@ -117,11 +117,12 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     console_stderr.setFormatter(stream_formatter)
     library_logger.addHandler(console_stderr)
 
-    # deactivate logging for specific modules
-    logging.getLogger('arviz').setLevel(logging.CRITICAL)
-    logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
-    logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
-    logging.getLogger('numba').setLevel(logging.CRITICAL)
+    if not debug:
+        # deactivate logging for specific modules
+        logging.getLogger('arviz').setLevel(logging.CRITICAL)
+        logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+        logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
+        logging.getLogger('numba').setLevel(logging.CRITICAL)
 
 
 def setup_cluster_logging():
