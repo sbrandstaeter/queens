@@ -159,10 +159,9 @@ class DirectPythonInterface(Interface):
                     result = np.expand_dims(result, axis=0)
                     gradient = np.expand_dims(gradient, axis=0)
                 return result, gradient
-            else:
-                # here no gradient return
-                if not result_array.shape:
-                    result_array = np.expand_dims(result_array, axis=0)
-                return result_array
+            # here no gradient return
+            if not result_array.shape:
+                result_array = np.expand_dims(result_array, axis=0)
+            return result_array
 
         return reshaped_output_function
