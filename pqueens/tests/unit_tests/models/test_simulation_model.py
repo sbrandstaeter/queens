@@ -53,13 +53,15 @@ def test_evaluate():
 def test_grad():
     """Test grad method."""
     model = SimulationModel("model", 'dummy_interface')
-    upstream = np.random.random((2, 4))
+    upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))
     model.response = {"mean": None, "gradient": gradient}
-    grad_out = model.grad(None, upstream=upstream)
-    expected_grad = np.sum(upstream[:, :, np.newaxis] * np.swapaxes(gradient, 1, 2), axis=1)
+    grad_out = model.grad(None, upstream_gradient=upstream_gradient)
+    expected_grad = np.sum(
+        upstream_gradient[:, :, np.newaxis] * np.swapaxes(gradient, 1, 2), axis=1
+    )
     np.testing.assert_almost_equal(expected_grad, grad_out)
 
     model.response = {"mean": None}
     with pytest.raises(ValueError):
-        model.grad(None, upstream=upstream)
+        model.grad(None, upstream_gradient=upstream_gradient)

@@ -388,18 +388,18 @@ def test_grad(default_mf_likelihood):
     # define inputs
     samples = np.random.rand(3, 2)
     forward_model_output = np.random.rand(3, 4)
-    upstream = np.random.rand(3, 1)
+    upstream_gradient = np.random.rand(3, 1)
     partial_grad = np.random.rand(3, 4)
     like_grad = np.random.rand(3, 2)
     default_mf_likelihood.response = {'forward_model_output': forward_model_output}
 
     with patch.object(BMFGaussianModel, "partial_grad_evaluate", return_value=partial_grad) as mp1:
         with patch.object(SimulationModel, "grad", return_value=like_grad) as mp2:
-            grad_out = default_mf_likelihood.grad(samples, upstream)
+            grad_out = default_mf_likelihood.grad(samples, upstream_gradient)
             mp1.assert_called_once_with(samples, forward_model_output)
             mp2.assert_called_once()
             np.testing.assert_array_equal(mp2.call_args.args[0], samples)
-            np.testing.assert_array_equal(mp2.call_args.args[1], upstream * partial_grad)
+            np.testing.assert_array_equal(mp2.call_args.args[1], upstream_gradient * partial_grad)
             np.testing.assert_array_equal(grad_out, like_grad)
 
 

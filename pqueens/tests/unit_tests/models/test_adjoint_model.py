@@ -66,10 +66,10 @@ def test_grad(default_adjoint_model):
     default_adjoint_model.gradient_interface.evaluate = lambda x: {'mean': x**2}
 
     samples = np.random.random((2, 3))
-    upstream = np.random.random((2, 4))
+    upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))
     default_adjoint_model.response = {"mean": None, "gradient": gradient}
-    grad_out = default_adjoint_model.grad(samples, upstream=upstream)
+    grad_out = default_adjoint_model.grad(samples, upstream_gradient=upstream_gradient)
 
     expected_grad = samples**2
     np.testing.assert_almost_equal(expected_grad, grad_out)
@@ -84,8 +84,8 @@ def test_grad(default_adjoint_model):
         == experiment_dir / '6' / default_adjoint_model.adjoint_file
     )
     np.testing.assert_equal(
-        adjoint_model.write_to_csv.call_args_list[0].args[1], upstream[0].reshape(1, -1)
+        adjoint_model.write_to_csv.call_args_list[0].args[1], upstream_gradient[0].reshape(1, -1)
     )
     np.testing.assert_equal(
-        adjoint_model.write_to_csv.call_args_list[1].args[1], upstream[1].reshape(1, -1)
+        adjoint_model.write_to_csv.call_args_list[1].args[1], upstream_gradient[1].reshape(1, -1)
     )

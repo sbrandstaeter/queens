@@ -45,21 +45,21 @@ class Model(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def grad(self, samples, upstream):
+    def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model with current set of samples.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array): Upstream gradient
+            upstream_gradient (np.array): Upstream gradient
         """
 
     @final
-    def evaluate_and_gradient(self, samples, upstream=None):
+    def evaluate_and_gradient(self, samples, upstream_gradient=None):
         """Evaluate model output and gradient.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array, opt): upstream gradient
+            upstream_gradient (np.array, opt): Upstream gradient
 
         Returns:
             model_output (np.array): Model output
@@ -67,8 +67,10 @@ class Model(metaclass=abc.ABCMeta):
         """
         Model._evaluate_and_gradient_bool = True
         model_output = self.evaluate(samples)
-        if upstream is None:
-            upstream = np.ones((samples.shape[0], 1))
-        model_gradient = self.grad(samples, upstream=upstream.reshape(samples.shape[0], 1))
+        if upstream_gradient is None:
+            upstream_gradient = np.ones((samples.shape[0], 1))
+        model_gradient = self.grad(
+            samples, upstream_gradient=upstream_gradient.reshape(samples.shape[0], 1)
+        )
         Model._evaluate_and_gradient_bool = False
         return model_output, model_gradient

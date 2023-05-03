@@ -80,18 +80,18 @@ class AdjointModel(SimulationModel):
         self.response = self.interface.evaluate(samples)
         return self.response
 
-    def grad(self, samples, upstream):
+    def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model with current set of samples.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array): Upstream gradient
+            upstream_gradient (np.array): Upstream gradient
         """
         # get last job_ids
         last_job_ids = self.interface.job_ids[-samples.shape[0] :]
 
         # write adjoint data for each sample to adjoint files in old job directories
-        for job_id, grad_objective in zip(last_job_ids, upstream):
+        for job_id, grad_objective in zip(last_job_ids, upstream_gradient):
             job_dir = current_job_directory(self.gradient_interface.experiment_dir, job_id)
             adjoint_file_path = job_dir.joinpath(self.adjoint_file)
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))

@@ -212,15 +212,15 @@ class BMFGaussianModel(LikelihoodModel):
 
         return mf_log_likelihood
 
-    def grad(self, samples, upstream):
+    def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model with current set of samples.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array): Upstream gradient
+            upstream_gradient (np.array): Upstream gradient
         """
         partial_grad = self.partial_grad_evaluate(samples, self.response['forward_model_output'])
-        return self.forward_model.grad(samples, upstream * partial_grad)
+        return self.forward_model.grad(samples, upstream_gradient * partial_grad)
 
     def evaluate_from_output(self, samples, forward_model_output):
         """Evaluate multi-fidelity likelihood from forward model output.

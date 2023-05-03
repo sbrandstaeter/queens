@@ -55,15 +55,15 @@ class SimulationModel(Model):
         self.response = self.interface.evaluate(samples)
         return self.response
 
-    def grad(self, samples, upstream):
+    def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model with current set of samples.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array): Upstream gradient
+            upstream_gradient (np.array): Upstream gradient
         """
         if self.response.get('gradient') is None:
             raise ValueError('Gradient information not available.')
         # The shape of the returned gradient is weird
         response_gradient = np.swapaxes(self.response['gradient'], 1, 2)
-        return np.sum(upstream[:, :, np.newaxis] * response_gradient, axis=1)
+        return np.sum(upstream_gradient[:, :, np.newaxis] * response_gradient, axis=1)

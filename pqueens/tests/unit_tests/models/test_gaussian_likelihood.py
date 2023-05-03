@@ -249,7 +249,7 @@ def test_grad(my_lik_model):
     my_lik_model.evaluate(samples)
     my_lik_model.forward_model = Mock()
     my_lik_model.forward_model.grad = lambda _samples, _upstream: _samples + _upstream
-    upstream = np.array([[6], [7]])
-    grad = my_lik_model.grad(samples, upstream=upstream)
+    upstream_gradient = np.array([[6], [7]])
+    grad = my_lik_model.grad(samples, upstream_gradient=upstream_gradient)
     expected_grad = np.array([[-42.2666153056, -41.2666153056], [-68.0000000000, -67.0000000000]])
     np.testing.assert_almost_equal(expected_grad, grad)

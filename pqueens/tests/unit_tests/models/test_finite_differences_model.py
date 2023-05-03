@@ -98,9 +98,9 @@ def test_grad(default_fd_model):
         'mean': np.sum(samples**2, axis=2, keepdims=True),
         'gradient': 2 * samples,
     }
-    upstream = np.random.random((2, 1))
+    upstream_gradient = np.random.random((2, 1))
     expected_grad = np.sum(
-        upstream[:, :, np.newaxis] * default_fd_model.response['gradient'], axis=1
+        upstream_gradient[:, :, np.newaxis] * default_fd_model.response['gradient'], axis=1
     )
-    grad_out = default_fd_model.grad(samples, upstream)
+    grad_out = default_fd_model.grad(samples, upstream_gradient)
     np.testing.assert_almost_equal(expected_grad, grad_out)

@@ -80,14 +80,14 @@ class FiniteDifferenceModel(SimulationModel):
             self.response = self.evaluate_finite_differences(samples)
         return self.response
 
-    def grad(self, samples, upstream):
+    def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model with current set of samples.
 
         Args:
             samples (np.array): Evaluated samples
-            upstream (np.array): Upstream gradient
+            upstream_gradient (np.array): Upstream gradient
         """
-        return np.sum(upstream[:, :, np.newaxis] * self.response['gradient'], axis=1)
+        return np.sum(upstream_gradient[:, :, np.newaxis] * self.response['gradient'], axis=1)
 
     def evaluate_finite_differences(self, samples):
         """Evaluate model gradient based on FDs.
