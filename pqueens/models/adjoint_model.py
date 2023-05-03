@@ -3,14 +3,14 @@
 import logging
 
 from pqueens.interfaces import from_config_create_interface
-from pqueens.models.model import Model
+from pqueens.models.simulation_model import SimulationModel
 from pqueens.utils.config_directories import current_job_directory
 from pqueens.utils.io_utils import write_to_csv
 
 _logger = logging.getLogger(__name__)
 
 
-class AdjointModel(Model):
+class AdjointModel(SimulationModel):
     """Adjoint model.
 
     Attributes:
@@ -38,8 +38,7 @@ class AdjointModel(Model):
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """
-        super().__init__(model_name)
-        self.interface = interface
+        super().__init__(model_name, interface)
         self.gradient_interface = gradient_interface
         self.adjoint_file = adjoint_file
         self.experiment_name = global_settings['experiment_name']

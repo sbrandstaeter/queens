@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 from pqueens.interfaces import from_config_create_interface
-from pqueens.models.model import Model
+from pqueens.models.simulation_model import SimulationModel
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
 from pqueens.utils.valid_options_utils import check_if_valid_options
 
@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 VALID_FINITE_DIFFERENCE_METHODS = ["2-point", "3-point"]
 
 
-class FiniteDifferenceModel(Model):
+class FiniteDifferenceModel(SimulationModel):
     """Finite difference model.
 
     Attributes:
@@ -53,10 +53,9 @@ class FiniteDifferenceModel(Model):
                                                same for all variables. Use it to limit the
                                                range of function evaluation.
         """
-        super().__init__(model_name)
+        super().__init__(model_name, interface)
 
         check_if_valid_options(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_method)
-        self.interface = interface
         self.finite_difference_method = finite_difference_method
         self.step_size = step_size
         _logger.debug(
