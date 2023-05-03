@@ -12,6 +12,7 @@ def fake_database():
 
     class FakeDB(object):
         def print_database_information(self, *args, **kwargs):
+            """TODO.doc."""
             _logger.info('test')
 
     # TODO this is super ugly. creation of DB needs te be moved out of
