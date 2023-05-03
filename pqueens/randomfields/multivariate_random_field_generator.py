@@ -108,12 +108,12 @@ class MultiVariateRandomFieldGenerator(object):
         temp = np.diag(np.ones((self.my_univ_rfs[0].stoch_dim,)))
         phi_d = np.kron(phi_c, temp)
 
-        lamdba_c3 = []
-        for i in range(len(lambda_c)):
-            lamdba_c3.append(lambda_c[i] * temp)
+        lambda_c3 = []
+        for i, l in enumerate(lambda_c):
+            lambda_c3.append(l * temp)
 
         # make sparse at some point
-        lambda_d = scipy.linalg.block_diag(*lamdba_c3)
+        lambda_d = scipy.linalg.block_diag(*lambda_c3)
 
         # self.pre_factor=sparse(phi_d*(lambda_d**(1/2)))
         self.pre_factor = np.dot(phi_d, (lambda_d ** (1 / 2)))

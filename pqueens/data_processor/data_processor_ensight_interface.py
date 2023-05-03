@@ -196,15 +196,16 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         # for all npoint_lines read according data from steps_lines to monfile_data
         # loop over time steps
-        for i in range(len(steps_lines)):
+
+        for i, steps_line in enumerate(steps_lines):
             k = 1
             # save time value for time step
-            monfile_data[i][0] = steps_lines[i][0]
+            monfile_data[i][0] = steps_line[0]
             # loop over points
-            for ii in range(len(npoint_lines)):
+            for ii, npoint_line in enumerate(npoint_lines):
                 for x in range(0, 2):
-                    for iii in range(0, npoint_lines[ii][0]):
-                        monfile_data[i][1][ii][x][npoint_lines[ii][iii + 1]] = steps_lines[i][k]
+                    for iii in range(0, npoint_line[0]):
+                        monfile_data[i][1][ii][x][npoint_line[iii + 1]] = steps_line[k]
                         k += 1
         return monfile_data
 
