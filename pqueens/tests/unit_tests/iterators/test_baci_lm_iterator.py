@@ -205,7 +205,7 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     my_iterator = BaciLMIterator.from_config_create_iterator(
         config, iterator_name=iterator_name_cases, model=model_cases
     )
-    if model_cases == None:
+    if model_cases is None:
         mp.assert_called_once_with('model', config)
 
     mockinit.assert_called_once()
@@ -288,7 +288,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 
     np.testing.assert_equal(jacobian, np.array([[1.0, 0.0], [0.0, 1.0]]))
 
-    if fix_true_false_param == True:
+    if fix_true_false_param is True:
         with pytest.raises(ValueError):
             m5.return_value = np.array([[1.1, 2.2]])
             default_baci_lm_iterator.jacobian_and_residual(np.array([0.1]))
@@ -503,7 +503,7 @@ def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
     with caplog.at_level(logging.WARNING):
         stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)
 
-    assert stepoutside == True
+    assert stepoutside is True
     assert default_baci_lm_iterator.reg_param == 2.0
 
     expected_warning = (

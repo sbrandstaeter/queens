@@ -60,9 +60,9 @@ def test_mh_select(
     )
 
     assert np.allclose(selected_sample[0], current_sample[0])
-    assert accepted[0] == False
+    assert accepted[0] is False
     assert np.allclose(selected_sample[1], proposed_sample[1])
-    assert accepted[1] == True
+    assert accepted[1] is True
 
 
 def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
@@ -91,4 +91,4 @@ def test_mh_select_accept_prob_0(current_sample, proposed_sample, num_chains):
     )
 
     assert np.allclose(selected_sample, current_sample)
-    assert np.all(accepted == False)
+    assert np.all(accepted is False)
