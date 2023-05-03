@@ -6,6 +6,8 @@ import re
 import sys
 import time
 
+LIBRARY_LOGGER_NAME = "pqueens"
+
 
 class LogFilter(logging.Filter):
     """Filters (lets through) all messages with level <= LEVEL.
@@ -82,7 +84,7 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     else:
         logging_level = logging.INFO
 
-    library_logger = logging.getLogger("pqueens")
+    library_logger = logging.getLogger(LIBRARY_LOGGER_NAME)
     # call setLevel() for basic initialisation (this is needed not sure why)
     library_logger.setLevel(logging.DEBUG)
 
@@ -295,7 +297,7 @@ def reset_logging():
     manager = logging.root.manager
     manager.disabled = logging.NOTSET
     for logger in manager.loggerDict.values():  # pylint: disable=no-member
-        if isinstance(logger, logging.Logger):
+        if isinstance(logger, logging.Logger) and LIBRARY_LOGGER_NAME in str(logger):
             logger.setLevel(logging.NOTSET)
             logger.propagate = True
             logger.disabled = False
