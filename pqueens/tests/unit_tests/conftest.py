@@ -11,6 +11,8 @@ def fake_database():
     """TODO_doc."""
 
     class FakeDB(object):
+        """TODO_doc."""
+
         def print_database_information(self, *args, **kwargs):
             _logger.info('test')
 
