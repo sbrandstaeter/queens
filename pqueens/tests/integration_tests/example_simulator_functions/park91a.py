@@ -50,12 +50,11 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **kwargs):
             dy_dx2_vec.append(gradient[1])
             y_vec.append(y)
         return np.array(y_vec), (np.array(dy_dx1_vec), np.array(dy_dx2_vec))
-    else:
-        for x3, x4 in zip(x3_vec, x4_vec):
-            # Bound the arguments
-            args = unit_bounding(x1, x2, x3, x4)
-            y_vec.append(park_function(*args, **kwargs))
-        return np.array(y_vec)
+    for x3, x4 in zip(x3_vec, x4_vec):
+        # Bound the arguments
+        args = unit_bounding(x1, x2, x3, x4)
+        y_vec.append(park_function(*args, **kwargs))
+    return np.array(y_vec)
 
 
 def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
@@ -110,13 +109,11 @@ def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
         dy_dx1 = dy_dx1_term1 + dy_dx1_term2
         dy_dx2 = dy_dx2_term1 + dy_dx2_term2
         return y, (dy_dx1, dy_dx2)
-    else:
-        yh = park91a_hifi(x1, x2, x3, x4)
-        term1 = (1 + np.sin(x1) / 10) * yh
-        term2 = -2 * x1 + x2**2 + x3**2
-        y = term1 + term2 + 0.5
-
-        return y
+    yh = park91a_hifi(x1, x2, x3, x4)
+    term1 = (1 + np.sin(x1) / 10) * yh
+    term2 = -2 * x1 + x2**2 + x3**2
+    y = term1 + term2 + 0.5
+    return y
 
 
 def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
@@ -132,19 +129,19 @@ def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
     .. math:: f({\bf x}) = \frac{x_1}{2}\left[ \sqrt{1+(x_2+x_3^2)\frac{x_4}{x_1^2}}-1 \right]
                +(x_1+3x_4)\exp \left[1-\sin(x_3) \right]
 
-     Args:
+    Args:
          x1 (float): Input parameter 1 [0,1)
          x2 (float): Input parameter 2 [0,1)
          x3 (float): Input parameter 3 [0,1)
          x4 (float): Input parameter 4 [0,1)
          gradient_bool (bool, optional): Switch to return gradient value w.r.t. `x1` and `x2`
 
-     Returns:
+    Returns:
          y (float): Value of function at parameters
          dy_dx1 (float): Gradient of the function w.r.t. *x1*
          dy_dx2 (float): Gradient of the function w.r.t. *x2*
 
-     References:
+    References:
          [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
              designs, Ph.D. Thesis
 
@@ -214,8 +211,7 @@ def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
         dy_dx2 = d_term1_dx2 + d_term2_dx2
 
         return y, (dy_dx1, dy_dx2)
-    else:
-        return y
+    return y
 
 
 def park91a_hifi_on_grid(x1, x2, **kwargs):

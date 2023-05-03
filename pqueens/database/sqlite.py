@@ -340,8 +340,7 @@ class SQLite(Database):
             if len(entries) == 1:
                 entries = entries[0]
             return entries
-        else:
-            return None
+        return None
 
     def _list_of_entry_dicts(self, table_name, entries):
         """Create a dict with the column names.
@@ -423,5 +422,4 @@ class SQLite(Database):
             cursor = self._execute(query)
             entries = cursor.fetchall()[0][0]
             return entries
-        else:
-            return 0
+        return 0

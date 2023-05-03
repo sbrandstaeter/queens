@@ -292,9 +292,8 @@ class DataFitSurrogateModel(Model):
             efficiency = 1 - (numerator / denominator)
             return efficiency
 
-        else:
-            _logger.warning("Evaluation and simulation lists does not have the same length.")
-            return np.nan
+        _logger.warning("Evaluation and simulation lists does not have the same length.")
+        return np.nan
 
     @staticmethod
     def _get_data_set(iterator):

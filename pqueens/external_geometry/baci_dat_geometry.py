@@ -286,14 +286,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
             if line[:2] == '//':
                 return True
             # ignore comment pattern after actual string
-            elif section_string.strip('//') in self.dat_sections:
+            if section_string.strip('//') in self.dat_sections:
                 self.current_dat_section = section_string
                 return True
-            else:
-                self.current_dat_section = None
-                return True
-        else:
-            return False
+            self.current_dat_section = None
+            return True
+        return False
 
     def _check_if_in_desired_dat_section(self):
         """Check if that the a dat-section contains the desired geometric set.
