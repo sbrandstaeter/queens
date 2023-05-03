@@ -36,7 +36,7 @@ class SimulationModel(Model):
         Returns:
             simulation_model: Instance of SimulationModel
         """
-        model_options = config[model_name]
+        model_options = config[model_name].copy()
         interface_name = model_options.pop('interface_name')
         interface = from_config_create_interface(interface_name, config)
         model_options.pop('type')

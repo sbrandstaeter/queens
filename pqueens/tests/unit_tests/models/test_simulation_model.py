@@ -10,7 +10,7 @@ from pqueens.models.simulation_model import SimulationModel
 @pytest.fixture()
 def dummy_config():
     """A dummy config dictionary."""
-    config = {"my_model": {"interface_name": "my_interface"}}
+    config = {"my_model": {"type": "simulation_model", "interface_name": "my_interface"}}
     return config
 
 
@@ -20,7 +20,6 @@ def test_init():
     model_name = "my_model_name"
     interface = "my_interface"
 
-    # Test without grad handler
     model_obj = SimulationModel(model_name, interface)
     assert model_obj.name == model_name
     assert model_obj.interface == interface
@@ -30,7 +29,6 @@ def test_fcc(dummy_config, mocker):
     """Test the fcc method."""
     model_name = "my_model"
 
-    # test without gradient handler
     mocker.patch(
         "pqueens.models.simulation_model.from_config_create_interface", return_value="my_interface"
     )
