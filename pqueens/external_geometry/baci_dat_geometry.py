@@ -225,7 +225,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     # -------------- helper methods ---------------------------------------------------------------
     def _read_geometry_from_dat_file(self):
         """Read the dat-file line by line to be memory efficient."""
-        with open(self.path_to_dat_file) as my_dat:
+        with open(self.path_to_dat_file, encoding='utf-8') as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 line = line.strip()
@@ -286,14 +286,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
             if line[:2] == '//':
                 return True
             # ignore comment pattern after actual string
-            elif section_string.strip('//') in self.dat_sections:
+            if section_string.strip('//') in self.dat_sections:
                 self.current_dat_section = section_string
                 return True
-            else:
-                self.current_dat_section = None
-                return True
-        else:
-            return False
+            self.current_dat_section = None
+            return True
+        return False
 
     def _check_if_in_desired_dat_section(self):
         """Check if that the a dat-section contains the desired geometric set.
@@ -459,11 +457,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
             design_list = line.split()
             if len(design_list) != 2:
                 raise IndexError(
-                    f'Unexpected number of list entries in design '
-                    f'description! The '
-                    'returned list should have length 2 but the returned '
-                    'list was {design_list}.'
-                    'Abort...'
+                    "Unexpected number of list entries in design "
+                    "description! The "
+                    "returned list should have length 2 but the returned "
+                    f"list was {design_list}. "
+                    "Abort..."
                 )
 
             self.design_description[design_list[0]] = design_list[1]
@@ -665,11 +663,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                 'NEUMANN CONDITIONS\n'
                             )
                             self._write_design_point_neumann_conditions()
-                        # pylint: disable=line-too-long
                         print(
-                            '-------------------------------------------------------------------------END\n'
+                            '---------------------------------------------------------------------'
+                            '----END\n'
                         )
-                        # pylint: enable=line-too-long
                     else:
                         print(old_line, end='')
 
@@ -729,7 +726,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             else:
                 raise RuntimeError(
-                    f"At the moment we can only handle one nested material but you "
+                    "At the moment we can only handle one nested material but you "
                     "provided {len(materials_copy[0])} material nestings. Abort..."
                 )
 
@@ -851,10 +848,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             else:
                 raise RuntimeError(
-                    f"At the moment we can only handle one nested material but "
+                    "At the moment we can only handle one nested material but "
                     "you provided "
-                    "{len(self.list_associated_material_numbers[0])} nested "
-                    "materials. Abort...."
+                    f"{len(self.list_associated_material_numbers[0])} nested"
+                    " materials. Abort...."
                 )
 
     def _write_nested_materials(self, line, material_fields):
@@ -1259,7 +1256,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             or realized_random_field_3 is None
         ):
             raise ValueError(
-                "One random fields realization for a Dirichlet BC was not " "defined. Abort..."
+                "One random fields realization for a Dirichlet BC was not defined. Abort..."
             )
 
         return (

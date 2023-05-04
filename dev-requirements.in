@@ -15,7 +15,6 @@ sphinx
 nbsphinx
 pandoc
 pip-tools
-vulture>=2.7
 commitizen
 pydocstyle>=6.3.0
 docformatter>=1.5.1

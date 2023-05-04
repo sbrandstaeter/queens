@@ -64,9 +64,8 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         san_check_bbox = field_bbox.shape
         if san_check_bbox[0] is not self.spatial_dim * 2:
             raise ValueError(
-                'field bounding box must be size {} and not {}'.format(
-                    self.spatial_dim * 2, san_check_bbox[0]
-                )
+                f'field bounding box must be size '
+                f'{self.spatial_dim * 2} and not {san_check_bbox[0]}'
             )
 
         self.bounding_box = field_bbox

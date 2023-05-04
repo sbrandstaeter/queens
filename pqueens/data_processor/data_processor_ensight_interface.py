@@ -146,7 +146,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         Returns:
             monfile_data (list): Data from monitor file in numbers
         """
-        with open(path_to_experimental_reference_data) as my_file:
+        with open(path_to_experimental_reference_data, encoding='utf-8') as my_file:
             lines = my_file.readlines()
             i = 0
             npoints = 0
@@ -478,7 +478,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             raise ValueError(
                 'point in time from *.monitor file used with time_tol is not unique in results'
             )
-        elif len(ensight_time) == 0:
+        if len(ensight_time) == 0:
             raise ValueError(
                 'point in time from *.monitor file used with time_tol not existing in results'
             )

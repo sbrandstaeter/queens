@@ -17,8 +17,8 @@ def branin78_lofi(x1, x2, **kwargs):
     in [1]. The corresponding high- and low-fidelity versions are implemented
     in *branin_hifi* and *branin_lofi*, respectively.
 
-    **TODO_doc:** Shouldn't the previous sentence be: 'The corresponding high- and medium-fidelity versions are implemented
-    in *branin_hifi* and *branin_medfi*, respectively.'
+    **TODO_doc:** Shouldn't the previous sentence be: 'The corresponding high- and medium-fidelity
+    versions are implemented in *branin_hifi* and *branin_medfi*, respectively.'
 
     Args:
         x1 (float): First input parameter

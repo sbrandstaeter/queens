@@ -233,9 +233,7 @@ termcolor==2.2.0
 tinycss2==1.2.1
     # via nbconvert
 toml==0.10.2
-    # via
-    #   liccheck
-    #   vulture
+    # via liccheck
 tomli==2.0.1
     # via
     #   -c requirements.txt
@@ -274,8 +272,6 @@ urllib3==1.26.15
     #   requests
 virtualenv==20.21.0
     # via pre-commit
-vulture==2.7
-    # via -r dev-requirements.in
 wcwidth==0.2.6
     # via prompt-toolkit
 webencodings==0.5.1

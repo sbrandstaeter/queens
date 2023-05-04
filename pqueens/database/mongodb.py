@@ -277,10 +277,9 @@ class MongoDB(Database):
 
         if len(dbdocs) == 0:
             return None
-        elif len(dbdocs) == 1:
+        if len(dbdocs) == 1:
             return convert_nested_db_dicts_to_lists_or_arrays(dbdocs[0])
-        else:
-            return [convert_nested_db_dicts_to_lists_or_arrays(dbdoc) for dbdoc in dbdocs]
+        return [convert_nested_db_dicts_to_lists_or_arrays(dbdoc) for dbdoc in dbdocs]
 
     @safe_operation
     def remove(self, experiment_name, experiment_field, batch, field_filters=None):
