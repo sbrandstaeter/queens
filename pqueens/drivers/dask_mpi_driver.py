@@ -103,7 +103,6 @@ class MpiDriver(Driver):
             log_file=str(log_file),
             error_file=str(error_file),
             streaming=self.cae_output_streaming,
-            raise_error_on_subprocess_failure=False,
         )
 
     def _run_post_processing(self, num_procs_post, output_file, output_dir):
@@ -127,7 +126,6 @@ class MpiDriver(Driver):
             run_subprocess(
                 post_processor_cmd,
                 additional_error_message="Post-processing failed!",
-                raise_error_on_subprocess_failure=True,
             )
 
     def _assemble_execute_cmd(self, num_procs, input_file, output_file):
