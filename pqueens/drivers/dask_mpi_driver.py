@@ -95,9 +95,6 @@ class MpiDriver(Driver):
         """
         execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
 
-        _logger.debug("Start executable with command:")
-        _logger.debug(execute_cmd)
-
         run_subprocess(
             execute_cmd,
             subprocess_type='simulation',

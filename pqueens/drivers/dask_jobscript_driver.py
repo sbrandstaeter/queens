@@ -96,8 +96,7 @@ class JobscriptDriver(Driver):
         inject_in_template(final_jobscript_options, self.jobscript_template, str(jobscript_file))
 
         execute_cmd = 'bash ' + str(jobscript_file)
-        _logger.debug("Start executable with command:")
-        _logger.debug(execute_cmd)
+
         run_subprocess(
             execute_cmd,
             subprocess_type='simple',
