@@ -20,8 +20,14 @@ VALID_TYPES = {
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood',
         'BMFGaussianModel',
     ],
-    'finite_differences': ['pqueens.models.finite_difference_model', 'FiniteDifferenceModel'],
-    'adjoint': ['pqueens.models.adjoint_model', 'AdjointModel'],
+    'differentiable_simulation_model_fd': [
+        'pqueens.models.differentiable_simulation_model_fd',
+        'DifferentiableSimulationModelFD',
+    ],
+    'differentiable_simulation_model_adjoint': [
+        'pqueens.models.differentiable_simulation_model_adjoint',
+        'DifferentiableSimulationModelAdjoint',
+    ],
 }
 
 

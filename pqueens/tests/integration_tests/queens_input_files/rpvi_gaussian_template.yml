@@ -44,7 +44,7 @@ model:
   experimental_file_name_identifier: "*.csv"
   experimental_csv_data_base_dir: {{ experimental_data_path }}
 fd_model:
-  type: finite_differences
+  type: differentiable_simulation_model_fd
   interface_name: interface
   finite_difference_method: 2-point
   step_size: 1.0e-05

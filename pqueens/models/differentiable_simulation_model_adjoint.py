@@ -10,7 +10,7 @@ from pqueens.utils.io_utils import write_to_csv
 _logger = logging.getLogger(__name__)
 
 
-class AdjointModel(SimulationModel):
+class DifferentiableSimulationModelAdjoint(SimulationModel):
     """Adjoint model.
 
     Attributes:
@@ -44,11 +44,7 @@ class AdjointModel(SimulationModel):
         self.experiment_name = global_settings['experiment_name']
 
     @classmethod
-    def from_config_create_model(
-        cls,
-        model_name,
-        config,
-    ):
+    def from_config_create_model(cls, model_name, config):
         """Create adjoint model from problem description.
 
         Args:

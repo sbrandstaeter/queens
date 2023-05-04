@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 VALID_FINITE_DIFFERENCE_METHODS = ["2-point", "3-point"]
 
 
-class FiniteDifferenceModel(SimulationModel):
+class DifferentiableSimulationModelFD(SimulationModel):
     """Finite difference model.
 
     Attributes:

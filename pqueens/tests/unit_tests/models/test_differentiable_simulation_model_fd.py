@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from pqueens.models.finite_difference_model import FiniteDifferenceModel
+from pqueens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from pqueens.models.model import Model
 from pqueens.utils.valid_options_utils import InvalidOptionError
 
@@ -13,7 +13,7 @@ from pqueens.utils.valid_options_utils import InvalidOptionError
 @pytest.fixture()
 def default_fd_model():
     """A default finite difference model."""
-    model_obj = FiniteDifferenceModel(
+    model_obj = DifferentiableSimulationModelFD(
         model_name="my_model_name",
         interface=Mock(),
         finite_difference_method='2-point',
@@ -30,7 +30,7 @@ def test_init():
     step_size = 1e-6
     bounds = [-10, np.inf]
 
-    model_obj = FiniteDifferenceModel(
+    model_obj = DifferentiableSimulationModelFD(
         model_name=model_name,
         interface=interface,
         finite_difference_method=finite_difference_method,
@@ -44,7 +44,7 @@ def test_init():
     np.testing.assert_equal(model_obj.bounds, np.array(bounds))
 
     with pytest.raises(InvalidOptionError):
-        FiniteDifferenceModel(
+        DifferentiableSimulationModelFD(
             model_name=model_name,
             interface=interface,
             finite_difference_method='invalid_method',

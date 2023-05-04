@@ -14,7 +14,7 @@ class SimulationModel(Model):
         response_grad (np.array): Gradient of the model response
     """
 
-    def __init__(self, model_name, interface):
+    def __init__(self, model_name, interface, **kwargs):
         """Initialize simulation model.
 
         Args:

@@ -44,11 +44,11 @@ model:
   experimental_file_name_identifier: experimental_data.csv
   experimental_csv_data_base_dir: {{ experimental_data_path }}
 fd_model:
-  type: finite_differences
+  type: differentiable_simulation_model_fd
   interface_name: interface
   finite_difference_method: 2-point
 adjoint_model:
-  type: adjoint
+  type: differentiable_simulation_model_adjoint
   interface_name: interface
   gradient_interface_name: gradient_interface
   adjoint_file: "grad_objective.csv"
