@@ -90,7 +90,6 @@ class ClusterScheduler(Scheduler):
         dask_cluster_cls = dask_cluster_options['dask_cluster_cls']
         job_extra_directives = dask_cluster_options['job_extra_directives'](num_nodes, num_cores)
         job_directives_skip = dask_cluster_options['job_directives_skip']
-        cluster_python_path = cluster_python_path.replace('$HOME', f'/home/{cluster_user}')
 
         connection = RemoteConnection(cluster_address, cluster_python_path, user=cluster_user)
         connection.open()
