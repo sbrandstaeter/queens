@@ -478,7 +478,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             raise ValueError(
                 'point in time from *.monitor file used with time_tol is not unique in results'
             )
-        elif len(ensight_time) == 0:
+        if len(ensight_time) == 0:
             raise ValueError(
                 'point in time from *.monitor file used with time_tol not existing in results'
             )

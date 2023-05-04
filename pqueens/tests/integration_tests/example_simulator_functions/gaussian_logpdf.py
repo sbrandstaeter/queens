@@ -1,26 +1,24 @@
 """Gaussian distributions."""
 import numpy as np
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.normal import NormalDistribution
 
 # pylint: disable=invalid-name
 
 
 # 1d standard Gaussian
-standard_normal_dict = {'type': 'normal', 'mean': 0.0, 'covariance': 1.0}
-standard_normal = from_config_create_distribution(standard_normal_dict)
+standard_normal = NormalDistribution(0.0, 1)
 
 # 2d Gaussian
 dim = 2
 
-meas_data = [0.0, 0.0]
+mean = [0.0, 0.0]
 cov = [[1.0, 0.5], [0.5, 1.0]]
 
 A = np.eye(dim, dim)
 b = np.zeros(dim)
 
-dist_options = {'type': 'normal', 'mean': meas_data, 'covariance': cov}
-gaussian_2d = from_config_create_distribution(dist_options)
+gaussian_2d = NormalDistribution(mean, cov)
 
 # 4d Gaussian
 cov = [
@@ -32,8 +30,7 @@ cov = [
 
 mean = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
 
-dist_options = {'type': 'normal', 'mean': mean, 'covariance': cov}
-gaussian_4d = from_config_create_distribution(dist_options)
+gaussian_4d = NormalDistribution(mean, cov)
 
 
 def gaussian_1d_logpdf(x):
