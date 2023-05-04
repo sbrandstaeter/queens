@@ -126,7 +126,7 @@ class ClusterScheduler(Scheduler):
         local_port = self.get_port()
 
         connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
-        for i in range(10, 0, -1):  # 10 tries to connect
+        for i in range(20, 0, -1):  # 10 tries to connect
             try:
                 client = Client(address=f"localhost:{local_port}", timeout=10)
                 break

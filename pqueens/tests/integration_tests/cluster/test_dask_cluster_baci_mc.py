@@ -1,19 +1,16 @@
 """Test remote BACI simulations with ensight data-processor."""
 import logging
-import pathlib
 import pickle
+from pathlib import Path
 
 import mock
 import numpy as np
 import pandas as pd
 import pytest
 
-import pqueens.database.database as DB_module
-import pqueens.parameters.parameters as parameters_module
 from conftest import bruteforce_cluster_settings, charon_cluster_settings, deep_cluster_settings
 from pqueens.data_processor.data_processor_ensight import DataProcessorEnsight
-from pqueens.iterators import from_config_create_iterator
-from pqueens.main import get_config_dict
+from pqueens.main import run
 from pqueens.utils import config_directories_dask, injector
 
 _logger = logging.getLogger(__name__)
@@ -27,11 +24,10 @@ _logger = logging.getLogger(__name__)
         pytest.param(charon_cluster_settings, marks=pytest.mark.imcs_cluster),
     ],
 )
-def test_cluster_baci_data_processor_ensight(
+def test_cluster_baci_mc(
     inputdir,
     tmp_path,
     third_party_inputs,
-    monkeypatch,
     dask_cluster_settings,
     cluster_user,
     remote_queens_repository,
@@ -53,38 +49,29 @@ def test_cluster_baci_data_processor_ensight(
         inputdir (Path): Path to the JSON input file
         tmp_path (Path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
-        monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
         cluster_user (str): Cluster user
         remote_queens_repository (str): Path to queens repository on remote host
         remote_python (str): Path to Python environment on remote host
     """
-    # monkeypatch the "input" function, so that it returns "y".
-    # This simulates the user entering "y" in the terminal:
-    monkeypatch.setattr('builtins.input', lambda _: "y")
-
-    base_directory = pathlib.Path("$HOME", "workspace", "build")
+    base_directory = Path("$HOME", "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
     path_to_drt_ensight = base_directory / "post_drt_ensight"
 
     # unique experiment name
-    pytest_name = pathlib.Path(tmp_path).parents[0].stem
+    pytest_name = Path(tmp_path).parents[0].stem
     experiment_name = f"test_{dask_cluster_settings['name']}_data_processor_ensight"
 
     def patch_experiments_directory(_):
         """Base directory for all experiments on the computing machine."""
-        experiments_dir = pathlib.Path.home() / 'queens-testing' / pytest_name / experiment_name
-        pathlib.Path.mkdir(experiments_dir, parents=True, exist_ok=True)
+        experiments_dir = Path.home() / 'queens-testing' / pytest_name / experiment_name
+        Path.mkdir(experiments_dir, parents=True, exist_ok=True)
         return experiments_dir
 
     config_directories_dask.experiment_directory = patch_experiments_directory
 
-    # specific folder for this test
-    baci_input_template_name = "invaaa_ee.dat"
-    baci_input_file_template = pathlib.Path(
-        third_party_inputs, "baci_input_files", baci_input_template_name
-    )
+    baci_input_file_template = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
     if remote_python is None:
         remote_python = dask_cluster_settings['cluster_python_path']
@@ -111,62 +98,17 @@ def test_cluster_baci_data_processor_ensight(
     )
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-    # Patch the missing config arguments
-    config = get_config_dict(queens_input_file, pathlib.Path(tmp_path))
+    def patch_data(*_args):
+        """Patch reading experimental data from database."""
+        return (
+            experiment_name,
+            pd.DataFrame.from_dict({"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}),
+            ['x1', 'x2', 'x3'],
+            None,
+        )
 
-    # Initialise db module
-    DB_module.from_config_create_database(config)
-
-    with DB_module.database:  # pylint: disable=no-member
-
-        parameters_module.from_config_create_parameters(config)
-
-        def patch_data(*_args):
-            """Patch reading experimental data from database."""
-            return (
-                experiment_name,
-                pd.DataFrame.from_dict({"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}),
-                ['x1', 'x2', 'x3'],
-                None,
-            )
-
-        # create iterator
-        with mock.patch.object(DataProcessorEnsight, '_get_experimental_data_from_db', patch_data):
-            iterator = from_config_create_iterator(config)
-
-        # Create a BACI model for the benchmarks
-        model = iterator.model
-
-        # Evaluate the first batch
-        first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
-        first_batch = np.array(model.evaluate(first_sample_batch)["mean"])
-
-        # Evaluate a second batch
-        # In order to make sure that no port is closed after one batch
-        second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
-        second_batch = np.array(model.evaluate(second_sample_batch)["mean"])
-
-        # Third batch with MC samples
-        iterator.run()
-
-    # Check results
-    first_batch_reference_solution = np.array(
-        [
-            [-0.0006949830567464232, 0.0017958658281713724],
-            [-0.0012194387381896377, 0.003230389906093478],
-            [-0.004366828128695488, 0.0129017299041152],
-        ]
-    )
-    second_batch_reference_solution = np.array(
-        [
-            [-0.0016464125365018845, 0.004280212335288525],
-            [-0.0023093123454600573, 0.00646978011354804],
-            [-0.008715332485735416, 0.026327939704060555],
-        ]
-    )
-
-    np.testing.assert_array_equal(first_batch, first_batch_reference_solution)
-    np.testing.assert_array_equal(second_batch, second_batch_reference_solution)
+    with mock.patch.object(DataProcessorEnsight, '_get_experimental_data_from_db', patch_data):
+        run(queens_input_file, tmp_path)
 
     result_file_name = experiment_name + ".pickle"
 
@@ -176,5 +118,14 @@ def test_cluster_baci_data_processor_ensight(
 
     reference_mc_mean = np.array([-1.39371249, 1.72861153])
     reference_mc_var = np.array([0.01399851, 0.02759816])
+    reference_output = np.array(
+        [
+            [-1.40698826, 1.78872097],
+            [-1.29981923, 1.56641328],
+            [-1.31205046, 1.62528300],
+            [-1.55599201, 1.93402886],
+        ]
+    )
     np.testing.assert_array_almost_equal(reference_mc_mean, results['mean'])
     np.testing.assert_array_almost_equal(reference_mc_var, results['var'])
+    np.testing.assert_array_almost_equal(reference_output, results['raw_output_data']['mean'])

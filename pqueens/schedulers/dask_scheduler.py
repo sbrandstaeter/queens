@@ -1,6 +1,5 @@
 """QUEENS scheduler parent class."""
 import abc
-import atexit
 import copy
 import logging
 
@@ -45,7 +44,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs_post = num_procs_post
         self.client = client
         _logger.info(client.dashboard_link)
-        atexit.register(self.shutdown_client)
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
