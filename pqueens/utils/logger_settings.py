@@ -45,15 +45,6 @@ class NewLineFormatter(logging.Formatter):
      format of the logging is broken for multiline messages.
     """
 
-    def __init__(self, fmt, datefmt=None):
-        """Initialize the NewLineFormatter.
-
-        Args:
-            fmt (str): Use the specified format string for the handler.
-            datefmt (str): Use the specified date/time format, as accepted by time.strftime().
-        """
-        super().__init__(fmt, datefmt)
-
     def format(self, record):
         """Override format function.
 
@@ -189,12 +180,10 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     # for cluster runs with singularity; thus, each processor logs his own file.)
     lfh = logging.FileHandler(log_file, mode='w', delay=False)
     lfh.setLevel(logging.INFO)
-    lfh.terminator = ''
     lfh.setFormatter(formatter)
     joblogger.addHandler(lfh)
     efh = logging.FileHandler(error_file, mode='w', delay=False)
     efh.setLevel(logging.ERROR)
-    efh.terminator = ''
     efh.setFormatter(formatter)
     joblogger.addHandler(efh)
 
@@ -228,34 +217,34 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     stderr = None
 
     # start logging
-    joblogger.info('run_subprocess started with:\n')
-    joblogger.info(command_string + '\n')
+    joblogger.info('run_subprocess started with:')
+    joblogger.info(command_string)
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
         exit_code = process.poll()
         if line == '' and exit_code is not None:
-            joblogger.info("subprocess exited with code %s.\n", exit_code)
+            joblogger.info("subprocess exited with code %s.", exit_code)
             # This line waits for termination and puts together stdout not yet consumed from the
             # stream by the logger and finally the stderr.
             stdout, stderr = process.communicate()
             # following line should never really do anything. We want to log all that was
             # written to stdout even after program was terminated.
-            joblogger.info(stdout + '\n')
+            joblogger.info(stdout)
             if stderr:
-                joblogger.error('error message (if provided) follows:\n')
+                joblogger.error('error message (if provided) follows:')
                 for errline in io.StringIO(stderr):
                     joblogger.error(errline)
             break
         if terminate_expr:
             # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
             if re.search(terminate_expr, line):
-                joblogger.warning('run_subprocess detected terminate expression:\n')
+                joblogger.warning('run_subprocess detected terminate expression:')
                 joblogger.error(line)
                 # give program the chance to terminate by itself, because terminate expression
                 # will be found also if program terminates itself properly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
-                    joblogger.warning('running job will be terminated by QUEENS.\n')
+                    joblogger.warning('running job will be terminated by QUEENS.')
                     process.terminate()
                     # wait before communicate call which gathers all the output
                     time.sleep(2)
