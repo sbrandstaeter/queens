@@ -100,6 +100,7 @@ class JobscriptDriver(Driver):
         run_subprocess(
             execute_cmd,
             subprocess_type='simple',
+            raise_error_on_subprocess_failure=False,
         )
 
         return self._get_results(output_dir)
