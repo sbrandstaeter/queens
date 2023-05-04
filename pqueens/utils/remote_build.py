@@ -58,7 +58,7 @@ def build_remote_environment(remote_address, remote_user, remote_queens_reposito
         f'pip install -e ."'
     )
     start_time = time.time()
-    _, _, stdout, _ = run_subprocess(command_string)
+    _, _, stdout, _ = run_subprocess(command_string, raise_error_on_subprocess_failure=False)
     _logger.debug(stdout)
     _logger.info("Build of remote queens environment was successful.")
     _logger.info("It took: %s s.\n", time.time() - start_time)
