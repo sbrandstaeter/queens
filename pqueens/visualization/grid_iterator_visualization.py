@@ -1,4 +1,4 @@
-"""TODO_doc: This is not in the documentation.
+"""Provide utilities for visualization in the grid iterator.
 
 A module that provides utilities and a class for visualization in the grid
 iterator.
