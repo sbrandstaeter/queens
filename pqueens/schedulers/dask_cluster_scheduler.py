@@ -129,13 +129,11 @@ class ClusterScheduler(Scheduler):
             try:
                 client = Client(address=f"localhost:{local_port}", timeout=10)
                 break
-            except OSError:
+            except OSError as exc:
                 if i == 1:
-                    for line in iter(stdout.readline, ""):
-                        _logger.debug(line)
-                    for line in iter(stderr.readline, ""):
-                        _logger.debug(line)
-                    raise
+                    raise OSError(
+                        stdout.read().decode('ascii') + stderr.read().decode('ascii')
+                    ) from exc
                 time.sleep(1)
 
         client.submit(lambda: "Dummy job").result(timeout=60)
