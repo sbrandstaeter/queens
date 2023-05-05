@@ -10,6 +10,11 @@ VALID_TYPES = {
     'exponential': ['pqueens.distributions.exponential', 'ExponentialDistribution'],
     'free': ['pqueens.distributions.free', 'FreeVariable'],
     'mixture': ['pqueens.distributions.mixture', 'MixtureDistribution'],
+    'categorical': ['pqueens.distributions.categorical', 'CategoricalDistribution'],
+    'bernoulli': ['pqueens.distributions.bernoulli', 'BernoulliDistribution'],
+    'multinomial': ['pqueens.distributions.multinomial', 'MultinomialDistribution'],
+    'particles': ['pqueens.distributions.particles', 'ParticleDiscreteDistribution'],
+    'uniform_discrete': ['pqueens.distributions.uniform_discrete', 'UniformDiscreteDistribution'],
 }
 
 
@@ -23,5 +28,7 @@ def from_config_create_distribution(distribution_options):
         distribution: Distribution object
     """
     distribution_class = get_module_class(distribution_options, VALID_TYPES, "type")
-    distribution = distribution_class.from_config_create_distribution(distribution_options)
+    distribution_options_copy = distribution_options.copy()
+    distribution_options_copy.pop("type")
+    distribution = distribution_class.from_config_create_distribution(distribution_options_copy)
     return distribution

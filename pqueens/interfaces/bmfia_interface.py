@@ -759,7 +759,7 @@ class BmfiaInterface(Interface):
                 "valid choice. A valid choice is an integer between 0 and the "
                 "number of available processors on your resource. Abort..."
             )
-        elif num_processors_multi_processing > num_processors_available:
+        if num_processors_multi_processing > num_processors_available:
             raise RuntimeError(
                 f"You specified {num_processors_multi_processing} for the multi-processing "
                 f"pool but the system only has {num_processors_available}! "

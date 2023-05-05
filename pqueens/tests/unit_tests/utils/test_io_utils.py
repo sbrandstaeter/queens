@@ -28,7 +28,7 @@ def fixture_input_file(request, input_dict, test_path):
         dumper = json.dump
     elif file_type in ("yml", "yaml"):
         dumper = yaml.dump
-    with open(input_file_path, "w") as stream:
+    with open(input_file_path, "w", encoding='utf-8') as stream:
         dumper(input_dict, stream)
     return input_file_path
 
@@ -43,7 +43,7 @@ def test_load_input_file_nonexisting_file():
 def test_load_input_file_wrong_file_type(test_path):
     """Test if exception is raised for wrong file type."""
     input_path = test_path / "input.file"
-    open(input_path, "a+")
+    open(input_path, "a+", encoding='utf-8')
     with pytest.raises(FileTypeError):
         load_input_file(input_path)
 

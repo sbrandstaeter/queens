@@ -67,7 +67,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         if sum_lambda / self.largest_length < self.des_energy_frac:
             raise RuntimeError(
                 'Energy fraction retained by KLE expansion is '
-                ' only {}, not {}'.format(sum_lambda / self.largest_length, self.des_energy_frac)
+                f'only {sum_lambda / self.largest_length}, not {self.des_energy_frac}'
             )
 
         self.act_energy_frac = sum_lambda / self.largest_length
@@ -88,7 +88,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         """
         if len(phase_angles) is not self.stoch_dim:
             raise RuntimeError(
-                'Number of random phase angles does not match ' 'stochastic dimension of the field!'
+                'Number of random phase angles does not match stochastic dimension of the field!'
             )
 
         # if length(loc(1,:))~=1

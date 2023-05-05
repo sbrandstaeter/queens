@@ -271,7 +271,7 @@ class BaciLMIterator(Iterator):
                         i,
                     )
                     return
-                elif i == 2:
+                if i == 2:
                     fig = px.line_3d(
                         data,
                         x=self.parameters.names[0],

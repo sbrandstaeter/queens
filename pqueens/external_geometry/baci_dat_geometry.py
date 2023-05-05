@@ -225,7 +225,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     # -------------- helper methods ---------------------------------------------------------------
     def _read_geometry_from_dat_file(self):
         """Read the dat-file line by line to be memory efficient."""
-        with open(self.path_to_dat_file) as my_dat:
+        with open(self.path_to_dat_file, encoding='utf-8') as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 line = line.strip()
@@ -286,14 +286,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
             if line[:2] == '//':
                 return True
             # ignore comment pattern after actual string
-            elif section_string.strip('//') in self.dat_sections:
+            if section_string.strip('//') in self.dat_sections:
                 self.current_dat_section = section_string
                 return True
-            else:
-                self.current_dat_section = None
-                return True
-        else:
-            return False
+            self.current_dat_section = None
+            return True
+        return False
 
     def _check_if_in_desired_dat_section(self):
         """Check if that the a dat-section contains the desired geometric set.
@@ -665,11 +663,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                 'NEUMANN CONDITIONS\n'
                             )
                             self._write_design_point_neumann_conditions()
-                        # pylint: disable=line-too-long
                         print(
-                            '-------------------------------------------------------------------------END\n'
+                            '---------------------------------------------------------------------'
+                            '----END\n'
                         )
-                        # pylint: enable=line-too-long
                     else:
                         print(old_line, end='')
 
@@ -1259,7 +1256,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             or realized_random_field_3 is None
         ):
             raise ValueError(
-                "One random fields realization for a Dirichlet BC was not " "defined. Abort..."
+                "One random fields realization for a Dirichlet BC was not defined. Abort..."
             )
 
         return (

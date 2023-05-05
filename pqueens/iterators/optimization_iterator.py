@@ -330,7 +330,7 @@ class OptimizationIterator(Iterator):
         if self.algorithm == 'LM':
             parameter_list = self.parameters.parameters_keys()
             _logger.info(
-                "The optimum of the parameters " "%s is:\n\t%s", *parameter_list, self.solution[0]
+                "The optimum of the parameters %s is:\n\t%s", *parameter_list, self.solution[0]
             )
         else:
             _logger.info("The optimum:\n\t%s", self.solution.x)

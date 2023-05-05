@@ -223,8 +223,7 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
         )
         if raise_error_on_subprocess_failure:
             raise subprocess_error
-        else:
-            _logger.warning(str(subprocess_error))
+        _logger.warning(str(subprocess_error))
 
 
 def _remove_allowed_errors(stderr, allowed_errors):

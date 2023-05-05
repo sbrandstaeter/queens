@@ -19,7 +19,7 @@ def test_sobol_indices_sobol(inputdir, tmp_path):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    expected_result = dict()
+    expected_result = {}
 
     expected_result["S1"] = np.array(
         [
