@@ -129,12 +129,15 @@ def test_from_config_create_grad_handler(dummy_config, model_interface):
 
 def test_calculate_downstream_gradient():
     """Test the calculate downstream gradient method."""
-    upstream_gradient_fun = lambda samples, outputs: samples**2 + outputs
+
+    def my_upstream_gradient_fun(samples, outputs):
+        return samples**2 + outputs
+
     samples = np.array([[1, 1], [2, 2]])
     response = np.array([[1], [2]])
     gradient_response_batch = np.array([[1, 2, 3], [4, 5, 6]])
     downstream_gradient_batch = GradientHandler.calculate_downstream_gradient_with_chain_rule(
-        upstream_gradient_fun, samples, response, gradient_response_batch
+        my_upstream_gradient_fun, samples, response, gradient_response_batch
     )
     expected_downstream_gradient_batch = np.array([[4, 8, 12], [48, 60, 72]])
     np.testing.assert_array_equal(downstream_gradient_batch, expected_downstream_gradient_batch)

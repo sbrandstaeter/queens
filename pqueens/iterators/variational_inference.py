@@ -429,9 +429,10 @@ class VariationalInferenceIterator(Iterator):
         """
         safe_gradient = self.handle_gradient_nan(self._calculate_elbo_gradient)
         if self.natural_gradient_bool:
-            gradient = lambda variational_parameters: np.linalg.solve(
-                self._get_fim(), safe_gradient(variational_parameters)
-            )
+
+            def gradient(variational_parameters):
+                return np.linalg.solve(self._get_fim(), safe_gradient(variational_parameters))
+
         else:
             gradient = safe_gradient
 

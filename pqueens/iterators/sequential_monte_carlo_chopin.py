@@ -156,9 +156,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
         # Likelihood function for the static model based on the QUEENS function
         # Yes the lambda is necessary
-        # pylint: disable=unnecessary-lambda
-        log_likelihood = lambda x: self.eval_log_likelihood(x)
-        # pylint: enable=unnecessary-lambda
+        log_likelihood = lambda x: self.eval_log_likelihood(
+            x
+        )  # pylint: disable=unnecessary-lambda-assignment
 
         # Static model for the Feynman Kac model
         static_model = smc_utils.StaticStateSpaceModel(
