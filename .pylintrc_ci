@@ -102,7 +102,7 @@ disable=raw-checker-failed,
         redefined-builtin,
         abstract-class-instantiated,
         self-assigning-variable,
-        unidiomatic-typecheck,
+        unidiomatic-typecheck
         unused-wildcard-import,
         function-redefined,
         used-before-assignment,
