@@ -288,7 +288,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 
     np.testing.assert_equal(jacobian, np.array([[1.0, 0.0], [0.0, 1.0]]))
 
-    if fix_true_false_param is True:
+    if fix_true_false_param:
         with pytest.raises(ValueError):
             m5.return_value = np.array([[1.1, 2.2]])
             default_baci_lm_iterator.jacobian_and_residual(np.array([0.1]))
@@ -503,7 +503,7 @@ def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
     with caplog.at_level(logging.WARNING):
         stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)
 
-    assert stepoutside is True
+    assert stepoutside
     assert default_baci_lm_iterator.reg_param == 2.0
 
     expected_warning = (
