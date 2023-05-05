@@ -27,7 +27,7 @@ def from_config_create(plotting_options):
     this.vi_visualization_instance = VIVisualization.from_config_create(plotting_options)
 
 
-class VIVisualization(object):
+class VIVisualization:
     """Visualization class for VI.
 
     Attributes:

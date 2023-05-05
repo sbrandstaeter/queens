@@ -11,7 +11,7 @@ from pqueens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
 from pqueens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
 
 
-class UniVarRandomFieldGeneratorFactory(object):
+class UniVarRandomFieldGeneratorFactory:
     """TODO_doc: add one-line explanation.
 
     Class that is currently used for the generation of random fields and

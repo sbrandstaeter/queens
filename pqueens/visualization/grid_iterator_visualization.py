@@ -80,7 +80,7 @@ def _linear_tick_formatter(val):
     return f"{val:.2e}"
 
 
-class GridIteratorVisualization(object):
+class GridIteratorVisualization:
     """Visualization class for GridIterator.
 
     Visualization class for GridIterator that contains several plotting,

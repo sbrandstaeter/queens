@@ -66,7 +66,7 @@ def convert_to_dict(values):
     return plot_dict
 
 
-class SurrogateVisualization(object):
+class SurrogateVisualization:
     """TODO_doc: add a one-line explanation.
 
     Visualization class for surrogate models that contains several plotting,

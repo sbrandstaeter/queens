@@ -35,7 +35,7 @@ def from_config_create(config):
     this.bmfmc_visualization_instance = BMFMCVisualization.from_config_create(config)
 
 
-class BMFMCVisualization(object):
+class BMFMCVisualization:
     """Visualization class for BMFMC-UQ.
 
     This contains several plotting, storing and visualization methods that can be used anywhere
