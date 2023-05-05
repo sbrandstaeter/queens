@@ -588,7 +588,7 @@ deep-cluster-native-remove_conda_env:
   stage: cleanup
   script:
     - ssh queens@$REMOTE_ADDRESS "conda env remove -n queens-$CI_PIPELINE_ID;
-      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID"
+      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID; rm -rf /home/queens/queens-testing/pytest*"
   when: always
   rules:
     - if: $CLUSTER_TESTS == "1"
