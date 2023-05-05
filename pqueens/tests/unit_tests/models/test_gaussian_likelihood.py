@@ -4,7 +4,7 @@ from collections import namedtuple
 import numpy as np
 import pytest
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 
 
@@ -140,7 +140,8 @@ def test_fcc(dummy_config, mocker):
     output_label = ["y_obs"]
     coord_labels = ["c1", "c2"]
     m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.LikelihoodModel.get_base_attributes_from_config",
+        "pqueens.models.likelihood_models.gaussian_likelihood."
+        "LikelihoodModel.get_base_attributes_from_config",
         return_value=(
             forward_model,
             coords_mat,
@@ -152,8 +153,7 @@ def test_fcc(dummy_config, mocker):
     )
     # create the normal distribution of the Gaussian likelihood model for testing
     covariance = dummy_config[model_name]["noise_value"] * np.eye(y_obs.size)
-    distribution_options = {"type": "normal", "mean": y_obs, "covariance": covariance}
-    normal_distribution = from_config_create_distribution(distribution_options)
+    normal_distribution = NormalDistribution(y_obs, covariance)
 
     # test valid configuration
     gauss_lik_obj = GaussianLikelihood.from_config_create_model(model_name, dummy_config)
@@ -186,7 +186,8 @@ def test_evaluate(mocker, my_lik_model):
     # test update of covariance for MAP
     my_lik_model.noise_type = "MAP_abc"
     m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.GaussianLikelihood.update_covariance"
+        "pqueens.models.likelihood_models.gaussian_likelihood."
+        "GaussianLikelihood.update_covariance"
     )
     response = my_lik_model.evaluate(samples)
     assert m1.called_once_with(3.0)

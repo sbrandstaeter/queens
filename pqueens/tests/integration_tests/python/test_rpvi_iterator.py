@@ -9,7 +9,7 @@ import pytest
 from mock import patch
 
 from pqueens import run
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from pqueens.utils import injector
 
@@ -145,12 +145,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 
 likelihood_mean = np.array([-2.0, 1.0])
 likelihood_covariance = np.diag(np.array([0.1, 10.0]))
-likelihood_dist = {
-    'type': 'normal',
-    'mean': likelihood_mean,
-    'covariance': likelihood_covariance,
-}
-likelihood = from_config_create_distribution(likelihood_dist)
+likelihood = NormalDistribution(likelihood_mean, likelihood_covariance)
 
 
 def target_density(self, samples):
@@ -219,13 +214,11 @@ def module_path(tmp_path):
 @pytest.fixture()
 def write_custom_likelihood_model(module_path):
     """Write custom likelihood class to file."""
-    # pylint: disable=line-too-long
     custom_class_lst = [
         "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",
         "class MyLikelihood(GaussianLikelihood):\n",
         "   pass",
     ]
-    # pylint: enable=line-too-long
-    with open(module_path, 'w') as f:
+    with open(module_path, 'w', encoding='utf-8') as f:
         for my_string in custom_class_lst:
             f.writelines(my_string)

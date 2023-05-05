@@ -221,20 +221,19 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     coords_mat = np.array([[0, 1], [0, 1]])
     approx_name = "bmfia"
 
-    # pylint: disable=line-too-long
     mock_train_parallel = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.BmfiaInterface._train_probabilistic_mappings_in_parallel',
+        'pqueens.interfaces.bmfia_interface.BmfiaInterface.'
+        '_train_probabilistic_mappings_in_parallel',
         return_value=dummy_lst,
     )
     mock_optimize_state = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.BmfiaInterface._set_optimized_state_of_probabilistic_mappings'
+        'pqueens.interfaces.bmfia_interface.BmfiaInterface.'
+        '_set_optimized_state_of_probabilistic_mappings'
     )
     mocker.patch(
         'pqueens.visualization.bmfia_visualization.bmfia_visualization_instance',
         return_value=dummy_plot_instance,
     )
-
-    # pylint: disable=line-too-long
 
     default_bmfia_interface.num_processors_multi_processing = 3
 

@@ -274,16 +274,15 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         """
         if self.done:
             raise StopIteration
-        else:
-            old_parameters = self.current_variational_parameters.copy()
-            current_gradient = self.gradient(self.current_variational_parameters)
-            current_gradient = self.clip_gradient(current_gradient)
-            current_gradient = self.scheme_specific_gradient(current_gradient)
-            self.current_gradient_value = current_gradient
-            self.do_single_iteration(current_gradient)
-            self._compute_rel_change(old_parameters, self.current_variational_parameters)
-            self._check_if_done()
-            return self.current_variational_parameters
+        old_parameters = self.current_variational_parameters.copy()
+        current_gradient = self.gradient(self.current_variational_parameters)
+        current_gradient = self.clip_gradient(current_gradient)
+        current_gradient = self.scheme_specific_gradient(current_gradient)
+        self.current_gradient_value = current_gradient
+        self.do_single_iteration(current_gradient)
+        self._compute_rel_change(old_parameters, self.current_variational_parameters)
+        self._check_if_done()
+        return self.current_variational_parameters
 
     def __iter__(self):
         """Python intern function needed to make this object iterable.
@@ -304,11 +303,10 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         """
         if np.any(np.isnan(self.current_variational_parameters)):
             raise ValueError("At least one of the variational parameters is NaN")
-        else:
-            self.done = (
-                self.rel_L2_change <= self.rel_L2_change_threshold
-                and self.rel_L1_change <= self.rel_L1_change_threshold
-            ) or self.iteration >= self.max_iteration
+        self.done = (
+            self.rel_L2_change <= self.rel_L2_change_threshold
+            and self.rel_L1_change <= self.rel_L1_change_threshold
+        ) or self.iteration >= self.max_iteration
 
     def run_optimization(self):
         """Run the optimization.

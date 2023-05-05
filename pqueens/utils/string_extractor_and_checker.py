@@ -39,7 +39,7 @@ def check_if_string_in_file(file_name, string_to_search):
         TODO_doc
     """
     # Open the file in read only mode
-    with open(file_name, 'r') as read_obj:
+    with open(file_name, 'r', encoding='utf-8') as read_obj:
         # Read all lines in the file one by one
         for line in read_obj:
             # For each line, check if line contains the string

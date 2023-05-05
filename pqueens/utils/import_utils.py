@@ -50,7 +50,7 @@ def get_module_attribute(path_to_module, function_or_class_name):
         ) from error
 
     _logger.debug(
-        "Using now external Python method or class %s \n" "in the file %s.",
+        "Using now external Python method or class %s \nin the file %s.",
         function_or_class_name,
         path_to_module,
     )

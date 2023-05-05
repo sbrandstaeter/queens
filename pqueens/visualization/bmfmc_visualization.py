@@ -260,10 +260,9 @@ def _get_manifold_plotter(output):
     """
     if output['Z_mc'].shape[1] < 2:
         return _2d_manifold
-    elif output['Z_mc'].shape[1] == 2:
+    if output['Z_mc'].shape[1] == 2:
         return _3d_manifold
-    else:
-        return None
+    return None
 
 
 def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):

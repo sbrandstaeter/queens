@@ -50,7 +50,7 @@ def _log_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(10**val)
+    return f"{10**val:.2e}"
 
 
 def _ln_tick_formatter(val):
@@ -62,7 +62,7 @@ def _ln_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(np.e**val)
+    return f"{np.e**val:.2e}"
 
 
 def _linear_tick_formatter(val):
@@ -74,7 +74,7 @@ def _linear_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(val)
+    return f"{val:.2e}"
 
 
 class GridIteratorVisualization(object):
@@ -175,10 +175,9 @@ class GridIteratorVisualization(object):
         """
         if num_params == 1:
             return self._plot_one_d
-        elif num_params == 2:
+        if num_params == 2:
             return self._plot_two_d
-        else:
-            raise NotImplementedError('Grid plot only possible up to 2 parameters')
+        raise NotImplementedError('Grid plot only possible up to 2 parameters')
 
     def _plot_one_d(self, output, samples, n_grid_p):
         """Plotting method for one dimensional grid.
@@ -276,15 +275,14 @@ class GridIteratorVisualization(object):
 
         if self.scale_types_list[idx] == 'log10':
             return _log_tick_formatter
-        elif self.scale_types_list[idx] == 'logn':
+        if self.scale_types_list[idx] == 'logn':
             return _ln_tick_formatter
-        elif self.scale_types_list[idx] == 'lin':
+        if self.scale_types_list[idx] == 'lin':
             return _linear_tick_formatter
-        else:
-            raise ValueError(
-                f'Your axis scaling type {self.scale_types_list[idx]} is not a valid '
-                f'option! Abort...'
-            )
+        raise ValueError(
+            f'Your axis scaling type {self.scale_types_list[idx]} is not a valid '
+            f'option! Abort...'
+        )
 
 
 def _save_plot(save_bool, path):

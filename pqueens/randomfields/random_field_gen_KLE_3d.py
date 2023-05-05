@@ -113,7 +113,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         if retained_energy < self.des_energy_frac:
             raise RuntimeError(
                 'Energy fraction retained by KLE expansion is '
-                ' only {}, not {}'.format(retained_energy, self.des_energy_frac)
+                f' only {retained_energy}, not {self.des_energy_frac}'
             )
 
         self.act_energy_frac = retained_energy
@@ -134,7 +134,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         """
         if len(phase_angles) != self.stoch_dim:
             raise RuntimeError(
-                'Number of random phase angles does not match ' 'stochastic dimension of the field!'
+                'Number of random phase angles does not match stochastic dimension of the field!'
             )
 
         if len(loc[0, :]) != 3:

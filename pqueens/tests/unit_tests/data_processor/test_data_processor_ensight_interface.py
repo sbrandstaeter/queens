@@ -32,12 +32,11 @@ def default_data_processor(mocker):
     data_processor_name = 'data_processor'
     problem_dim = '5d'
 
-    # pylint: disable=line-too-long error
     mocker.patch(
-        'pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
+        'pqueens.data_processor.data_processor_ensight_interface.'
+        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value='None',
     )
-    # pylint: enable=line-too-long error
     pp = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
@@ -159,17 +158,17 @@ def test_init(mocker):
 def test_from_config_create_data_processor(mocker):
     """Test the config method."""
     experimental_ref_data = np.array([[1, 2], [3, 4]])
-    # pylint: disable=line-too-long error
     mp = mocker.patch(
-        'pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy.__init__',
+        'pqueens.data_processor.data_processor_ensight_interface.'
+        'DataProcessorEnsightInterfaceDiscrepancy.__init__',
         return_value=None,
     )
 
     mocker.patch(
-        'pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
+        'pqueens.data_processor.data_processor_ensight_interface.'
+        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value=experimental_ref_data,
     )
-    # pylint: enable=line-too-long error
     data_processor_name = 'data_processor'
     file_name_identifier = 'dummyprefix*dummy.case'
     time_tol = 1e-03

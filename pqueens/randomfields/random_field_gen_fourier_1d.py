@@ -87,7 +87,7 @@ class RandomFieldGenFourier1D(RandomFieldGenFourier):
         """
         if len(phase_angles) is not self.stoch_dim:
             raise RuntimeError(
-                'Number of random phase angles does not match ' 'stochastic dimension of the field!'
+                'Number of random phase angles does not match stochastic dimension of the field!'
             )
 
         # reorder phase angles in matrix
