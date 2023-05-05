@@ -88,7 +88,7 @@ def annotate_points(data):
         )
 
 
-class SAVisualization(object):
+class SAVisualization:
     """TODO_doc: add a one-line explanation.
 
     Visualization class for sensitivity analysis that contains several

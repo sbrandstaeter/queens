@@ -3,8 +3,8 @@
 from scipy.stats import norm
 
 
-class UnivariateRandomFieldSimulator(object):
-    """Generator for samples of univariate random fields.
+class UnivariateRandomFieldSimulator:
+    """Generator for samples of uni-variate random fields.
 
     Class for the generation of samples form Gaussian and
     non-Gaussian random fields using translation process theory.

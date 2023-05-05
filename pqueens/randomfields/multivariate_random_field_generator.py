@@ -10,7 +10,7 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 )
 
 
-class MultiVariateRandomFieldGenerator(object):
+class MultiVariateRandomFieldGenerator:
     """Generator of samples of multivariate cross-correlated random fields.
 
     Class for the generation of samples from Gaussian and
