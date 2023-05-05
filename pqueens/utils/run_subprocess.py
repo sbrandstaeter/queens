@@ -64,7 +64,7 @@ def _run_subprocess_simple(command_string, **kwargs):
         stdout (str): standard output content
         stderr (str): standard error content
     """
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # pylint: disable=consider-using-with
         command_string,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -92,6 +92,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
         logger (str): logger name to write to. Should be configured previously
         log_file (str): path to log file
         error_file (str): path to error file
+        full_log_formatting (bool): Flag to add logger metadata in the simulation logs
     Returns:
         process_returncode (int): code for success of subprocess
         process_id (int): unique process id, the subprocess was assigned on computing machine
@@ -104,12 +105,15 @@ def _run_subprocess_simulation(command_string, **kwargs):
     error_file = kwargs.get('error_file')
     streaming = kwargs.get('streaming')
     terminate_expr = kwargs.get('terminate_expr')
+    full_log_formatting = kwargs.get('full_log_formatting', True)
 
     # setup job logging and get job logger as well as handlers
-    joblogger, lfh, efh, sh = get_job_logger(logger_name, log_file, error_file, streaming)
+    joblogger, log_file_handle, error_file_handler, stream_handler = get_job_logger(
+        logger_name, log_file, error_file, streaming, full_log_formatting=full_log_formatting
+    )
 
     # run subprocess
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # pylint: disable=consider-using-with
         command_string,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -130,13 +134,13 @@ def _run_subprocess_simulation(command_string, **kwargs):
     process_returncode = process.returncode
 
     # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
-    finish_job_logger(joblogger, lfh, efh, sh)
+    finish_job_logger(joblogger, log_file_handle, error_file_handler, stream_handler)
 
     _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
     return process_returncode, process_id, stdout, stderr
 
 
-def _run_subprocess_submit_job(command_string, **kwargs):
+def _run_subprocess_submit_job(command_string, **kwargs):  # pylint: disable=unused-argument
     """Submit a system command (drop errors and stdout-return).
 
     Args:
@@ -148,7 +152,7 @@ def _run_subprocess_submit_job(command_string, **kwargs):
         stdout (str): always None
         stderr (str): always None
     """
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # pylint: disable=consider-using-with
         command_string,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -185,7 +189,7 @@ def _run_subprocess_remote(command_string, **kwargs):
         raise SubprocessError("Remote commands needs argument remote_connect='<user>@<hostname>'.")
 
     command_string = f'ssh {remote_connect} "{command_string}"'
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # pylint: disable=consider-using-with
         command_string,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -239,8 +243,8 @@ def _remove_allowed_errors(stderr, allowed_errors):
     # Add known exceptions
     allowed_errors.extend(_allowed_errors)
     # Remove the allowed error messages from stderr
-    for em in allowed_errors:
-        stderr = stderr.replace(em, "")
+    for error_message in allowed_errors:
+        stderr = stderr.replace(error_message, "")
 
     # Remove trailing spaces, tabs and newlines and check if an error message remains
     if "".join(stderr.split()) == "":

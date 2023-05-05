@@ -148,7 +148,9 @@ def setup_cluster_logging():
     root_logger.addHandler(console_stderr)
 
 
-def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False):
+def get_job_logger(
+    logger_name, log_file, error_file, streaming, propagate=False, full_log_formatting=True
+):
     """Setup job logging and get job logger.
 
     Args:
@@ -157,7 +159,7 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
         error_file (path): Path to error file
         streaming (bool): Flag for additional streaming to given stream
         propagate (bool): Flag for propagation of stream (default: *False*)
-
+        full_log_formatting (bool): Flag to add logger metadata such as time
     Returns:
         joblogger (logging.logger): Job logger
         lfh (logging.FileHandler): Logging file handler
@@ -167,8 +169,11 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     # get job logger
     joblogger = logging.getLogger(logger_name)
 
-    # define formatter
-    formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    if full_log_formatting:
+        # define formatter
+        formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    else:
+        formatter = NewLineFormatter('%(message)s')
 
     # set level
     joblogger.setLevel(logging.INFO)
