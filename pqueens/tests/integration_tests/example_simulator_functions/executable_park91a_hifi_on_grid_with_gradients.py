@@ -216,7 +216,7 @@ def run_type_adjoint(x3_vec, x4_vec, params):
     adjoint_base_path = Path(input_file_path).parent  # not parent but -
     adjoint_path = adjoint_base_path / "grad_objective.csv"
     do_dy = genfromtxt(adjoint_path, delimiter=',')
-    lambda_var = -np.atleast_2d(np.array(do_dy))
+    lambda_var = np.negative(np.atleast_2d(np.array(do_dy)))
 
     # now we need to implement g_x, the jacobian of the residuum function w.r.t. the input
     # afterwards we can calculate the final gradient do_dx, the gradient of the objective fun
