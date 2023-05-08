@@ -301,8 +301,7 @@ license_check:
   rules:
     - !reference [.default_test_conditions, rules]
   script:
-    - pytest -v -m "integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
-    - pytest -v -m "unit_tests or integration_tests" --cov --cov-append --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report

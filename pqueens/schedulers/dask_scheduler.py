@@ -9,6 +9,8 @@ from pqueens.utils.injector import read_file
 
 _logger = logging.getLogger(__name__)
 
+SHUTDOWN_CLIENTS = []
+
 
 class Scheduler(metaclass=abc.ABCMeta):
     """Abstract base class for schedulers in QUEENS.
@@ -44,6 +46,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs_post = num_procs_post
         self.client = client
         _logger.info(client.dashboard_link)
+        global SHUTDOWN_CLIENTS
+        SHUTDOWN_CLIENTS.append(client.shutdown)
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
