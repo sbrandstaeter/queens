@@ -1,15 +1,4 @@
-"""TODO_doc."""
-
-import sys
-from pathlib import Path
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import cm
-from matplotlib.ticker import FormatStrFormatter, LinearLocator
-
-"""
-TODO_doc: This is not in the documentation.
+"""Provide utilities for visualization in the grid iterator.
 
 A module that provides utilities and a class for visualization in the grid
 iterator.
@@ -23,6 +12,14 @@ In this context "this" is a pointer to the module object instance itself and can
 Attributes:
     grid_iterator_visualization_instance (obj): Instance of the GridIteratorVisualization class
 """
+
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import cm
+from matplotlib.ticker import FormatStrFormatter, LinearLocator
 
 this = sys.modules[__name__]
 this.grid_iterator_visualization_instance = None
@@ -80,7 +77,7 @@ def _linear_tick_formatter(val):
     return f"{val:.2e}"
 
 
-class GridIteratorVisualization(object):
+class GridIteratorVisualization:
     """Visualization class for GridIterator.
 
     Visualization class for GridIterator that contains several plotting,

@@ -6,6 +6,8 @@ import re
 import sys
 import time
 
+LIBRARY_LOGGER_NAME = "pqueens"
+
 
 class LogFilter(logging.Filter):
     """Filters (lets through) all messages with level <= LEVEL.
@@ -43,15 +45,6 @@ class NewLineFormatter(logging.Formatter):
      format of the logging is broken for multiline messages.
     """
 
-    def __init__(self, fmt, datefmt=None):
-        """Initialize the NewLineFormatter.
-
-        Args:
-            fmt (str): Use the specified format string for the handler.
-            datefmt (str): Use the specified date/time format, as accepted by time.strftime().
-        """
-        logging.Formatter.__init__(self, fmt, datefmt)
-
     def format(self, record):
         """Override format function.
 
@@ -60,7 +53,7 @@ class NewLineFormatter(logging.Formatter):
         Returns:
             formatted_message (str): Logged message in supplied format split into single lines
         """
-        formatted_message = logging.Formatter.format(self, record)
+        formatted_message = super().format(record)
 
         if record.message != "":
             parts = formatted_message.split(record.message)
@@ -82,7 +75,7 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     else:
         logging_level = logging.INFO
 
-    library_logger = logging.getLogger("pqueens")
+    library_logger = logging.getLogger(LIBRARY_LOGGER_NAME)
     # call setLevel() for basic initialisation (this is needed not sure why)
     library_logger.setLevel(logging.DEBUG)
 
@@ -115,11 +108,12 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     console_stderr.setFormatter(stream_formatter)
     library_logger.addHandler(console_stderr)
 
-    # deactivate logging for specific modules
-    logging.getLogger('arviz').setLevel(logging.CRITICAL)
-    logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
-    logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
-    logging.getLogger('numba').setLevel(logging.CRITICAL)
+    if not debug:
+        # deactivate logging for specific modules
+        logging.getLogger('arviz').setLevel(logging.CRITICAL)
+        logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+        logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
+        logging.getLogger('numba').setLevel(logging.CRITICAL)
 
 
 def setup_cluster_logging():
@@ -154,7 +148,9 @@ def setup_cluster_logging():
     root_logger.addHandler(console_stderr)
 
 
-def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False):
+def get_job_logger(
+    logger_name, log_file, error_file, streaming, propagate=False, full_log_formatting=True
+):
     """Setup job logging and get job logger.
 
     Args:
@@ -163,7 +159,7 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
         error_file (path): Path to error file
         streaming (bool): Flag for additional streaming to given stream
         propagate (bool): Flag for propagation of stream (default: *False*)
-
+        full_log_formatting (bool): Flag to add logger metadata such as time
     Returns:
         joblogger (logging.logger): Job logger
         lfh (logging.FileHandler): Logging file handler
@@ -173,8 +169,11 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     # get job logger
     joblogger = logging.getLogger(logger_name)
 
-    # define formatter
-    formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    if full_log_formatting:
+        # define formatter
+        formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    else:
+        formatter = NewLineFormatter('%(message)s')
 
     # set level
     joblogger.setLevel(logging.INFO)
@@ -186,12 +185,10 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     # for cluster runs with singularity; thus, each processor logs his own file.)
     lfh = logging.FileHandler(log_file, mode='w', delay=False)
     lfh.setLevel(logging.INFO)
-    lfh.terminator = ''
     lfh.setFormatter(formatter)
     joblogger.addHandler(lfh)
     efh = logging.FileHandler(error_file, mode='w', delay=False)
     efh.setLevel(logging.ERROR)
-    efh.terminator = ''
     efh.setFormatter(formatter)
     joblogger.addHandler(efh)
 
@@ -225,35 +222,34 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     stderr = None
 
     # start logging
-    joblogger.info('run_subprocess started with:\n')
-    joblogger.info(command_string + '\n')
+    joblogger.info('run_subprocess started with:')
+    joblogger.info(command_string)
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
-        if line == '' and process.poll() is not None:
-            joblogger.info(
-                'subprocess.Popen() -info: stdout is finished and process.poll() not None.\n'
-            )
+        exit_code = process.poll()
+        if line == '' and exit_code is not None:
+            joblogger.info("subprocess exited with code %s.", exit_code)
             # This line waits for termination and puts together stdout not yet consumed from the
             # stream by the logger and finally the stderr.
             stdout, stderr = process.communicate()
             # following line should never really do anything. We want to log all that was
             # written to stdout even after program was terminated.
-            joblogger.info(stdout + '\n')
+            joblogger.info(stdout)
             if stderr:
-                joblogger.error('error message (if provided) follows:\n')
+                joblogger.error('error message (if provided) follows:')
                 for errline in io.StringIO(stderr):
                     joblogger.error(errline)
             break
         if terminate_expr:
             # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
             if re.search(terminate_expr, line):
-                joblogger.warning('run_subprocess detected terminate expression:\n')
+                joblogger.warning('run_subprocess detected terminate expression:')
                 joblogger.error(line)
                 # give program the chance to terminate by itself, because terminate expression
                 # will be found also if program terminates itself properly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
-                    joblogger.warning('running job will be terminated by QUEENS.\n')
+                    joblogger.warning('running job will be terminated by QUEENS.')
                     process.terminate()
                     # wait before communicate call which gathers all the output
                     time.sleep(2)
@@ -295,7 +291,7 @@ def reset_logging():
     manager = logging.root.manager
     manager.disabled = logging.NOTSET
     for logger in manager.loggerDict.values():  # pylint: disable=no-member
-        if isinstance(logger, logging.Logger):
+        if isinstance(logger, logging.Logger) and LIBRARY_LOGGER_NAME in str(logger):
             logger.setLevel(logging.NOTSET)
             logger.propagate = True
             logger.disabled = False

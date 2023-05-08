@@ -1,16 +1,3 @@
-"""TODO_doc."""
-
-import sys
-from pathlib import Path
-
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
-from matplotlib import style
-
-cycle_colors = sns.color_palette()
-style.use('seaborn')
-
 """TODO_doc: This is currently not in the documentation.
 
 A module that provides utilities and a class for visualization in
@@ -26,6 +13,16 @@ Attributes:
     sa_visualization_instance (obj): Instance of the SAVisualization class
 """
 
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from matplotlib import style
+
+cycle_colors = sns.color_palette()
+style.use('seaborn')
 this = sys.modules[__name__]
 this.sa_visualization_instance = None
 
@@ -88,7 +85,7 @@ def annotate_points(data):
         )
 
 
-class SAVisualization(object):
+class SAVisualization:
     """TODO_doc: add a one-line explanation.
 
     Visualization class for sensitivity analysis that contains several
