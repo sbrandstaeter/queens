@@ -1,7 +1,6 @@
 """QUEENS driver module base class."""
 import abc
 import logging
-import pathlib
 from pathlib import Path
 
 from pqueens.data_processor import from_config_create_data_processor
@@ -13,8 +12,7 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
-        simulation_input_suffix (str): suffix of the simulation input file
-        simulation_input_template (str): read in simulation input template as string
+        simulation_input_template (Path): read in simulation input template as string
         data_processor (obj): instance of data processor class
         gradient_data_processor (obj): instance of data processor class for gradient data
     """
@@ -32,7 +30,6 @@ class Driver(metaclass=abc.ABCMeta):
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
         """
-        self.simulation_input_suffix = pathlib.PurePosixPath(simulation_input_template).suffix
         self.simulation_input_template = Path(simulation_input_template)
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
@@ -111,7 +108,7 @@ class Driver(metaclass=abc.ABCMeta):
         output_prefix = experiment_name + '_' + str(job_id)
         output_file = output_dir.joinpath(output_prefix)
 
-        input_file_str = output_prefix + self.simulation_input_suffix
+        input_file_str = output_prefix + self.simulation_input_template.suffix
         input_file = job_dir.joinpath(input_file_str)
 
         log_file = output_dir.joinpath(output_prefix + '.log')
