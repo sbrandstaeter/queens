@@ -9,6 +9,7 @@ def plot_loss(history, loss_plot_path):
 
     Args:
         history (obj): Tensorflow history object of the training routine
+        loss_plot_path (str): Path to save the loss plot
     """
     _, ax = plt.subplots()
     ax.plot(history.history['loss'])
