@@ -46,7 +46,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs_post = num_procs_post
         self.client = client
         _logger.info(client.dashboard_link)
-        global SHUTDOWN_CLIENTS
+        global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
     @classmethod
