@@ -297,7 +297,7 @@ def reset_logging():
     """
     manager = logging.root.manager
     manager.disabled = logging.NOTSET
-    for logger in manager.loggerDict.values():  # pylint: disable=no-member
+    for logger in manager.loggerDict.values():
         if isinstance(logger, logging.Logger) and LIBRARY_LOGGER_NAME in str(logger):
             logger.setLevel(logging.NOTSET)
             logger.propagate = True
