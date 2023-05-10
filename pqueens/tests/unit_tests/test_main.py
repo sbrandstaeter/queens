@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 from mock import patch
 
-import pqueens
 from pqueens.main import get_config_dict, main
 
 pytestmark = pytest.mark.unit_tests
