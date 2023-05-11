@@ -3,7 +3,7 @@ import atexit
 import getpass
 import logging
 import socket
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from pqueens.drivers import from_config_create_driver
@@ -39,6 +39,7 @@ class ClusterConfig:
 
     Attributes:
         name (str):                         name of cluster
+        cluster_address (str):              hostname or address to reach cluster from network
         work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
         start_cmd (str):                    command to start a job on the cluster
         jobscript_template (Path):          absolute path to jobscript template file
@@ -46,9 +47,12 @@ class ClusterConfig:
         job_status_location (int):          location of job status in return of job_status_command
         singularity_bind (str):             variable for binding directories on the host
                                             to directories in the container
+        singularity_remote_ip (str):               ip address needed for singularity
+        cluster_internal_address (str)      ip address of login node in cluster internal network
     """
 
     name: str
+    cluster_address: str
     work_load_scheduler: str
     start_cmd: str
     jobscript_template: Path
@@ -56,10 +60,15 @@ class ClusterConfig:
     job_status_location: int
     job_status_incomplete: list
     singularity_bind: str
+    singularity_remote_ip: str
+    cluster_internal_address: str
+
+    dict = asdict
 
 
 DEEP_CONFIG = ClusterConfig(
     name="deep",
+    cluster_address="deep.lnm.ed.tum.de",
     work_load_scheduler="pbs",
     start_cmd="qsub",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
@@ -87,9 +96,12 @@ DEEP_CONFIG = ClusterConfig(
         "/lib:/lib,"
         "/lib64:/lib64"
     ),
+    singularity_remote_ip="129.187.58.20",
+    cluster_internal_address="null",
 )
 BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
+    cluster_address="bruteforce.lnm.ed.tum.de",
     work_load_scheduler="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
@@ -105,9 +117,12 @@ BRUTEFORCE_CONFIG = ClusterConfig(
         "/lib:/lib,"
         "/lib64:/lib64"
     ),
+    singularity_remote_ip="10.10.0.1",
+    cluster_internal_address="10.10.0.1",
 )
 CHARON_CONFIG = ClusterConfig(
-    name="hades",
+    name="charon",
+    cluster_address="charon.bauv.unibw-muenchen.de",
     work_load_scheduler="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
@@ -127,6 +142,8 @@ CHARON_CONFIG = ClusterConfig(
         "/imcs:/imcs,"
         "/home/opt:/home/opt"
     ),
+    singularity_remote_ip="192.168.1.253",
+    cluster_internal_address="192.168.2.253",
 )
 
 CLUSTER_CONFIGS = {

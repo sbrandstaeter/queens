@@ -8,14 +8,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pqueens.schedulers.cluster_scheduler import (
-    BRUTEFORCE_CLUSTER_TYPE,
-    CHARON_CLUSTER_TYPE,
-    DEEP_CLUSTER_TYPE,
-)
+from pqueens.schedulers.cluster_scheduler import CLUSTER_CONFIGS
 from pqueens.utils import config_directories
 from pqueens.utils.io_utils import load_result
-from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -52,132 +47,20 @@ def cluster(request):
 
 
 @pytest.fixture(scope="session")
-def cluster_address(cluster):
+def cluster_settings(cluster, cluster_user):
+    """Hold all settings of cluster."""
+    settings = CLUSTER_CONFIGS.get(cluster).dict()
+    _logger.debug("raw cluster config: %s", settings)
+    settings["cluster"] = cluster
+    settings["cluster_user"] = cluster_user
+    settings["connect_to_resource"] = cluster_user + '@' + settings["cluster_address"]
+    return settings
+
+
+@pytest.fixture(scope="session")
+def connect_to_resource(cluster_settings):
     """Use for ssh connect to the cluster."""
-    if cluster in (DEEP_CLUSTER_TYPE, BRUTEFORCE_CLUSTER_TYPE):
-        address = cluster + '.lnm.ed.tum.de'
-    elif cluster == CHARON_CLUSTER_TYPE:
-        address = cluster + '.bauv.unibw-muenchen.de'
-    return address
-
-
-@pytest.fixture(scope="session")
-def connect_to_resource(cluster_user, cluster_address):
-    """Use for ssh connect to the cluster."""
-    return cluster_user + '@' + cluster_address
-
-
-@pytest.fixture(scope="session")
-def cluster_singularity_ip(cluster):
-    """Identify IP address of cluster."""
-    if cluster == DEEP_CLUSTER_TYPE:
-        cluster_singularity_ip = '129.187.58.20'
-    elif cluster == BRUTEFORCE_CLUSTER_TYPE:
-        cluster_singularity_ip = '10.10.0.1'
-    elif cluster == CHARON_CLUSTER_TYPE:
-        cluster_singularity_ip = '192.168.1.253'
-    else:
-        cluster_singularity_ip = None
-    return cluster_singularity_ip
-
-
-@pytest.fixture(scope="session")
-def cluster_queens_base_dir(connect_to_resource):
-    """Hold base directory for queens on cluster."""
-    return config_directories.remote_base_directory(remote_connect=connect_to_resource)
-
-
-@pytest.fixture(scope="session")
-def cluster_queens_testing_folder(mock_value_experiments_base_folder_name, cluster_queens_base_dir):
-    """Hold base directory for experiment data of tests."""
-    return cluster_queens_base_dir / mock_value_experiments_base_folder_name
-
-
-@pytest.fixture(scope="session")
-def cluster_native_queens_testing_folder(mock_value_experiments_base_folder_name):
-    """Hold base directory for experiment data of tests."""
-    return config_directories.local_base_directory() / mock_value_experiments_base_folder_name
-
-
-@pytest.fixture(scope="session")
-def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_testing_folder):
-    """Create a clean testing environment on the cluster."""
-    # remove old folder
-    _logger.info(
-        "Delete testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
-    )
-    command_string = f'rm -rfv {cluster_queens_testing_folder}'
-    _, _, stdout, _ = run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-    )
-    _logger.info(stdout)
-
-    # create generic testing folder
-    _logger.info(
-        "Create testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
-    )
-    command_string = f'mkdir -v -p {cluster_queens_testing_folder}'
-    _, _, stdout, _ = run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-    )
-    _logger.info(stdout)
-
-    return True
-
-
-@pytest.fixture(scope="session")
-def prepare_singularity(
-    connect_to_resource,
-    cluster_queens_base_dir,
-    prepare_cluster_testing_environment,
-):
-    """Build singularity based on the code during test invocation.
-
-    **WARNING:** Needs to be done AFTER *prepare_cluster_testing_environment*
-    to make sure cluster testing folder is clean and existing.
-    """
-    if not prepare_cluster_testing_environment:
-        raise RuntimeError("Testing environment on cluster not successful.")
-
-    singularity_manager = SingularityManager(
-        singularity_path=cluster_queens_base_dir,
-        singularity_bind=None,
-        input_file=None,
-        remote=True,
-        remote_connect=connect_to_resource,
-    )
-    # singularity_manager.check_singularity_system_vars()
-    singularity_manager.prepare_singularity_files()
-    return True
-
-
-@pytest.fixture(scope="session")
-def cluster_testsuite_settings(
-    cluster,
-    cluster_user,
-    cluster_address,
-    connect_to_resource,
-    prepare_singularity,
-    cluster_singularity_ip,
-):
-    """Collect settings needed for cluster tests with singularity."""
-    if not prepare_singularity:
-        raise RuntimeError(
-            "Preparation of singularity for cluster failed."
-            "Make sure to prepare singularity image before using this fixture. "
-        )
-    cluster_testsuite_settings = {}
-    cluster_testsuite_settings["cluster"] = cluster
-    cluster_testsuite_settings["cluster_user"] = cluster_user
-    cluster_testsuite_settings["cluster_address"] = cluster_address
-    cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
-    cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
-
-    return cluster_testsuite_settings
+    return cluster_settings["connect_to_resource"]
 
 
 @pytest.fixture(scope="session")
@@ -219,8 +102,11 @@ def baci_cluster_paths(connect_to_resource):
 
 
 @pytest.fixture(scope="session")
-def prepare_cluster_testing_environment_native(cluster_native_queens_testing_folder):
+def prepare_cluster_testing_environment_native(mock_value_experiments_base_folder_name):
     """Create a clean testing environment."""
+    cluster_native_queens_testing_folder = (
+        config_directories.local_base_directory() / mock_value_experiments_base_folder_name
+    )
     if (
         cluster_native_queens_testing_folder.exists()
         and cluster_native_queens_testing_folder.is_dir()
@@ -237,9 +123,10 @@ def prepare_cluster_testing_environment_native(cluster_native_queens_testing_fol
 # prepare_cluster_testing_environment_native is passed on purpose to force its creation
 @pytest.fixture(scope="session")
 def baci_cluster_paths_native(
-    cluster_user, prepare_cluster_testing_environment_native
+    cluster_user, cluster_settings, prepare_cluster_testing_environment_native
 ):  # pylint: disable=unused-argument
     """Paths to baci for native cluster tests."""
+    cluster_address = cluster_settings["cluster_address"]
     path_to_executable = Path(
         "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
     )
