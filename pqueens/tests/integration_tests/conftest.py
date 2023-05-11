@@ -100,12 +100,6 @@ def cluster_native_queens_testing_folder(mock_value_experiments_base_folder_name
 
 
 @pytest.fixture(scope="session")
-def cluster_path_to_singularity(cluster_queens_base_dir):
-    """Folder on cluster where to put the singularity file."""
-    return cluster_queens_base_dir
-
-
-@pytest.fixture(scope="session")
 def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_testing_folder):
     """Create a clean testing environment on the cluster."""
     # remove old folder
