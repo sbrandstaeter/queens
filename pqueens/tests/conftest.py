@@ -92,7 +92,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
 @pytest.fixture(scope="session")
 def mock_value_experiments_base_folder_name():
     """Value to mock the experiments base folder name."""
-    return "tests"
+    return "pytest"
 
 
 @pytest.fixture(autouse=True)
@@ -104,6 +104,11 @@ def global_mock_experiments_base_folder_name(mock_value_experiments_base_folder_
     """
     monkeypatch.setattr(
         config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
+    )
+    _logger.debug("Mocking of EXPERIMENTS_BASE_FOLDER_NAME was successful.")
+    _logger.debug(
+        "EXPERIMENTS_BASE_FOLDER_NAME is mocked to: %s",
+        config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
     )
 
 

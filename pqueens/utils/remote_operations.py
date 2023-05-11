@@ -127,6 +127,7 @@ class RemoteConnection(Connection):
         """
         cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
         run_subprocess(cmd, subprocess_type='submit')
+        _logger.debug("Port-forwarding opened successfully.")
 
         kill_cmd = f'pkill -f "{cmd}"'
         atexit.register(run_subprocess, kill_cmd, subprocess_type='submit')

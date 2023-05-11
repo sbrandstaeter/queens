@@ -8,7 +8,7 @@ from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
-from pqueens.utils.config_directories_dask import experiment_directory
+from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.remote_build import build_remote_environment, sync_remote_repository
 from pqueens.utils.remote_operations import RemoteConnection
 from pqueens.utils.valid_options_utils import get_option
@@ -77,9 +77,13 @@ class ClusterScheduler(Scheduler):
         """
         if cluster_queens_repository is None:
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
+        _logger.debug("cluster queens repository: %s", cluster_queens_repository)
+
         experiment_name = global_settings['experiment_name']
 
         sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
+
+        _logger.debug("cluster python path: %s", cluster_python_path)
         if cluster_build_environment:
             build_remote_environment(
                 cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
@@ -95,7 +99,12 @@ class ClusterScheduler(Scheduler):
         connection.open()
         atexit.register(connection.close)
 
+        # note that we are executing the command on remote directly such the local version of
+        # experiment_directory has to be used
         experiment_dir = connection.run_function(experiment_directory, experiment_name)
+        _logger.debug(
+            "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
+        )
 
         def start_cluster_on_login_node(port):
             """Start dask cluster object on login node."""
@@ -126,6 +135,7 @@ class ClusterScheduler(Scheduler):
 
         connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
         for i in range(20, 0, -1):  # 20 tries to connect
+            _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
             try:
                 client = Client(address=f"localhost:{local_port}", timeout=10)
                 break

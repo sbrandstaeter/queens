@@ -4,7 +4,7 @@ import logging
 from dask.distributed import Client, LocalCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
-from pqueens.utils.config_directories_dask import experiment_directory
+from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
 
