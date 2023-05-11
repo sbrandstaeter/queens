@@ -135,8 +135,8 @@ class ClusterScheduler(Scheduler):
                         stdout.read().decode('ascii') + stderr.read().decode('ascii')
                     ) from exc
                 time.sleep(1)
-        _logger.debug(stdout.read().decode('ascii') + stderr.read().decode('ascii'))
-        client.submit(lambda: "Dummy job").result(timeout=60)  # Dummy job to check functionality
+
+        client.submit(lambda: "Dummy job").result(timeout=60)
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 
