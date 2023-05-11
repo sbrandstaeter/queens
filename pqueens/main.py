@@ -74,7 +74,8 @@ def run(input_file, output_dir, debug=False):
     _logger.info("")
     _logger.info("Time for CALCULATION: %s s", end_time_calc - start_time_calc)
     _logger.info("")
-    for shutdown_client in SHUTDOWN_CLIENTS:
+    for shutdown_client in SHUTDOWN_CLIENTS.copy():
+        SHUTDOWN_CLIENTS.remove(shutdown_client)
         shutdown_client()
 
 
