@@ -21,6 +21,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
+
 # CLUSTER TESTS ------------------------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def user():
@@ -187,12 +188,12 @@ def cluster_testsuite_settings(
 
 
 @pytest.fixture(scope="session")
-def baci_cluster_paths(cluster_user, connect_to_resource):
+def baci_cluster_paths(connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
     """
-    base_directory = Path("/home", cluster_user, "workspace", "build")
+    base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
     path_to_drt_monitor = base_directory / "post_drt_monitor"
