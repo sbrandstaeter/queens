@@ -12,6 +12,12 @@ from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_f
 _logger = logging.getLogger(__name__)
 
 
+def pytest_addoption(parser):
+    """Add pytest options."""
+    parser.addoption("--remote_python", action="store", default=None)
+    parser.addoption("--remote_queens_repository", action="store", default="null")
+
+
 def pytest_collection_modifyitems(items):
     """Automatically add pytest markers based on testpath."""
     for item in items:

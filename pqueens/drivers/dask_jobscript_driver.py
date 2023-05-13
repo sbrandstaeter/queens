@@ -22,7 +22,7 @@ class JobscriptDriver(Driver):
         self,
         input_template,
         path_to_executable,
-        path_to_jobscript,
+        dask_jobscript_template,
         cluster_script_path,
         post_file_prefix=None,
         post_process_options='',
@@ -36,7 +36,7 @@ class JobscriptDriver(Driver):
         Args:
             input_template (str, Path): path to simulation input template
             path_to_executable (str, Path): path to main executable of respective software
-            path_to_jobscript (str, Path): path to jobscript template
+            dask_jobscript_template (str, Path): path to (dask specific) jobscript template
             cluster_script_path (str, Path): path to cluster script
             post_file_prefix (str, opt): unique prefix to name the post-processed files
             post_process_options (str, opt): options for post-processing
@@ -62,7 +62,7 @@ class JobscriptDriver(Driver):
             "CLUSTERSCRIPT": cluster_script_path,
         }
 
-        self.jobscript_template = read_file(path_to_jobscript)
+        self.jobscript_template = read_file(dask_jobscript_template)
         self.jobscript_options = jobscript_options
         self.jobscript_file_name = jobscript_file_name
 

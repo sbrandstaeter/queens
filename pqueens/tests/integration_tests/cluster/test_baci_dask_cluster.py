@@ -1,6 +1,5 @@
 """Test remote BACI simulations with ensight data-processor."""
 import logging
-import pickle
 from pathlib import Path
 
 import mock
@@ -10,23 +9,24 @@ import pytest
 
 from pqueens.data_processor.data_processor_ensight import DataProcessorEnsight
 from pqueens.main import run
-from pqueens.tests.integration_tests.cluster.conftest import (
-    bruteforce_cluster_settings,
-    charon_cluster_settings,
-    deep_cluster_settings,
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
 )
-from pqueens.utils import config_directories, injector
+from pqueens.utils import config_directories, injector, io_utils
 
 _logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize(
-    "dask_cluster_settings",
+    "cluster",
     [
-        pytest.param(deep_cluster_settings, marks=pytest.mark.lnm_cluster, id="deep"),
-        pytest.param(bruteforce_cluster_settings, marks=pytest.mark.lnm_cluster, id="bruteforce"),
-        pytest.param(charon_cluster_settings, marks=pytest.mark.imcs_cluster, id="charon"),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
+    indirect=True,
 )
 class TestDaskCluster:
     """Test class collecting all test with Dask jobqueue clusters and Baci."""
@@ -34,10 +34,9 @@ class TestDaskCluster:
     @pytest.fixture(autouse=True)
     def mock_experiment_dir(
         self,
-        cluster_user,
-        dask_cluster_settings,
         tmp_path_factory,
         monkeypatch,
+        connect_to_resource,
     ):
         """Mock the experiment directory on the cluster.
 
@@ -65,21 +64,34 @@ class TestDaskCluster:
         monkeypatch.setattr(config_directories, "experiment_directory", patch_experiments_directory)
         _logger.debug("Mocking of dask experiment_directory  was successful.")
         _logger.debug(
-            "dask experiment_directory is mocked to '$HOME/%s/%s/%s/<experiment_name>' on %s@%s",
+            "dask experiment_directory is mocked to '$HOME/%s/%s/%s/<experiment_name>' on %s",
             config_directories.BASE_DATA_DIR,
             config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
             pytest_basename,
-            cluster_user,
-            dask_cluster_settings["cluster_address"],
+            connect_to_resource,
         )
 
-    def test_cluster_baci_mc(
+    @pytest.fixture(scope="session")
+    def remote_python(self, pytestconfig, cluster_settings):
+        """Path to Python environment on remote host."""
+        remote_python = pytestconfig.getoption("remote_python")
+        if remote_python is None:
+            remote_python = cluster_settings["default_python_path"]
+        return remote_python
+
+    @pytest.fixture(scope="session")
+    def remote_queens_repository(self, pytestconfig):
+        """Path to queens repository on remote host."""
+        return pytestconfig.getoption("remote_queens_repository")
+
+    def test_baci_dask_cluster_monte_carlo(
         self,
         inputdir,
         tmp_path,
         third_party_inputs,
-        dask_cluster_settings,
+        cluster_settings,
         cluster_user,
+        baci_cluster_paths,
         remote_queens_repository,
         remote_python,
     ):
@@ -90,52 +102,37 @@ class TestDaskCluster:
         - DASK jobqueue cluster
         - Monte-Carlo (MC) iterator
         - BACI ensight data-processor.
-        The test is based on the MC iterator.
 
 
         Args:
             self:
             inputdir (Path): Path to the JSON input file
-            tmp_path (Path): Temporary directory in which the pytests are run
+            tmp_path (Path): Temporary directory for this test
             third_party_inputs (str): Path to the BACI input files
-            dask_cluster_settings (dict): Cluster settings
-            cluster_user (str): Cluster user
-            remote_queens_repository (str): Path to queens repository on remote host
+            cluster_settings (dict): Cluster settings
+            cluster_user (str): name or id of the account to log in on cluster
+            baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
+            remote_queens_repository (str): Path to QUEENS repository on remote host
             remote_python (str): Path to Python environment on remote host
         """
-        base_directory = Path("$HOME", "workspace", "build")
-
-        path_to_executable = base_directory / "baci-release"
-        path_to_drt_ensight = base_directory / "post_drt_ensight"
+        cluster_name = cluster_settings["name"]
 
         # unique experiment name
-        experiment_name = f"test_{dask_cluster_settings['name']}_data_processor_ensight"
+        experiment_name = f"test_{cluster_name}_monte_carlo"
 
         baci_input_file_template = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
-        if remote_python is None:
-            remote_python = dask_cluster_settings['cluster_python_path']
-        if remote_queens_repository is None:
-            remote_queens_repository = 'null'
-
         template_options = {
-            'experiment_name': str(experiment_name),
-            'workload_manager': dask_cluster_settings['workload_manager'],
-            'cluster_address': dask_cluster_settings['cluster_address'],
-            'cluster_internal_address': dask_cluster_settings['cluster_internal_address'],
+            **baci_cluster_paths,
+            **cluster_settings,
+            'experiment_name': experiment_name,
+            'input_template': baci_input_file_template,
             'cluster_user': cluster_user,
             'cluster_python_path': remote_python,
             'cluster_queens_repository': remote_queens_repository,
-            'path_to_jobscript': dask_cluster_settings['path_to_jobscript'],
-            'cluster_script_path': dask_cluster_settings['cluster_script_path'],
-            'input_template': str(baci_input_file_template),
-            'path_to_executable': str(path_to_executable),
-            'path_to_drt_ensight': str(path_to_drt_ensight),
         }
-        queens_input_file_template = inputdir / "baci_dask_cluster_data_processor_ensight.yml"
-        queens_input_file = (
-            tmp_path / f"baci_cluster_data_processor_ensight_{dask_cluster_settings['name']}.yml"
-        )
+        queens_input_file_template = inputdir / "baci_dask_cluster_monte_carlo_template.yml"
+        queens_input_file = tmp_path / f"baci_dask_cluster_monte_carlo_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
         def patch_data(*_args):
@@ -150,11 +147,8 @@ class TestDaskCluster:
         with mock.patch.object(DataProcessorEnsight, '_get_experimental_data_from_db', patch_data):
             run(queens_input_file, tmp_path)
 
-        result_file_name = experiment_name + ".pickle"
-
-        result_file = tmp_path / result_file_name
-        with open(result_file, 'rb') as handle:
-            results = pickle.load(handle)
+        result_file = tmp_path / f"{experiment_name}.pickle"
+        result = io_utils.load_result(result_file)
 
         reference_mc_mean = np.array([-1.39371249, 1.72861153])
         reference_mc_var = np.array([0.01399851, 0.02759816])
@@ -166,6 +160,6 @@ class TestDaskCluster:
                 [-1.55599201, 1.93402886],
             ]
         )
-        np.testing.assert_array_almost_equal(reference_mc_mean, results['mean'])
-        np.testing.assert_array_almost_equal(reference_mc_var, results['var'])
-        np.testing.assert_array_almost_equal(reference_output, results['raw_output_data']['mean'])
+        np.testing.assert_array_almost_equal(reference_mc_mean, result['mean'])
+        np.testing.assert_array_almost_equal(reference_mc_var, result['var'])
+        np.testing.assert_array_almost_equal(reference_output, result['raw_output_data']['mean'])

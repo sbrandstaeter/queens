@@ -40,7 +40,7 @@ class ClusterConfig:
     Attributes:
         name (str):                         name of cluster
         cluster_address (str):              hostname or address to reach cluster from network
-        work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
+        workload_manager (str):          type of work load scheduling software (PBS or SLURM)
         start_cmd (str):                    command to start a job on the cluster
         jobscript_template (Path):          absolute path to jobscript template file
         job_status_command (str):           command to check job status on cluster
@@ -49,11 +49,16 @@ class ClusterConfig:
                                             to directories in the container
         singularity_remote_ip (str):               ip address needed for singularity
         cluster_internal_address (str)      ip address of login node in cluster internal network
+        default_python_path (str):          path indicating the default remote python location
+        cluster_script_path (Path):          path to the cluster_script which defines functions
+                                            needed for the jobscript
+        dask_jobscript_template (Path):     path to the shell script template that runs a
+                                            forward solver call (e.g., BACI plus post-processor)
     """
 
     name: str
     cluster_address: str
-    work_load_scheduler: str
+    workload_manager: str
     start_cmd: str
     jobscript_template: Path
     job_status_command: str
@@ -62,6 +67,9 @@ class ClusterConfig:
     singularity_bind: str
     singularity_remote_ip: str
     cluster_internal_address: str
+    default_python_path: str
+    cluster_script_path: Path
+    dask_jobscript_template: Path
 
     dict = asdict
 
@@ -69,7 +77,7 @@ class ClusterConfig:
 DEEP_CONFIG = ClusterConfig(
     name="deep",
     cluster_address="deep.lnm.ed.tum.de",
-    work_load_scheduler="pbs",
+    workload_manager="pbs",
     start_cmd="qsub",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
     job_status_command="qstat",
@@ -98,11 +106,18 @@ DEEP_CONFIG = ClusterConfig(
     ),
     singularity_remote_ip="129.187.58.20",
     cluster_internal_address="null",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_deep.sh"
+    ),
 )
+
+
 BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
     cluster_address="bruteforce.lnm.ed.tum.de",
-    work_load_scheduler="slurm",
+    workload_manager="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
     job_status_command="squeue --job",
@@ -119,11 +134,16 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     ),
     singularity_remote_ip="10.10.0.1",
     cluster_internal_address="10.10.0.1",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_bruteforce.sh"
+    ),
 )
 CHARON_CONFIG = ClusterConfig(
     name="charon",
     cluster_address="charon.bauv.unibw-muenchen.de",
-    work_load_scheduler="slurm",
+    workload_manager="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
     job_status_command="squeue --job",
@@ -144,6 +164,11 @@ CHARON_CONFIG = ClusterConfig(
     ),
     singularity_remote_ip="192.168.1.253",
     cluster_internal_address="192.168.2.253",
+    default_python_path="$HOME/miniconda3/envs/queens/bin/python",
+    cluster_script_path=Path(),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_charon.sh"
+    ),
 )
 
 CLUSTER_CONFIGS = {

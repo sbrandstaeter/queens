@@ -37,7 +37,7 @@ driver:
   type: dask_jobscript
   input_template: {{ input_template }}
   path_to_executable: {{ path_to_executable }}
-  path_to_jobscript: {{ path_to_jobscript }}
+  dask_jobscript_template: {{ dask_jobscript_template }}
   path_to_postprocessor: {{ path_to_drt_ensight }}
   post_file_prefix: {{ experiment_name }}
   post_process_options: "--filter=ensight"

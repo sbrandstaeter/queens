@@ -136,7 +136,7 @@ class TestClusterSingularity:
 
         return helper_function
 
-    def test_cluster_baci_elementary_effects(
+    def test_baci_cluster_elementary_effects(
         self,
         inputdir,
         tmp_path,
@@ -151,13 +151,12 @@ class TestClusterSingularity:
 
         Args:
             inputdir (Path): Path to the JSON input file
-            tmp_path (Path): Temporary directory in which the pytests are run
+            tmp_path (Path): Temporary directory for this test
             cluster_settings (dict): Collection of cluster specific settings
             prepare_baci_input_template_remote (fct): helper function to copy template to remote
-            baci_cluster_paths (Path): Path to BACI dependencies on the cluster.
+            baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
             baci_elementary_effects_check_results (function): function to check the results
         """
-        # unpack cluster settings needed for all cluster tests
         cluster_name = cluster_settings["name"]
 
         # unique experiment name
@@ -177,7 +176,7 @@ class TestClusterSingularity:
         }
 
         queens_input_file_template = Path(inputdir, "baci_cluster_elementary_effects_template.yml")
-        queens_input_file = tmp_path / f"elementary_effects_{cluster_name}_invaaa.yml"
+        queens_input_file = tmp_path / f"baci_cluster_elementary_effects_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
         run(queens_input_file, tmp_path)
@@ -185,7 +184,7 @@ class TestClusterSingularity:
         result_file = tmp_path / f"{experiment_name}.pickle"
         baci_elementary_effects_check_results(result_file)
 
-    def test_cluster_baci_data_processor_ensight(
+    def test_baci_cluster_data_processor_ensight(
         self,
         inputdir,
         tmp_path,
@@ -208,13 +207,12 @@ class TestClusterSingularity:
 
         Args:
             inputdir (Path): Path to the JSON input file
-            tmp_path (Path): Temporary directory in which the pytests are run
+            tmp_path (Path): Temporary directory for this test
             cluster_settings (dict): Collection of cluster specific settings
             prepare_baci_input_template_remote (fct): helper function to copy template to remote
-            baci_cluster_paths: TODO_doc
-            user (): TODO_doc
+            baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
+            user (str): name of the user running the tests
         """
-        # unpack cluster settings needed for all cluster tests
         cluster_name = cluster_settings["name"]
 
         # unique experiment name
@@ -234,8 +232,8 @@ class TestClusterSingularity:
             'user': user,
         }
 
-        queens_input_file_template = inputdir / "baci_cluster_data_processor_ensight.yml"
-        queens_input_file = tmp_path / "baci_cluster_data_processor_ensight.yml"
+        queens_input_file_template = inputdir / "baci_cluster_data_processor_ensight_template.yml"
+        queens_input_file = tmp_path / f"baci_cluster_data_processor_ensight_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
         # Patch the missing config arguments
