@@ -564,10 +564,10 @@ class BmfiaInterface(Interface):
 
         Calls the probabilistic mapping and predicts the mean and variance,
         respectively covariance, for the high-fidelity model, given the inputs
-        *z_lf*.
+        *samples*.
 
         Args:
-            z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
+            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
                              points, on which the probabilistic mapping should be evaluated.
                              Dimensions:
 
@@ -597,7 +597,7 @@ class BmfiaInterface(Interface):
                                             :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         mean, variance = self.evaluate_method(
-            z_lf, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
+            samples, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
         )
         return mean, variance
 
