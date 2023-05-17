@@ -36,7 +36,7 @@ class BmfmcInterface(Interface):
         self.approx_name = approx_name
         self.probabilistic_mapping_obj = None
 
-    def evaluate(self, Z_LF, support='y', full_cov=False, gradient_bool=False):
+    def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance

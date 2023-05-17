@@ -559,7 +559,7 @@ class BmfiaInterface(Interface):
             update_mappings_method,
         )
 
-    def evaluate(self, z_lf, support='y'):
+    def evaluate(self, samples, support='y'):
         r"""Map the lf-features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
