@@ -461,7 +461,7 @@ def test_prepare_downstream_gradient_fun():
 
     # test the composed function
     samples = np.array([[1.0]])
-    sub_model_output = (lambda x: x + 1)(samples)  # returns y, dependent on x
+    sub_model_output = samples + 1  # returns y, dependent on x
 
     grad_value = composed_grad(samples, sub_model_output)
 
