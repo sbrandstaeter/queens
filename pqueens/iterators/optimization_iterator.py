@@ -386,11 +386,11 @@ class OptimizationIterator(Iterator):
                     )
                     data_list.append(new_experimental_data)
 
-                except FileNotFoundError as e:
-                    raise FileNotFoundError(
-                        "The file containing the high-fidelity Monte-Carlo data was not found!"
-                        " Abort..."
-                    ) from e
+                except IOError as error:
+                    raise IOError(
+                        'An error occurred while reading in the experimental data '
+                        'files. Abort...'
+                    ) from error
             self.experimental_data_dict = pd.concat(data_list, axis=0, ignore_index=True).to_dict(
                 'list'
             )
