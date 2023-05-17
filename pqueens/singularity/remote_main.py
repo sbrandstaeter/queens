@@ -92,7 +92,7 @@ def main(args):
 
         # Create database
         DB_module.from_config_create_database(config)
-        with DB_module.database:  # pylint: disable=no-member
+        with DB_module.database:
             driver_obj = from_config_create_driver(
                 config=config,
                 job_id=job_id,
@@ -115,7 +115,7 @@ def main(args):
     except Exception as singularity_error:
         _logger.error("Queens singularity run failed!")
         try:
-            if DB_module.database is None:  # pylint: disable=no-member
+            if DB_module.database is None:
                 _logger.error("Could not connect to the database!")
             elif driver_obj is None:
                 _logger.error("Driver object could not be created!")

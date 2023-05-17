@@ -59,6 +59,7 @@ def test_cluster_baci_data_processor_ensight(
         cluster_testsuite_settings (dict): Collection of cluster specific settings
         baci_cluster_paths: TODO_doc
         user (): TODO_doc
+        monkeypatch (): TODO_doc
     """
     # monkeypatch the "input" function, so that it returns "y".
     # This simulates the user entering "y" in the terminal:
@@ -134,7 +135,7 @@ def test_cluster_baci_data_processor_ensight(
     # Initialise db module
     DB_module.from_config_create_database(config)
 
-    with DB_module.database as db:  # pylint: disable=no-member
+    with DB_module.database as db:
 
         # Add experimental coordinates to the database
         experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}

@@ -196,7 +196,7 @@ class VariationalInferenceIterator(Iterator):
         elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
             _logger.warning("NaN(s) in the relative change of variational parameters")
         else:
-            _logger.info("Finished sucessfully! :-)")
+            _logger.info("Finished successfully! :-)")
         _logger.info("Variational inference took %s seconds.", end - start)
 
     def _catch_non_converging_simulations(self, old_parameters):
