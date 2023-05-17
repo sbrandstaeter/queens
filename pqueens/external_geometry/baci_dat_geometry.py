@@ -779,7 +779,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # TODO see how to use the random field lst here but also only address first rf for now
         # TODO maybe directly separate the rf types as different attributes
         # get random fields of type material
-        material_fields = [field for field in random_field_lst if (field["type"] == "material")]
+        material_fields = [field for field in random_field_lst if field["type"] == "material"]
 
         material_field_placeholders = [
             material_fields[0]['name'] + '_' + str(i) for i in range(len(self.element_centers))
