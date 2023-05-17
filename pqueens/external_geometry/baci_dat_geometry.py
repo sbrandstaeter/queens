@@ -294,12 +294,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
         return False
 
     def _check_if_in_desired_dat_section(self):
-        """Check if that the a dat-section contains the desired geometric set.
+        """Check if the dat-section contains the desired geometric set.
 
         Returns:
-            Boolean: True if the case
+            bool: True if the case is found, False otherwise.
         """
-        return self.current_dat_section in self.desired_dat_sections.keys()
+        return self.current_dat_section in self.desired_dat_sections
 
     def _get_desired_dat_sections(self):
         """Get the dat-sections that contain the desired geometric sets."""
