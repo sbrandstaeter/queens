@@ -55,21 +55,21 @@ class UnivariateRandomFieldSimulator:
             raise RuntimeError('Error: marginal_distribution must be either Normal or Lognormal')
         self.prob_dist = marginal_distribution
 
-    def gen_sample_gauss_field(self, x, xi):
+    def gen_sample_gauss_field(self, loc, phase_angles):
         """TODO_doc: add a one-line explanation.
 
         This method generates sample of standard Gaussian random field and evaluates it
-        at *x*. The actual generation based on series expansion methods is
+        at *loc*. The actual generation based on series expansion methods is
         implemented in the subclasses.
 
-        *gen_sample_gauss_field(x, xi)* inputs:
+        *gen_sample_gauss_field(loc, phase_angles)* inputs:
 
-        * *x* location(s) at which realization of random field is evaluated
-        * *xi* random phase angles or amplitudes used to generate realization of random field.
+        * *loc* location(s) at which realization of random field is evaluated
+        * *phase_angles* random phase angles or amplitudes used to generate realization of random field.
 
         Args:
-            x (np.array): Location at which the field is evaluated
-            xi (np.array): Pseudo random phase angles for field generation
+            loc (np.array): Location at which the field is evaluated
+            phase_angles (np.array): Pseudo random phase angles for field generation
 
         Returns:
             np.array: Value of random field at locations *x*
@@ -84,20 +84,20 @@ class UnivariateRandomFieldSimulator:
         """
         return self.stoch_dim
 
-    def evaluate_field_at_location(self, x, xi):
+    def evaluate_field_at_location(self, loc, phase_angles):
         """TODO_doc: add a one-line explanation.
 
-        Generate sample of random field based on *xi* and evaluate it at
-        *x*.
+        Generate sample of random field based on *phase_angles* and evaluate it at
+        *loc*.
 
         Args:
-            x (np.array): Location at which the field is evaluated
-            xi (np.array): Pseudo random phase angles for field generation
+            loc (np.array): Location at which the field is evaluated
+            phase_angles (np.array): Pseudo random phase angles for field generation
 
         Returns:
-            np.array: Value of random field at locations *x*
+            np.array: Value of random field at locations *loc*
         """
-        values = self.gen_sample_gauss_field(x, xi)
+        values = self.gen_sample_gauss_field(loc, phase_angles)
 
         # translate field
         return self.prob_dist.ppf(norm.cdf(values, 0, 1))
