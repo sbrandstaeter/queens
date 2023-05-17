@@ -104,7 +104,7 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             'path OR\n'
             'make sure the symbolic link under the config directory points to an '
             'existing file! \n'
-            'You can create the the necessary symbolic links on Linux via:\n'
+            'You can create the necessary symbolic links on Linux via:\n'
             '-------------------------------------------------------------------------\n'
             'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
             'ln -s <path/to/post_drt_monitor> '
@@ -112,7 +112,7 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             'ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n'
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
-        )
+        ) from None
 
 
 @pytest.fixture(params=[True, False])
