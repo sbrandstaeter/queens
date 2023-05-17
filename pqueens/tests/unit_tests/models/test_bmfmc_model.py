@@ -3,10 +3,10 @@ import numpy as np
 import pytest
 from mock import patch
 
-from pqueens.models import bmfmc_model
 import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
+from pqueens.models import bmfmc_model
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.models.simulation_model import SimulationModel
 
@@ -42,7 +42,7 @@ class PreProcessor:
     def __init__(self):
         """TODO_doc."""
         self.coords_dict = {
-            'random_inflow': {'keys': [i for i in range(10)], 'coords': np.random.rand(10)}
+            'random_inflow': {'keys': list(range(10)), 'coords': np.random.rand(10)}
         }
 
 
