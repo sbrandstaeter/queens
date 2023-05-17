@@ -338,6 +338,9 @@ ignored-classes=optparse.Values,
                 pqueens.visualization.surrogate_visualization,
                 pqueens.visualization.variational_inference_visualization,
                 pqueens.database.database,
+                matplotlib.cm,
+                logging.RootLogger,
+
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
