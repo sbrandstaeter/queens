@@ -336,7 +336,7 @@ TEST_DICT = {
 @pytest.mark.unit_tests
 @pytest.mark.parametrize(
     "function_name,test_dict",
-    [fun for fun in TEST_DICT.items()],
+    TEST_DICT.items(),
 )
 def test_example_simulator_functions(function_name, test_dict):
     """Test the example simulator functions."""
