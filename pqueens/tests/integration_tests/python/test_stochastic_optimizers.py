@@ -23,8 +23,7 @@ def test_Adamax(adamax_optimizer):
     """Test Adamax."""
     varparams = np.ones(5).reshape(-1, 1)
     adamax_optimizer.current_variational_parameters = varparams
-    grad = lambda x: -gradient(x)
-    adamax_optimizer.set_gradient_function(grad)
+    adamax_optimizer.set_gradient_function(lambda x: -gradient(x))
     result = adamax_optimizer.run_optimization()
     iterations = adamax_optimizer.iteration
     assert iterations < 1000

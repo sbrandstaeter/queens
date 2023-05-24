@@ -499,7 +499,10 @@ class FullRankNormalVariational(VariationalDistribution):
         mean, cov, L = self.reconstruct_parameters(variational_params)
         x = np.atleast_2d(x)
         u = np.linalg.solve(cov, (x.T - mean))
-        col_dot_prod = lambda x, y: np.sum(x * y, axis=0)
+
+        def col_dot_prod(x, y):
+            return np.sum(x * y, axis=0)
+
         logpdf = (
             -0.5 * self.dimension * np.log(2 * np.pi)
             - np.sum(np.log(np.abs(np.diag(L))))
