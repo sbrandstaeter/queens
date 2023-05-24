@@ -2,8 +2,10 @@
 import abc
 import copy
 import logging
+import time
 
 import numpy as np
+from dask.distributed import progress
 
 from pqueens.utils.injector import read_file
 
@@ -75,6 +77,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             result_dict (dict): Dictionary containing results
         """
+        start = time.time()
         futures = self.client.map(
             self.driver_run,
             samples_list,
@@ -85,8 +88,14 @@ class Scheduler(metaclass=abc.ABCMeta):
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )
+        progress(futures)
         results = self.client.gather(futures)
-
+        _logger.info(
+            'It took %.3e seconds for %i jobs. In average %.3e seconds per job.',
+            time.time() - start,
+            len(samples_list),
+            (time.time() - start) / len(samples_list),
+        )
         result_dict = {'mean': [], 'gradient': []}
         for result in results:
             # We should remove this squeeze! It is only introduced for consistency with old test.
