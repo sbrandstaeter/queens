@@ -387,10 +387,14 @@ def test_evaluate_and_gradient(default_mf_likelihood):
     """Test the evaluate and gradient method."""
     # define inputs
     samples = np.array([[1, 2], [3, 4]])
-    upstream_gradient_fun = lambda x: 2 * x
+
+    def upstream_gradient_fun(x):
+        return 2 * x
 
     # mock prepare downstream gradient fun
-    dummy_fun = lambda x: x
+    def dummy_fun(x):
+        return x
+
     mp1 = mock.MagicMock(return_value=dummy_fun)
 
     # mock forward model evaluate and gradient fun

@@ -67,7 +67,7 @@ def test_get_plotter_one(dummy_vis):
     assert "_plot_one_d" == expected_str
 
 
-def test_get_plotter_one(dummy_vis):
+def test_get_plotter_two(dummy_vis):
     """TODO_doc."""
     num_params = 2
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)

@@ -192,7 +192,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             max_iteration,
         )
 
-    @abc.abstractclassmethod
+    @classmethod
     def scheme_specific_gradient(self, gradient):
         """Scheme specific gradient computation.
 
@@ -221,10 +221,12 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             old_parameters (np.array): Old parameters
             new_parameters (np.array): New parameters
         """
-        L2_avg = lambda x: L2_norm(x, averaged=True)
-        L1_avg = lambda x: L1_norm(x, averaged=True)
-        self.rel_L2_change = relative_change(old_parameters, new_parameters, L2_avg)
-        self.rel_L1_change = relative_change(old_parameters, new_parameters, L1_avg)
+        self.rel_L2_change = relative_change(
+            old_parameters, new_parameters, lambda x: L2_norm(x, averaged=True)
+        )
+        self.rel_L1_change = relative_change(
+            old_parameters, new_parameters, lambda x: L1_norm(x, averaged=True)
+        )
 
     def do_single_iteration(self, gradient):
         r"""Single iteration for a given gradient.
