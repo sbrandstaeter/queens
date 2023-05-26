@@ -110,7 +110,9 @@ def test_evaluate_and_gradient():
     assert model_obj.gradient_response == 2.0
 
     # test with grad_objective
-    gradient_objective = lambda x, y: 2 * y
+    def gradient_objective(x, y):
+        return 2 * y
+
     response, gradient_response = model_obj.evaluate_and_gradient(
         samples, upstream_gradient_fun=gradient_objective
     )

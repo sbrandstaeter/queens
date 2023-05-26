@@ -73,7 +73,7 @@ def dummy_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_2d.draw(10)
-    pdf = (gaussian_2d_logpdf(samples))
+    pdf = gaussian_2d_logpdf(samples)
 
     pdf = np.array(pdf)
 
