@@ -3,6 +3,8 @@
 @author: Sebastian Brandstaeter
 """
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
 
@@ -38,11 +40,9 @@ def model_name():
 
 @pytest.fixture()
 def model(model_name, uncertain_parameters, mocker):
-    """An instance of an empty Model class."""
-    # make abstract call Model instantiable
+    """A mocked instance of the Model class."""
     mocker.patch.object(Model, '__abstractmethods__', new=set())
-
-    return Model(model_name)
+    return MagicMock(spec=Model, model_name=model_name)
 
 
 @pytest.fixture(scope='module')
