@@ -161,9 +161,7 @@ class SQLite(Database):
         query = f"DROP TABLE {table_name};"
         self._execute(query, commit=True)
 
-        for key in list(self.tables):
-            if key == table_name:
-                self.tables.pop(key)
+        self.tables.pop(table_name, None)
 
     def _get_table_info_from_query(self, table_name):
         """Get column names and types through query.
