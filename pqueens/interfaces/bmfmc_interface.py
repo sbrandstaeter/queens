@@ -43,8 +43,8 @@ class BmfmcInterface(Interface):
         for the high-fidelity model, given the inputs *samples*.
 
         Args:
-            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
-                              points on which the probabilistic mapping should be evaluated
+            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte -
+            Carlo points on which the probabilistic mapping should be evaluated
             gradient_bool (bool): Flag to determine whether the gradient of the function at
                                   the evaluation point is expected (*True*) or not (*False*)
 

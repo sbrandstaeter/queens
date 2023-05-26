@@ -65,7 +65,8 @@ class UnivariateRandomFieldSimulator:
         *gen_sample_gauss_field(loc, phase_angles)* inputs:
 
         * *loc* location(s) at which realization of random field is evaluated
-        * *phase_angles* random phase angles or amplitudes used to generate realization of random field.
+        * *phase_angles* random phase angles or amplitudes used to generate realization of random
+        field.
 
         Args:
             loc (np.array): Location at which the field is evaluated

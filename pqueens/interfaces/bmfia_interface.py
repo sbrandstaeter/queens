@@ -567,8 +567,8 @@ class BmfiaInterface(Interface):
         *samples*.
 
         Args:
-            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
-                             points, on which the probabilistic mapping should be evaluated.
+            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte -
+                             Carlo points, on which the probabilistic mapping should be evaluated.
                              Dimensions:
 
                              * Rows: different multi-fidelity vector/points (each row is one
