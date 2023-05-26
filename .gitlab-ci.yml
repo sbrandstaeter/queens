@@ -79,9 +79,9 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - conda update -n base conda
+    - mamba update -n base -y conda
   script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
@@ -106,8 +106,11 @@ imcs-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster_native:
   stage: build
+  before_script:
+    - conda update -n base conda
+    - conda install -n base -c conda-forge -y mamba
   script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
