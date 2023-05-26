@@ -113,7 +113,7 @@ def dummy_plot_instance():
     class my_plot:
         """Fake plot class."""
 
-        def plot():
+        def plot(self):
             """Fake plot method."""
             pass
 
