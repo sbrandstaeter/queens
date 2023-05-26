@@ -107,8 +107,7 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             '-------------------------------------------------------------------------\n'
             'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
             'ln -s <path/to/post_drt_monitor> '
-            '<QUEENS_BaseDir>/config/post_drt_monitor
-'
+            '<QUEENS_BaseDir>/config/post_drt_monitor'
             'ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n'
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
