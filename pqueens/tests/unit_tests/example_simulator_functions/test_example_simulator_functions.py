@@ -357,4 +357,4 @@ def test_example_simulator_functions(function_name, test_dict):
 )
 def test_if_all_example_simulator_functions_are_tested(function):
     """Test if all the example simulator functions are being tested."""
-    assert function in TEST_DICT.keys()
+    assert function in TEST_DICT
