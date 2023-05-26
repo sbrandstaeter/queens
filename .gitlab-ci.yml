@@ -160,8 +160,8 @@ update:
     - conda create -n piptools-env python==3.10 -y
     - conda activate piptools-env
     - pip install pip-tools
-    - pip-compile --upgrade requirements.in --output-file requirements.txt
-    - pip-compile --upgrade dev-requirements.in --output-file dev-requirements.txt
+    - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
+    - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
     # Update singularity image requirements
     - pip-compile --upgrade pqueens/singularity/requirements.in --output-file pqueens/singularity/requirements.txt
     - cd $CI_PROJECT_DIR
