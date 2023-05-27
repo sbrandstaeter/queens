@@ -156,7 +156,7 @@ class UniVarRandomFieldGeneratorFactory:
             )
         return rf
 
-    factory = staticmethod(create_new_random_field_generator)
+    factory = create_new_random_field_generator
 
     @staticmethod
     def calculate_one_truncated_realization_of_all_fields(

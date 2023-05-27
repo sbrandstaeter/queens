@@ -68,7 +68,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             num_particles (int): Number of particles
             max_feval (int): Maximum number of model calls
             seed (int): Seed for random number generator
-            resampling_threshold (float): Ratio of ESS to partice number at which to resample
+            resampling_threshold (float): Ratio of ESS to particle number at which to resample
             resampling_method (str): Resampling method implemented in particles
             feynman_kac_model (str): Feynman Kac model for the smc object
             num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
@@ -155,10 +155,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         np.random.seed(self.seed)
 
         # Likelihood function for the static model based on the QUEENS function
-        # Yes the lambda is necessary
-        # pylint: disable=unnecessary-lambda
-        log_likelihood = lambda x: self.eval_log_likelihood(x)
-        # pylint: enable=unnecessary-lambda
+        log_likelihood = self.eval_log_likelihood
 
         # Static model for the Feynman Kac model
         static_model = smc_utils.StaticStateSpaceModel(
@@ -184,7 +181,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
     def core_run(self):
         """Core run of Sequential Monte Carlo iterator.
 
-        The particles library is generator based. Hence one step of the
+        The particles library is generator based. Hence, one step of the
         SMC algorithm is done using *next(self.smc)*. As the *next()*
         function is called during the for loop, we only need to add some
         logging and check if the number of model runs is exceeded.

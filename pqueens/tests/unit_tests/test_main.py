@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 from mock import patch
 
-import pqueens
 from pqueens.main import get_config_dict, main
 
 pytestmark = pytest.mark.unit_tests
@@ -68,9 +67,9 @@ def test_main_greeting_message(caplog):
 def test_main_call(mocker):
     """Test if main calls run properly."""
     run_inputs = ["input", "output", False]
-    mocker.patch('pqueens.main.run')
+    mock_run = mocker.patch('pqueens.main.run')
     mocker.patch('pqueens.main.get_cli_options', return_value=run_inputs)
     argv = ["python_file.py", "input", "output"]
     with patch.object(sys, 'argv', argv):
         main()
-        pqueens.main.run.assert_called_once_with(*run_inputs)
+        mock_run.assert_called_once_with(*run_inputs)

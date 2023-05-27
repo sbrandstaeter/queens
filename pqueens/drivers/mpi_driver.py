@@ -180,7 +180,7 @@ class MpiDriver(Driver):
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
-        database = DB_module.database  # pylint: disable=no-member
+        database = DB_module.database
 
         # If multiple resources are passed an error is raised in the resources module.
         resource_name = list(config['resources'])[0]

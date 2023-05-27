@@ -404,11 +404,12 @@ class ProvidedGradient(GradientHandler):
 
         # decide which model output function to use
         if gradient_interface:
-            _get_model_output_fun = (
-                lambda samples, evaluate_fun: cls._get_output_with_gradient_interface(
+
+            def _get_model_output_fun(samples, evaluate_fun):
+                return cls._get_output_with_gradient_interface(
                     gradient_interface, samples, evaluate_fun
                 )
-            )
+
         else:
             _get_model_output_fun = cls._get_output_without_gradient_interface
 

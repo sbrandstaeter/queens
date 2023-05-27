@@ -99,20 +99,19 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             )
     except FileNotFoundError as error:
         raise FileNotFoundError(
-            f'{error}'
-            + 'Please make sure to make the missing executable available under the given '
+            'Please make sure to make the missing executable available under the given '
             'path OR\n'
             'make sure the symbolic link under the config directory points to an '
             'existing file! \n'
-            'You can create the the necessary symbolic links on Linux via:\n'
+            'You can create the necessary symbolic links on Linux via:\n'
             '-------------------------------------------------------------------------\n'
             'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
             'ln -s <path/to/post_drt_monitor> '
-            '<QUEENS_BaseDir>/config/post_drt_monitor\n'
+            '<QUEENS_BaseDir>/config/post_drt_monitor'
             'ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n'
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
-        )
+        ) from error
 
 
 @pytest.fixture(params=[True, False])
