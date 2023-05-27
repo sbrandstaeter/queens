@@ -66,16 +66,16 @@ def build_remote_environment(remote_address, remote_user, remote_queens_reposito
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Build queens environment on remote machine.")
-    parser.add_argument('--remote_address', type=str, default=None, help='address of remote host')
-    parser.add_argument('--remote_user', type=str, default=None, help='remote username')
+    parser.add_argument('--remote-address', type=str, default=None, help='address of remote host')
+    parser.add_argument('--remote-user', type=str, default=None, help='remote username')
     parser.add_argument(
-        '--remote_queens_repository',
+        '--remote-queens-repository',
         type=str,
         default=None,
         help='path to queens repository on remote host',
     )
     parser.add_argument(
-        '--remote_python', type=str, default=None, help='path to python environment on remote host'
+        '--remote-python', type=str, default=None, help='path to python environment on remote host'
     )
 
     args = parser.parse_args(sys.argv[1:])

@@ -112,8 +112,8 @@ imcs-build_conda_env:
     - if: $CLUSTER_TESTS == "1"
   script:
     - python pqueens/utils/remote_build.py
-      --remote_address=$REMOTE_ADDRESS --remote_user=queens --remote_python=$REMOTE_PYTHON
-      --remote_queens_repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
 bruteforce-build_conda_env:
   extends:
@@ -344,8 +344,8 @@ imcs-ubuntu_full_test_suite:
   script:
     - pytest pqueens/tests/integration_tests/cluster/
       -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
-      --remote_python=$REMOTE_PYTHON
-      --remote_queens_repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
 lnm-cluster_tests:
   extends:

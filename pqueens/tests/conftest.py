@@ -14,8 +14,8 @@ _logger = logging.getLogger(__name__)
 
 def pytest_addoption(parser):
     """Add pytest options."""
-    parser.addoption("--remote_python", action="store", default=None)
-    parser.addoption("--remote_queens_repository", action="store", default="null")
+    parser.addoption("--remote-python", action="store", default=None)
+    parser.addoption("--remote-queens-repository", action="store", default="null")
 
 
 def pytest_collection_modifyitems(items):
