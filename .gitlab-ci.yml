@@ -10,6 +10,8 @@ variables:
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
+  LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
+  IMCS_REMOTE_PYTHON: "/home/queens/miniconda3/envs/queens-$CI_PIPELINE_ID/bin/python"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ bruteforce-build_conda_env:
     - .build_conda_env_cluster
   variables:
     REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
-    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
   tags:
@@ -131,7 +133,7 @@ deep-build_conda_env:
     - .build_conda_env_cluster
   variables:
     REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
-    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
   tags:
@@ -142,7 +144,7 @@ charon-build_conda_env:
     - .build_conda_env_cluster
   variables:
     REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
-    REMOTE_PYTHON: '/home/queens/miniconda3/envs/queens-$CI_PIPELINE_ID/bin/python'
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   needs:
     - imcs-build_conda_env
   tags:
@@ -352,7 +354,7 @@ lnm-cluster_tests:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: 'lnm_cluster'
-    REMOTE_PYTHON: '/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
@@ -366,7 +368,7 @@ imcs-cluster_tests:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: "imcs_cluster"
-    REMOTE_PYTHON: '/home/queens/miniconda3/envs/queens-$CI_PIPELINE_ID/bin/python'
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
