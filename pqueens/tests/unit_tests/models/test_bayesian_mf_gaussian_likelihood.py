@@ -103,7 +103,6 @@ def settings_probab_mapping(config, approximation_name):
 @pytest.fixture()
 def default_bmfia_iterator(global_settings):
     """Dummy iterator for testing."""
-    global_settings = global_settings
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
     lf_model = 'dummy_lf_model'
