@@ -146,7 +146,7 @@ class ClusterScheduler(Scheduler):
                     ) from exc
                 time.sleep(1)
 
-        client.submit(lambda: "Dummy job").result(timeout=60)
+        client.submit(lambda: "Dummy job").result(timeout=60)  # Check basic functionality of client
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 
