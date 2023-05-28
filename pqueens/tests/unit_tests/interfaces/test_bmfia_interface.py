@@ -109,7 +109,6 @@ class MyContext:
 @pytest.fixture()
 def dummy_plot_instance():
     """Quick fake plotting object."""
-    my_plot_obj = my_plot()
 
     class my_plot:
         """Fake plot class."""
@@ -118,6 +117,7 @@ def dummy_plot_instance():
             """Fake plot method."""
             pass
 
+    my_plot_obj = my_plot()
     return my_plot_obj
 
 
