@@ -294,12 +294,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
         return False
 
     def _check_if_in_desired_dat_section(self):
-        """Check if that the a dat-section contains the desired geometric set.
+        """Check if the dat-section contains the desired geometric set.
 
         Returns:
-            Boolean: True if the case
+            bool: True if the case is found, False otherwise.
         """
-        return self.current_dat_section in self.desired_dat_sections.keys()
+        return self.current_dat_section in self.desired_dat_sections
 
     def _get_desired_dat_sections(self):
         """Get the dat-sections that contain the desired geometric sets."""
@@ -686,11 +686,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # remove materials of interest and nested dependencies from material copy
         # note we remove here the entire sublist that belongs to a geometric set of interest
         if self.list_associated_material_numbers:
-            [
-                materials_copy.remove(item)
-                for sublist in self.list_associated_material_numbers
-                for item in sublist
-            ]
+            for associated_materials in self.list_associated_material_numbers:
+                for material in associated_materials:
+                    materials_copy.remove(material)
 
             # set number of new materials equal to length of element_topology of interest
             # TODO atm we just take the first list entry here and dont loop over several fields

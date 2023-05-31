@@ -192,8 +192,8 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             max_iteration,
         )
 
-    @abc.abstractclassmethod
-    def scheme_specific_gradient(self, gradient):
+    @classmethod
+    def scheme_specific_gradient(cls, gradient):
         """Scheme specific gradient computation.
 
         Here the gradient is transformed according to the desired stochastic optimization approach.
