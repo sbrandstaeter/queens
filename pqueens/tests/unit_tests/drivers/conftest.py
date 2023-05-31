@@ -73,7 +73,7 @@ def baci_post_cmds(baci_job, baci_output_file):
             + '_'
             + str(baci_job['id'])
             + '_'
-            + str(id + 1)
+            + str(idx + 1)
         )
         post_cmds.append(post_cmd)
     return post_cmds
