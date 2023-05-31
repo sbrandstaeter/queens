@@ -67,12 +67,8 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
             self.current_average = new_value.copy()
         return self.current_average.copy()
 
-    def __str__(self, name, approach_print_dict):
+    def __str__(self):
         """String of the iterative averaging.
-
-        Args:
-            name (str): averaging approach
-            approach_print_dict (dict): Dict with method specific print quantities
 
         Returns:
             str: String version of the optimizer
@@ -82,8 +78,9 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
             "Rel. L2 change to previous average": self.rel_L2_change,
             "Current average": self.current_average,
         }
+        approach_print_dict = {}
         approach_print_dict.update(print_dict)
-        return get_str_table(name, approach_print_dict)
+        return get_str_table(self.name, approach_print_dict)
 
     @abc.abstractmethod
     def average_computation(self):
@@ -168,7 +165,6 @@ class PolyakAveraging(IterativeAveraging):
     Attributes:
         iteration_counter (float): Number of samples.
         sum_over_iter (np.array): Sum over all samples.
-
     """
 
     def __init__(self):
@@ -229,7 +225,6 @@ class ExponentialAveraging(IterativeAveraging):
 
     Attributes:
         coefficient (float): Coefficient in (0,1) for the average.
-
     """
 
     def __init__(self, coefficient):

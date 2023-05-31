@@ -114,6 +114,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
+        name,
         learning_rate,
         precoefficient,
         rel_L1_change_threshold,
@@ -125,6 +126,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         """Initialize stochastic optimizer.
 
         Args:
+            name (str): Name of the optimizer
             learning_rate (float): Learning rate for the optimizer
             precoefficient (int): is 1 in case of maximization and -1 for minimization
             rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
@@ -135,6 +137,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
         """
+        self.name = name
         self.learning_rate = learning_rate
         self.clip_by_L2_norm_threshold = clip_by_L2_norm_threshold
         self.clip_by_value_threshold = clip_by_value_threshold
@@ -320,7 +323,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             pass
         return self.current_variational_parameters
 
-    def __str__(self, name):
+    def __str__(self):
         """String of optimizer.
 
         Args:
@@ -329,7 +332,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         Returns:
             str: String version of the optimizer
         """
-        name += " stochastic optimizer."
+        name = self.name + " stochastic optimizer."
         if self.precoefficient == 1:
             optimization_type = "maximization"
         else:
