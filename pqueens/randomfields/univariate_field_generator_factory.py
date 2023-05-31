@@ -26,6 +26,7 @@ class UniVarRandomFieldGeneratorFactory:
     # TODO: we should clean this up and update the rfs to the QUEENS coding style and architecture
 
     def create_new_random_field_generator(
+        self,
         marg_pdf=None,
         corrstruct=None,
         spatial_dimension=None,
