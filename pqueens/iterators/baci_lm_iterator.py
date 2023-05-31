@@ -211,8 +211,7 @@ class BaciLMIterator(Iterator):
                         i,
                     )
                     break
-                else:
-                    continue
+                continue
 
             # update param for next step
             self.param_current = self.param_current + param_delta
@@ -222,15 +221,13 @@ class BaciLMIterator(Iterator):
                 if resnorm < self.tolerance:
                     converged = True
                     break
-                else:
-                    self.reg_param = self.reg_param * resnorm / resnorm_o
+                self.reg_param = self.reg_param * resnorm / resnorm_o
             elif self.update_reg == 'grad':
                 if gradnorm < self.tolerance:
                     converged = True
                     break
-                else:
-                    if resnorm < resnorm_o and gradnorm < gradnorm_o:
-                        self.reg_param = self.reg_param * gradnorm / gradnorm_o
+                if resnorm < resnorm_o and gradnorm < gradnorm_o:
+                    self.reg_param = self.reg_param * gradnorm / gradnorm_o
             else:
                 raise ValueError('update_reg unknown')
             i += 1

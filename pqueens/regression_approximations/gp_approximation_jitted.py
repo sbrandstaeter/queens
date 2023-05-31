@@ -217,6 +217,7 @@ class GPJitted(RegressionApproximation):
         """
         # initialize hyper-parameters and associated linear algebra
         x_0 = np.log(np.array(self.hyper_params))
+        hyper_params = self.hyper_params  # Store hyper_params outside the loop
 
         jitted_kernel, _, _, grad_log_evidence, _, _ = self._get_jitted_objects()
         self._set_jitted_kernel(jitted_kernel)
@@ -225,38 +226,37 @@ class GPJitted(RegressionApproximation):
 
         # set-up stochastic optimizer
         self.stochastic_optimizer.current_variational_parameters = x_0
-        self.stochastic_optimizer.gradient = lambda param_vec: grad_log_evidence(
-            param_vec,
-            self.y_train_vec,
-            self.x_train_vec,
-            self.k_mat_inv,
-            self.partial_derivatives_hyper_params,
-        )
-        log_evidence_max = -np.inf
-        log_evidence_history = []
-        iterations = []
-        for params in self.stochastic_optimizer:
-            rel_L2_change_params = self.stochastic_optimizer.rel_L2_change
-            iteration = self.stochastic_optimizer.iteration
 
-            # update parameters and associated linear algebra
-            self.hyper_params = list(np.exp(params))
-            self.hyper_params[-1] = np.maximum(
-                self.hyper_params[-1], self.noise_variance_lower_bound
-            )
-
-            self.grad_log_evidence_value = self.stochastic_optimizer.current_gradient_value
-
-            jitted_kernel, _, _, grad_log_evidence, _, _ = self._get_jitted_objects()
-            self._set_jitted_kernel(jitted_kernel)
-
-            self.stochastic_optimizer.gradient = lambda param_vec: grad_log_evidence(
+        def gradient_fn(param_vec):
+            return grad_log_evidence(
                 param_vec,
                 self.y_train_vec,
                 self.x_train_vec,
                 self.k_mat_inv,
                 self.partial_derivatives_hyper_params,
             )
+
+        self.stochastic_optimizer.gradient = gradient_fn
+
+        log_evidence_max = -np.inf
+        log_evidence_history = []
+        iterations = []
+
+        for params in self.stochastic_optimizer:
+            rel_L2_change_params = self.stochastic_optimizer.rel_L2_change
+            iteration = self.stochastic_optimizer.iteration
+
+            # update parameters and associated linear algebra
+            hyper_params = list(np.exp(params))  # Update hyper_params from stored value
+            hyper_params[-1] = np.maximum(hyper_params[-1], self.noise_variance_lower_bound)
+            self.hyper_params = hyper_params
+
+            self.grad_log_evidence_value = self.stochastic_optimizer.current_gradient_value
+
+            jitted_kernel, _, _, grad_log_evidence, _, _ = self._get_jitted_objects()
+            self._set_jitted_kernel(jitted_kernel)
+
+            self.stochastic_optimizer.gradient = gradient_fn  # Use the captured gradient_fn
 
             log_evidence = self.log_evidence()
 
@@ -265,7 +265,6 @@ class GPJitted(RegressionApproximation):
 
             if self.plot_refresh_rate:
                 if iteration % int(self.plot_refresh_rate) == 0:
-
                     # make some funky gnuplot terminal plots
                     gnuplot_gp_convergence(iterations, log_evidence_history)
 
