@@ -203,7 +203,6 @@ class VariationalInferenceIterator(Iterator):
         """Reset variational parameters in case of failed simulations."""
         if np.isnan(self.stochastic_optimizer.rel_L2_change):
             self.variational_params = old_parameters
-            self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
     def pre_run(self):
         """Initialize the prior model and variational parameters."""

@@ -82,14 +82,6 @@ class VariationalDistribution:
             f"distribution family {self.__class__.__name__}. Abort..."
         )
 
-    def update_distribution_params(self):
-        """Disable no-member in classes below.
-
-        Update_distribution_params does not seem to be happening
-        anywhere.
-        """
-        pass
-
 
 class MeanFieldNormalVariational(VariationalDistribution):
     r"""Mean field multivariate normal distribution.

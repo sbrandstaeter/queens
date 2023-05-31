@@ -86,7 +86,7 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         return get_str_table(name, approach_print_dict)
 
     @abc.abstractmethod
-    def average_computation(self):
+    def average_computation(self, new_value):
         """Here the averaging approach is implemented."""
         pass
 
@@ -168,7 +168,6 @@ class PolyakAveraging(IterativeAveraging):
     Attributes:
         iteration_counter (float): Number of samples.
         sum_over_iter (np.array): Sum over all samples.
-
     """
 
     def __init__(self):
@@ -229,7 +228,6 @@ class ExponentialAveraging(IterativeAveraging):
 
     Attributes:
         coefficient (float): Coefficient in (0,1) for the average.
-
     """
 
     def __init__(self, coefficient):
