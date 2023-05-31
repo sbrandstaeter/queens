@@ -69,6 +69,8 @@ workflow:
   rules:
     - !reference [.default_test_conditions, rules]
   stage: codechecks
+  needs:
+    - imcs-build_conda_env
   tags:
     - codechecks
 #---------------------------------------------------------------------------------------------------
@@ -221,8 +223,6 @@ code_analysis:
       - track_pydocstyle.txt
     when: on_failure
     expire_in: 4 weeks
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 documentation:
   # build the documentation
@@ -240,8 +240,6 @@ documentation:
       - doc/build/html
     when: on_success
     expire_in: 3 days
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
   # check license compliance
@@ -250,8 +248,6 @@ license_check:
   stage: codechecks
   script:
     - liccheck -s lic_strategy.ini  -r requirements.txt
-  needs:
-    - lnm-build_conda_env
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
