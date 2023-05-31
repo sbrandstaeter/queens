@@ -161,6 +161,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             config (dict): optimizer description in dictionary
 
         Returns:
+            name (str): Name of the optimizer
             learning_rate (float): Learning rate for the optimizer
             precoefficient (int): 1 in case of maximization and -1
               for minimization
@@ -174,6 +175,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
               components
              max_iteration (int): Maximum number of iterations
         """
+        name = config.get("name")
         learning_rate = config.get("learning_rate")
         optimization_type = config.get("optimization_type")
         valid_options = {"min": -1, "max": 1}
@@ -186,6 +188,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         clip_by_value_threshold = config.get("clip_by_value_threshold", 1e6)
         max_iteration = config.get("max_iter", 1e6)
         return (
+            name,
             learning_rate,
             precoefficient,
             rel_L1_change_threshold,
@@ -366,6 +369,7 @@ class RMSprop(StochasticOptimizer):
 
     def __init__(
         self,
+        name,
         learning_rate,
         precoefficient,
         rel_L1_change_threshold,
@@ -380,6 +384,7 @@ class RMSprop(StochasticOptimizer):
         """Initialize optimizer.
 
         Args:
+            name (str): Name of the optimizer
             learning_rate (float): Learning rate for the optimizer
             precoefficient (int): is 1 in case of maximization and -1 for minimization
             rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
@@ -394,6 +399,7 @@ class RMSprop(StochasticOptimizer):
             eps (float): Nugget term to avoid a division by values close to zero
         """
         super().__init__(
+            name=name,
             learning_rate=learning_rate,
             precoefficient=precoefficient,
             rel_L1_change_threshold=rel_L1_change_threshold,
@@ -423,6 +429,7 @@ class RMSprop(StochasticOptimizer):
             config_sec = config[section_name]
 
         (
+            name,
             learning_rate,
             precoefficient,
             rel_L1_change_threshold,
@@ -437,6 +444,7 @@ class RMSprop(StochasticOptimizer):
         eps = config_sec.get("eps", 1e-8)
 
         return cls(
+            name=name,
             learning_rate=learning_rate,
             precoefficient=precoefficient,
             rel_L1_change_threshold=rel_L1_change_threshold,
@@ -492,6 +500,7 @@ class Adam(StochasticOptimizer):
 
     def __init__(
         self,
+        name,
         learning_rate,
         precoefficient,
         rel_L1_change_threshold,
@@ -508,6 +517,7 @@ class Adam(StochasticOptimizer):
         """Initialize optimizer.
 
         Args:
+            name (str): Name of the optimizer
             learning_rate (float): Learning rate for the optimizer
             precoefficient (int): is 1 in case of maximization and -1 for minimization
             rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
@@ -524,6 +534,7 @@ class Adam(StochasticOptimizer):
             v (ExponentialAveragingObject): Exponential average of the gradient momentum
         """
         super().__init__(
+            name=name,
             learning_rate=learning_rate,
             precoefficient=precoefficient,
             rel_L1_change_threshold=rel_L1_change_threshold,
@@ -555,6 +566,7 @@ class Adam(StochasticOptimizer):
             config_sec = config[section_name]
 
         (
+            name,
             learning_rate,
             precoefficient,
             rel_L1_change_threshold,
@@ -571,6 +583,7 @@ class Adam(StochasticOptimizer):
         eps = config_sec.get("eps", 1e-8)
 
         return cls(
+            name=name,
             learning_rate=learning_rate,
             precoefficient=precoefficient,
             rel_L1_change_threshold=rel_L1_change_threshold,
@@ -663,6 +676,7 @@ class Adamax(StochasticOptimizer):
             eps (float): Nugget term to avoid a division by values close to zero
         """
         super().__init__(
+            name=name,
             learning_rate=learning_rate,
             precoefficient=precoefficient,
             rel_L1_change_threshold=rel_L1_change_threshold,
@@ -693,6 +707,7 @@ class Adamax(StochasticOptimizer):
         else:
             config_sec = config[section_name]
         (
+            name,
             learning_rate,
             precoefficient,
             rel_L1_change_threshold,
