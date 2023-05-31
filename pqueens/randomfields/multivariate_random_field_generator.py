@@ -140,7 +140,7 @@ class MultiVariateRandomFieldGenerator:
         helper = np.dot(self.pre_factor, xi)
         np.set_printoptions(threshold=sys.maxsize)
 
-        my_xi = helper.reshape(-1, self.var_dim, 'F')
+        my_xi = helper.reshape((-1, self.var_dim), order='F')
 
         for i in range(self.var_dim):
             new_vals[:, i] = self.my_univ_rfs[i].evaluate_field_at_location(x, my_xi[:, i])
