@@ -33,8 +33,8 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             mystuff = create_univariate_random_field(
                 beta(2, 4),
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -48,8 +48,8 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 'weird_stuff',
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -63,8 +63,8 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                4,  # should throw error
                 self.corrstruct,
+                4,  # should throw error
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -74,8 +74,8 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                4,  # should throw error
                 'exp',
+                4,  # should throw error
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -108,8 +108,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 np.array([100, 100, 100]),
@@ -123,8 +123,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 1.1,
                 self.field_bbox,
@@ -134,8 +134,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
             mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 -1.1,
                 self.field_bbox,
@@ -150,8 +150,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 71,
                 self.energy_frac,
                 self.field_bbox,
@@ -165,8 +165,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 -10,
                 self.energy_frac,
                 self.field_bbox,
@@ -199,8 +199,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 np.array([-100, 100, 100]),
@@ -214,8 +214,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                2,
                 self.corrstruct,
+                2,
                 self.corr_length,
                 self.energy_frac,
                 np.array([-100, 100, -100, 100]),
@@ -229,8 +229,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 1.1,
                 self.field_bbox,
@@ -240,8 +240,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
 
             mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 -1.1,
                 self.field_bbox,
@@ -256,8 +256,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 -10,
                 self.energy_frac,
                 self.field_bbox,
