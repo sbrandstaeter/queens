@@ -133,10 +133,15 @@ bruteforce-native-build_conda_env:
 deep-native-build_conda_env:
   extends:
     - .build_conda_env_cluster_native
+  # once mamba works on deep the before_script and script of .build_conda_env_cluster_native can
+  # be used here too. For now it does not work though so we need to implement a specific solution
   before_script:
-    - conda activate
-    - conda install libarchive --force-reinstall -c conda-forge -y
-    - !reference [.build_conda_env_cluster_native, before_script]
+    - conda update -n base -c defaults -y conda
+  script:
+    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
+    - pip install -e .[develop]
+    - conda env export > pipeline_conda_environment.yml
   tags:
     - deep-native-test
 #----------------------------------------------------------------------------------------------
