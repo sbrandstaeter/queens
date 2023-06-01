@@ -135,7 +135,7 @@ deep-native-build_conda_env:
     - .build_conda_env_cluster_native
   before_script:
     - conda activate
-    - conda install libarchive -c conda-forge -y
+    - conda install libarchive --force-reinstall -c conda-forge -y
     - !reference [.build_conda_env_cluster_native, before_script]
   tags:
     - deep-native-test
