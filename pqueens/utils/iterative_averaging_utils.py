@@ -39,8 +39,10 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         rel_L2_change (float): Relative change in L2 norm of the average value.
     """
 
-    def __init__(self):
+    def __init__(self, name):
         """Initialize iterative averaging."""
+        self.name = name
+        self.print_dict = {}
         self.current_average = None
         self.new_value = None
         self.rel_L1_change = 1
@@ -73,14 +75,13 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         Returns:
             str: String version of the optimizer
         """
-        print_dict = {
+        base_print_dict = {
             "Rel. L1 change to previous average": self.rel_L1_change,
             "Rel. L2 change to previous average": self.rel_L2_change,
             "Current average": self.current_average,
         }
-        approach_print_dict = {}
-        approach_print_dict.update(print_dict)
-        return get_str_table(self.name, approach_print_dict)
+        base_print_dict.update(self.print_dict)
+        return get_str_table(self.name, base_print_dict)
 
     @abc.abstractmethod
     def average_computation(self):
@@ -106,7 +107,8 @@ class MovingAveraging(IterativeAveraging):
         Args:
             num_iter_for_avg (int): Number of samples in the averaging window
         """
-        super().__init__()
+        name = "Moving average."
+        super().__init__(name=name)
         self.num_iter_for_avg = num_iter_for_avg
         self.data = []
 
@@ -150,11 +152,10 @@ class MovingAveraging(IterativeAveraging):
         Returns:
             str: String version of the iterative averaging
         """
-        name = "Moving average."
-        print_dict = {
+        self.print_dict = {
             "Averaging window size": self.num_iter_for_avg,
         }
-        return super().__str__(name, print_dict)
+        return super().__str__()
 
 
 class PolyakAveraging(IterativeAveraging):
@@ -169,7 +170,8 @@ class PolyakAveraging(IterativeAveraging):
 
     def __init__(self):
         """Initialize Polyak averaging object."""
-        super().__init__()
+        name = "Polyak averaging."
+        super().__init__(name=name)
         self.iteration_counter = 1
         self.sum_over_iter = 0
 
@@ -207,11 +209,10 @@ class PolyakAveraging(IterativeAveraging):
         Returns:
             str: String version of the iterative averaging
         """
-        name = "Polyak averaging."
-        print_dict = {
+        self.print_dict = {
             "Number of iterations": self.iteration_counter,
         }
-        return super().__str__(name, print_dict)
+        return super().__str__()
 
 
 class ExponentialAveraging(IterativeAveraging):
@@ -233,7 +234,8 @@ class ExponentialAveraging(IterativeAveraging):
         Args:
             coefficient (float): Coefficient in (0,1) for the average
         """
-        super().__init__()
+        name = "Exponential averaging."
+        super().__init__(name=name)
         self.coefficient = coefficient
 
     @classmethod
@@ -276,10 +278,10 @@ class ExponentialAveraging(IterativeAveraging):
         Returns:
             str: String version of the iterative averaging
         """
-        print_dict = {
+        self.print_dict = {
             "Coefficient": self.coefficient,
         }
-        return super().__str__("Exponential averaging.", print_dict)
+        return super().__str__()
 
 
 def L1_norm(x, averaged=False):
