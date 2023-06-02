@@ -340,7 +340,7 @@ def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
 
     # should cause problems: missing packing method for xarrays
     with pytest.raises(Exception):
-        db._pack_labeled_data(dummy_doc_with_xarray_dataarray, 'dummy', 'jobs', 1)
+        db._pack_labeled_data(dummy_doc_with_xarray_dataarray)
 
 
 def test_unpack_labeled_data(dummy_job_with_result):
