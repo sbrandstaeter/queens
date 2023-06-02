@@ -562,11 +562,12 @@ class BmfiaInterface:
 
         Calls the probabilistic mapping and predicts the mean and variance,
         respectively covariance, for the high-fidelity model, given the inputs
-        *samples*.
+        *z_lf*.
 
         Args:
-            z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte -
-                             Carlo points, on which the probabilistic mapping should be evaluated.
+            z_lf (np.array): Low-fidelity feature vector that contains the corresponding
+                             Monte-Carlo points, on which the probabilistic mapping should
+                             be evaluated.
                              Dimensions:
 
                              * Rows: different multi-fidelity vector/points (each row is one
