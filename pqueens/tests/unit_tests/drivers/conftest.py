@@ -59,7 +59,7 @@ def baci_cmd(baci_job, baci_input_file, baci_output_file):
 def baci_post_cmds(baci_job, baci_output_file):
     """Shell command to post process BACI simulation."""
     post_cmds = []
-    for id, baci_post_process_option in enumerate(baci_job['post_process_options']):
+    for idx, baci_post_process_option in enumerate(baci_job['post_process_options']):
         post_cmd = (
             baci_job['path_to_postprocessor']
             + ' '
@@ -73,7 +73,7 @@ def baci_post_cmds(baci_job, baci_output_file):
             + '_'
             + str(baci_job['id'])
             + '_'
-            + str(id + 1)
+            + str(idx + 1)
         )
         post_cmds.append(post_cmd)
     return post_cmds
