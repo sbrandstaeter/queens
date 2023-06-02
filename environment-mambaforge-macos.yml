@@ -23,7 +23,6 @@ dependencies:
   - SALib # for sensitivity analysis
   - vtk # vtk format handler
   - autograd # wrapper around numpy for automated differentiation
-  - chaospy # polynomial chaos
   - pyyaml # to load yaml files
   - jinja2
 
@@ -32,8 +31,8 @@ dependencies:
   - gpy # for Gaussian Processes
   - gpflow # LV and variational GPs
   - optax # google jax based optimizer
-  - tensorflow
-  - tensorflow-probability
+  - tensorflow<2.11.0
+  - tensorflow-probability<0.19
   - pytorch
   - jax[cpu]
   - jax
@@ -87,3 +86,4 @@ dependencies:
       - particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package 
       - liccheck 
       - pylint-exit 
+      - chaospy
