@@ -34,15 +34,16 @@ class BmfmcInterface:
         self.approx_name = approx_name
         self.probabilistic_mapping_obj = None
 
-    def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):
+    def evaluate(self, z_lf, support='y', full_cov=False, gradient_bool=False):
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance
         for the high-fidelity model, given the inputs *samples*.
 
         Args:
-            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte -
-            Carlo points on which the probabilistic mapping should be evaluated
+            z_lf (np.array): Low-fidelity feature vector that contains the corresponding
+                             Monte-Carlo points on which the probabilistic mapping should
+                             be evaluated
             gradient_bool (bool): Flag to determine whether the gradient of the function at
                                   the evaluation point is expected (*True*) or not (*False*)
 
@@ -64,7 +65,7 @@ class BmfmcInterface:
                 "`gradient_bool=False`. Abort..."
             )
 
-        output = self.probabilistic_mapping_obj.predict(samples, support=support, full_cov=full_cov)
+        output = self.probabilistic_mapping_obj.predict(z_lf, support=support, full_cov=full_cov)
         mean_Y_HF_given_Z_LF = output["mean"]
         var_Y_HF_given_Z_LF = output["variance"]
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
