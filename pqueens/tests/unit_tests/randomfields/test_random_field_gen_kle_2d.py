@@ -1,4 +1,4 @@
-"""Created on April 21th 2017.
+"""Created on April 25th 2017.
 
 @author: jbi
 """
@@ -12,20 +12,20 @@ from scipy.stats import norm
 from pqueens.randomfields.univariate_random_field_factory import create_univariate_random_field
 
 
-class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
+class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
     """TODO_doc."""
 
     def setUp(self):
         """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 2
-        self.corrstruct = 'squared_exp'
+        self.corrstruct = 'exp'
         self.corr_length = 25
         self.energy_frac = 0.95
         self.field_bbox = np.array([-100, 100, -100, 100])
         self.marginal_pdf = norm(0, 1)
-        self.num_terms_per_dim = 10
-        self.total_terms = 20
+        self.num_terms_per_dim = 100
+        self.total_terms = 500
         self.loc = np.array([[0, 0], [0, 10], [10, 0], [0, 25], [25, 0], [0, 100], [100, 0]])
         self.seed = 42
 
@@ -51,14 +51,14 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
                 spatial_dimension=self.dimension,
                 corrstruct=self.corrstruct,
                 corr_length=self.corr_length,
-                energy_frac=0.99,
+                energy_frac=0.95,
                 field_bbox=self.field_bbox,
-                num_terms_per_dim=10,
-                total_terms=20,
+                num_terms_per_dim=100,
+                total_terms=300,
             )
 
-    # should trigger error because number of phase angles do not match stochastic
-    # dimension
+    # # should trigger error because number of phase angles do not match stochastic
+    # # dimension
     def test_wrong_number_phase_angles(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
@@ -72,24 +72,26 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
                 num_terms_per_dim=self.num_terms_per_dim,
                 total_terms=self.total_terms,
             )
-            mystuff.gen_sample_gauss_field(np.array([[10, 10]]), np.array((4, 4)))
+            mystuff.gen_sample_gauss_field(self.loc, np.array((4, 4)))
 
-    # should trigger error because dimension of location is of
-    def test_wrong_locatio_dimension(self):
+    # # should trigger error because dimension of location is wrong
+    def test_wrong_number_loc_dimensions(self):
         """TODO_doc."""
+        mystuff = create_univariate_random_field(
+            marg_pdf=self.marginal_pdf,
+            spatial_dimension=self.dimension,
+            corrstruct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
+        )
+        xi = np.random.randn(self.my_stoch_dim, 1)
         with self.assertRaises(RuntimeError):
-            mystuff = create_univariate_random_field(
-                marg_pdf=self.marginal_pdf,
-                spatial_dimension=self.dimension,
-                corrstruct=self.corrstruct,
-                corr_length=self.corr_length,
-                energy_frac=self.energy_frac,
-                field_bbox=self.field_bbox,
-                num_terms_per_dim=self.num_terms_per_dim,
-                total_terms=self.total_terms,
-            )
-            xi = np.random.randn(mystuff.get_stoch_dim(), 1)
-            mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), xi)
+            mystuff.gen_sample_gauss_field(np.array(([4, 4, 4], [4, 4, 4])), xi)
+        with self.assertRaises(RuntimeError):
+            mystuff.gen_sample_gauss_field(np.array(([4], [4], [4])), xi)
 
     def test_values_at_location(self):
         """TODO_doc."""
@@ -97,17 +99,18 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         xi = np.random.randn(self.my_stoch_dim, 1)
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
         # last two arguments are relative and absolute tolerance, respectively
+        # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
         np.testing.assert_allclose(
             my_vals,
             np.array(
                 [
-                    -0.39252351,
-                    -0.59235608,
-                    0.0266424,
-                    0.23892774,
-                    0.61143994,
-                    0.92525213,
-                    -0.80441616,
+                    [-0.665726237739988],
+                    [-0.371901389999928],
+                    [-0.074676008030150],
+                    [-0.238739257314139],
+                    [1.184452833884898],
+                    [-0.505547339253617],
+                    [-0.912493463869035],
                 ]
             ),
             1e-07,
@@ -120,7 +123,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         np.random.seed(self.seed)
         for i in range(200):
             xi = np.random.randn(self.my_stoch_dim, 1)
-            my_vals[:, i] = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
+            my_vals[:, i] = self.my_field_generator.evaluate_field_at_location(self.loc, xi).ravel()
 
         # compute empirical correlation coefficient
         act_corr_at_dist_10_1 = np.corrcoef(my_vals[0, :], my_vals[2, :])
@@ -130,17 +133,12 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         act_corr_at_dist_100_1 = np.corrcoef(my_vals[0, :], my_vals[6, :])
         act_corr_at_dist_100_2 = np.corrcoef(my_vals[0, :], my_vals[5, :])
 
-        # expected correlation
-        # exp_corr_at_dist_10     = exp(-(loc(2)-loc(1))^2/corr_length^2);
-        # exp_corr_at_dist_25     = exp(-(loc(3)-loc(1))^2/corr_length^2);
-        # exp_corr_at_dist_100    = exp(-(loc(4)-loc(1))^2/corr_length^2);
-
-        ref_corr_at_dist_10_1 = 0.860367233062
-        ref_corr_at_dist_10_2 = 0.866693990382
-        ref_corr_at_dist_25_1 = 0.354716997757
-        ref_corr_at_dist_25_2 = 0.340274343916
-        ref_corr_at_dist_100_1 = 0.0327703467204
-        ref_corr_at_dist_100_2 = -0.00267917573333
+        ref_corr_at_dist_10_1 = 0.775464749465
+        ref_corr_at_dist_10_2 = 0.721072478791
+        ref_corr_at_dist_25_1 = 0.420837149469
+        ref_corr_at_dist_25_2 = 0.274529925672
+        ref_corr_at_dist_100_1 = -0.0133749734437
+        ref_corr_at_dist_100_2 = -0.0574405583789
 
         self.assertAlmostEqual(
             act_corr_at_dist_10_1[0, 1],
@@ -186,13 +184,13 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         for i in range(200):
             xi = np.random.randn(self.my_stoch_dim, 1)
             my_vals[0, i] = self.my_field_generator.evaluate_field_at_location(
-                np.array([[25, 25]]), xi
+                np.array([[30.0, 30]]), xi
             )
 
         # try to check whether marginal distribution is normally distributed
         # using kstest
         test_statistic = (stats.kstest(my_vals[0, :], 'norm'))[0]
-        self.assertAlmostEqual(test_statistic, 0.041853722188287312)
+        self.assertAlmostEqual(test_statistic, 0.064687161996999587)
 
 
 if __name__ == '__main__':
