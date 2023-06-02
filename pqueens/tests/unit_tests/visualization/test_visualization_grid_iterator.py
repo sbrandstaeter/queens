@@ -63,7 +63,7 @@ def test_get_plotter_one(dummy_vis):
     """TODO_doc."""
     num_params = 1
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
-    expected_str = re.split("[\\s\\.]", plotter.__str__())[3]
+    expected_str = re.split("[\\s\\.]", str(plotter))[3]
     assert "_plot_one_d" == expected_str
 
 
@@ -71,7 +71,7 @@ def test_get_plotter_two(dummy_vis):
     """TODO_doc."""
     num_params = 2
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
-    expected_str = re.split("[\\s\\.]", plotter.__str__())[3]
+    expected_str = re.split("[\\s\\.]", str(plotter))[3]
     assert "_plot_two_d" == expected_str
 
 
