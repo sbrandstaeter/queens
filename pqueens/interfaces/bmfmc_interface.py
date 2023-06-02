@@ -38,7 +38,7 @@ class BmfmcInterface:
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance
-        for the high-fidelity model, given the inputs *samples*.
+        for the high-fidelity model, given the inputs *z_lf*.
 
         Args:
             z_lf (np.array): Low-fidelity feature vector that contains the corresponding
