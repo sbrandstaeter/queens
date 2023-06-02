@@ -8,9 +8,7 @@ import unittest
 import numpy as np
 from scipy.stats import beta, norm
 
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
-)
+from pqueens.randomfields.univariate_random_field_factory import create_univariate_random_field
 
 
 class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
@@ -33,10 +31,10 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
     def test_construction_wrong_distribution(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            mystuff = create_univariate_random_field(
                 beta(2, 4),
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -48,10 +46,10 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
     def test_construction_wrong_covariance(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 'weird_stuff',
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -63,10 +61,10 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
     def test_construction_wrong_dimension(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                4,  # should throw error
                 self.corrstruct,
+                4,  # should throw error
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -74,10 +72,10 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
                 self.total_terms,
             )
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                4,  # should throw error
                 'exp',
+                4,  # should throw error
                 self.corr_length,
                 self.energy_frac,
                 self.field_bbox,
@@ -108,10 +106,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
     def test_construction_boundingbox_dimension(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 np.array([100, 100, 100]),
@@ -123,10 +121,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
     def test_construction_wrong_engergy_frac(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 1.1,
                 self.field_bbox,
@@ -134,10 +132,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
                 self.total_terms,
             )
 
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 -1.1,
                 self.field_bbox,
@@ -150,10 +148,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
     def test_construction_correlation_length_to_long(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 71,
                 self.energy_frac,
                 self.field_bbox,
@@ -165,10 +163,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
     def test_construction_correlation_length_negative(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 -10,
                 self.energy_frac,
                 self.field_bbox,
@@ -199,10 +197,10 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
     def test_construction_boundingbox_dimension(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 self.energy_frac,
                 np.array([-100, 100, 100]),
@@ -214,10 +212,10 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
     def test_num_expansion_terms(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                2,
                 self.corrstruct,
+                2,
                 self.corr_length,
                 self.energy_frac,
                 np.array([-100, 100, -100, 100]),
@@ -229,10 +227,10 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
     def test_construction_wrong_engergy_frac(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 1.1,
                 self.field_bbox,
@@ -240,10 +238,10 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
                 self.total_terms,
             )
 
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            mystuff = create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 self.corr_length,
                 -1.1,
                 self.field_bbox,
@@ -256,10 +254,10 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
     def test_construction_correlation_length_negative(self):
         """TODO_doc."""
         with self.assertRaises(ValueError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 self.marginal_pdf,
-                self.dimension,
                 self.corrstruct,
+                self.dimension,
                 -10,
                 self.energy_frac,
                 self.field_bbox,

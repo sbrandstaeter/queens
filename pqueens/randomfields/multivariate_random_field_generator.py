@@ -5,9 +5,7 @@ import sys
 import numpy as np
 import scipy
 
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
-)
+from pqueens.randomfields.univariate_random_field_factory import create_univariate_random_field
 
 
 class MultiVariateRandomFieldGenerator:
@@ -78,7 +76,7 @@ class MultiVariateRandomFieldGenerator:
         self.my_univ_rfs = []
         for i in range(self.var_dim):
             self.my_univ_rfs.append(
-                UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                create_univariate_random_field(
                     marg_pdf=marginal_distributions[i],
                     spatial_dimension=spatial_dimension,
                     corrstruct=corr_struct,
@@ -140,7 +138,7 @@ class MultiVariateRandomFieldGenerator:
         helper = np.dot(self.pre_factor, xi)
         np.set_printoptions(threshold=sys.maxsize)
 
-        my_xi = helper.reshape(-1, self.var_dim, order='F')
+        my_xi = helper.reshape((-1, self.var_dim), order='F')
 
         for i in range(self.var_dim):
             new_vals[:, i] = self.my_univ_rfs[i].evaluate_field_at_location(x, my_xi[:, i])

@@ -9,9 +9,7 @@ import numpy as np
 from scipy import stats
 from scipy.stats import norm
 
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
-)
+from pqueens.randomfields.univariate_random_field_factory import create_univariate_random_field
 
 
 class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
@@ -31,17 +29,15 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
         self.loc = [[0], [10], [25], [100]]
         self.seed = 42
 
-        self.my_field_generator = (
-            UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                marg_pdf=self.marginal_pdf,
-                spatial_dimension=self.dimension,
-                corrstruct=self.corrstruct,
-                corr_length=self.corr_length,
-                energy_frac=self.energy_frac,
-                field_bbox=self.field_bbox,
-                num_terms_per_dim=self.num_terms_per_dim,
-                total_terms=self.total_terms,
-            )
+        self.my_field_generator = create_univariate_random_field(
+            marg_pdf=self.marginal_pdf,
+            spatial_dimension=self.dimension,
+            corrstruct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
@@ -50,7 +46,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
     def test_not_enough_fourier_terms(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
-            UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            create_univariate_random_field(
                 marg_pdf=self.marginal_pdf,
                 spatial_dimension=self.dimension,
                 corrstruct=self.corrstruct,
@@ -66,7 +62,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
     def test_wrong_number_phase_angles(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
-            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            mystuff = create_univariate_random_field(
                 marg_pdf=self.marginal_pdf,
                 spatial_dimension=self.dimension,
                 corrstruct=self.corrstruct,
