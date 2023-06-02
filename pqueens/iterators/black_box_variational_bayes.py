@@ -291,14 +291,14 @@ class BBVIIterator(VariationalInferenceIterator):
     def _componentwise_control_variates_scalings(f_mat, h_mat, weights_is):
         """Computes the componentwise control variates scaling.
 
-        I.e., every component of the control variate separately is computed seperately.
+        I.e., every component of the control variate separately is computed separately.
 
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
             weights_is (np.array): importance sampling weights
         Returns:
-            cv_scaling (np.array): Columnvector with control variate scalings
+            cv_scaling (np.array): Column vector with control variate scalings
         """
         dim = len(h_mat)
         cv_scaling = np.ones((dim, 1))
@@ -312,7 +312,7 @@ class BBVIIterator(VariationalInferenceIterator):
     def _loo_control_variates_scalings(cv_obj, f_mat, h_mat, weights_is):
         """Leave one out control variates.
 
-        To reduce bias in the MC and control variate saling estimation
+        To reduce bias in the MC and control variate scaling estimation
         Ranganath proposed a leave-one-out procedure to estimate the control
         variate scalings. Each sample has its own scaling that is computed
         using f_mat and h_mat without the values related to itself. (see
@@ -339,7 +339,7 @@ class BBVIIterator(VariationalInferenceIterator):
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
-            weights_is (np.ndarray): Importance sampling weigths
+            weights_is (np.ndarray): Importance sampling weights
         Returns:
             cv_scaling (np.array): Scaling for the control variate
         """

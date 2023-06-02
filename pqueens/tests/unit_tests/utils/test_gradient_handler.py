@@ -129,12 +129,15 @@ def test_from_config_create_grad_handler(dummy_config, model_interface):
 
 def test_calculate_downstream_gradient():
     """Test the calculate downstream gradient method."""
-    upstream_gradient_fun = lambda samples, outputs: samples**2 + outputs
+
+    def my_upstream_gradient_fun(samples, outputs):
+        return samples**2 + outputs
+
     samples = np.array([[1, 1], [2, 2]])
     response = np.array([[1], [2]])
     gradient_response_batch = np.array([[1, 2, 3], [4, 5, 6]])
     downstream_gradient_batch = GradientHandler.calculate_downstream_gradient_with_chain_rule(
-        upstream_gradient_fun, samples, response, gradient_response_batch
+        my_upstream_gradient_fun, samples, response, gradient_response_batch
     )
     expected_downstream_gradient_batch = np.array([[4, 8, 12], [48, 60, 72]])
     np.testing.assert_array_equal(downstream_gradient_batch, expected_downstream_gradient_batch)
@@ -318,9 +321,8 @@ def test_evaluate_and_gradient_provided(dummy_config, mocker):
     assert gradient_response == 2.0
 
     # check evaluation with grad objective function
-    upstream_gradient_fun = lambda x, y: 2 * y
     response, gradient_response = mygrad_obj.evaluate_and_gradient(
-        samples=samples, evaluate_fun=eval_fun, upstream_gradient_fun=upstream_gradient_fun
+        samples=samples, evaluate_fun=eval_fun, upstream_gradient_fun=lambda x, y: 2 * y
     )
     assert response == 1.0
     assert gradient_response == 4.0
@@ -329,9 +331,8 @@ def test_evaluate_and_gradient_provided(dummy_config, mocker):
 def test_get_output_without_gradient_interface():
     """Test get output without gradient interface."""
     samples = np.array([[1.0], [2.0]])
-    evaluate_fun = lambda x: {"mean": x**2, "gradient": 2 * x}
     response, gradient_response_batch = ProvidedGradient._get_output_without_gradient_interface(
-        samples, evaluate_fun
+        samples, lambda x: {"mean": x**2, "gradient": 2 * x}
     )
     np.testing.assert_array_equal(response, np.array([[1.0], [4.0]]))
     np.testing.assert_array_equal(gradient_response_batch, np.array([[2.0], [4.0]]))
@@ -340,12 +341,11 @@ def test_get_output_without_gradient_interface():
 def test_get_output_with_gradient_interface(mocker):
     """Test get output with gradient interface."""
     samples = np.array([[1.0], [2.0]])
-    evaluate_fun = lambda x: {"mean": x**2, "gradient": 2 * x}
     gradient_interface = mocker.MagicMock()
     gradient_interface.evaluate.return_value = {"mean": np.array([[2.0], [4.0]])}
 
     response, gradient_response_batch = ProvidedGradient._get_output_with_gradient_interface(
-        gradient_interface, samples, evaluate_fun
+        gradient_interface, samples, lambda x: {"mean": x**2, "gradient": 2 * x}
     )
 
     np.testing.assert_array_equal(response, np.array([[1.0], [4.0]]))
@@ -431,19 +431,19 @@ def test_evaluate_and_gradient_adjoint(dummy_config, mocker):
     )
 
     samples = np.array([[1.0]])
-    evaluate_fun = lambda x: {"mean": x**2}
 
-    # check if error is raised when no upstram grad fun is provided
+    # check if error is raised when no upstream grad fun is provided
     with pytest.raises(RuntimeError):
         response, gradient_response = grad_obj.evaluate_and_gradient(
-            samples=samples, evaluate_fun=evaluate_fun
+            samples=samples, evaluate_fun=lambda x: {"mean": x**2}
         )
 
     # now check a valid evaluation and mock the respective methods
-    upstream_gradient_fun = lambda x, y: 2 * y
     m1 = mocker.patch("pqueens.utils.gradient_handler.write_to_csv")
     response, gradient_response = grad_obj.evaluate_and_gradient(
-        samples=samples, evaluate_fun=evaluate_fun, upstream_gradient_fun=upstream_gradient_fun
+        samples=samples,
+        evaluate_fun=lambda x: {"mean": x**2},
+        upstream_gradient_fun=lambda x, y: 2 * y,
     )
 
     assert response == 1.0
@@ -453,21 +453,15 @@ def test_evaluate_and_gradient_adjoint(dummy_config, mocker):
 
 def test_prepare_downstream_gradient_fun():
     """Test the composition of the downstream function's gradient."""
-    sub_model_eval = lambda x: x + 1  # returns y, dependent on x
-    eval_output_fun = lambda y: y**2  # returns l, dependent on x and y
-    partial_grad_evaluate_fun = lambda x, y: 2 * y  # returns dl/dy, dependent on x, y
-    upstream_gradient_fun = lambda x, l: np.cos(l)  # upstream gradient, dependent on x, l
-
-    # generate composed function
-    composed_grad = prepare_downstream_gradient_fun(
-        eval_output_fun=eval_output_fun,
-        partial_grad_evaluate_fun=partial_grad_evaluate_fun,
-        upstream_gradient_fun=upstream_gradient_fun,
+    composed_grad = prepare_downstream_gradient_fun(  # generate composed function
+        eval_output_fun=lambda y: y**2,  # returns l, dependent on x and y
+        partial_grad_evaluate_fun=lambda x, y: 2 * y,  # returns dl/dy, dependent on x, y
+        upstream_gradient_fun=lambda x, l: np.cos(l),  # upstream gradient, dependent on x, l
     )
 
     # test the composed function
     samples = np.array([[1.0]])
-    sub_model_output = sub_model_eval(samples)
+    sub_model_output = samples + 1  # returns y, dependent on x
 
     grad_value = composed_grad(samples, sub_model_output)
 

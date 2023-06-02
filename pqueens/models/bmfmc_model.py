@@ -418,12 +418,11 @@ class BMFMCModel(Model):
         if self.hf_data_iterator is not None:
             try:
                 self.Y_HF_mc = self.hf_data_iterator.read_pickle_file().get("output")[:, 0]
-                # TODO neglect vectorized output atm
-            except FileNotFoundError:
+            except FileNotFoundError as ex:
                 raise FileNotFoundError(
-                    "The file containing the high-fidelity Monte-Carlo data"
+                    "The file containing the high-fidelity Monte-Carlo data "
                     "was not found! Abort..."
-                )
+                ) from ex
 
     def get_hf_training_data(self):
         """Get high-fidelity training data.
