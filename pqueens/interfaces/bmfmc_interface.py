@@ -1,10 +1,8 @@
 """Interface for grouping outputs with inputs."""
 from pqueens.regression_approximations import from_config_create_regression_approximation
 
-from .interface import Interface
 
-
-class BmfmcInterface(Interface):
+class BmfmcInterface:
     """Interface for grouping outputs with inputs.
 
     Interface for grouping the outputs of several simulations with identical

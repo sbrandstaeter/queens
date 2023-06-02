@@ -11,12 +11,10 @@ import tqdm
 from pqueens.regression_approximations import from_config_create_regression_approximation
 from pqueens.utils.valid_options_utils import get_option
 
-from .interface import Interface
-
 _logger = logging.getLogger(__name__)
 
 
-class BmfiaInterface(Interface):
+class BmfiaInterface:
     r"""Interface class for Bayesian multi-fidelity inverse analysis.
 
     Interface for grouping the outputs of several simulation models with
@@ -559,7 +557,7 @@ class BmfiaInterface(Interface):
             update_mappings_method,
         )
 
-    def evaluate(self, samples, support='y'):
+    def evaluate(self, z_lf, support='y'):
         r"""Map the lf-features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
@@ -567,7 +565,7 @@ class BmfiaInterface(Interface):
         *samples*.
 
         Args:
-            samples (np.array): Low-fidelity feature vector that contains the corresponding Monte -
+            z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte -
                              Carlo points, on which the probabilistic mapping should be evaluated.
                              Dimensions:
 
@@ -597,7 +595,7 @@ class BmfiaInterface(Interface):
                                             :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         mean, variance = self.evaluate_method(
-            samples, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
+            z_lf, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
         )
         return mean, variance
 
