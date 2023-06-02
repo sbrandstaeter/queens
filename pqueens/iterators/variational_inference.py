@@ -455,7 +455,7 @@ class VariationalInferenceIterator(Iterator):
             """Count iterations with NaNs and write warning."""
             gradient = gradient_function(*args, **kwargs)
             if np.isnan(gradient).any():
-                _logger.warn(
+                _logger.warning(
                     "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
                     " %s)",
                     self.nan_in_gradient_counter,
