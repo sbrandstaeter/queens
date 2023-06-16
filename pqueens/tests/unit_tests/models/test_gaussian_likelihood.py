@@ -52,12 +52,9 @@ def my_lik_model():
             """A fake eval method."""
             self.cov = x
 
-        def grad_logpdf(self, y_vec):
+        def grad_logpdf(self, x):
             """A fake grad logpdf fun."""
-            out = []
-            for y in y_vec:
-                out.append(-2 * np.linalg.norm(y))
-            return np.array(out).reshape(-1, 1)
+            return -2 * np.linalg.norm(x, axis=1, keepdims=True)
 
     distr_dummy = FakeDistr()
 
