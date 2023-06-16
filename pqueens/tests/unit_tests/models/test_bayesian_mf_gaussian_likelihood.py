@@ -382,63 +382,25 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     np.testing.assert_array_equal(log_lik_mf, np.array([[1], [1]]))
 
 
-def test_evaluate_and_gradient(default_mf_likelihood):
-    """Test the evaluate and gradient method."""
+def test_grad(default_mf_likelihood):
+    """Test grad method."""
     # define inputs
-    samples = np.array([[1, 2], [3, 4]])
+    np.random.seed(42)
+    samples = np.random.rand(3, 2)
+    forward_model_output = np.random.rand(3, 4)
+    upstream_gradient = np.random.rand(3, 1)
+    partial_grad = np.random.rand(3, 4)
+    like_grad = np.random.rand(3, 2)
+    default_mf_likelihood.response = {'forward_model_output': forward_model_output}
 
-    def upstream_gradient_fun(x):
-        return 2 * x
-
-    # mock prepare downstream gradient fun
-    def dummy_fun(x):
-        return x
-
-    mp1 = mock.MagicMock(return_value=dummy_fun)
-
-    # mock forward model evaluate and gradient fun
-    sub_model_output = (np.array([[7], [8]]), np.array([[9, 9], [10, 10]]))
-    mp2 = mock.MagicMock(return_value=sub_model_output)
-
-    # mock evaluate from output fun
-    log_lik_out = np.array([[11], [12]])
-    mp3 = mock.MagicMock(return_value=log_lik_out)
-
-    with mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
-        'prepare_downstream_gradient_fun',
-        mp1,
-    ), mock.patch(
-        'pqueens.models.simulation_model.SimulationModel.evaluate_and_gradient', mp2
-    ), mock.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
-        'BMFGaussianModel.evaluate_from_output',
-        mp3,
-    ):
-        log_likelihood, grad_objective_samples = default_mf_likelihood.evaluate_and_gradient(
-            samples, upstream_gradient_fun
-        )
-
-    # --- assert and test statements ------------------------------------
-    # test prepare downstream gradient fun
-    mp1.assert_called_once()
-    mp1.assert_called_with(
-        eval_output_fun=mp3,
-        partial_grad_evaluate_fun=default_mf_likelihood.partial_grad_evaluate,
-        upstream_gradient_fun=upstream_gradient_fun,
-    )
-
-    # test forward model evaluate and gradient fun
-    mp2.assert_called_once()
-    mp2.assert_called_with(samples, upstream_gradient_fun=dummy_fun)
-
-    # test evaluate from output fun
-    mp3.assert_called_once()
-    mp3.assert_called_with(samples, sub_model_output[0])
-
-    # test final method output
-    np.testing.assert_array_equal(log_likelihood, log_lik_out)
-    np.testing.assert_array_equal(grad_objective_samples, sub_model_output[1])
+    with patch.object(BMFGaussianModel, "partial_grad_evaluate", return_value=partial_grad) as mp1:
+        with patch.object(SimulationModel, "grad", return_value=like_grad) as mp2:
+            grad_out = default_mf_likelihood.grad(samples, upstream_gradient)
+            mp1.assert_called_once_with(samples, forward_model_output)
+            mp2.assert_called_once()
+            np.testing.assert_array_equal(mp2.call_args.args[0], samples)
+            np.testing.assert_array_equal(mp2.call_args.args[1], upstream_gradient * partial_grad)
+            np.testing.assert_array_equal(grad_out, like_grad)
 
 
 def test_partial_grad_evaluate(mocker, default_mf_likelihood):

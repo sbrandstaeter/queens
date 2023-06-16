@@ -3,7 +3,6 @@ import numpy as np
 
 from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
-from pqueens.utils.gradient_handler import prepare_downstream_gradient_fun
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
 
@@ -146,35 +145,42 @@ class GaussianLikelihood(LikelihoodModel):
         )
 
     def evaluate(self, samples):
-        """Evaluate likelihood with current set of samples.
+        """Evaluate likelihood with current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
+            samples (np.array): Input samples
 
         Returns:
-            log_likelihood (np.array): Vector of log-likelihood values
-                                       per model input.
+            log_likelihood (np.array): log-likelihood values per model input
         """
-        forward_model_output = self.forward_model.evaluate(samples)["mean"]
-        log_likelihood = self.evaluate_from_output(forward_model_output)
-        return log_likelihood
-
-    def evaluate_from_output(self, forward_model_output):
-        """Evaluate likelihood with forward model output given.
-
-        Args:
-            forward_model_output (np.array): Evaluated forward
-                                             model output
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values
-                                       per model output.
-        """
+        self.response = self.forward_model.evaluate(samples)
         if self.noise_type.startswith('MAP'):
-            self.update_covariance(forward_model_output)
-        log_likelihood = self.normal_distribution.logpdf(forward_model_output)
+            self.update_covariance(self.response['mean'])
+        log_likelihood = self.normal_distribution.logpdf(self.response['mean'])
 
         return log_likelihood
+
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
+
+        Args:
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+        """
+        # shape convention: num_samples x jacobian_shape
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['mean'])
+        upstream_gradient = upstream_gradient * log_likelihood_grad
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.
@@ -197,58 +203,3 @@ class GaussianLikelihood(LikelihoodModel):
 
         covariance = add_nugget_to_diagonal(covariance, self.nugget_noise_variance)
         self.normal_distribution.update_covariance(covariance)
-
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate likelihood model and gradient with current set of samples.
-
-        Args:
-            samples (np.array): Current input samples for which likelihood should be evaluated
-            upstream_gradient_fun (function): The gradient of an upstream objective function w.r.t.
-                                              the model output. The expected input arguments for
-                                              this function are 1) the model input samples and 2)
-                                              the model output corresponding to the input samples.
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
-            gradient_objective_fun_samples (np.array): Row-wise gradients of the objective function
-                                                       w.r.t. to the input samples. If the the
-                                                       method argument 'grad_objective_fun' is
-                                                       None, the objective function  is the
-                                                       evaluation function of this model, the
-                                                       likelihood function, itself.
-        """
-        # compose the gradient objective function to update it with own partial derivative
-        downstream_gradient_fun = prepare_downstream_gradient_fun(
-            eval_output_fun=self.evaluate_from_output,
-            partial_grad_evaluate_fun=self.partial_grad_evaluate,
-            upstream_gradient_fun=upstream_gradient_fun,
-        )
-        # call evaluate_and_gradient of sub model with the downstream gradient function
-        # (which is the upstream gradient function from the perspective of the sub model)
-        sub_model_output, gradient_objective_fun_samples = self.forward_model.evaluate_and_gradient(
-            samples, upstream_gradient_fun=downstream_gradient_fun
-        )
-
-        # evaluate log-likelihood reusing the sub model evaluations
-        log_likelihood = self.evaluate_from_output(sub_model_output)
-
-        return log_likelihood, gradient_objective_fun_samples
-
-    def partial_grad_evaluate(self, _forward_model_input, forward_model_output):
-        """Implement the partial derivative of the evaluate method.
-
-        The partial derivative w.r.t. the output of the sub-model is for example
-        required to calculate gradients of the current model w.r.t. to the sample
-        input.
-
-        Args:
-            _forward_model_input (np.array): Sample inputs of the model run (here not required).
-            forward_model_output (np.array): Output of the underlying sub- or forward model
-                                             for the current batch of sample inputs.
-
-        Returns:
-            grad_out (np.array): Evaluated partial derivative of the evaluation function
-                                 w.r.t. the output of the underlying sub-model.
-        """
-        grad_out = self.normal_distribution.grad_logpdf(forward_model_output)
-        return grad_out

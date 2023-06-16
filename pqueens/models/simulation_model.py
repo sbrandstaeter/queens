@@ -1,8 +1,7 @@
 """Simulation model class."""
-
+import numpy as np
 
 from pqueens.interfaces import from_config_create_interface
-from pqueens.utils.gradient_handler import from_config_create_grad_handler
 
 from .model import Model
 
@@ -11,33 +10,18 @@ class SimulationModel(Model):
     """Simulation model class.
 
     Attributes:
-        interface (interface obj): Interface to simulations/functions
-        gradient_interface (interface obj): Interface for gradient computation
-        grad_handler(optional, obj): Gradient handling object that contains implementations
-                                        for different schemes of model gradient calculations.
-        gradient_response (np.array): Gradient of the model w.r.t. the input samples evaluated
-                                       at the input samples
+        interface (interface): Interface to simulations/functions.
     """
 
-    def __init__(
-        self,
-        model_name,
-        interface,
-        grad_handler=None,
-    ):
+    def __init__(self, model_name, interface, **kwargs):
         """Initialize simulation model.
 
         Args:
-            model_name (string): Name of model
-            interface (interface obj): Interface to simulator
-            gradient_interface (optional, interface obj): Interface for gradient computation
-            grad_handler(optional, obj): Gradient handling object that contains implementations
-                                         for different schemes of model gradient calculations.
+            model_name (string):        Name of model
+            interface (interface):      Interface to simulator
         """
         super().__init__(model_name)
         self.interface = interface
-        self.grad_handler = grad_handler
-        self.gradient_response = None
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -50,57 +34,44 @@ class SimulationModel(Model):
         Returns:
             simulation_model: Instance of SimulationModel
         """
-        # get options
-        model_options = config[model_name]
-        interface_name = model_options["interface_name"]
-
-        # create interface
+        model_options = config[model_name].copy()
+        interface_name = model_options.pop('interface_name')
         interface = from_config_create_interface(interface_name, config)
+        model_options.pop('type')
 
-        # get the correct gradient method
-        grad_handler_name = model_options.get("gradient_handler_name")
-        if grad_handler_name:
-            grad_handler = from_config_create_grad_handler(grad_handler_name, interface, config)
-        else:
-            grad_handler = None
-
-        return cls(model_name, interface, grad_handler)
+        return cls(model_name=model_name, interface=interface, **model_options)
 
     def evaluate(self, samples):
-        """Evaluate model at sample points.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.ndarray): Input samples
 
         Returns:
-            self.response (dict): Response of the underlying model at current variables
+            self.response (np.array): Response of the underlying model at current variables
         """
         self.response = self.interface.evaluate(samples)
         return self.response
 
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate model and the model gradient with current set of samples.
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
 
         Args:
-            samples (np.ndarray): Evaluated samples
-            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
-                                         model output.
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
 
         Returns:
-            self.response (np.array): Response of the underlying model at current variables
-            self.gradient_response (np.array): Gradient response of the underlying model at
-                                               current input samples
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        if self.grad_handler:
-            self.response, self.gradient_response = self.grad_handler.evaluate_and_gradient(
-                samples=samples,
-                evaluate_fun=self.evaluate,
-                upstream_gradient_fun=upstream_gradient_fun,
-            )
-        else:
-            raise AttributeError(
-                "You need to specify and provide a `gradient handler` object for the "
-                "`simulation_model`, if you want to use gradient functionality!"
-            )
-
-        return self.response, self.gradient_response
+        if self.response.get('gradient') is None:
+            raise ValueError('Gradient information not available.')
+        # The shape of the returned gradient is weird
+        response_gradient = np.swapaxes(self.response['gradient'], 1, 2)
+        gradient = np.sum(upstream_gradient[:, :, np.newaxis] * response_gradient, axis=1)
+        return gradient

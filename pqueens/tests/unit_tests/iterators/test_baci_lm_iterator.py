@@ -65,7 +65,6 @@ def default_baci_lm_iterator():
             [
                 ('type', 'simulation_model'),
                 ('interface_name', 'interface'),
-                ('parameters', 'parameters'),
             ]
         ),
         'interface': OrderedDict(
