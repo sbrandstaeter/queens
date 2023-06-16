@@ -1,5 +1,8 @@
 """Model class."""
 import abc
+from typing import final
+
+import numpy as np
 
 import pqueens.parameters.parameters as parameters_module
 
@@ -21,6 +24,8 @@ class Model(metaclass=abc.ABCMeta):
         response (dict): Response corresponding to parameters.
     """
 
+    _evaluate_and_gradient_bool = False
+
     def __init__(self, name=None):
         """Init model object.
 
@@ -33,23 +38,54 @@ class Model(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate model with current set of samples.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.array): Current sample batch for which the model response should be
-                                calculated.
+            samples (np.ndarray): Input samples
         """
-        pass
 
     @abc.abstractmethod
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun):
-        """Evaluate model and the model gradient with current set of samples.
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
 
         Args:
-            samples (np.array): Current sample batch for which the model response should be
-                                calculated.
-            upstream_gradient_fun (obj): The gradient an objective function w.r.t. the model output.
-                                         This function is needed for `adjoint`-based gradient
-                                         calculation.
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        pass
+
+    @final
+    def evaluate_and_gradient(self, samples, upstream_gradient=None):
+        r"""Evaluate model output and gradient.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        the model output f(x) and the gradient :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
+
+        Args:
+            samples (np.array): Input samples
+            upstream_gradient (np.array, opt): Upstream gradient function evaluated at input samples
+                                               :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            model_output (np.array): Model output
+            model_gradient (np.array): Gradient w.r.t. current set of input samples
+                                       :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+        """
+        Model._evaluate_and_gradient_bool = True
+        model_output = self.evaluate(samples)
+        if upstream_gradient is None:
+            upstream_gradient = np.ones((samples.shape[0], 1))
+        model_gradient = self.grad(
+            samples, upstream_gradient=upstream_gradient.reshape(samples.shape[0], 1)
+        )
+        Model._evaluate_and_gradient_bool = False
+        return model_output, model_gradient

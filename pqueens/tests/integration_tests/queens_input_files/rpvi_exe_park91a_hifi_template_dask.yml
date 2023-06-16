@@ -36,24 +36,25 @@ optimizer:
   max_iter: 10000000
 model:
   type: gaussian
-  forward_model_name: forward_model
+  forward_model_name: {{ forward_model_name }}
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: experimental_data.csv
   experimental_csv_data_base_dir: {{ experimental_data_path }}
-  parameters: parameters
-forward_model:
+fd_model:
+  type: differentiable_simulation_model_fd
+  interface_name: interface
+  finite_difference_method: 2-point
+adjoint_model:
+  type: differentiable_simulation_model_adjoint
+  interface_name: interface
+  gradient_interface_name: gradient_interface
+  adjoint_file: "grad_objective.csv"
+simulation_model:
   type: simulation_model
   interface_name: interface
-  parameters: parameters
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: {{ gradient_method }}
-  finite_difference_method: 2-point
-  upstream_gradient_file_name: "grad_objective.csv"
-  gradient_interface_name: {{ gradient_interface }}
 gradient_interface:
   type: dask_job_interface
   scheduler_name: scheduler

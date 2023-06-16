@@ -86,9 +86,6 @@ lf_interface:
 lf_model:
   interface_name: lf_interface
   type: simulation_model
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: provided
 optimizer:
   FIM_dampening: false
   FIM_dampening_lower_bound: 1.0e-08

@@ -10,7 +10,6 @@ from pqueens.interfaces import from_config_create_interface
 from pqueens.iterators import from_config_create_iterator
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.ascii_art import print_bmfia_acceleration
-from pqueens.utils.gradient_handler import prepare_downstream_gradient_fun
 
 _logger = logging.getLogger(__name__)
 
@@ -206,8 +205,33 @@ class BMFGaussianModel(LikelihoodModel):
         )[:num_samples, :]
 
         mf_log_likelihood = self.evaluate_from_output(samples, forward_model_output)
+        self.response = {
+            'forward_model_output': forward_model_output,
+            'mf_log_likelihood': mf_log_likelihood,
+        }
 
         return mf_log_likelihood
+
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
+
+        Args:
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+        """
+        partial_grad = self.partial_grad_evaluate(samples, self.response['forward_model_output'])
+        upstream_gradient = upstream_gradient * partial_grad
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def evaluate_from_output(self, samples, forward_model_output):
         """Evaluate multi-fidelity likelihood from forward model output.
@@ -226,37 +250,6 @@ class BMFGaussianModel(LikelihoodModel):
         mf_log_likelihood = self._evaluate_mf_likelihood(samples, forward_model_output)
         self.likelihood_counter += 1
         return mf_log_likelihood
-
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate model and its gradient with current set of samples.
-
-        Args:
-            samples (np.ndarray): Samples to evaluate
-            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
-                                         model output.
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
-            grad_objective_samples (np.array): Row-wise gradients of the objective function w.r.t.
-                                               to the input samples. If the method argument
-                                               'grad_objective_fun' is None, the objective function
-                                               is the evaluation function of this model, the
-                                               likelihood function, itself.
-        """
-        # compose the gradient objective function to update it with own partial derivative
-        upstream_gradient_fun = prepare_downstream_gradient_fun(
-            eval_output_fun=self.evaluate_from_output,
-            partial_grad_evaluate_fun=self.partial_grad_evaluate,
-            upstream_gradient_fun=upstream_gradient_fun,
-        )
-        # call evaluate_and_gradient of sub model
-        sub_model_output, grad_objective_samples = self.forward_model.evaluate_and_gradient(
-            samples, upstream_gradient_fun=upstream_gradient_fun
-        )
-        # evaluate log-likelihood reusing the sub model evaluations
-        log_likelihood = self.evaluate_from_output(samples, sub_model_output)
-
-        return log_likelihood, grad_objective_samples
 
     def partial_grad_evaluate(self, forward_model_input, forward_model_output):
         """Implement the partial derivative of the evaluate method.
