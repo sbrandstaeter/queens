@@ -100,13 +100,6 @@ class DifferentiableSimulationModelFD(SimulationModel):
             gradient_response (np.array): Array with row-wise model/objective fun gradients for
                                           given samples.
         """
-        # check dimensions of samples
-        if samples.ndim < 2:
-            raise ValueError(
-                "The sample dimension must be at least 2D! Columns represent different "
-                "variable dimensions and rows different sample realizations."
-            )
-
         num_samples = samples.shape[0]
 
         # calculate the additional sample points for the stencil per sample
