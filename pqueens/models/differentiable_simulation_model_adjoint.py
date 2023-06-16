@@ -81,11 +81,20 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model w.r.t. current set of input samples.
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
 
         Args:
             samples (np.array): Input samples
             upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         # get last job_ids
         last_job_ids = self.interface.job_ids[-samples.shape[0] :]
@@ -97,6 +106,5 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
-        gradient_response = self.gradient_interface.evaluate(samples)['mean']
-
-        return gradient_response
+        gradient = self.gradient_interface.evaluate(samples)['mean']
+        return gradient
