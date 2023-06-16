@@ -57,7 +57,7 @@ class Model(metaclass=abc.ABCMeta):
     def evaluate_and_gradient(self, samples, upstream_gradient=None):
         """Evaluate model output and gradient.
 
-        Args:sam
+        Args:
             samples (np.array): Input samples
             upstream_gradient (np.array, opt): Upstream gradient function evaluated at input samples
 

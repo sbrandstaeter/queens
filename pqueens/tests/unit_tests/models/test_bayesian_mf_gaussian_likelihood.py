@@ -385,6 +385,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
 def test_grad(default_mf_likelihood):
     """Test grad method."""
     # define inputs
+    np.random.seed(42)
     samples = np.random.rand(3, 2)
     forward_model_output = np.random.rand(3, 4)
     upstream_gradient = np.random.rand(3, 1)

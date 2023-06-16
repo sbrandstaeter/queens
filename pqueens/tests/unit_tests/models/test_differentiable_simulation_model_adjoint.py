@@ -67,6 +67,7 @@ def test_grad(default_adjoint_model):
     default_adjoint_model.gradient_interface.experiment_dir = experiment_dir
     default_adjoint_model.gradient_interface.evaluate = lambda x: {'mean': x**2}
 
+    np.random.seed(42)
     samples = np.random.random((2, 3))
     upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))

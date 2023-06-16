@@ -93,6 +93,7 @@ def test_evaluate(default_fd_model):
 
 def test_grad(default_fd_model):
     """Test grad method."""
+    np.random.seed(42)
     samples = np.random.random((2, 4, 3))
     default_fd_model.response = {
         'mean': np.sum(samples**2, axis=2, keepdims=True),
