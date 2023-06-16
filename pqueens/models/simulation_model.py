@@ -11,7 +11,6 @@ class SimulationModel(Model):
 
     Attributes:
         interface (interface): Interface to simulations/functions.
-        response_grad (np.array): Gradient of the model response
     """
 
     def __init__(self, model_name, interface, **kwargs):
@@ -23,7 +22,6 @@ class SimulationModel(Model):
         """
         super().__init__(model_name)
         self.interface = interface
-        self.response_grad = None
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
