@@ -66,13 +66,13 @@ class DifferentiableSimulationModelFD(SimulationModel):
         self.bounds = np.array(bounds)
 
     def evaluate(self, samples):
-        """Evaluate model with current set of samples.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.ndarray): Input samples
 
         Returns:
-            self.response (np.array): Response of the underlying model at current variables
+            self.response (np.array): Response of the underlying model at input samples
         """
         if not self._evaluate_and_gradient_bool:
             self.response = self.interface.evaluate(samples)
@@ -81,11 +81,11 @@ class DifferentiableSimulationModelFD(SimulationModel):
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model with current set of samples.
+        """Evaluate gradient of model w.r.t. current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
-            upstream_gradient (np.array): Upstream gradient
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
         """
         return np.sum(upstream_gradient[:, :, np.newaxis] * self.response['gradient'], axis=1)
 

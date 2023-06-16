@@ -9,7 +9,9 @@ import pqueens.parameters.parameters as parameters_module
 from pqueens.models.model import Model
 
 
-class TestModel(Model):
+class DummyModel(Model):
+    """Dummy model class."""
+
     def evaluate(self, samples):
         """Evaluate model with current set of samples."""
 
@@ -32,7 +34,7 @@ def uncertain_parameters():
 @pytest.fixture()
 def model(uncertain_parameters):
     """An instance of an empty Model class."""
-    return TestModel()
+    return DummyModel()
 
 
 def test_init(model, uncertain_parameters):
@@ -57,7 +59,7 @@ def test_evaluate_and_gradient(model):
     )
 
     samples = np.random.random((3, 4))
-    with patch.object(TestModel, "evaluate", new=model_eval):
+    with patch.object(DummyModel, "evaluate", new=model_eval):
         model_out, model_grad = model.evaluate_and_gradient(samples, upstream_gradient=None)
         assert model.grad.call_count == 1
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)

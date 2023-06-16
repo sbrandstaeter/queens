@@ -95,17 +95,17 @@ class LikelihoodModel(Model):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate model with current set of samples.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.ndarray): Input samples
         """
 
     @abc.abstractmethod
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model with current set of samples.
+        """Evaluate gradient of model w.r.t. current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
-            upstream_gradient (np.array): Upstream gradient
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
         """

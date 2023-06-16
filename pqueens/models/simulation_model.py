@@ -44,10 +44,10 @@ class SimulationModel(Model):
         return cls(model_name=model_name, interface=interface, **model_options)
 
     def evaluate(self, samples):
-        """Evaluate model with current set of samples.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.ndarray): Input samples
 
         Returns:
             self.response (np.array): Response of the underlying model at current variables
@@ -56,11 +56,11 @@ class SimulationModel(Model):
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model with current set of samples.
+        """Evaluate gradient of model w.r.t. current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
-            upstream_gradient (np.array): Upstream gradient
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
         """
         if self.response.get('gradient') is None:
             raise ValueError('Gradient information not available.')

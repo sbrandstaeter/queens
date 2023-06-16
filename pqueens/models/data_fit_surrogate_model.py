@@ -118,13 +118,13 @@ class DataFitSurrogateModel(Model):
         )
 
     def evaluate(self, samples):
-        """Evaluate model with current set of variables.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples (np.ndarray): Evaluated samples
+            samples (np.ndarray): Input samples
 
         Returns:
-            np.array: Results corresponding to current set of variables
+            np.array: Results corresponding to current set of input samples
         """
         if not self.interface.is_initialized():
             self.build_approximation()
@@ -133,11 +133,11 @@ class DataFitSurrogateModel(Model):
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model with current set of samples.
+        """Evaluate gradient of model w.r.t. current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
-            upstream_gradient (np.array): Upstream gradient
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
         """
         raise NotImplementedError(
             "Gradient method is not implemented in `data_fit_surrogate_model`."

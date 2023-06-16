@@ -72,16 +72,20 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         )
 
     def evaluate(self, samples):
-        """Evaluate forward model with current set of variables."""
+        """Evaluate model with current set of input samples.
+
+        Args:
+            samples (np.ndarray): Input samples
+        """
         self.response = self.interface.evaluate(samples)
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        """Evaluate gradient of model with current set of samples.
+        """Evaluate gradient of model w.r.t. current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
-            upstream_gradient (np.array): Upstream gradient
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
         """
         # get last job_ids
         last_job_ids = self.interface.job_ids[-samples.shape[0] :]
