@@ -491,7 +491,10 @@ class FullRankNormalVariational(VariationalDistribution):
         mean, cov, L = self.reconstruct_parameters(variational_params)
         x = np.atleast_2d(x)
         u = np.linalg.solve(cov, (x.T - mean))
-        col_dot_prod = lambda x, y: np.sum(x * y, axis=0)
+
+        def col_dot_prod(x, y):
+            return np.sum(x * y, axis=0)
+
         logpdf = (
             -0.5 * self.dimension * np.log(2 * np.pi)
             - np.sum(np.log(np.abs(np.diag(L))))
@@ -563,7 +566,7 @@ class FullRankNormalVariational(VariationalDistribution):
             array corresponds to the different samples.
             The second dimension to different dimensions
             within one sample. (Third dimension is empty
-            and just added to keep slices two dimensional.)
+            and just added to keep slices two-dimensional.)
         """
         mean, cov, _ = self.reconstruct_parameters(variational_params)
         gradient_lst = []
@@ -700,7 +703,7 @@ class MixtureModel(VariationalDistribution):
     :math:`parameters=[\lambda_0,\lambda_1,...,\lambda_{C},\lambda_{weights}]`
     where :math:`C` is the number of components, :math:`\\lambda_i` are the variational parameters
     of the ith component and :math:`\\lambda_{weights}` parameters such that the component weights
-    are obtain by:
+    are obtained by:
     :math:`weight_i=\frac{exp(\lambda_{weights,i})}{\sum_{j=1}^{C}exp(\lambda_{weights,j})}`
 
     This allows the weight parameters :math:`\lambda_{weights}` to be unconstrained.
@@ -773,13 +776,13 @@ class MixtureModel(VariationalDistribution):
     def draw(self, variational_params, num_draws=1):
         """Draw *num_draw* samples from the variational distribution.
 
-        Uses a two step process:
+        Uses a two-step process:
             1. From a multinomial distribution, based on the weights, select a component
             2. Sample from the selected component
 
         Args:
             variational_params (np.array): Variational parameters
-            num_draw (int): Number of samples to draw
+            num_draws (int): Number of samples to draw
 
         Returns:
             samples (np.array): Row wise samples of the variational distribution

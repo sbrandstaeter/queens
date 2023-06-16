@@ -5,12 +5,10 @@ import sys
 import numpy as np
 import scipy
 
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
-)
+from pqueens.randomfields.univariate_random_field_factory import create_univariate_random_field
 
 
-class MultiVariateRandomFieldGenerator(object):
+class MultiVariateRandomFieldGenerator:
     """Generator of samples of multivariate cross-correlated random fields.
 
     Class for the generation of samples from Gaussian and
@@ -78,7 +76,7 @@ class MultiVariateRandomFieldGenerator(object):
         self.my_univ_rfs = []
         for i in range(self.var_dim):
             self.my_univ_rfs.append(
-                UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                create_univariate_random_field(
                     marg_pdf=marginal_distributions[i],
                     spatial_dimension=spatial_dimension,
                     corrstruct=corr_struct,
@@ -106,14 +104,12 @@ class MultiVariateRandomFieldGenerator(object):
 
         # use dimension of first field for now
         temp = np.diag(np.ones((self.my_univ_rfs[0].stoch_dim,)))
-        phi_d = np.kron(phi_c, temp)
 
-        lamdba_c3 = []
-        for i in range(len(lambda_c)):
-            lamdba_c3.append(lambda_c[i] * temp)
+        phi_d = np.kron(phi_c, temp)
+        lambda_c3 = lambda_c.reshape((lambda_c.shape[0], 1, 1)) * temp
 
         # make sparse at some point
-        lambda_d = scipy.linalg.block_diag(*lamdba_c3)
+        lambda_d = scipy.linalg.block_diag(*lambda_c3)
 
         # self.pre_factor=sparse(phi_d*(lambda_d**(1/2)))
         self.pre_factor = np.dot(phi_d, (lambda_d ** (1 / 2)))
@@ -142,7 +138,7 @@ class MultiVariateRandomFieldGenerator(object):
         helper = np.dot(self.pre_factor, xi)
         np.set_printoptions(threshold=sys.maxsize)
 
-        my_xi = helper.reshape(-1, self.var_dim, order='F')
+        my_xi = helper.reshape((-1, self.var_dim), order='F')
 
         for i in range(self.var_dim):
             new_vals[:, i] = self.my_univ_rfs[i].evaluate_field_at_location(x, my_xi[:, i])

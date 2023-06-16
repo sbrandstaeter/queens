@@ -45,7 +45,7 @@ def test_temper_factory(temper_keyword_and_temper_type):
     temper, temper_type_sol = temper_keyword_and_temper_type
     temper_type = smc_utils.temper_factory(temper)
 
-    assert type(temper_type) == temper_type_sol
+    assert isinstance(temper_type, temper_type_sol)
 
 
 def test_temper_factory_invalid():

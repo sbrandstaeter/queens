@@ -196,14 +196,13 @@ class VariationalInferenceIterator(Iterator):
         elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
             _logger.warning("NaN(s) in the relative change of variational parameters")
         else:
-            _logger.info("Finished sucessfully! :-)")
+            _logger.info("Finished successfully! :-)")
         _logger.info("Variational inference took %s seconds.", end - start)
 
     def _catch_non_converging_simulations(self, old_parameters):
         """Reset variational parameters in case of failed simulations."""
         if np.isnan(self.stochastic_optimizer.rel_L2_change):
             self.variational_params = old_parameters
-            self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
     def pre_run(self):
         """Initialize the prior model and variational parameters."""
@@ -429,9 +428,12 @@ class VariationalInferenceIterator(Iterator):
         """
         safe_gradient = self.handle_gradient_nan(self._calculate_elbo_gradient)
         if self.natural_gradient_bool:
-            gradient = lambda variational_parameters: np.linalg.solve(
-                self._get_fim(), safe_gradient(variational_parameters)
-            )
+
+            def my_gradient(variational_parameters):
+                return np.linalg.solve(self._get_fim(), safe_gradient(variational_parameters))
+
+            gradient = my_gradient
+
         else:
             gradient = safe_gradient
 
@@ -452,7 +454,7 @@ class VariationalInferenceIterator(Iterator):
             """Count iterations with NaNs and write warning."""
             gradient = gradient_function(*args, **kwargs)
             if np.isnan(gradient).any():
-                _logger.warn(
+                _logger.warning(
                     "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
                     " %s)",
                     self.nan_in_gradient_counter,

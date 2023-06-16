@@ -1,4 +1,17 @@
-"""TODO_doc."""
+"""TODO_doc: This is currently not in the documentation.
+
+A module that provides utilities and a class for visualization of surrogate
+models.
+
+It is designed such that the SurrogateVisualization class needs only to be initialized once
+and can then be accessed and modified in the entire project.
+
+In this context "this" is a pointer to the module object instance itself and can be compared to the
+"self" keyword in classes.
+
+Attributes:
+    surrogate_visualization_instance (obj): Instance of the SAVisualization class
+"""
 
 import sys
 from pathlib import Path
@@ -15,22 +28,6 @@ from matplotlib.cm import ScalarMappable
 matplotlib.use('agg')
 cycle_colors = sns.color_palette()
 style.use('seaborn')
-
-"""TODO_doc: This is currently not in the documentation.
-
-A module that provides utilities and a class for visualization of surrogate
-models.
-
-It is designed such that the SurrogateVisualization class needs only to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    surrogate_visualization_instance (obj): Instance of the SAVisualization class
-"""
-
 this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 
@@ -66,7 +63,7 @@ def convert_to_dict(values):
     return plot_dict
 
 
-class SurrogateVisualization(object):
+class SurrogateVisualization:
     """TODO_doc: add a one-line explanation.
 
     Visualization class for surrogate models that contains several plotting,

@@ -1,7 +1,4 @@
-"""Test-module for abstract Model class.
-
-@author: Sebastian Brandstaeter
-"""
+"""Test-module for abstract Model class."""
 
 from unittest.mock import Mock, patch
 
@@ -12,78 +9,35 @@ import pqueens.parameters.parameters as parameters_module
 from pqueens.models.model import Model
 
 
+class TestModel(Model):
+    def evaluate(self, samples):
+        """Evaluate model with current set of samples."""
+
+    def grad(self, samples, upstream_gradient):
+        """Evaluate gradient of model with current set of samples."""
+
+
 @pytest.fixture(scope='module')
 def uncertain_parameters():
     """Possible uncertain parameters dictionary."""
-    uncertain_parameters = {}
-
-    x1 = {}
-    x1['type'] = 'free'
-    x1['dimension'] = 1
-
-    x2 = {}
-    x2['type'] = 'free'
-    x2['dimension'] = 2
-
-    uncertain_parameters['x1'] = x1
-    uncertain_parameters['x2'] = x2
+    uncertain_parameters = {
+        'x1': {'type': 'free', 'dimension': 1},
+        'x2': {'type': 'free', 'dimension': 2},
+    }
 
     parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
     return parameters_module.parameters
 
 
-@pytest.fixture(scope='module')
-def model_name():
-    """Model name as string."""
-    return 'test_model'
-
-
 @pytest.fixture()
-def model(model_name, uncertain_parameters, mocker):
+def model(uncertain_parameters):
     """An instance of an empty Model class."""
-    # make abstract call Model instantiable
-    mocker.patch.object(Model, '__abstractmethods__', new=set())
-
-    return Model(model_name)
+    return TestModel()
 
 
-@pytest.fixture(scope='module')
-def data_vector():
-    """Possible data vector compatible with *uncertain_parameters*."""
-    # total size is sum of size values of uncertain_parameters
-    data_vector = np.zeros(3)
-
-    data_vector[0] = 1.0
-    data_vector[1] = 2.0
-    data_vector[2] = 3.0
-
-    return data_vector
-
-
-@pytest.fixture(scope='module')
-def data_batch(data_vector):
-    """Possible data batch compatible with *uncertain_parameters*.
-
-    A data batch is a collection of data vectors.
-    """
-    data_batch = np.stack([data_vector, data_vector])
-
-    return data_batch
-
-
-@pytest.fixture(scope='module')
-def responses():
-    """Possible responses for vector valued model."""
-    responses = {}
-    responses['mean'] = np.array([[1.0, 1.0], [2.0, 2.0]])
-
-    return responses
-
-
-def test_init(model, model_name, uncertain_parameters):
-    """Test *get_parameters*."""
+def test_init(model, uncertain_parameters):
+    """Test init."""
     assert model.parameters is uncertain_parameters
-    assert model.name == model_name
     assert model.response is None
     assert model._evaluate_and_gradient_bool is False
 
@@ -103,7 +57,7 @@ def test_evaluate_and_gradient(model):
     )
 
     samples = np.random.random((3, 4))
-    with patch.object(Model, "evaluate", new=model_eval):
+    with patch.object(TestModel, "evaluate", new=model_eval):
         model_out, model_grad = model.evaluate_and_gradient(samples, upstream_gradient=None)
         assert model.grad.call_count == 1
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)

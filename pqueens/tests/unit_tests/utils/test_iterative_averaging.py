@@ -2,7 +2,14 @@
 import numpy as np
 import pytest
 
-from pqueens.utils.iterative_averaging_utils import *
+from pqueens.utils.iterative_averaging_utils import (
+    ExponentialAveraging,
+    L1_norm,
+    L2_norm,
+    MovingAveraging,
+    PolyakAveraging,
+    relative_change,
+)
 
 
 def test_L1_norm():
