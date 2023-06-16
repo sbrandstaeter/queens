@@ -179,7 +179,8 @@ class GaussianLikelihood(LikelihoodModel):
         # shape convention: num_samples x jacobian_shape
         log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['mean'])
         upstream_gradient = upstream_gradient * log_likelihood_grad
-        return self.forward_model.grad(samples, upstream_gradient)
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.

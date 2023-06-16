@@ -230,7 +230,8 @@ class BMFGaussianModel(LikelihoodModel):
         """
         partial_grad = self.partial_grad_evaluate(samples, self.response['forward_model_output'])
         upstream_gradient = upstream_gradient * partial_grad
-        return self.forward_model.grad(samples, upstream_gradient)
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def evaluate_from_output(self, samples, forward_model_output):
         """Evaluate multi-fidelity likelihood from forward model output.
