@@ -141,6 +141,8 @@ class ClusterScheduler(Scheduler):
                 break
             except OSError as exc:
                 if i == 1:
+                    stdout.channel.close()
+                    stderr.channel.close()
                     raise OSError(
                         stdout.read().decode('ascii') + stderr.read().decode('ascii')
                     ) from exc
