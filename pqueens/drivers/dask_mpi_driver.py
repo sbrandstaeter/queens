@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 from pqueens.drivers.dask_driver import Driver
-from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -74,9 +73,7 @@ class MpiDriver(Driver):
         _, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
-
-        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
-
+        self.prepare_input_files(sample_dict, experiment_dir, input_file)
         self._run_executable(job_id, num_procs, input_file, output_file, log_file, error_file)
         self._run_post_processing(num_procs_post, output_file, output_dir)
 

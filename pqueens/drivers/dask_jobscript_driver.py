@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from pqueens.drivers.dask_driver import Driver
-from pqueens.utils.injector import inject, inject_in_template, read_file
+from pqueens.utils.injector import inject_in_template, read_file
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class JobscriptDriver(Driver):
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
 
-        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
+        self.prepare_input_files(sample_dict, experiment_dir, input_file)
 
         final_jobscript_options = {
             **self.jobscript_options,

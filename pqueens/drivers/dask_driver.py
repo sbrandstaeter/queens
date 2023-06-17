@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from pqueens.data_processor import from_config_create_data_processor
+from pqueens.utils.injector import inject
 
 _logger = logging.getLogger(__name__)
 
@@ -134,3 +135,13 @@ class Driver(metaclass=abc.ABCMeta):
             gradient = self.gradient_data_processor.get_data_from_file(output_dir)
             _logger.debug("Got gradient: %s", gradient)
         return result, gradient
+
+    def prepare_input_files(self, sample_dict, experiment_dir, input_file):
+        """Prepare and parse data to input files.
+
+        Args:
+            sample_dict (dict): Dict containing sample and job id
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            input_file (Path): Path to input file
+        """
+        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
