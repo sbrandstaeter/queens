@@ -6,8 +6,8 @@ import numpy as np
 
 from pqueens.utils.iterative_averaging_utils import (
     ExponentialAveraging,
-    L1_norm,
-    L2_norm,
+    l1_norm,
+    l2_norm,
     relative_change,
 )
 from pqueens.utils.print_utils import get_str_table
@@ -52,7 +52,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
             for parameters in optimizer:
 
-                rel_L2_change_params=optimizer.rel_l2_change
+                rel_l2_change_params=optimizer.rel_l2_change
 
                 iteration=optimizer.iteration
 
@@ -223,10 +223,10 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             new_parameters (np.array): New parameters
         """
         self.rel_l2_change = relative_change(
-            old_parameters, new_parameters, lambda x: L2_norm(x, averaged=True)
+            old_parameters, new_parameters, lambda x: l2_norm(x, averaged=True)
         )
         self.rel_l1_change = relative_change(
-            old_parameters, new_parameters, lambda x: L1_norm(x, averaged=True)
+            old_parameters, new_parameters, lambda x: l1_norm(x, averaged=True)
         )
 
     def do_single_iteration(self, gradient):
@@ -757,7 +757,7 @@ def clip_by_l2_norm(gradient, l2_norm_threshold=1e6):
         gradient (np.array): Clipped gradients
     """
     gradient = np.nan_to_num(gradient)
-    gradient_l2_norm = L2_norm(gradient)
+    gradient_l2_norm = l2_norm(gradient)
     if gradient_l2_norm > l2_norm_threshold:
         gradient /= gradient_l2_norm / l2_norm_threshold
         _logger.warning("Gradient clipped due to large norm!")
