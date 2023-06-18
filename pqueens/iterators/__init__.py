@@ -47,7 +47,7 @@ VALID_TYPES = {
         'SequentialMonteCarloChopinIterator',
     ],
     'sobol_sequence': ['pqueens.iterators.sobol_sequence_iterator', 'SobolSequenceIterator'],
-    'sing_sim_run': ['pqueens.iterators.single_sim_run_iterator', 'SingleSimRunIterator'],
+    'points': ['pqueens.iterators.points_iterator', 'PointsIterator'],
     'bmfmc': ['pqueens.iterators.bmfmc_iterator', 'BMFMCIterator'],
     'grid': ['pqueens.iterators.grid_iterator', 'GridIterator'],
     'baci_lm': ['pqueens.iterators.baci_lm_iterator', 'BaciLMIterator'],

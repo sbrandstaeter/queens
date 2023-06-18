@@ -5,9 +5,15 @@ import pyfiglet
 
 _logger = logging.getLogger(__name__)
 
+DEFAULT_OUTPUT_WIDTH = 63
 
-def print_bmfia_acceleration():
-    """Print BMFIA rocket."""
+
+def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
+    """Print BMFIA rocket.
+
+    Args:
+        output_width (int): Terminal output width
+    """
     rocket = r"""
           !
           !
@@ -40,14 +46,14 @@ def print_bmfia_acceleration():
           .
           .
     """
-    print_centered_multiline_block(rocket)
+    print_centered_multiline_block(rocket, output_width)
 
 
-def print_crown(output_width=63):
+def print_crown(output_width=DEFAULT_OUTPUT_WIDTH):
     """Print crown.
 
     Args:
-        output_width (int): Terminal output width (default is 63)
+        output_width (int): Terminal output width
     """
     crown = r"""
         *
@@ -61,22 +67,46 @@ def print_crown(output_width=63):
     print_centered_multiline_block(crown, output_width)
 
 
-def print_banner(message="QUEENS", output_width=63):
+def print_points_iterator(output_width=DEFAULT_OUTPUT_WIDTH):
+    """Print points iterator.
+
+    Args:
+        output_width (int): Terminal output width
+    """
+    points = r"""
+    @@@@@@@@@@@
+  @@@        @@@                                           @@@@@@@@@@@
+  @@@         @@@                                        @@@@       @@@@
+  @@@        @@@                                         @@@         @@@
+   @@@@@@,@@@@@                #@@@@@@@@@                @@@         @@@
+    @@@@@@@@@@               @@@@      @@@@               @@@@@@@@@@@@@
+      @@@@@@@                @@@         @@@                @@@@@@@@@@
+       @@@@                  @@@        @@@                  @@@@@@@
+        @@                    @@@      @@@                     @@@
+                               @@@@@@@@@@                       @
+                                @@@@@@@@
+                                 @@@@@@
+                                   @@
+    """
+    print_centered_multiline_block(points, output_width)
+
+
+def print_banner(message="QUEENS", output_width=DEFAULT_OUTPUT_WIDTH):
     """Print banner.
 
     Args:
         message (str): Message in banner
-        output_width (int): Terminal output width (default is 63)
+        output_width (int): Terminal output width
     """
     print_centered_multiline_block(pyfiglet.figlet_format(message, font="banner3-D"), output_width)
 
 
-def print_centered_multiline_block(string, output_width=63):
+def print_centered_multiline_block(string, output_width=DEFAULT_OUTPUT_WIDTH):
     """Print a multiline text in the center as a block.
 
     Args:
         string (str): String to be printed
-        output_width (int): Terminal output width (default is 63)
+        output_width (int): Terminal output width
     """
     lines = string.split("\n")
     max_line_width = max(len(line) for line in lines)
@@ -86,20 +116,24 @@ def print_centered_multiline_block(string, output_width=63):
         _logger.info(line.ljust(max_line_width).center(output_width))
 
 
-def print_centered_multiline(string, output_width=63):
+def print_centered_multiline(string, output_width=DEFAULT_OUTPUT_WIDTH):
     """Center every line of a multiline text.
 
     Args:
         string (str): String to be printed
-        output_width (int): Terminal output width (default is 63)
+        output_width (int): Terminal output width
     """
     lines = string.split("\n")
     for line in lines:
         _logger.info(line.strip().center(output_width))
 
 
-def print_banner_and_description():
-    """Print banner and the description."""
+def print_banner_and_description(output_width=DEFAULT_OUTPUT_WIDTH):
+    """Print banner and the description.
+
+    Args:
+        output_width (int): Terminal output width
+    """
     print_crown()
     print_banner()
     description = """
@@ -107,4 +141,4 @@ def print_banner_and_description():
     Physics-Informed Machine Learning, Bayesian Optimization,
     Inverse Problems and Simulation Analytics
     """
-    print_centered_multiline(description)
+    print_centered_multiline(description, output_width)
