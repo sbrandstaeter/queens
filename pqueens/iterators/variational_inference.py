@@ -193,7 +193,7 @@ class VariationalInferenceIterator(Iterator):
 
         if self.n_sims > self.max_feval:
             _logger.warning("Maximum probabilistic model calls reached")
-        elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
+        elif np.any(np.isnan(self.stochastic_optimizer.rel_l2_change)):
             _logger.warning("NaN(s) in the relative change of variational parameters")
         else:
             _logger.info("Finished successfully! :-)")
@@ -201,7 +201,7 @@ class VariationalInferenceIterator(Iterator):
 
     def _catch_non_converging_simulations(self, old_parameters):
         """Reset variational parameters in case of failed simulations."""
-        if np.isnan(self.stochastic_optimizer.rel_L2_change):
+        if np.isnan(self.stochastic_optimizer.rel_l2_change):
             self.variational_params = old_parameters
             self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
@@ -235,7 +235,7 @@ class VariationalInferenceIterator(Iterator):
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
-        mean_change = self.stochastic_optimizer.rel_L2_change * 100
+        mean_change = self.stochastic_optimizer.rel_l2_change * 100
         _logger.info("So far %s simulation runs", self.n_sims)
         _logger.info("L2 change of all variational parameters: %.4f %%", mean_change)
         _logger.info("The elbo is: %.2f}", self.elbo)

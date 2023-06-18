@@ -132,8 +132,8 @@ def dummy_bbvi_instance(tmp_path, my_variational_distribution):
         "type": "adam",
         "learning_rate": 0.01,
         "optimization_type": "max",
-        "rel_L1_change_threshold": -1,
-        "rel_L2_change_threshold": -1,
+        "rel_l1_change_threshold": -1,
+        "rel_l2_change_threshold": -1,
         "max_iter": 10000000,
     }
     stochastic_optimizer = from_config_create_optimizer(

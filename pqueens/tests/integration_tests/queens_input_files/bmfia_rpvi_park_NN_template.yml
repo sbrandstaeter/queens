@@ -57,7 +57,7 @@ mf_approx:
   num_refinement_samples: 50
   optimizer_seed: 42
   refinement_epochs_decay: 0.7
-  rel_L2_change_threshold: 1.0e-04
+  rel_l2_change_threshold: 1.0e-04
   verbosity_on: true
 bmfia_interface:
   type: bmfia
@@ -100,8 +100,8 @@ optimizer:
   max_iter: 100
   natural_gradient: true
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   type: adam
 parameters:
   x1:

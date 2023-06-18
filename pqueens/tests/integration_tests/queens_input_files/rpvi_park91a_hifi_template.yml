@@ -31,8 +31,8 @@ optimizer:
   type: adam
   optimization_type: max
   learning_rate: 0.025
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   max_iter: 500
 model:
   type: {{ likelihood_model_type }}
