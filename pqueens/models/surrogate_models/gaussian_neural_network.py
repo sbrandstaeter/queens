@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.valid_options_utils import get_option
 from pqueens.visualization.gaussian_neural_network_vis import plot_loss
@@ -25,7 +25,7 @@ else:
     _logger.debug('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
-class GaussianNeuralNetwork(RegressionApproximation):
+class GaussianNeuralNetworkModel(SurrogateModel):
     """Class for creating a neural network that parameterizes a Gaussian.
 
     The network can handle heteroskedastic noise and an arbitrary nonlinear functions.
@@ -43,7 +43,7 @@ class GaussianNeuralNetwork(RegressionApproximation):
         scaler_y (obj): Scaler for outputs
         loss_plot_path (str): Path to determine whether loss plot should be produced
                               (yes if provided). Plot will be saved at path location.
-        refinement_learning_rate_decay (float): Decrease of epochs in refinements
+        refinement_epochs_decay (float): Decrease of epochs in refinements
         mean_function (function): Mean function of the Gaussian Neural Network
         gradient_mean_function (function): Gradient of the mean function of the Gaussian
                                            Neural Network
@@ -51,19 +51,19 @@ class GaussianNeuralNetwork(RegressionApproximation):
 
     def __init__(
         self,
-        x_train,
-        y_train,
-        nn_model,
-        num_epochs,
-        optimizer_seed,
-        verbosity_on,
-        batch_size,
-        scaler_x,
-        scaler_y,
-        loss_plot_path,
-        refinement_epochs_decay,
-        mean_function,
-        gradient_mean_function,
+        num_epochs=None,
+        batch_size=None,
+        adams_training_rate=None,
+        optimizer_seed=None,
+        verbosity_on=None,
+        nodes_per_hidden_layer_lst=None,
+        activation_per_hidden_layer_lst=None,
+        kernel_initializer=None,
+        nugget_std=None,
+        loss_plot_path=False,
+        refinement_epochs_decay=0.75,
+        data_scaling=None,
+        mean_function_type="zero",
     ):
         """Initialize an instance of the Gaussian Bayesian Neural Network.
 
@@ -80,7 +80,7 @@ class GaussianNeuralNetwork(RegressionApproximation):
                                   (yes if provided). Plot will be saved at path location.
             scaler_x (obj): Data scaling object for input data
             scaler_y (obj): Data scaling object for output data
-            refinement_learning_rate_decay (float): Decrease of epochs in refinements
+            refinement_epochs_decay (float): Decrease of epochs in refinements
             mean_function (function): Mean function of the Gaussian Neural Network
             gradient_mean_function (function): Gradient of the mean function of the Gaussian
                                                Neural Network
@@ -88,52 +88,6 @@ class GaussianNeuralNetwork(RegressionApproximation):
         Returns:
             Instance of GaussianBayesianNeuralNetwork
         """
-        self.x_train = x_train
-        self.y_train = y_train
-        self.nn_model = nn_model
-        self.num_epochs = num_epochs
-        self.optimizer_seed = optimizer_seed
-        self.verbosity_on = verbosity_on
-        self.batch_size = batch_size
-        self.scaler_x = scaler_x
-        self.scaler_y = scaler_y
-        self.loss_plot_path = loss_plot_path
-        self.num_refinements = 0
-        self.refinement_epochs_decay = refinement_epochs_decay
-        self.mean_function = mean_function
-        self.gradient_mean_function = gradient_mean_function
-
-    @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary.
-
-        Args:
-            config (dict): Dictionary with problem description (input file)
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
-            approx_name (str):     Name of the approximation options in input file
-
-        Returns:
-            Tensorflow Bayesian neural network object
-        """
-        approx_options = config[approx_name]
-        num_epochs = approx_options.get('num_epochs')
-        batch_size = approx_options.get('batch_size')
-        adams_training_rate = approx_options.get('adams_training_rate')
-        optimizer_seed = approx_options.get('optimizer_seed')
-        verbosity_on = approx_options.get('verbosity_on')
-        nodes_per_hidden_layer = approx_options.get('nodes_per_hidden_layer_lst')
-        activation_per_hidden_layer = approx_options.get('activation_per_hidden_layer_lst')
-        kernel_initializer = approx_options.get('kernel_initializer')
-        nugget_std = approx_options.get('nugget_std')
-        loss_plot_path = approx_options.get("loss_plot_path", False)
-        refinement_epochs_decay = approx_options.get("refinement_epochs_decay", 0.75)
-
-        # get normalization bool
-        scaler_settings = config[approx_name].get("data_scaling")
-        scaler_obj_x = Scaler.from_config_create_scaler(scaler_settings)
-        scaler_obj_y = Scaler.from_config_create_scaler(scaler_settings)
-
         # check mean function and subtract from y_train
         valid_mean_function_types = {
             "zero": (lambda x: 0, lambda x: 0),
@@ -143,52 +97,45 @@ class GaussianNeuralNetwork(RegressionApproximation):
             ),
         }
 
-        mean_function_type = approx_options.get("mean_function_type", "zero")
         mean_function, gradient_mean_function = get_option(
             valid_mean_function_types, mean_function_type, "mean_function_type"
         )
-        y_train = y_train - mean_function(x_train)
 
-        scaler_obj_x.fit(x_train)
-        x_train = scaler_obj_x.transform(x_train)
-        scaler_obj_y.fit(y_train)
-        y_train = scaler_obj_y.transform(y_train)
+        self.nn_model = None
+        self.num_epochs = num_epochs
+        self.optimizer_seed = optimizer_seed
+        self.verbosity_on = verbosity_on
+        self.batch_size = batch_size
+        self.scaler_x = Scaler.from_config_create_scaler(data_scaling)
+        self.scaler_y = Scaler.from_config_create_scaler(data_scaling)
+        self.loss_plot_path = loss_plot_path
+        self.num_refinements = 0
+        self.refinement_epochs_decay = refinement_epochs_decay
+        self.mean_function = mean_function
+        self.gradient_mean_function = gradient_mean_function
 
-        nn_model = cls._build_model(
-            adams_training_rate,
-            nodes_per_hidden_layer,
-            activation_per_hidden_layer,
-            y_train,
-            kernel_initializer,
-            nugget_std,
-        )
-
-        return cls(
-            x_train,
-            y_train,
-            nn_model,
-            num_epochs,
-            optimizer_seed,
-            verbosity_on,
-            batch_size,
-            scaler_obj_x,
-            scaler_obj_y,
-            loss_plot_path,
-            refinement_epochs_decay,
-            mean_function,
-            gradient_mean_function,
-        )
+        self.adams_training_rate = adams_training_rate
+        self.nodes_per_hidden_layer = nodes_per_hidden_layer_lst
+        self.activation_per_hidden_layer = activation_per_hidden_layer_lst
+        self.kernel_initializer = kernel_initializer
+        self.nugget_std = nugget_std
 
     @classmethod
-    def _build_model(
-        cls,
-        adams_training_rate,
-        nodes_per_hidden_layer,
-        activation_per_hidden_layer,
-        y_train,
-        kernel_initializer,
-        nugget_std,
-    ):
+    def from_config_create_model(cls, model_name, config):
+        """Create simulation model from problem description.
+
+        Args:
+            model_name (string): Name of model
+            config (dict):       Dictionary containing problem description
+
+        Returns:
+            simulation_model: Instance of SimulationModels
+        """
+        model_options = config[model_name].copy()
+        model_options.pop('type')
+        return cls(**model_options)
+
+    def _build_model(self):
         """Build/compile the neural network.
 
         We use a regular densely connected
@@ -214,15 +161,17 @@ class GaussianNeuralNetwork(RegressionApproximation):
             model (obj): Tensorflow probability model instance
         """
         # hidden layers
-        output_dim = y_train.shape[1]
+        output_dim = self.y_train.shape[1]
 
         dense_architecture = [
             Dense(
                 int(num_nodes),
                 activation=activation,
-                kernel_initializer=kernel_initializer,
+                kernel_initializer=self.kernel_initializer,
             )
-            for num_nodes, activation in zip(nodes_per_hidden_layer, activation_per_hidden_layer)
+            for num_nodes, activation in zip(
+                self.nodes_per_hidden_layer, self.activation_per_hidden_layer
+            )
         ]
 
         # Gaussian output layer
@@ -234,7 +183,7 @@ class GaussianNeuralNetwork(RegressionApproximation):
             tfp.layers.DistributionLambda(
                 lambda d: tfd.Normal(
                     loc=d[..., :output_dim],
-                    scale=nugget_std + tf.math.softplus(0.1 * d[..., output_dim:]),
+                    scale=self.nugget_std + tf.math.softplus(0.1 * d[..., output_dim:]),
                 )
             ),
         ]
@@ -242,11 +191,11 @@ class GaussianNeuralNetwork(RegressionApproximation):
         model = tf.keras.Sequential(dense_architecture)
 
         # compile the Tensorflow model
-        optimizer = tf.optimizers.Adamax(learning_rate=adams_training_rate)
+        optimizer = tf.optimizers.Adamax(learning_rate=self.adams_training_rate)
 
         model.compile(
             optimizer=optimizer,
-            loss=cls.negative_log_likelihood,
+            loss=self.negative_log_likelihood,
         )
 
         return model
@@ -278,16 +227,25 @@ class GaussianNeuralNetwork(RegressionApproximation):
         self.x_train = np.vstack((self.x_train, x_train_new))
         self.y_train = np.vstack((self.y_train, y_train_new))
 
-    def train(self):
+    def train(self, x_train, y_train):
         """Train the Bayesian neural network.
 
         We ues the previous defined optimizers in the model build and configuration.
-        We allow tensorflow's early stopping here to stop the optimization routine when the loss-
+        We allow tensorflow's early stopping here to stop the optimization routine when the loss
         function starts to increase again over several iterations.
 
         Returns:
             None
         """
+        y_train = y_train - self.mean_function(x_train)
+
+        self.scaler_x.fit(x_train)
+        self.x_train = self.scaler_x.transform(x_train)
+        self.scaler_y.fit(y_train)
+        self.y_train = self.scaler_y.transform(y_train)
+
+        self.nn_model = self._build_model()
+
         # make epochs adaptive with a simple schedule, lower bound is 1/5 of the initial epoch
         if self.num_refinements > 0:
             self.num_epochs = int(

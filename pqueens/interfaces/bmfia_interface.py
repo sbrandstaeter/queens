@@ -1,5 +1,6 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
 
+import copy
 import logging
 import multiprocessing as mp
 import time
@@ -8,7 +9,7 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 from pqueens.utils.valid_options_utils import get_option
 
 from .interface import Interface
@@ -71,10 +72,13 @@ class BmfiaInterface(Interface):
         if z_lf_train.ndim != 3:
             raise IndexError("z_lf_train must be a 3d tensor!")
 
+        surrogate_model = from_config_create_model(approx_name, config)
         probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(
-                config, approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
-            )
+            {
+                "model": copy.deepcopy(surrogate_model),
+                "z_lf": np.atleast_2d(z_lf),
+                "y_hf": np.atleast_2d(y_hf).T,
+            }
             for (z_lf, y_hf) in (zip(z_lf_train.T, y_hf_train.T, strict=True))
         ]
 
@@ -119,8 +123,9 @@ class BmfiaInterface(Interface):
             )
 
         # loop over all time steps and instantiate the probabilistic mapping
+        surrogate_model = from_config_create_model(approx_name, config)
         probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(config, approx_name, z_lf, y_hf)
+            {"model": copy.deepcopy(surrogate_model), "z_lf": z_lf, "y_hf": y_hf}
             for (z_lf, y_hf) in (zip(z_lf_array, y_hf_array, strict=True))
         ]
 
@@ -176,7 +181,7 @@ class BmfiaInterface(Interface):
             if z_test_per_coordinate.ndim == 1:
                 z_test_per_coordinate = np.atleast_2d(z_test_per_coordinate).T
 
-            output = probabilistic_mapping_obj.predict(
+            output = probabilistic_mapping_obj["model"].predict(
                 z_test_per_coordinate,
                 support=support,
                 gradient_bool=False,
@@ -315,7 +320,7 @@ class BmfiaInterface(Interface):
         ):
             if z_test_per_coordinate.ndim == 1:
                 z_test_per_coordinate = np.atleast_2d(z_test_per_coordinate).T
-            output = probabilistic_mapping_obj.predict(
+            output = probabilistic_mapping_obj["model"].predict(
                 z_test_per_coordinate, support=support, gradient_bool=True
             )
 
@@ -712,9 +717,9 @@ class BmfiaInterface(Interface):
         t_s = time.time()
 
         num_map = len(self.probabilistic_mapping_obj_lst)
-        for num, probabilistic_model in enumerate(self.probabilistic_mapping_obj_lst):
+        for num, mapping in enumerate(self.probabilistic_mapping_obj_lst):
             _logger.info("Starting training of probabilistic mapping %d of %d...", num + 1, num_map)
-            probabilistic_model.train()
+            mapping["model"].train(mapping["z_lf"], mapping["y_hf"])
             _logger.info(
                 "Finished training of probabilistic mapping '%d' of '%d'!\n",
                 num + 1,
@@ -796,7 +801,8 @@ class BmfiaInterface(Interface):
         for optimized_state_dict, mapping in zip(
             optimized_mapping_states_lst, self.probabilistic_mapping_obj_lst, strict=True
         ):
-            mapping.set_state(optimized_state_dict)
+            mapping['model'].setup(mapping['z_lf'], mapping['y_hf'])
+            mapping['model'].set_state(optimized_state_dict)
 
     @staticmethod
     def _optimize_hyper_params(probabilistic_mapping):
@@ -809,8 +815,10 @@ class BmfiaInterface(Interface):
             optimized_mapping_state_dict (dict): Dictionary with optimized state of the trained
                                                  probabilistic regression model
         """
-        probabilistic_mapping.train()
-        optimized_mapping_state_dict = probabilistic_mapping.get_state()
+        probabilistic_mapping["model"].train(
+            probabilistic_mapping["z_lf"], probabilistic_mapping["y_hf"]
+        )
+        optimized_mapping_state_dict = probabilistic_mapping["model"].get_state()
         return optimized_mapping_state_dict
 
     @staticmethod
@@ -909,7 +917,7 @@ class BmfiaInterface(Interface):
         for z_test_per_time_step, probabilistic_mapping_obj in zip(
             z_lf_array, probabilistic_mapping_obj_lst, strict=True
         ):
-            output = probabilistic_mapping_obj.predict(
+            output = probabilistic_mapping_obj["model"].predict(
                 z_test_per_time_step, support=support, gradient_bool=gradient_bool
             )
             mean_y_hf_given_z_lf.append(output["mean"].flatten())

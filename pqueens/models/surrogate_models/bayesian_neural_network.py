@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 
 _logger = logging.getLogger(__name__)
 
@@ -16,14 +16,14 @@ tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
 tf.keras.backend.set_floatx('float64')
 
-# Use GPU acceleration if possible
+# Use GPU acceleration if possibles
 if tf.test.gpu_device_name() != '/device:GPU:0':
     _logger.info('WARNING: GPU device not found.')
 else:
     _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
-class GaussianBayesianNeuralNetwork(RegressionApproximation):
+class GaussianBayesianNeuralNetworkModel(SurrogateModel):
     """A Bayesian Neural network.
 
     Class for creating a Bayesian neural network with Gaussian conditional
@@ -50,132 +50,81 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
     def __init__(
         self,
-        x_train,
-        y_train,
-        num_posterior_samples,
-        num_samples_statistics,
-        bnn_model,
-        num_epochs,
-        optimizer_seed,
-        verbosity_on,
+        training_iterator,
+        testing_iterator=None,
+        eval_fit=None,
+        error_measures=None,
+        nash_sutcliffe_efficiency=False,
+        plotting_options=None,
+        num_posterior_samples=None,
+        num_samples_statistics=None,
+        adams_training_rate=None,
+        nodes_per_hidden_layer_lst=None,
+        activation_per_hidden_layer_lst=None,
+        num_epochs=None,
+        optimizer_seed=None,
+        verbosity_on=None,
     ):
         """Initialize an instance of the Gaussian Bayesian Neural Network.
 
         Args:
-            x_train (np.array): Training inputs
-            y_train (np.array): Training outputs
             num_posterior_samples (int): Number of posterior sample functions
             num_samples_statistics (int): Number of samples to approximate posterior statistics
-            bnn_model (obj): Tensorflow probability model instance
             num_epochs (int): Number of epochs used for variational training of the BNN
             optimizer_seed (int): Random seed for stochastic optimization routine
             verbosity_on (bool): Boolean for model verbosity during training. True=verbose
 
-
-
         Returns:
             Instance of GaussianBayesianNeuralNetwork
         """
-        self.x_train = x_train
-        self.y_train = y_train
+        super().__init__(
+            training_iterator=training_iterator,
+            testing_iterator=testing_iterator,
+            eval_fit=eval_fit,
+            error_measures=error_measures,
+            nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
+            plotting_options=plotting_options,
+        )
+        self.x_train = None
+        self.y_train = None
         self.num_posterior_samples = num_posterior_samples
         self.num_samples_statistics = num_samples_statistics
-        self.bnn_model = bnn_model
+        self.bnn_model = None
         self.num_epochs = num_epochs
         self.optimizer_seed = optimizer_seed
         self.verbosity_on = verbosity_on
         self.model_realizations_lst = None
+        self.adams_training_rate = adams_training_rate
+        self.nodes_per_hidden_layer_lst = nodes_per_hidden_layer_lst
+        self.activation_per_hidden_layer_lst = activation_per_hidden_layer_lst
 
-    @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary.
-
-        Args:
-            config (dict): Dictionary with problem description (input file)
-            approx_name (str):     Name of the approximation options in input file
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
-
-        Returns:
-            Tensorflow Bayesian neural network object
-        """
-        approx_options = config[approx_name]
-        num_posterior_samples = approx_options.get('num_posterior_samples', None)
-        num_samples_statistics = approx_options.get('num_samples_statistics', None)
-        num_epochs = approx_options.get('num_epochs')
-        adams_training_rate = approx_options.get('adams_training_rate')
-        optimizer_seed = approx_options.get('optimizer_seed')
-        verbosity_on = approx_options.get('verbosity_on')
-
-        nodes_per_hidden_layer_lst = approx_options.get('nodes_per_hidden_layer_lst')
-        activation_per_hidden_layer_lst = approx_options.get('activation_per_hidden_layer_lst')
-
-        bnn_model = cls._build_model(
-            x_train,
-            adams_training_rate,
-            nodes_per_hidden_layer_lst,
-            activation_per_hidden_layer_lst,
-        )
-
-        return cls(
-            x_train,
-            y_train,
-            num_posterior_samples,
-            num_samples_statistics,
-            bnn_model,
-            num_epochs,
-            optimizer_seed,
-            verbosity_on,
-        )
-
-    @classmethod
-    def _build_model(
-        cls,
-        x_train,
-        adams_training_rate,
-        nodes_per_hidden_layer_lst,
-        activation_per_hidden_layer_lst,
-    ):
+    def _build_model(self):
         """Build and compile the neural network.
 
-        Build/compile the Bayesian neural network. We use a regular densely
-        connected NN, which is parameterizing mean and variance of a Gaussian
-        distribution. The network can be arbitrary deep and wide and can use
-        different ( nonlinear) activation functions.
-
-        Args:
-            x_train (np.array): Input training points for the Bayesian Neural Network
-            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
-            nodes_per_hidden_layer_lst (lst): List containing number of nodes per hidden layer of
-                                              the Bayesian Neural Network. The length of the list
-                                              defines the deepness of the model and the values the
-                                              width of the individual layers.
-            activation_per_hidden_layer_lst (lst): List with strings encoding the activation
-                                                   function that shall be used for the
-                                                   respective hidden layer of the Bayesian Neural
-                                                   Network
-
-        Returns:
-            model (obj): Tensorflow probability model instance
+        Build/compile the Bayesian neural network. We use a regular
+        densely connected NN, which is parameterizing mean and variance
+        of a Gaussian distribution. The network can be arbitrary deep
+        and wide and can use different ( nonlinear) activation
+        functions.
         """
         dense_architecture = [
             DenseVar(
                 int(num_nodes),
-                cls.mean_field_variational_distribution,
-                cls.prior_trainable,
+                self.mean_field_variational_distribution,
+                self.prior_trainable,
                 activation=activation,
-                kl_weight=1 / x_train.shape[0],
+                kl_weight=1 / self.x_train.shape[0],
             )
             for num_nodes, activation in zip(
-                nodes_per_hidden_layer_lst, activation_per_hidden_layer_lst
+                self.nodes_per_hidden_layer_lst, self.activation_per_hidden_layer_lst
             )
         ]
         output_layer = [
             DenseVar(
                 2,
-                cls.mean_field_variational_distribution,
-                cls.prior_trainable,
-                kl_weight=1 / x_train.shape[0],
+                self.mean_field_variational_distribution,
+                self.prior_trainable,
+                kl_weight=1 / self.x_train.shape[0],
             ),
             tfp.layers.DistributionLambda(
                 lambda d: tfd.Normal(
@@ -184,14 +133,13 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
             ),
         ]
         dense_architecture.extend(output_layer)
-        model = tf.keras.Sequential(dense_architecture)
+        self.bnn_model = tf.keras.Sequential(dense_architecture)
 
         # compile the Tensorflow model
-        model.compile(
-            optimizer=tf.optimizers.Adam(learning_rate=adams_training_rate),
-            loss=cls.negative_log_likelihood,
+        self.bnn_model.compile(
+            optimizer=tf.optimizers.Adam(learning_rate=self.adams_training_rate),
+            loss=self.negative_log_likelihood,
         )
-        return model
 
     @staticmethod
     def negative_log_likelihood(y, rv_y):
@@ -279,7 +227,7 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         )
         return mean_field_variational_distr
 
-    def train(self):
+    def train(self, x_train, y_train):
         """Train the Bayesian neural network.
 
         Train the Bayesian neural network using the previous defined
@@ -288,6 +236,10 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         routine when the loss- function starts to increase again over
         several iterations.
         """
+        self.x_train = x_train
+        self.y_train = y_train
+        self._build_model()
+
         # set the random seeds for optimization/training
         np.random.seed(self.optimizer_seed)
         tf.random.set_seed(self.optimizer_seed)

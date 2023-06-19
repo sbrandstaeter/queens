@@ -294,7 +294,7 @@ def test_instantiate_per_coordinate(
     # test correct z_lf_train input dimensions
     z_lf_train = np.zeros((1, 2, 3))
     mp_1 = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.from_config_create_regression_approximation',
+        'pqueens.interfaces.bmfia_interface.from_config_create_model',
         return_value=dummy_reg_obj,
     )
     (
@@ -335,7 +335,7 @@ def test_instantiate_per_time_step(mocker):
         return_value=z_lf_array_out,
     )
     mp_3 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.from_config_create_regression_approximation",
+        "pqueens.interfaces.bmfia_interface.from_config_create_model",
         return_value=dummy_reg_obj,
     )
 
@@ -418,7 +418,7 @@ def test_set_optimized_state_of_probabilistic_mappings(
 ):
     """Test the state update of the mappings."""
     mocker.patch(
-        'pqueens.interfaces.bmfia_interface.from_config_create_regression_approximation',
+        'pqueens.interfaces.bmfia_interface.from_config_create_model',
         DummyRegression,
     )
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst

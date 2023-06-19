@@ -32,7 +32,7 @@ this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 
 
-def from_config_create(config, model_name=None):
+def from_config_create(plotting_options):
     """TODO_doc: add a one-line explanation.
 
     Module function that calls the class function *from_config_create* and
@@ -40,11 +40,10 @@ def from_config_create(config, model_name=None):
     description.
 
     Args:
-        config (dict): Dictionary containing the problem description
-        model_name (str): Name of model to identify right section in options dict (optional)
+        plotting_options (dict): Dictionary containing the plotting_options
     """
     this.surrogate_visualization_instance = SurrogateVisualization.from_config_create(
-        config, model_name=model_name
+        plotting_options
     )
 
 
@@ -104,25 +103,18 @@ class SurrogateVisualization:
         self.figures = {}
 
     @classmethod
-    def from_config_create(cls, config, model_name=None):
+    def from_config_create(cls, plotting_options):
         """TODO_doc: add a one-line explanation.
 
         Create the SurrogateVisualization object from the problem
         description.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            model_name (str): Name of model to identify right section in options dict
-                                 (optional)
+            plotting_options (dict): Dictionary containing the plotting_options
 
         Returns:
             Instance of SurrogateVisualization (obj)
         """
-        if model_name is None:
-            plotting_options = config["model_name"].get("plotting_options", None)
-        else:
-            plotting_options = config[model_name].get("plotting_options", None)
-
         if plotting_options:
             paths = [
                 Path(plotting_options.get("plotting_dir", None), name)
@@ -142,22 +134,23 @@ class SurrogateVisualization:
 
         return cls(saving_paths, save_plot, display_plot)
 
-    def plot(self, interface):
+    def plot(self, parameter_names, surrogate_model):
         """Call plotting methods for surrogate model.
 
         Args:
-            interface (ApproximationInterface object): Approximation interface
+            parameter_names (lst): Parameter names
+            surrogate_model (Model): Surrogate Model
 
         Returns:
             Plots of sensitivity indices
         """
-        self.parameter_names = interface.parameters.names
+        self.parameter_names = parameter_names
 
         if self.should_be_saved['1d'] or self.should_be_displayed['1d']:
-            self.plot_1d(interface.approximation)
+            self.plot_1d(surrogate_model)
 
         if self.should_be_saved['2d'] or self.should_be_displayed['2d']:
-            self.plot_2d(interface.approximation)
+            self.plot_2d(surrogate_model)
 
         # show all result plots in the end
         if any(self.should_be_displayed.values()) is True:

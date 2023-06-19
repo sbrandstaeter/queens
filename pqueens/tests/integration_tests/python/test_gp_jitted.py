@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
     gradient_sinus_test_fun,
@@ -51,8 +51,8 @@ def test_jitted_gp_one_dim(my_config):
 
     # -- squared exponential kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
-    my_model.train()
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.train(x_train, y_train)
 
     output = my_model.predict(x_test)
     mean = output['mean']
@@ -78,8 +78,8 @@ def test_jitted_gp_one_dim(my_config):
     # -- matern-3-2 kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
     my_config[approx_name]['kernel_type'] = 'matern_3_2'
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
-    my_model.train()
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.train(x_train, y_train)
 
     output = my_model.predict(x_test)
     mean = output['mean']
@@ -106,8 +106,8 @@ def test_jitted_gp_two_dim(my_config):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
-    my_model.train()
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.train(x_train, y_train)
 
     # evaluate the testing/benchmark function at testing inputs
     n_test = 25

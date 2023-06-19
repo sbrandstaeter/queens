@@ -5,8 +5,8 @@ import logging
 import numpy as np
 from scipy.linalg import cho_solve
 
-import pqueens.regression_approximations.utils.kernel_utils_jitted as utils_jitted
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+import pqueens.models.surrogate_models.utils.kernel_utils_jitted as utils_jitted
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.valid_options_utils import get_option
@@ -23,7 +23,7 @@ except FileNotFoundError:
         pass
 
 
-class GPJitted(RegressionApproximation):
+class GPJittedModel(SurrogateModel):
     """A jitted Gaussian process implementation using numba.
 
     It just-in-time compiles linear algebra operations.
@@ -32,8 +32,6 @@ class GPJitted(RegressionApproximation):
     marginalize the hyper-parameters.
 
     Attributes:
-        x_train_vec: Training inputs for the GP.
-        y_train_vec (np.array): Training outputs for the GP.
         k_mat_inv (np.array): Inverse of the assembled covariance matrix.
         cholesky_k_mat (np.array): Lower Cholesky decomposition of the covariance matrix.
         k_mat (np.array): Assembled covariance matrix of the GP.
@@ -73,23 +71,17 @@ class GPJitted(RegressionApproximation):
 
     def __init__(
         self,
-        x_train_vec,
-        y_train_vec,
-        mean_function,
-        gradient_mean_function,
         stochastic_optimizer,
-        scaler_x,
-        scaler_y,
-        hyper_params,
-        noise_variance_lower_bound,
-        plot_refresh_rate,
-        kernel_type,
+        initial_hyper_params_lst=None,
+        kernel_type=None,
+        data_scaling=None,
+        mean_function_type="zero",
+        plot_refresh_rate=None,
+        noise_var_lb=None,
     ):
         """Instantiate the jitted Gaussian Process.
 
         Args:
-            x_train_vec: Training inputs for the GP.
-            y_train_vec (np.array): Training outputs for the GP.
             mean_function (function): Mean function of the GP
             gradient_mean_function (function): Gradient of the mean function of the GP
             stochastic_optimizer (obj): Stochastic optimizer object.
@@ -101,8 +93,32 @@ class GPJitted(RegressionApproximation):
             plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
             kernel_type (str): Type of kernel used in the GP
         """
-        self.x_train_vec = x_train_vec
-        self.y_train_vec = y_train_vec
+        if initial_hyper_params_lst is None:
+            raise ValueError("The initial hyper-parameters were not provided!")
+
+        if kernel_type is None:
+            raise ValueError(
+                "You did not specify a valid kernel! Valid kernels are "
+                f"{GPJittedModel.valid_kernels_dict.keys()}, but you specified "
+                f"{kernel_type}."
+            )
+
+        scaler_x = Scaler.from_config_create_scaler(data_scaling)
+        scaler_y = Scaler.from_config_create_scaler(data_scaling)
+
+        # check mean function and subtract from y_train
+        valid_mean_function_types = {
+            "zero": (GPJittedModel.zero_mean_fun, GPJittedModel.gradient_zero_mean_fun),
+            "identity_multi_fidelity": (
+                GPJittedModel.identity_multi_fidelity_mean_fun,
+                GPJittedModel.gradient_identity_multi_fidelity_mean_fun,
+            ),
+        }
+
+        mean_function, gradient_mean_function = get_option(
+            valid_mean_function_types, mean_function_type
+        )
+
         self.k_mat_inv = None
         self.cholesky_k_mat = None
         self.k_mat = None
@@ -113,87 +129,28 @@ class GPJitted(RegressionApproximation):
         self.scaler_x = scaler_x
         self.scaler_y = scaler_y
         self.grad_log_evidence_value = None
-        self.hyper_params = hyper_params
-        self.noise_variance_lower_bound = noise_variance_lower_bound
+        self.hyper_params = initial_hyper_params_lst
+        self.noise_variance_lower_bound = noise_var_lb
         self.plot_refresh_rate = plot_refresh_rate
         self.kernel_type = kernel_type
 
     @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Instantiate class GPJitted from problem description.
+    def from_config_create_model(cls, model_name, config):
+        """Create simulation model from problem description.
 
         Args:
-            config (dict): Problem description of the QUEENS analysis
-            approx_name (str): Name of the regression model in input file
-            x_train (np.array): Input training data for the regression model
-            y_train (np.array): Output training data for the regression model
+            model_name (string): Name of model
+            config (dict):       Dictionary containing problem description
 
         Returns:
-            Instance of GPJitted class
+            simulation_model: Instance of GPJittedModel
         """
-        # get the initial hyper-parameters
-        approx_options = config[approx_name]
-        hyper_params_lst = approx_options.get('initial_hyper_params_lst', None)
-        if hyper_params_lst is None:
-            raise ValueError("The hyper-parameters were not initialized in the input file!")
-
-        kernel_type = approx_options.get('kernel_type')
-        if kernel_type is None:
-            raise ValueError(
-                "You did not specify a valid kernel! Valid kernels are "
-                f"{GPJitted.valid_kernels_dict.keys()}, but you specified "
-                f"{kernel_type}."
-            )
-
-        # get normalization / scaling options
-        scaler_settings = approx_options.get("data_scaling")
-        scaler_x = Scaler.from_config_create_scaler(scaler_settings)
-        scaler_y = Scaler.from_config_create_scaler(scaler_settings)
-
-        # check mean function and subtract from y_train
-        valid_mean_function_types = {
-            "zero": (GPJitted.zero_mean_fun, GPJitted.gradient_zero_mean_fun),
-            "identity_multi_fidelity": (
-                GPJitted.identity_multi_fidelity_mean_fun,
-                GPJitted.gradient_identity_multi_fidelity_mean_fun,
-            ),
-        }
-
-        mean_function_type = approx_options.get("mean_function_type", "zero")
-        mean_function, gradient_mean_function = get_option(
-            valid_mean_function_types, mean_function_type
-        )
-        y_train = y_train - mean_function(x_train)
-
-        # scale the data
-        scaler_x.fit(x_train.T)
-        x_train = scaler_x.transform(x_train.T).T
-        scaler_y.fit(y_train)
-        y_train = scaler_y.transform(y_train)
-
-        # configure the stochastic optimizer and iterative averaging
-        stochastic_optimizer_name = config[approx_name].get("stochastic_optimizer_name")
+        model_options = config[model_name].copy()
+        model_options.pop('type')
+        stochastic_optimizer_name = model_options.pop("stochastic_optimizer_name")
         stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
 
-        # get the plot refresh rate
-        plot_refresh_rate = config[approx_name].get("plot_refresh_rate", None)
-
-        # get lower bound for Gaussian noise variance in RB kernel
-        noise_var_lb = config[approx_name].get("noise_var_lb")
-
-        return cls(
-            x_train,
-            y_train,
-            mean_function,
-            gradient_mean_function,
-            stochastic_optimizer,
-            scaler_x,
-            scaler_y,
-            hyper_params_lst,
-            noise_var_lb,
-            plot_refresh_rate,
-            kernel_type,
-        )
+        return cls(stochastic_optimizer=stochastic_optimizer, **model_options)
 
     def log_evidence(self):
         """Log evidence/log marginal likelihood of the GP.
@@ -203,18 +160,29 @@ class GPJitted(RegressionApproximation):
                                   hyper-parameters
         """
         log_evidence = (
-            -0.5 * np.dot(np.dot(self.y_train_vec.T, self.k_mat_inv), self.y_train_vec)
+            -0.5 * np.dot(np.dot(self.y_train.T, self.k_mat_inv), self.y_train)
             - (np.sum(np.log(np.diag(self.cholesky_k_mat))))
             - self.k_mat.shape[0] / 2 * np.log(2 * np.pi)
         )
         return log_evidence.flatten()
 
-    def train(self):
+    def setup(self, x_train, y_train):
+        y_train = y_train - self.mean_function(x_train)
+
+        # scale the data
+        self.scaler_x.fit(x_train.T)
+        self.x_train = self.scaler_x.transform(x_train.T).T
+        self.scaler_y.fit(y_train)
+        self.y_train = self.scaler_y.transform(y_train)
+
+    def train(self, x_train, y_train):
         """Train the Gaussian Process.
 
         Training is conducted by maximizing the evidence/marginal
         likelihood by minimizing the negative log evidence.
         """
+        self.setup(x_train, y_train)
+
         # initialize hyper-parameters and associated linear algebra
         x_0 = np.log(np.array(self.hyper_params))
         hyper_params = self.hyper_params  # Store hyper_params outside the loop
@@ -230,8 +198,8 @@ class GPJitted(RegressionApproximation):
         def gradient_fn(param_vec):
             return grad_log_evidence(
                 param_vec,
-                self.y_train_vec,
-                self.x_train_vec,
+                self.y_train,
+                self.x_train,
                 self.k_mat_inv,
                 self.partial_derivatives_hyper_params,
             )
@@ -309,11 +277,11 @@ class GPJitted(RegressionApproximation):
         Returns:
             jitted_kernel (obj): Jitted kernel method.
         """
-        jitted_kernel = GPJitted.valid_kernels_dict.get(self.kernel_type)
+        jitted_kernel = GPJittedModel.valid_kernels_dict.get(self.kernel_type)
         if jitted_kernel is None:
             raise ValueError(
                 "You did not specify a valid kernel type in the input file!"
-                f"Valid kernel types are {GPJitted.valid_kernels_dict.keys()} "
+                f"Valid kernel types are {GPJittedModel.valid_kernels_dict.keys()} "
                 f"but you specified {self.kernel_type}."
                 "Abort..."
             )
@@ -336,7 +304,7 @@ class GPJitted(RegressionApproximation):
             self.k_mat,
             self.cholesky_k_mat,
             self.partial_derivatives_hyper_params,
-        ) = jitted_kernel(self.x_train_vec, self.hyper_params)
+        ) = jitted_kernel(self.x_train, self.hyper_params)
 
         # get inverse by solving an equation system with cholesky
         identity = np.eye(self.k_mat.shape[0])
@@ -376,15 +344,15 @@ class GPJitted(RegressionApproximation):
         posterior_mean_test_vec = posterior_mean_fun(
             self.k_mat_inv,
             x_test_transformed,
-            self.x_train_vec,
-            self.y_train_vec.flatten(),
+            self.x_train,
+            self.y_train.flatten(),
             self.hyper_params,
         )
 
         var = posterior_covariance_fun(
             self.k_mat_inv,
             x_test_transformed,
-            self.x_train_vec,
+            self.x_train,
             self.hyper_params,
             support,
         )
@@ -406,14 +374,14 @@ class GPJitted(RegressionApproximation):
             grad_post_mean_test_mat = grad_posterior_mean_fun(
                 self.k_mat_inv,
                 x_test_transformed,
-                self.x_train_vec,
-                self.y_train_vec,
+                self.x_train,
+                self.y_train,
                 self.hyper_params,
             )
             grad_post_var_test_vec = grad_posterior_var_fun(
                 self.k_mat_inv,
                 x_test_transformed,
-                self.x_train_vec,
+                self.x_train,
                 self.hyper_params,
             )
             output["grad_mean"] = self.scaler_y.inverse_transform_grad_mean(

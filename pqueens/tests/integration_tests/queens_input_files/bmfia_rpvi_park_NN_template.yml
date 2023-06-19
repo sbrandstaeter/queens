@@ -44,20 +44,16 @@ model:
     plotting_dir: {{ plot_dir }}
     save_bool: [false, false]
 mf_approx:
-  seed: 1
   type: gaussian_nn
   activation_per_hidden_layer_lst: [elu, elu]
   adams_training_rate: 0.001
   data_scaling:
     type: standard_scaler
-  max_iterations: 100
   nodes_per_hidden_layer_lst: [5, 5]
   nugget_std: 1.0e-05
   num_epochs: 1
-  num_refinement_samples: 50
   optimizer_seed: 42
   refinement_epochs_decay: 0.7
-  rel_L2_change_threshold: 1.0e-04
   verbosity_on: true
 bmfia_interface:
   type: bmfia

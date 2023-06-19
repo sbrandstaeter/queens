@@ -25,13 +25,16 @@ class FakeRegression:
 
 
 @pytest.fixture()
-def config():
+def config(approx_name):
     """Create dummy config for testing."""
     config = {
-        "type": "gp_approximation_gpy",
-        "features_config": "opt_features",
-        "num_features": 1,
-        "X_cols": 1,
+        approx_name: {"surrogate_model_name": "gp"},
+        "gp": {
+            "type": "gp_approximation_gpy",
+            "features_config": "opt_features",
+            "num_features": 1,
+            "X_cols": 1,
+        },
     }
     return config
 
@@ -76,11 +79,6 @@ def test_init(config, approx_name):
 
 def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_dict):
     """Test mapping."""
-    mocker.patch(
-        "pqueens.regression_approximations.regression_approximation.RegressionApproximation",
-        return_value=FakeRegression,
-    )
-
     Z_LF = 1.0
     expected_Y_HF_mean = map_output_dict['mean']
     expected_Y_HF_var = map_output_dict['variance']
@@ -100,7 +98,7 @@ def test_build_approximation(mocker, default_interface):
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
     mp1 = mocker.patch(
-        'pqueens.interfaces.bmfmc_interface.from_config_create_regression_approximation',
+        'pqueens.interfaces.bmfmc_interface.from_config_create_model',
         return_value=FakeRegression,
     )
     mp2 = mocker.patch(

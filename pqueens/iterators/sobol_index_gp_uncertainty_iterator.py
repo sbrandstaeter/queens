@@ -93,7 +93,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         index_estimator = estimator_method.from_config_create(
             additional_options, self.parameters.names
         )
-        predictor = Predictor.from_config_create(additional_options, model.interface)
+        predictor = Predictor.from_config_create(additional_options, model)
 
         statistics = []
         if third_order:

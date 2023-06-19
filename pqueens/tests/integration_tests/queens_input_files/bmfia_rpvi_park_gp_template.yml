@@ -71,7 +71,6 @@ mf_approx:
   kernel_type: squared_exponential
   noise_var_lb: 1.0e-06
   mean_function_type: identity_multi_fidelity
-  random_seed: 1
   stochastic_optimizer_name: gp_optimizer
 bmfia_interface:
   type: bmfia

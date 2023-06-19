@@ -41,7 +41,6 @@ mf_approx:
     type: standard_scaler
   initial_hyper_params_lst: [0.05, 1.0, 0.05]
   mean_function_type: identity_multi_fidelity
-  random_seed: 1
 bmfia_interface:
   type: bmfia
   num_processors_multi_processing: 4

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
     gradient_sinus_test_fun,
@@ -25,7 +25,6 @@ def my_config():
             "optimizer_seed": 42,
             "data_scaling": {"type": "standard_scaler"},
             "nugget_std": 1.0e-02,
-            "num_processors_multi_processing": 1,
             "verbosity_on": False,
         },
     }
@@ -39,8 +38,8 @@ def test_gaussian_nn_one_dim(my_config):
     x_train = np.linspace(-5, 5, n_train).reshape(-1, 1)
     y_train = sinus_test_fun(x_train)
 
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
-    my_model.train()
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.train(x_train, y_train)
 
     # evaluate the testing/benchmark function at testing inputs
     x_test = np.linspace(-5, 5, 200).reshape(-1, 1)
@@ -83,8 +82,8 @@ def test_gaussian_nn_two_dim(my_config):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
-    my_model.train()
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.train(x_train, y_train)
 
     # evaluate the testing/benchmark function at testing inputs
     n_test = 25
