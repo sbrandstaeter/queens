@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Test points iterator."""
 
 import pickle
 
