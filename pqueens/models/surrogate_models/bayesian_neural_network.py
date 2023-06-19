@@ -34,8 +34,6 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
     distribution, the network is able to handle epistemic and aleatory uncertainty.
 
     Attributes:
-        x_train (np.array): Training inputs.
-        y_train (np.array): Training outputs.
         num_posterior_samples (int): Number of posterior sample functions (realizations of
                                      Bayesian neural network).
         num_samples_statistics (int): Number of samples to approximate posterior statistics.
@@ -46,11 +44,19 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         verbosity_on (bool): Boolean for model verbosity during training (*True=verbose*).
         model_realizations_lst (lst): List with different neural network realizations
                                       (epistemic uncertainty).
+        adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
+        nodes_per_hidden_layer_lst (lst): List containing number of nodes per hidden layer of the
+                                          Bayesian Neural Network. The length of the list defines
+                                          the deepness of the model and the values the width of the
+                                          individual layers.
+        activation_per_hidden_layer_lst (lst): List with strings encoding the activation function
+                                               that shall be used for the respective hidden layer of
+                                               the Bayesian Neural Network
     """
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -68,8 +74,25 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         """Initialize an instance of the Gaussian Bayesian Neural Network.
 
         Args:
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
             num_posterior_samples (int): Number of posterior sample functions
             num_samples_statistics (int): Number of samples to approximate posterior statistics
+            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
+            nodes_per_hidden_layer_lst (lst): List containing number of nodes per hidden layer of
+                                              the Bayesian Neural Network. The length of the list
+                                              defines the deepness of the model and the values the
+                                              width of the individual layers.
+            activation_per_hidden_layer_lst (lst): List with strings encoding the activation
+                                                   function that shall be used for the
+                                                   respective hidden layer of the Bayesian Neural
+                                                   Network
             num_epochs (int): Number of epochs used for variational training of the BNN
             optimizer_seed (int): Random seed for stochastic optimization routine
             verbosity_on (bool): Boolean for model verbosity during training. True=verbose
@@ -85,8 +108,6 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
-        self.x_train = None
-        self.y_train = None
         self.num_posterior_samples = num_posterior_samples
         self.num_samples_statistics = num_samples_statistics
         self.bnn_model = None
@@ -235,6 +256,10 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         Tensorflow's early stopping here to stop the optimization
         routine when the loss- function starts to increase again over
         several iterations.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
         self.x_train = x_train
         self.y_train = y_train

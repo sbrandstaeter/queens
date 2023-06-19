@@ -28,8 +28,6 @@ class GPFlowRegressionModel(SurrogateModel):
     This class constructs a GP regression, using a GPFlow model.
 
     Attributes:
-        x_train (np.ndarray): Training inputs.
-        y_train (np.ndarray): Training outputs.
         number_posterior_samples (int): Number of posterior samples.
         number_restarts (int): Number of restarts.
         number_training_iterations (int): Number of iterations in optimizer for training.
@@ -38,6 +36,7 @@ class GPFlowRegressionModel(SurrogateModel):
         restart_max_value (int): Maximum value for restart.
         model (GPFlow.models.GPR): GPFlow based Gaussian process model.
         dimension_lengthscales (int): Dimension of *lengthscales*.
+        train_likelihood_variance (bool): if true, likelihood variance is trained
         scaler_x (sklearn scaler object): Scaler for inputs.
         scaler_y (sklearn scaler object): Scaler for outputs.
     """
@@ -58,15 +57,24 @@ class GPFlowRegressionModel(SurrogateModel):
         dimension_lengthscales=None,
         train_likelihood_variance=True,
     ):
-        """TODO_doc.
+        """Initialize an instance of the GPFlow regression model.
 
         Args:
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
             number_posterior_samples (int): Number of posterior samples
             restart_min_value (int): Minimum value for restart
             restart_max_value (int): Maximum value for restart
             number_restarts (int): Number of restarts
             number_training_iterations (int): Number of iterations in optimizer for training
             dimension_lengthscales (int): Dimension of lengthscales
+            train_likelihood_variance (bool): if true, likelihood variance is trained
         """
         super().__init__(
             training_iterator=training_iterator,
@@ -89,7 +97,12 @@ class GPFlowRegressionModel(SurrogateModel):
         self.scaler_y = None
 
     def train(self, x_train, y_train):
-        """Train the GP by maximizing the likelihood."""
+        """Train the GP by maximizing the likelihood.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
         if len(x_train.shape) == 1:
             self.number_input_dimensions = 1
         else:

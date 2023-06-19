@@ -6,7 +6,6 @@ import GPy
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from pqueens.iterators import from_config_create_iterator
 from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 from pqueens.models.surrogate_models.utils.gpy_kernels import get_gpy_kernel_type
 
@@ -19,16 +18,17 @@ class GPGPyRegressionModel(SurrogateModel):
     This class constructs a GP regression using a GPy model.
 
     Attributes:
-        x_train (np.array): Training inputs.
-        y_train (np.array): Training outputs.
         scaler_x (sklearn scaler object): Scaler for inputs.
         number_posterior_samples (int): Number of posterior samples.
         number_input_dimensions: TODO_doc
         model (Gpy.model): GPy based Gaussian process model.
         seed_optimizer (int): Seed for optimizer for training the GP.
         seed_posterior_samples (int): Seed for posterior samples.
-        number_restarts: TODO_doc
-        number_optimizer_iterations: TODO_doc
+        number_restarts (int): Number of restarts for optimization
+        number_optimizer_iterations (int): Number of optimizer iterations
+        ard (bool): if true, automatic relevance determination (ARD) is activated
+        kernel_type (str): Kernel type
+        normalize_y (bool): if true, output values are normalized
     """
 
     def __init__(
@@ -48,14 +48,25 @@ class GPGPyRegressionModel(SurrogateModel):
         number_optimizer_iterations=1000,
         normalize_y=True,
     ):
-        """TODO_doc.
+        """Initialize an instance of the GPy regression model.
 
         Args:
-            num_posterior_samples: TODO_doc
-            seed_optimizer: TODO_doc
-            seed_posterior_samples: TODO_doc
-            num_restart: TODO_doc
-            number_optimizer_iterations: TODO_doc
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
+            num_posterior_samples (int): Number of posterior samples
+            ard (bool): if true, automatic relevance determination (ARD) is activated
+            kernel_type (str): Kernel type
+            seed_optimizer (int): Seed for optimizer for training the GP.
+            seed_posterior_samples (int): Seed for posterior samples.
+            num_restart (int): Number of restarts for optimization
+            number_optimizer_iterations (int): Number of optimizer iterations
+            normalize_y (bool): if true, output values are normalized
         """
         super().__init__(
             training_iterator=training_iterator,
@@ -65,8 +76,6 @@ class GPGPyRegressionModel(SurrogateModel):
             nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
-        self.x_train = None
-        self.y_train = None
         self.scaler_x = None
         self.number_posterior_samples = num_posterior_samples
         self.number_input_dimensions = None
@@ -80,7 +89,12 @@ class GPGPyRegressionModel(SurrogateModel):
         self.normalize_y = normalize_y
 
     def train(self, x_train, y_train):
-        """Train the GP by maximizing the likelihood."""
+        """Train the GP by maximizing the likelihood.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
         # input dimension
         if len(x_train.shape) == 1:
             self.number_input_dimensions = 1

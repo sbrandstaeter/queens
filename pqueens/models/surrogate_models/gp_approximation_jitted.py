@@ -82,16 +82,13 @@ class GPJittedModel(SurrogateModel):
         """Instantiate the jitted Gaussian Process.
 
         Args:
-            mean_function (function): Mean function of the GP
-            gradient_mean_function (function): Gradient of the mean function of the GP
             stochastic_optimizer (obj): Stochastic optimizer object.
-            scaler_x (obj): Scaler for inputs.
-            scaler_y (obj): Scaler for outputs.
-            hyper_params (lst): List of hyper parameters
-            noise_variance_lower_bound (float): Lower bound for Gaussian noise variance in RBF
-                                                kernel.
-            plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
+            initial_hyper_params_lst (list): List of initial hyper-parameters
             kernel_type (str): Type of kernel used in the GP
+            data_scaling (dict): Description for scaling object
+            mean_function_type (str): Mean function type of the GP
+            plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
+            noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel.
         """
         if initial_hyper_params_lst is None:
             raise ValueError("The initial hyper-parameters were not provided!")
@@ -180,6 +177,10 @@ class GPJittedModel(SurrogateModel):
 
         Training is conducted by maximizing the evidence/marginal
         likelihood by minimizing the negative log evidence.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
         self.setup(x_train, y_train)
 

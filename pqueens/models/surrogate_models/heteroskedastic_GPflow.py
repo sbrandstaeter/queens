@@ -30,12 +30,11 @@ class HeteroskedasticGPModel(SurrogateModel):
     The basic idea of this latent variable GP model can be found in [1-3].
 
     Attributes:
-        x_train (np.array): Training inputs.
-        y_train (np.array): Training outputs.
         num_posterior_samples (int): Number of posterior GP samples (realizations of posterior GP).
         num_inducing_points (int): Number of inducing points for variational GPs.
         model (gpf.model):  Gpflow based heteroskedastic Gaussian process model.
         optimizer (obj): Tensorflow optimization object.
+        adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
         num_epochs (int): Number of training epochs for variational optimization.
         random_seed (int): Random seed used for initialization of stochastic gradient decent
                               optimizer.
@@ -72,9 +71,18 @@ class HeteroskedasticGPModel(SurrogateModel):
         """Initialize an instance of the Heteroskedastic GPflow class.
 
         Args:
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
             num_posterior_samples: Number of posterior GP samples
             num_inducing_points: Number of inducing points for variational GP approximation
             num_epochs (int): Number of epochs used for variational training of the GP
+            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
             random_seed (int): Random seed for stochastic optimization routine and samples
             num_samples_stats (int): Number of samples used to calculate empirical
                                      variance/covariance
@@ -94,8 +102,6 @@ class HeteroskedasticGPModel(SurrogateModel):
                 "reliable results or not a valid input. Please provide a valide integrer input "
                 "greater than 100. Abort ..."
             )
-        self.x_train = None
-        self.y_train = None
         self.num_posterior_samples = num_posterior_samples
         self.num_inducing_points = num_inducing_points
         self.model = None
@@ -111,6 +117,10 @@ class HeteroskedasticGPModel(SurrogateModel):
 
         Train the variational by minimizing the variational loss in
         variational EM step.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
         self.x_train = x_train
         self.y_train = y_train

@@ -31,8 +31,6 @@ class GaussianNeuralNetworkModel(SurrogateModel):
     The network can handle heteroskedastic noise and an arbitrary nonlinear functions.
 
     Attributes:
-        x_train (np.array): Training inputs
-        y_train (np.array): Training outputs
         nn_model (tf.model):  Tensorflow based Bayesian neural network model
         num_epochs (int): Number of training epochs for variational optimization
         optimizer_seed (int): Random seed used for initialization of stochastic gradient decent
@@ -43,10 +41,22 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         scaler_y (obj): Scaler for outputs
         loss_plot_path (str): Path to determine whether loss plot should be produced
                               (yes if provided). Plot will be saved at path location.
+        num_refinements (int): Number of refinements
         refinement_epochs_decay (float): Decrease of epochs in refinements
         mean_function (function): Mean function of the Gaussian Neural Network
         gradient_mean_function (function): Gradient of the mean function of the Gaussian
                                            Neural Network
+        adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
+        nodes_per_hidden_layer (lst): List containing number of nodes per hidden layer of
+                                      the Neural Network. The length of the list
+                                      defines the deepness of the model and the values the
+                                      width of the individual layers.
+        activation_per_hidden_layer (list): List with strings encoding the activation
+                                            function that shall be used for the
+                                            respective hidden layer of the  Neural
+                                            Network
+        kernel_initializer (str): Type of kernel initialization for neural network
+        nugget_std (float): Nugget standard deviation for robustness
     """
 
     def __init__(
@@ -68,22 +78,26 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         """Initialize an instance of the Gaussian Bayesian Neural Network.
 
         Args:
-            x_train (np.array): Training inputs
-            y_train (np.array): Training outputs
-            num_posterior_samples (int): Number of posterior sample functions
-            nn_model (obj): Tensorflow probability model instance
             num_epochs (int): Number of epochs used for variational training of the BNN
+            batch_size (int): Size of data-batch (smaller than the training data size)
+            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
             optimizer_seed (int): Random seed for stochastic optimization routine
             verbosity_on (bool): Boolean for model verbosity during training. True=verbose
-            batch_size (int): Size of data-batch (smaller than the training data size)
+            nodes_per_hidden_layer_lst (lst): List containing number of nodes per hidden layer of
+                                          the Neural Network. The length of the list
+                                          defines the deepness of the model and the values the
+                                          width of the individual layers.
+            activation_per_hidden_layer_lst (list): List with strings encoding the activation
+                                                function that shall be used for the
+                                                respective hidden layer of the  Neural
+                                                Network
+            kernel_initializer (str): Type of kernel initialization for neural network
+            nugget_std (float): Nugget standard deviation for robustness
             loss_plot_path (str): Path to determine whether loss plot should be produced
                                   (yes if provided). Plot will be saved at path location.
-            scaler_x (obj): Data scaling object for input data
-            scaler_y (obj): Data scaling object for output data
             refinement_epochs_decay (float): Decrease of epochs in refinements
-            mean_function (function): Mean function of the Gaussian Neural Network
-            gradient_mean_function (function): Gradient of the mean function of the Gaussian
-                                               Neural Network
+            data_scaling (dict): Description for data scaling object
+            mean_function_type (str): Mean function type of the Gaussian Neural Network
 
         Returns:
             Instance of GaussianBayesianNeuralNetwork
@@ -142,20 +156,6 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         NN, which is parameterizing mean and variance of a Gaussian
         distribution. The network can be arbitrary deep and wide and can use
         different (nonlinear) activation functions.
-
-        Args:
-            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
-            nodes_per_hidden_layer (lst): List containing number of nodes per hidden layer of
-                                          the Neural Network. The length of the list
-                                          defines the deepness of the model and the values the
-                                          width of the individual layers.
-            activation_per_hidden_layer (list): List with strings encoding the activation
-                                                function that shall be used for the
-                                                respective hidden layer of the  Neural
-                                                Network
-            y_train (np.array): training output array
-            kernel_initializer (str): Type of kernel initialization for neural network
-            nugget_std (float): Nugget standard deviation for robustness
 
         Returns:
             model (obj): Tensorflow probability model instance
@@ -234,8 +234,9 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         We allow tensorflow's early stopping here to stop the optimization routine when the loss
         function starts to increase again over several iterations.
 
-        Returns:
-            None
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
         y_train = y_train - self.mean_function(x_train)
 

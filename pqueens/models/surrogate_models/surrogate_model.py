@@ -16,11 +16,14 @@ class SurrogateModel(Model):
     """Surrogate model class.
 
     Attributes:
-        training_iterator: TODO_doc
-        testing_iterator: TODO_doc
-        eval_fit: TODO_doc
-        error_measures: TODO_doc
-        nash_sutcliffe_efficiency: TODO_doc
+        training_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of getting training data
+        testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of getting testing data
+        eval_fit (str): How to evaluate goodness of fit
+        error_measures (list): List of error measures to compute
+        nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+        is_trained (bool): true if model is trained
+        x_train (np.array): training inputs
+        y_train (np.array): training outputs
     """
 
     def __init__(
@@ -35,15 +38,14 @@ class SurrogateModel(Model):
         """Initialize data fit.
 
         Args:
-            training_iterator (Iterator): Iterator to evaluate the subordinate
-                                             model with the purpose of getting
-                                             training data
-            testing_iterator (Iterator): Iterator to evaluate the subordinate
-                                         model with the purpose of getting
-                                         testing data
-            eval_fit (str):                 How to evaluate goodness of fit
-            error_measures (list):          List of error measures to compute
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
         """
         super().__init__()
         if testing_iterator is None:
@@ -57,7 +59,7 @@ class SurrogateModel(Model):
         self.eval_fit = eval_fit
         self.error_measures = error_measures
         self.nash_sutcliffe_efficiency = nash_sutcliffe_efficiency
-        self.is_initialized = False
+        self.is_trained = False
         self.x_train = None
         self.y_train = None
 
@@ -67,10 +69,10 @@ class SurrogateModel(Model):
 
         Args:
             model_name (string): Name of model
-            config (dict):       Dictionary containing problem description
+            config (dict): Dictionary containing problem description
 
         Returns:
-            simulation_model: Instance of SimulationModel
+            Instance of SurrogateModel
         """
         model_options = config[model_name].copy()
         model_options.pop('type')
@@ -89,21 +91,25 @@ class SurrogateModel(Model):
         )
 
     def evaluate(self, samples):
-        """Evaluate model with current set of variables.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples: TODO_doc
+            samples (np.ndarray): Input samples
 
         Returns:
-            np.array: Results corresponding to current set of variables
+            dict: Results corresponding to current set of input samples
         """
-        if not self.is_initialized:
+        if not self.is_trained:
             self.build_approximation()
 
         self.response = self.predict(samples)
         return self.response
 
     def grad(self, samples, upstream_gradient):
+        """Evaluate gradient of model w.r.t.
+
+        current set of input samples.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -112,7 +118,12 @@ class SurrogateModel(Model):
 
     @abc.abstractmethod
     def train(self, x_train, y_train):
-        """Train."""
+        """Train surrogate model.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
 
     def build_approximation(self):
         """Build underlying approximation."""
@@ -131,7 +142,7 @@ class SurrogateModel(Model):
 
         # train regression model on the data
         self.train(x_train, y_train)
-        self.is_initialized = True
+        self.is_trained = True
 
         # TODO: Passing self is ugly
         qvis.surrogate_visualization_instance.plot(self.training_iterator.parameters.names, self)
@@ -159,7 +170,7 @@ class SurrogateModel(Model):
         Returns:
             dict: Dictionary with proving error metrics
         """
-        if not self.is_initialized:
+        if not self.is_trained:
             raise RuntimeError("Cannot compute accuracy on uninitialized model")
 
         response = self.predict(x_test)

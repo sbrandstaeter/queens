@@ -27,8 +27,6 @@ class GPflowSVGPModel(SurrogateModel):
         https://proceedings.mlr.press/v38/hensman15.html
 
     Attributes:
-        x_train (np.ndarray): Training inputs.
-        y_train (np.ndarray): Training outputs.
         number_posterior_samples (int): Number of posterior samples.
         mini_batch_size (int): Minibatch size to speed up computation of ELBO.
         number_training_iterations (int): Number of iterations in optimizer for training.
@@ -38,6 +36,11 @@ class GPflowSVGPModel(SurrogateModel):
         scaler_x (sklearn scaler object): Scaler for inputs.
         scaler_y (sklearn scaler object): Scaler for outputs.
         dimension_output (int): Dimensionality of the output (quantities of interest).
+        seed (int): random seed
+        num_inducing_points (int): Number of inducing points
+        dimension_lengthscales (int): Dimension of lengthscales
+        train_inducing_points_location (bool): if true, location of inducing points is trained
+        train_likelihood_variance (bool): if true, likelihood variance is trained
     """
 
     def __init__(
@@ -57,12 +60,25 @@ class GPflowSVGPModel(SurrogateModel):
         train_inducing_points_location=False,
         train_likelihood_variance=True,
     ):
-        """TODO_doc.
+        """Initialize an instance of the GPFlow SVGP model.
 
         Args:
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+            plotting_options (dict): plotting options
             number_posterior_samples (int): number of posterior samples
             mini_batch_size (int): minibatch size to speed up computation of ELBO
             number_training_iterations (int): number of iterations in optimizer for training
+            seed (int): random seed
+            number_inducing_points (int): Number of inducing points
+            dimension_lengthscales (int): Dimension of lengthscales
+            train_inducing_points_location (bool): if true, location of inducing points is trained
+            train_likelihood_variance (bool): if true, likelihood variance is trained
         """
         super().__init__(
             training_iterator=training_iterator,
@@ -72,8 +88,6 @@ class GPflowSVGPModel(SurrogateModel):
             nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
-        self.x_train = None
-        self.y_train = None
         self.number_posterior_samples = number_posterior_samples
         self.mini_batch_size = mini_batch_size
         self.number_training_iterations = number_training_iterations
@@ -90,7 +104,12 @@ class GPflowSVGPModel(SurrogateModel):
         self.train_likelihood_variance = train_likelihood_variance
 
     def train(self, x_train, y_train):
-        """Train the GP."""
+        """Train the GP.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
         np.random.seed(self.seed)
         tf.random.set_seed(self.seed)
         self._init_training_dataset(x_train, y_train)
