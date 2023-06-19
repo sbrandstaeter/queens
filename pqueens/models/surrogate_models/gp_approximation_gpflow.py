@@ -43,7 +43,7 @@ class GPFlowRegressionModel(SurrogateModel):
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -96,8 +96,8 @@ class GPFlowRegressionModel(SurrogateModel):
         self.scaler_x = None
         self.scaler_y = None
 
-    def train(self, x_train, y_train):
-        """Train the GP by maximizing the likelihood.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
@@ -137,6 +137,8 @@ class GPFlowRegressionModel(SurrogateModel):
             self.model.kernel.variance, tfp.bijectors.Exp()
         )
 
+    def train(self):
+        """Train the GP by maximizing the likelihood."""
         opt = gpf.optimizers.Scipy()
 
         dimension_hyperparameters = self.get_dimension_hyperparameters()

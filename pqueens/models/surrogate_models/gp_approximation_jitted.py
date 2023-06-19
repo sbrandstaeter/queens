@@ -164,6 +164,12 @@ class GPJittedModel(SurrogateModel):
         return log_evidence.flatten()
 
     def setup(self, x_train, y_train):
+        """Setup surrogate model.
+
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
         y_train = y_train - self.mean_function(x_train)
 
         # scale the data
@@ -172,18 +178,12 @@ class GPJittedModel(SurrogateModel):
         self.scaler_y.fit(y_train)
         self.y_train = self.scaler_y.transform(y_train)
 
-    def train(self, x_train, y_train):
+    def train(self):
         """Train the Gaussian Process.
 
         Training is conducted by maximizing the evidence/marginal
         likelihood by minimizing the negative log evidence.
-
-        Args:
-            x_train (np.array): training inputs
-            y_train (np.array): training outputs
         """
-        self.setup(x_train, y_train)
-
         # initialize hyper-parameters and associated linear algebra
         x_0 = np.log(np.array(self.hyper_params))
         hyper_params = self.hyper_params  # Store hyper_params outside the loop

@@ -39,6 +39,9 @@ class DummyRegression:
         """A dummy predict method."""
         return {"mean": np.array([1, 2]), "variance": np.array([4, 5])}
 
+    def setup(self, *_, **__):
+        """A dummy setup method."""
+
     def train(self, *_, **__):
         """A dummy training method."""
         time.sleep(0.01)

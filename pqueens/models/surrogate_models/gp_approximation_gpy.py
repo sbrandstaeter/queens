@@ -33,7 +33,7 @@ class GPGPyRegressionModel(SurrogateModel):
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -88,8 +88,8 @@ class GPGPyRegressionModel(SurrogateModel):
         self.kernel_type = kernel_type
         self.normalize_y = normalize_y
 
-    def train(self, x_train, y_train):
-        """Train the GP by maximizing the likelihood.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
@@ -128,6 +128,8 @@ class GPGPyRegressionModel(SurrogateModel):
         )
         _logger.info(str(self.model))
 
+    def train(self):
+        """Train the GP by maximizing the likelihood."""
         # fix seed for randomize in restarts
         np.random.seed(self.seed_optimizer)
         self.model.optimize_restarts(

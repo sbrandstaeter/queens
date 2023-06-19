@@ -16,7 +16,7 @@ tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
 tf.keras.backend.set_floatx('float64')
 
-# Use GPU acceleration if possibles
+# Use GPU acceleration if possible
 if tf.test.gpu_device_name() != '/device:GPU:0':
     _logger.info('WARNING: GPU device not found.')
 else:
@@ -248,23 +248,21 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         )
         return mean_field_variational_distr
 
-    def train(self, x_train, y_train):
+    def setup(self, x_train, y_train):
+        """Setup surrogate model."""
+        self.x_train = x_train
+        self.y_train = y_train
+        self._build_model()
+
+    def train(self):
         """Train the Bayesian neural network.
 
         Train the Bayesian neural network using the previous defined
         optimizers in the model build and configuration. We allow
         Tensorflow's early stopping here to stop the optimization
-        routine when the loss- function starts to increase again over
+        routine when the loss function starts to increase again over
         several iterations.
-
-        Args:
-            x_train (np.array): training inputs
-            y_train (np.array): training outputs
         """
-        self.x_train = x_train
-        self.y_train = y_train
-        self._build_model()
-
         # set the random seeds for optimization/training
         np.random.seed(self.optimizer_seed)
         tf.random.set_seed(self.optimizer_seed)

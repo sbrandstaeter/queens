@@ -104,6 +104,7 @@ def test_build_approximation(mocker, default_interface):
     mp2 = mocker.patch(
         'pqueens.tests.unit_tests.interfaces.test_bmfmc_interface.FakeRegression.train'
     )
+
     default_interface.build_approximation(Z, Y)
     mp1.assert_called_once()
     mp2.assert_called_once()

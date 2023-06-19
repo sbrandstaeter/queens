@@ -52,7 +52,8 @@ def test_jitted_gp_one_dim(my_config):
     # -- squared exponential kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
     my_model = from_config_create_model(approx_name, my_config)
-    my_model.train(x_train, y_train)
+    my_model.setup(x_train, y_train)
+    my_model.train()
 
     output = my_model.predict(x_test)
     mean = output['mean']
@@ -79,7 +80,8 @@ def test_jitted_gp_one_dim(my_config):
     # --- get the mean and variance of the model (no gradient call here) ---
     my_config[approx_name]['kernel_type'] = 'matern_3_2'
     my_model = from_config_create_model(approx_name, my_config)
-    my_model.train(x_train, y_train)
+    my_model.setup(x_train, y_train)
+    my_model.train()
 
     output = my_model.predict(x_test)
     mean = output['mean']
@@ -107,7 +109,8 @@ def test_jitted_gp_two_dim(my_config):
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
     my_model = from_config_create_model(approx_name, my_config)
-    my_model.train(x_train, y_train)
+    my_model.setup(x_train, y_train)
+    my_model.train()
 
     # evaluate the testing/benchmark function at testing inputs
     n_test = 25

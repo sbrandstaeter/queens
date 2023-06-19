@@ -227,12 +227,8 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         self.x_train = np.vstack((self.x_train, x_train_new))
         self.y_train = np.vstack((self.y_train, y_train_new))
 
-    def train(self, x_train, y_train):
-        """Train the Bayesian neural network.
-
-        We ues the previous defined optimizers in the model build and configuration.
-        We allow tensorflow's early stopping here to stop the optimization routine when the loss
-        function starts to increase again over several iterations.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
@@ -247,6 +243,14 @@ class GaussianNeuralNetworkModel(SurrogateModel):
 
         self.nn_model = self._build_model()
 
+    def train(self):
+        """Train the Bayesian neural network.
+
+        We ues the previous defined optimizers in the model build and
+        configuration. We allow tensorflow's early stopping here to stop
+        the optimization routine when the loss function starts to
+        increase again over several iterations.
+        """
         # make epochs adaptive with a simple schedule, lower bound is 1/5 of the initial epoch
         if self.num_refinements > 0:
             self.num_epochs = int(

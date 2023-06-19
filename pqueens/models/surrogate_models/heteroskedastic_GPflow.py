@@ -55,7 +55,7 @@ class HeteroskedasticGPModel(SurrogateModel):
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -112,11 +112,8 @@ class HeteroskedasticGPModel(SurrogateModel):
         self.posterior_cov_mat_y = None
         self.num_samples_stats = num_samples_stats
 
-    def train(self, x_train, y_train):
-        """TODO_doc: add a one-line explanation.
-
-        Train the variational by minimizing the variational loss in
-        variational EM step.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
@@ -127,6 +124,12 @@ class HeteroskedasticGPModel(SurrogateModel):
         self._build_model()
         self.optimizer = self._build_optimizer()
 
+    def train(self):
+        """TODO_doc: add a one-line explanation.
+
+        Train the variational by minimizing the variational loss in
+        variational EM step.
+        """
         np.random.seed(self.random_seed)
         _logger.info("# ---- Train the GPFlow model ----- #\n")
         for epoch in range(1, self.num_epochs + 1):

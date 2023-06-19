@@ -16,8 +16,10 @@ class SurrogateModel(Model):
     """Surrogate model class.
 
     Attributes:
-        training_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of getting training data
-        testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of getting testing data
+        training_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of
+                                      getting training data
+        testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose of
+                                     getting testing data
         eval_fit (str): How to evaluate goodness of fit
         error_measures (list): List of error measures to compute
         nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
@@ -28,7 +30,7 @@ class SurrogateModel(Model):
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -37,15 +39,16 @@ class SurrogateModel(Model):
     ):
         """Initialize data fit.
 
-        Args:
-            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
-                                          purpose of getting training data
-            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
-                                         of getting testing data
-            eval_fit (str): How to evaluate goodness of fit
-            error_measures (list): List of error measures to compute
-            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
-            plotting_options (dict): plotting options
+        Args:possi     training_iterator (Iterator): Iterator to
+        evaluate the subordinate model with the
+        purpose of getting training data     testing_iterator
+        (Iterator): Iterator to evaluate the subordinate model with the
+        purpose                                  of getting testing data
+        eval_fit (str): How to evaluate goodness of fit
+        error_measures (list): List of error measures to compute
+        nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe
+        efficiency should be evaluated     plotting_options (dict):
+        plotting options
         """
         super().__init__()
         if testing_iterator is None:
@@ -117,13 +120,17 @@ class SurrogateModel(Model):
         """Predict."""
 
     @abc.abstractmethod
-    def train(self, x_train, y_train):
-        """Train surrogate model.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
             y_train (np.array): training outputs
         """
+
+    @abc.abstractmethod
+    def train(self):
+        """Train surrogate model."""
 
     def build_approximation(self):
         """Build underlying approximation."""
@@ -141,7 +148,8 @@ class SurrogateModel(Model):
         # TODO check that final surrogate is on all points
 
         # train regression model on the data
-        self.train(x_train, y_train)
+        self.setup(x_train, y_train)
+        self.train()
         self.is_trained = True
 
         # TODO: Passing self is ugly
@@ -223,7 +231,8 @@ class SurrogateModel(Model):
         kf.get_n_splits(x_train)
 
         for train_index, test_index in kf.split(x_train):
-            self.train(x_train[train_index], y_train[train_index])
+            self.setup(x_train[train_index], y_train[train_index])
+            self.train()
             outputs[test_index] = self.predict(x_train[test_index].T, support='f')['mean']
 
         return outputs
@@ -292,9 +301,8 @@ class SurrogateModel(Model):
             efficiency = 1 - (numerator / denominator)
             return efficiency
 
-        else:
-            _logger.warning("Evaluation and simulation lists does not have the same length.")
-            return np.nan
+        _logger.warning("Evaluation and simulation lists does not have the same length.")
+        return np.nan
 
     @staticmethod
     def _get_data_set(iterator):

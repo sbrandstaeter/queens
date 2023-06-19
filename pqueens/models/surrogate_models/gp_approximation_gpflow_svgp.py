@@ -45,7 +45,7 @@ class GPflowSVGPModel(SurrogateModel):
 
     def __init__(
         self,
-        training_iterator,
+        training_iterator=None,
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
@@ -103,8 +103,8 @@ class GPflowSVGPModel(SurrogateModel):
         self.train_inducing_points_location = train_inducing_points_location
         self.train_likelihood_variance = train_likelihood_variance
 
-    def train(self, x_train, y_train):
-        """Train the GP.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
             x_train (np.array): training inputs
@@ -115,6 +115,8 @@ class GPflowSVGPModel(SurrogateModel):
         self._init_training_dataset(x_train, y_train)
         self._build_model()
 
+    def train(self):
+        """Train the GP."""
         optimizer = tf.optimizers.Adam()
         for i in range(self.dimension_output):
             training_iterations = iter(self.training_data[i].batch(self.mini_batch_size))
@@ -128,7 +130,7 @@ class GPflowSVGPModel(SurrogateModel):
                 optimization_step()
                 if (step + 1) % 100 == 0:
                     _logger.info(
-                        'Iter: %d/%d, ' 'Loss: %.2e',
+                        'Iter: %d/%d, Loss: %.2e',
                         step + 1,
                         self.number_training_iterations,
                         training_loss().numpy(),

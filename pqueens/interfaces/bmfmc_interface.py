@@ -83,4 +83,5 @@ class BmfmcInterface(Interface):
         """
         surrogate_model_name = self.config[self.approx_name]['surrogate_model_name']
         self.probabilistic_mapping_obj = from_config_create_model(surrogate_model_name, self.config)
-        self.probabilistic_mapping_obj.train(Z_LF_train, Y_HF_train)
+        self.probabilistic_mapping_obj.setup(Z_LF_train, Y_HF_train)
+        self.probabilistic_mapping_obj.train()
