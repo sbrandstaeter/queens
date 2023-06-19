@@ -16,9 +16,10 @@ class PointsIterator(Iterator):
     """Iterator at given input points.
 
     Attributes:
-        input_values (np.array): Array with all samples
-        write_results (bool): Export data
+        result_description (dict): Settings for storing
         output (np.array): Array with all model outputs
+        points (dict): Dictionary with name and samples
+        points_array (np.ndarray): Array with all samples
     """
 
     def __init__(self, model, global_settings, points, result_description):
@@ -44,10 +45,15 @@ class PointsIterator(Iterator):
         points = []
         for name in self.parameters.names:
             points.append(np.array(self.points[name]))
-        lens = [len(d) for d in points]
 
-        if len(set(lens)) != 1:
-            message = ", ".join([f"{n}: {l}" for n, l in zip(self.parameters.names, lens)])
+        # number of points for each parameter
+        points_lengths = [len(d) for d in points]
+
+        # check if the provided number of points is equal for each parameter
+        if len(set(points_lengths)) != 1:
+            message = ", ".join(
+                [f"{n}: {l}" for n, l in zip(self.parameters.names, points_lengths)]
+            )
             raise ValueError(
                 "Non-matching number of points for the different parameters: " + message
             )
