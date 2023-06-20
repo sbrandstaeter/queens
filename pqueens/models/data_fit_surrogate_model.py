@@ -118,13 +118,13 @@ class DataFitSurrogateModel(Model):
         )
 
     def evaluate(self, samples):
-        """Evaluate model with current set of variables.
+        """Evaluate model with current set of input samples.
 
         Args:
-            samples: TODO_doc
+            samples (np.ndarray): Input samples
 
         Returns:
-            np.array: Results corresponding to current set of variables
+            np.array: Results corresponding to current set of input samples
         """
         if not self.interface.is_initialized():
             self.build_approximation()
@@ -132,16 +132,21 @@ class DataFitSurrogateModel(Model):
         self.response = self.interface.evaluate(samples)
         return self.response
 
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate model and the model gradient with current set of samples.
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
 
         Args:
-            samples (np.array): Current sample batch for which the model response should be
-                                calculated.
-            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
-                                         model output.
-                                         This function is needed for `adjoint`-based gradient
-                                         calculation.
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         raise NotImplementedError(
             "Gradient method is not implemented in `data_fit_surrogate_model`."

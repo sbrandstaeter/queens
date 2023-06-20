@@ -110,9 +110,6 @@ lf_interface:
 lf_model:
   interface_name: lf_interface
   type: simulation_model
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: provided
 parameters:
   x1:
     lower_bound: 0.01
