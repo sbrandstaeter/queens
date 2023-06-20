@@ -48,86 +48,52 @@ class DataProcessorCsv(DataProcessor):
 
     def __init__(
         self,
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
         data_processor_name,
-        filter_type,
-        header_row,
-        use_cols_lst,
-        skip_rows,
-        index_column,
-        use_rows_lst,
-        filter_range,
-        filter_target_values,
-        filter_tol,
-        returned_filter_format,
+        file_name_identifier=None,
+        file_options_dict=None,
+        files_to_be_deleted_regex_lst=None,
     ):
         """Instantiate data processor class for csv data.
 
         Args:
+            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier of file name
                                              The file prefix can contain regex expression
                                              and subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for
-                                      the file
+            file_options_dict (dict): Dictionary with read-in options for the file:
+                - header_row (int): Integer that determines which csv-row contains labels/headers of
+                                    the columns. Default is 'None', meaning no header used.
+                - use_cols_lst (lst): (optional) list with column numbers that should be read-in.
+                - skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
+                - index_column (int, str): Column to use as the row labels of the DataFrame, either
+                                           given as string name or column index.
+                                           Note: index_column=False can be used to force pandas to
+                                           not use the first column as the index. Index_column is
+                                           used for filtering the remaining columns.
+                - returned_filter_format (str): Returned data format after filtering
+                - filter (dict): Dictionary with filter options:
+                    -- type (str): Filter type to use
+                    -- rows (lst): In case this options is used, the list contains the indices of
+                                  rows in the csv file that should be used as data
+                    -- range (lst): After data is selected by `use_cols_lst` and a filter column
+                                   is specified by `index_column`, this option selects which data
+                                   range shall be filtered by providing a minimum and maximum
+                                   value pair in list format
+                    -- target_values (list): target values to filter
+                    -- tolerance (float): Tolerance for the filter range
+
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
-            filter_type (str): Filter type to use
-            header_row (int):   Integer that determines which csv-row contains labels/headers of
-                                the columns. Default is 'None', meaning no header used.
-            use_cols_lst (lst): (optional) list with column numbers that should be read-in.
-            skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
-            index_column (int, str): Column to use as the row labels of the DataFrame, either given
-                as string name or column index. Note: index_column=False can be used to force
-                pandas to not use the first column as the index. Index_column is used for
-                filtering the remaining columns.
-            use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                                in the csv file that should be used as data
-            filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
-                                specified by `index_column`, this option selects which data range
-                                shall be filtered by providing a minimum and maximum value pair
-                                in list format
-            filter_target_values (list): target values to filter
-            filter_tol (float): Tolerance for the filter range
-            returned_filter_format (str): Returned data format after filtering
 
         Returns:
             Instance of DataProcessorCsv class
         """
         super().__init__(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
+            data_processor_name=data_processor_name,
+            file_name_identifier=file_name_identifier,
+            file_options_dict=file_options_dict,
+            files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
-        self.use_cols_lst = use_cols_lst
-        self.filter_type = filter_type
-        self.header_row = header_row
-        self.skip_rows = skip_rows
-        self.index_column = index_column
-        self.use_rows_lst = use_rows_lst
-        self.filter_range = filter_range
-        self.filter_target_values = filter_target_values
-        self.filter_tol = filter_tol
-        self.returned_filter_format = returned_filter_format
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create the class from the problem description.
-
-        Args:
-            config (dict): Dictionary with problem description
-            data_processor_name (str): Name of the data processor
-        Return:
-            TODO_doc
-        """
-        (
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
         header_row = file_options_dict.get('header_row')
         if header_row and not isinstance(header_row, int):
@@ -162,7 +128,7 @@ class DataProcessorCsv(DataProcessor):
         returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
 
         filter_options_dict = file_options_dict.get('filter')
-        cls._check_valid_filter_options(filter_options_dict)
+        self._check_valid_filter_options(filter_options_dict)
 
         filter_type = filter_options_dict.get('type')
         if not isinstance(filter_type, str):
@@ -204,22 +170,16 @@ class DataProcessorCsv(DataProcessor):
                 f"but you provided type {type(filter_tol)}. Abort..."
             )
 
-        return cls(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
-            filter_type,
-            header_row,
-            use_cols_lst,
-            skip_rows,
-            index_column,
-            use_rows_lst,
-            filter_range,
-            filter_target_values,
-            filter_tol,
-            returned_filter_format,
-        )
+        self.use_cols_lst = use_cols_lst
+        self.filter_type = filter_type
+        self.header_row = header_row
+        self.skip_rows = skip_rows
+        self.index_column = index_column
+        self.use_rows_lst = use_rows_lst
+        self.filter_range = filter_range
+        self.filter_target_values = filter_target_values
+        self.filter_tol = filter_tol
+        self.returned_filter_format = returned_filter_format
 
     @classmethod
     def _check_valid_filter_options(cls, filter_options_dict):

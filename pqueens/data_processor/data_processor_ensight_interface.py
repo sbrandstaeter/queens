@@ -27,61 +27,34 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
     def __init__(
         self,
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
         data_processor_name,
-        time_tol,
-        visualization_bool,
-        displacement_fields,
-        problem_dimension,
-        experimental_reference_data_lst,
+        file_name_identifier=None,
+        file_options_dict=None,
+        files_to_be_deleted_regex_lst=None,
     ):
         """Initialize data_processor_ensight_interface class.
 
         Args:
+            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for
-                                      the file
+            file_options_dict (dict): Dictionary with read-in options for the file:
+                - path_to_ref_data (str): Path to experimental reference data to which the
+                                          discrepancy measure is computed.
+                - time_tol (float): time tolerance for given reference time points
+                - visualization (bool): boolean for vtk visualization control
+                - displacement_fields (str): String with exact field names for displacement to apply
+                - problem_dimension (string): string to determine problems spatial dimension
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
-            time_tol (float): time tolerance for given reference time points
-            visualization_bool (bool): boolean for vtk visualization control
-            displacement_fields (str): String with exact field names for displacement to apply
-            problem_dimension (string): string to determine problems spatial dimension
-            experimental_reference_data_lst (list): Experimental reference data to which the
-                                              discrepancy measure is computed.
         """
         super().__init__(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
+            data_processor_name=data_processor_name,
+            file_name_identifier=file_name_identifier,
+            file_options_dict=file_options_dict,
+            files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
-        self.time_tol = time_tol
-        self.visualization_bool = visualization_bool
-        self.displacement_fields = displacement_fields
-        self.problem_dimension = problem_dimension
-        self.experimental_ref_data_lst = experimental_reference_data_lst
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create the class from the problem description.
-
-        Args:
-            config (dict): Dictionary with problem description
-            data_processor_name (str): Name of the data processor
-        Returns:
-            TODO_doc
-        """
-        (
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
         path_ref_data_str = file_options_dict.get('path_to_ref_data')
         if not path_ref_data_str:
@@ -90,7 +63,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                 f"in '{data_processor_name}'. Abort ..."
             )
         path_ref_data = Path(path_ref_data_str)
-        experimental_reference_data = cls.read_monitorfile(path_ref_data)
+        experimental_reference_data = self.read_monitorfile(path_ref_data)
 
         time_tol = file_options_dict.get('time_tol')
         if not time_tol:
@@ -120,17 +93,11 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                 f"but you provided type {type(problem_dimension)}. Abort..."
             )
 
-        return cls(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
-            time_tol,
-            visualization_bool,
-            displacement_fields,
-            problem_dimension,
-            experimental_reference_data,
-        )
+        self.time_tol = time_tol
+        self.visualization_bool = visualization_bool
+        self.displacement_fields = displacement_fields
+        self.problem_dimension = problem_dimension
+        self.experimental_ref_data_lst = experimental_reference_data
 
     @staticmethod
     def read_monitorfile(path_to_experimental_reference_data):

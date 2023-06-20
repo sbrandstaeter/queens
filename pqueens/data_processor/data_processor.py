@@ -32,14 +32,15 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
         data_processor_name,
+        file_name_identifier=None,
+        file_options_dict=None,
+        files_to_be_deleted_regex_lst=None,
     ):
         """Init data processor class.
 
         Args:
+            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier for files.
                                              The file prefix can contain regex expression and
                                             subdirectories.
@@ -48,34 +49,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                        implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
         """
-        self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
-        self.file_options_dict = file_options_dict
-        self.data_processor_name = data_processor_name
-        self.file_name_identifier = file_name_identifier
-        self.file_path = None
-        self.processed_data = np.empty(shape=0)
-        self.raw_file_data = None
-
-    @classmethod
-    def from_config_set_base_attributes(cls, config, data_processor_name):
-        """Extract attributes of this base class from the config.
-
-        Args:
-            config (dict): Dictionary with problem description
-            data_processor_name (str): Name of the data processor
-
-        Returns:
-            file_name_identifier (str): Identifier for files. The file prefix can contain regex
-              expression and subdirectories
-            file_options_dict (dict): Dictionary with read-in options for the file. The
-              respective child class will implement valid options for this dictionary
-            files_to_be_deleted_regex_lst (lst): List with paths to files that should be
-              deleted. The paths can contain regex expressions
-        """
-        data_processor_options = config.get(data_processor_name)
-        file_name_identifier = data_processor_options.get('file_name_identifier')
         if not file_name_identifier:
             raise IOError(
                 f"No option 'file_name_identifier' was provided in '{data_processor_name}'! "
@@ -87,7 +61,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(file_name_identifier)}. Abort..."
             )
 
-        file_options_dict = data_processor_options.get('file_options_dict')
         if not file_options_dict:
             raise IOError(
                 f"No option 'file_options_dict' was provided in '{data_processor_name}'! "
@@ -99,16 +72,36 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(file_options_dict)}. Abort..."
             )
 
-        files_to_be_deleted_regex_lst = data_processor_options.get(
-            'files_to_be_deleted_regex_lst', []
-        )
+        if files_to_be_deleted_regex_lst is None:
+            files_to_be_deleted_regex_lst = []
         if not isinstance(files_to_be_deleted_regex_lst, list):
             raise TypeError(
                 "The option 'files_to_be_deleted_regex_lst' must be of type 'list' "
                 f"but is of type {type(files_to_be_deleted_regex_lst)}. Abort..."
             )
 
-        return file_name_identifier, file_options_dict, files_to_be_deleted_regex_lst
+        self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
+        self.file_options_dict = file_options_dict
+        self.data_processor_name = data_processor_name
+        self.file_name_identifier = file_name_identifier
+        self.file_path = None
+        self.processed_data = np.empty(shape=0)
+        self.raw_file_data = None
+
+    @classmethod
+    def from_config_create_data_processor(cls, config, data_processor_name):
+        """Create data processor from the problem description.
+
+         Args:
+             config (dict): Dictionary with problem description
+             data_processor_name (str): Name of the data processor
+
+        Returns:
+             DataProcessor: Instance of DataProcessor
+        """
+        data_processor_options = config[data_processor_name].copy()
+        data_processor_options.pop('type')
+        return cls(data_processor_name=data_processor_name, **data_processor_options)
 
     def get_data_from_file(self, base_dir_file):
         """Get data of interest from file.
