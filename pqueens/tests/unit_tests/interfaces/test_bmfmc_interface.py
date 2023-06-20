@@ -18,9 +18,12 @@ class FakeRegression:
         output = self.map_output_dict
         return output
 
-    @staticmethod
-    def train():
+    def train(self):
         """Train surrogate model."""
+        pass
+
+    def setup(self, *args, **kwargs):
+        """Setup surrogate model."""
         pass
 
 
@@ -102,9 +105,13 @@ def test_build_approximation(mocker, default_interface):
         return_value=FakeRegression,
     )
     mp2 = mocker.patch(
+        'pqueens.tests.unit_tests.interfaces.test_bmfmc_interface.FakeRegression.setup'
+    )
+    mp3 = mocker.patch(
         'pqueens.tests.unit_tests.interfaces.test_bmfmc_interface.FakeRegression.train'
     )
 
     default_interface.build_approximation(Z, Y)
     mp1.assert_called_once()
     mp2.assert_called_once()
+    mp3.assert_called_once()

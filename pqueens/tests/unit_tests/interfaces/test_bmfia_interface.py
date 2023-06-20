@@ -303,21 +303,23 @@ def test_instantiate_per_coordinate(
     (
         z_lf_array_out,
         y_hf_array_out,
-        probabilistic_mapping_ob_lst,
+        probabilistic_mapping_obj_lst,
     ) = default_bmfia_interface._instantiate_per_coordinate(
         z_lf_train, y_hf_train, time_vec, coords_mat, config, approx_name
     )
 
     # --- asserts / tests
-    assert default_probabilistic_obj_lst == probabilistic_mapping_ob_lst
-    assert mp_1.call_count == num_reg
-    assert mp_1.call_args[0][0] == config
-    assert mp_1.call_args[0][1] == approx_name
+    for i in range(len(probabilistic_mapping_obj_lst)):
+        assert isinstance(probabilistic_mapping_obj_lst[i], DummyRegression)
+        assert probabilistic_mapping_obj_lst[i].state == default_probabilistic_obj_lst[i].state
+    assert mp_1.call_count == 1
+    assert mp_1.call_args[0][0] == approx_name
+    assert mp_1.call_args[0][1] == config
     np.testing.assert_array_equal(z_lf_array_out, z_lf_train)
     np.testing.assert_array_equal(y_hf_array_out, y_hf_train)
 
 
-def test_instantiate_per_time_step(mocker):
+def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     """Test the instantiation of the probabilistic mappings."""
     z_lf_train = np.zeros((1, 2, 3))
     y_hf_train = np.zeros((2, 2, 2))
@@ -357,10 +359,12 @@ def test_instantiate_per_time_step(mocker):
     mp_2.assert_called_once()
     mp_2.assert_called_with(z_lf_train, t_size, coords_mat)
 
-    assert mp_3.call_count == 2
+    assert mp_3.call_count == 1
     np.testing.assert_array_equal(z_lf_array, z_lf_array_out)
     np.testing.assert_array_equal(y_hf_array, np.zeros((2, 4, 1)))
-    assert probabilistic_mapping_obj_lst == [dummy_reg_obj, dummy_reg_obj]
+    for i in range(len(probabilistic_mapping_obj_lst)):
+        assert isinstance(probabilistic_mapping_obj_lst[i], DummyRegression)
+        assert probabilistic_mapping_obj_lst[i].state == dummy_reg_obj.state
 
 
 def test_train_probabilistic_mappings_in_parallel(
