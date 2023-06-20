@@ -243,7 +243,7 @@ class GPJitted(RegressionApproximation):
         iterations = []
 
         for params in self.stochastic_optimizer:
-            rel_L2_change_params = self.stochastic_optimizer.rel_L2_change
+            rel_l2_change_params = self.stochastic_optimizer.rel_l2_change
             iteration = self.stochastic_optimizer.iteration
 
             # update parameters and associated linear algebra
@@ -276,7 +276,7 @@ class GPJitted(RegressionApproximation):
                         iteration,
                         params,
                         self.grad_log_evidence_value,
-                        rel_L2_change_params,
+                        rel_l2_change_params,
                         log_evidence,
                     )
 
