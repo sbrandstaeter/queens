@@ -62,8 +62,7 @@ model:
       - false
 mf_approx:
   type: gp_jitted
-  data_scaling:
-    type: standard_scaler
+  data_scaling: standard_scaler
   initial_hyper_params_lst:
     - 0.05
     - 1.0

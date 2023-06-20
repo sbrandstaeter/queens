@@ -23,8 +23,7 @@ model:
     stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
     noise_var_lb: 1.0e-06
-    data_scaling:
-      type: standard_scaler
+    data_scaling: standard_scaler
     sigma_0_sq: 0.05
     l_scale_sq: 1.0
     sigma_n_sq: 0.05

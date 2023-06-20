@@ -47,8 +47,7 @@ mf_approx:
   type: gaussian_nn
   activation_per_hidden_layer_lst: [elu, elu]
   adams_training_rate: 0.001
-  data_scaling:
-    type: standard_scaler
+  data_scaling: standard_scaler
   nodes_per_hidden_layer_lst: [5, 5]
   nugget_std: 1.0e-05
   num_epochs: 1

@@ -7,7 +7,7 @@ from scipy.linalg import cho_solve
 
 import pqueens.models.surrogate_models.utils.kernel_utils_jitted as utils_jitted
 from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
-from pqueens.utils.random_process_scaler import Scaler
+from pqueens.utils.random_process_scaler import VALID_SCALER
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.valid_options_utils import get_option
 
@@ -20,7 +20,6 @@ except FileNotFoundError:
 
     def gnuplot_gp_convergence(*_args, **_kwargs):
         """Provide a dummy plot function."""
-        pass
 
 
 class GPJittedModel(SurrogateModel):
@@ -85,7 +84,7 @@ class GPJittedModel(SurrogateModel):
             stochastic_optimizer (obj): Stochastic optimizer object.
             initial_hyper_params_lst (list): List of initial hyper-parameters
             kernel_type (str): Type of kernel used in the GP
-            data_scaling (dict): Description for scaling object
+            data_scaling (str): Data scaling type
             mean_function_type (str): Mean function type of the GP
             plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
             noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel.
@@ -100,8 +99,8 @@ class GPJittedModel(SurrogateModel):
                 f"{kernel_type}."
             )
 
-        scaler_x = Scaler.from_config_create_scaler(data_scaling)
-        scaler_y = Scaler.from_config_create_scaler(data_scaling)
+        scaler_x = get_option(VALID_SCALER, data_scaling)()
+        scaler_y = get_option(VALID_SCALER, data_scaling)()
 
         # check mean function and subtract from y_train
         valid_mean_function_types = {

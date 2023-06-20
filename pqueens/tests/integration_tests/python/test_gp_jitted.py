@@ -23,7 +23,7 @@ def my_config():
             "initial_hyper_params_lst": [1.0, 1.0, 0.01],
             "plot_refresh_rate": 10,
             "noise_var_lb": 1.0e-04,
-            "data_scaling": {"type": "standard_scaler"},
+            "data_scaling": "standard_scaler",
         },
         "optimizer": {
             "type": "adam",

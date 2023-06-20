@@ -37,8 +37,7 @@ mf_approx:
   stochastic_optimizer_name: optimizer
   plot_refresh_rate: null
   noise_var_lb: 1.0e-06
-  data_scaling:
-    type: standard_scaler
+  data_scaling: standard_scaler
   initial_hyper_params_lst: [0.05, 1.0, 0.05]
   mean_function_type: identity_multi_fidelity
 bmfia_interface:

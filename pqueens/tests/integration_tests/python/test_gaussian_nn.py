@@ -23,7 +23,7 @@ def my_config():
             "batch_size": 50,
             "num_epochs": 3000,
             "optimizer_seed": 42,
-            "data_scaling": {"type": "standard_scaler"},
+            "data_scaling": "standard_scaler",
             "nugget_std": 1.0e-02,
             "verbosity_on": False,
         },

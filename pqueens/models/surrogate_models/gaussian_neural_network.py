@@ -8,7 +8,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
-from pqueens.utils.random_process_scaler import Scaler
+from pqueens.utils.random_process_scaler import VALID_SCALER
 from pqueens.utils.valid_options_utils import get_option
 from pqueens.visualization.gaussian_neural_network_vis import plot_loss
 
@@ -96,7 +96,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
             loss_plot_path (str): Path to determine whether loss plot should be produced
                                   (yes if provided). Plot will be saved at path location.
             refinement_epochs_decay (float): Decrease of epochs in refinements
-            data_scaling (dict): Description for data scaling object
+            data_scaling (str): Data scaling type
             mean_function_type (str): Mean function type of the Gaussian Neural Network
 
         Returns:
@@ -120,8 +120,8 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         self.optimizer_seed = optimizer_seed
         self.verbosity_on = verbosity_on
         self.batch_size = batch_size
-        self.scaler_x = Scaler.from_config_create_scaler(data_scaling)
-        self.scaler_y = Scaler.from_config_create_scaler(data_scaling)
+        self.scaler_x = get_option(VALID_SCALER, data_scaling)()
+        self.scaler_y = get_option(VALID_SCALER, data_scaling)()
         self.loss_plot_path = loss_plot_path
         self.num_refinements = 0
         self.refinement_epochs_decay = refinement_epochs_decay
