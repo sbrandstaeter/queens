@@ -51,8 +51,8 @@ optimizer:
   learning_rate: 0.008
   optimization_type: max
   max_iterations: 1000
-  rel_L1_change_threshold: 0.004
-  rel_L2_change_threshold: 0.004
+  rel_l1_change_threshold: 0.004
+  rel_l2_change_threshold: 0.004
 MCMC_Kernel:
   type: metropolis-hastings
   as_mcmc_kernel: true
