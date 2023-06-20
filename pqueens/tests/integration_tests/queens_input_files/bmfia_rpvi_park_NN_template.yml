@@ -92,8 +92,8 @@ optimizer:
   max_iter: 100
   natural_gradient: true
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   type: adam
 parameters:
   x1:

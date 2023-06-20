@@ -30,8 +30,8 @@ def my_config():
             "learning_rate": 0.01,
             "optimization_type": "max",
             "max_iterations": 1000,
-            "rel_L1_change_threshold": 0.0001,
-            "rel_L2_change_threshold": 0.0001,
+            "rel_l1_change_threshold": 0.0001,
+            "rel_l2_change_threshold": 0.0001,
         },
     }
     return config

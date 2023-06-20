@@ -35,8 +35,8 @@ optimizer:
   max_iter: 10000000
   natural_gradient: true
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   type: adam
 model:
   type: bmf_gaussian
@@ -91,8 +91,8 @@ gp_optimizer:
   max_iterations: 1000
   optimization_type: max
   plot_refresh_rate: 10
-  rel_L1_change_threshold: 0.004
-  rel_L2_change_threshold: 0.004
+  rel_l1_change_threshold: 0.004
+  rel_l2_change_threshold: 0.004
   type: adam
 hf_interface:
   function: park91a_hifi_on_grid
