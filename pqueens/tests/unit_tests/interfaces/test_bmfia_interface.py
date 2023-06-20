@@ -309,9 +309,11 @@ def test_instantiate_per_coordinate(
     )
 
     # --- asserts / tests
-    for i in range(len(probabilistic_mapping_obj_lst)):
-        assert isinstance(probabilistic_mapping_obj_lst[i], DummyRegression)
-        assert probabilistic_mapping_obj_lst[i].state == default_probabilistic_obj_lst[i].state
+    for (probabilistic_mapping_obj, default_probabilistic_obj) in zip(
+        probabilistic_mapping_obj_lst, default_probabilistic_obj_lst
+    ):
+        assert isinstance(probabilistic_mapping_obj, DummyRegression)
+        assert probabilistic_mapping_obj.state == default_probabilistic_obj.state
     assert mp_1.call_count == 1
     assert mp_1.call_args[0][0] == approx_name
     assert mp_1.call_args[0][1] == config
@@ -362,9 +364,9 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     assert mp_3.call_count == 1
     np.testing.assert_array_equal(z_lf_array, z_lf_array_out)
     np.testing.assert_array_equal(y_hf_array, np.zeros((2, 4, 1)))
-    for i in range(len(probabilistic_mapping_obj_lst)):
-        assert isinstance(probabilistic_mapping_obj_lst[i], DummyRegression)
-        assert probabilistic_mapping_obj_lst[i].state == dummy_reg_obj.state
+    for probabilistic_mapping_obj in probabilistic_mapping_obj_lst:
+        assert isinstance(probabilistic_mapping_obj, DummyRegression)
+        assert probabilistic_mapping_obj.state == dummy_reg_obj.state
 
 
 def test_train_probabilistic_mappings_in_parallel(
