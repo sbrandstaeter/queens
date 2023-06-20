@@ -22,7 +22,6 @@ class SurrogateModel(Model):
                                      getting testing data
         eval_fit (str): How to evaluate goodness of fit
         error_measures (list): List of error measures to compute
-        nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
         is_trained (bool): true if model is trained
         x_train (np.array): training inputs
         y_train (np.array): training outputs
@@ -34,7 +33,6 @@ class SurrogateModel(Model):
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
-        nash_sutcliffe_efficiency=False,
         plotting_options=None,
     ):
         """Initialize data fit.
@@ -46,14 +44,10 @@ class SurrogateModel(Model):
         purpose                                  of getting testing data
         eval_fit (str): How to evaluate goodness of fit
         error_measures (list): List of error measures to compute
-        nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe
         efficiency should be evaluated     plotting_options (dict):
         plotting options
         """
         super().__init__()
-        if testing_iterator is None:
-            nash_sutcliffe_efficiency = False
-
         # visualization
         qvis.from_config_create(plotting_options)
 
@@ -61,7 +55,6 @@ class SurrogateModel(Model):
         self.testing_iterator = testing_iterator
         self.eval_fit = eval_fit
         self.error_measures = error_measures
-        self.nash_sutcliffe_efficiency = nash_sutcliffe_efficiency
         self.is_trained = False
         self.x_train = None
         self.y_train = None
@@ -187,11 +180,6 @@ class SurrogateModel(Model):
         error_info = {}
         if measures is not None:
             error_info = self.compute_error_measures(y_test, y_prediction, measures)
-
-        if self.nash_sutcliffe_efficiency is True:
-            error_info["nash_sutcliffe_efficiency"] = self.compute_nash_sutcliffe_efficiency(
-                y_test, y_prediction
-            )
         return error_info
 
     def eval_surrogate_accuracy_cv(self, x_test, y_test, k_fold, measures):
@@ -268,13 +256,16 @@ class SurrogateModel(Model):
             float: Error based on desired metric
         """
         return {
-            "sum_squared": np.sum((y_test - y_posterior_mean) ** 2),
-            "mean_squared": np.mean((y_test - y_posterior_mean) ** 2),
-            "root_mean_squared": np.sqrt(np.mean((y_test - y_posterior_mean) ** 2)),
-            "sum_abs": np.sum(np.abs(y_test - y_posterior_mean)),
-            "mean_abs": np.mean(np.abs(y_test - y_posterior_mean)),
-            "abs_max": np.max(np.abs(y_test - y_posterior_mean)),
-        }.get(measure, NotImplementedError("Desired error measure is unknown!"))
+            "sum_squared": lambda: np.sum((y_test - y_posterior_mean) ** 2),
+            "mean_squared": lambda: np.mean((y_test - y_posterior_mean) ** 2),
+            "root_mean_squared": lambda: np.sqrt(np.mean((y_test - y_posterior_mean) ** 2)),
+            "sum_abs": lambda: np.sum(np.abs(y_test - y_posterior_mean)),
+            "mean_abs": lambda: np.mean(np.abs(y_test - y_posterior_mean)),
+            "abs_max": lambda: np.max(np.abs(y_test - y_posterior_mean)),
+            "nash_sutcliffe_efficiency": lambda: SurrogateModel.compute_nash_sutcliffe_efficiency(
+                y_test, y_posterior_mean
+            ),
+        }.get(measure, NotImplementedError("Desired error measure is unknown!"))()
 
     @staticmethod
     def compute_nash_sutcliffe_efficiency(y_test, y_posterior_mean):

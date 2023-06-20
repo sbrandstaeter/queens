@@ -37,7 +37,6 @@ class GPGPyRegressionModel(SurrogateModel):
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
-        nash_sutcliffe_efficiency=False,
         plotting_options=None,
         num_posterior_samples=None,
         ard=False,
@@ -57,7 +56,6 @@ class GPGPyRegressionModel(SurrogateModel):
                                          of getting testing data
             eval_fit (str): How to evaluate goodness of fit
             error_measures (list): List of error measures to compute
-            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
             plotting_options (dict): plotting options
             num_posterior_samples (int): Number of posterior samples
             ard (bool): if true, automatic relevance determination (ARD) is activated
@@ -73,7 +71,6 @@ class GPGPyRegressionModel(SurrogateModel):
             testing_iterator=testing_iterator,
             eval_fit=eval_fit,
             error_measures=error_measures,
-            nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
         self.scaler_x = None

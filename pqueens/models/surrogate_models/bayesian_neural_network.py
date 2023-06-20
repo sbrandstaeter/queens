@@ -60,7 +60,6 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
-        nash_sutcliffe_efficiency=False,
         plotting_options=None,
         num_posterior_samples=None,
         num_samples_statistics=None,
@@ -80,7 +79,6 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
                                          of getting testing data
             eval_fit (str): How to evaluate goodness of fit
             error_measures (list): List of error measures to compute
-            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
             plotting_options (dict): plotting options
             num_posterior_samples (int): Number of posterior sample functions
             num_samples_statistics (int): Number of samples to approximate posterior statistics
@@ -105,7 +103,6 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             testing_iterator=testing_iterator,
             eval_fit=eval_fit,
             error_measures=error_measures,
-            nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
         self.num_posterior_samples = num_posterior_samples

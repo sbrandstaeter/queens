@@ -31,7 +31,8 @@ gp_surrogate_model:
   type: gp_approximation_gpy
   training_iterator_name: truth_model_iterator
   testing_iterator_name: testing_iterator
-  nash_sutcliffe_efficiency: true
+  error_measures:
+    - nash_sutcliffe_efficiency
   kernel_type: prod_rbf
   ard: true
   num_restart: 1

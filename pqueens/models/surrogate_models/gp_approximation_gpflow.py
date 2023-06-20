@@ -47,7 +47,6 @@ class GPFlowRegressionModel(SurrogateModel):
         testing_iterator=None,
         eval_fit=None,
         error_measures=None,
-        nash_sutcliffe_efficiency=False,
         plotting_options=None,
         number_posterior_samples=None,
         restart_min_value=0,
@@ -66,7 +65,6 @@ class GPFlowRegressionModel(SurrogateModel):
                                          of getting testing data
             eval_fit (str): How to evaluate goodness of fit
             error_measures (list): List of error measures to compute
-            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
             plotting_options (dict): plotting options
             number_posterior_samples (int): Number of posterior samples
             restart_min_value (int): Minimum value for restart
@@ -81,7 +79,6 @@ class GPFlowRegressionModel(SurrogateModel):
             testing_iterator=testing_iterator,
             eval_fit=eval_fit,
             error_measures=error_measures,
-            nash_sutcliffe_efficiency=nash_sutcliffe_efficiency,
             plotting_options=plotting_options,
         )
         self.number_posterior_samples = number_posterior_samples
