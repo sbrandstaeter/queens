@@ -133,26 +133,26 @@ class DataProcessorCsv(DataProcessor):
         filter_type = filter_options_dict.get('type')
         if not isinstance(filter_type, str):
             raise ValueError(
-                "The option 'filter_type' in the data_processor settings must be of type 'str'! "
+                "The option 'type' in the data_processor settings must be of type 'str'! "
                 f"You provided type '{type(filter_type)}'. Abort..."
             )
 
         use_rows_lst = filter_options_dict.get('rows', [])
         if not isinstance(use_rows_lst, list):
             raise TypeError(
-                "The option 'use_rows_lst' must be of type 'list' "
+                "The option 'rows' must be of type 'list' "
                 f"but you provided type {type(use_rows_lst)}. Abort..."
             )
         if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
             raise TypeError(
-                "The option 'use_rows_lst' must be a list of `int` "
+                "The option 'rows' must be a list of `int` "
                 f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
             )
 
         filter_range = filter_options_dict.get('range', [])
         if filter_range and not isinstance(filter_range, list):
             raise TypeError(
-                "The option 'filter_range' has to be of type 'list', "
+                "The option 'range' has to be of type 'list', "
                 f"but you provided type {type(filter_range)}. Abort..."
             )
 
@@ -166,7 +166,7 @@ class DataProcessorCsv(DataProcessor):
         filter_tol = filter_options_dict.get('tolerance', 0.0)
         if not isinstance(filter_tol, float):
             raise TypeError(
-                "The option 'filter_tol' has to be of type 'float', "
+                "The option 'tolerance' has to be of type 'float', "
                 f"but you provided type {type(filter_tol)}. Abort..."
             )
 

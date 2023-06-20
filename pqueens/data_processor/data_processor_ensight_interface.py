@@ -74,7 +74,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         visualization_bool = file_options_dict.get('visualization', False)
         if not isinstance(visualization_bool, bool):
             raise TypeError(
-                "The option 'visualization_bool' must be of type 'bool' "
+                "The option 'visualization' must be of type 'bool' "
                 f"but you provided type {type(visualization_bool)}. Abort..."
             )
 

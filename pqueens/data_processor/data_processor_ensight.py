@@ -116,7 +116,7 @@ class DataProcessorEnsight(DataProcessor):
         vtk_field_components = file_options_dict['physical_field_dict']['field_components']
         if not isinstance(vtk_field_components, list):
             raise TypeError(
-                "The option 'vtk_field_components' in the data_processor settings must be of type "
+                "The option 'field_components' in the data_processor settings must be of type "
                 f"'list' but you provided type {type(vtk_field_components)}. Abort..."
             )
 
