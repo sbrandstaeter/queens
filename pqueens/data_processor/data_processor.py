@@ -61,7 +61,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(file_name_identifier)}. Abort..."
             )
 
-        if not file_options_dict:
+        if file_options_dict is None:
             raise IOError(
                 f"No option 'file_options_dict' was provided in '{data_processor_name}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
@@ -100,7 +100,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
              DataProcessor: Instance of DataProcessor
         """
         data_processor_options = config[data_processor_name].copy()
-        data_processor_options.pop('type')
+        data_processor_options.pop('type', None)
         return cls(data_processor_name=data_processor_name, **data_processor_options)
 
     def get_data_from_file(self, base_dir_file):

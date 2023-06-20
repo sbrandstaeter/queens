@@ -36,9 +36,8 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         Args:
             data_processor_name (str): Name of the data processor.
-            file_name_identifier (str): Identifier of file name.
-                                             The file prefix can contain regex expression
-                                             and subdirectories.
+            file_name_identifier (str): Identifier of file name. The file prefix can contain regex
+                                        expression and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for the file:
                 - path_to_ref_data (str): Path to experimental reference data to which the
                                           discrepancy measure is computed.
