@@ -123,8 +123,8 @@ class GPflowSVGPModel(SurrogateModel):
             training_loss = self.model[i].training_loss_closure(training_iterations, compile=True)
 
             @tf.function
-            def optimization_step():
-                optimizer.minimize(training_loss, self.model[i].trainable_variables)
+            def optimization_step(training_loss=training_loss, model=self.model[i]):
+                optimizer.minimize(training_loss, model.trainable_variables)
 
             for step in range(self.number_training_iterations):
                 optimization_step()

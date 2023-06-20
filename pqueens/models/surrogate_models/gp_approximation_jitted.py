@@ -316,12 +316,11 @@ class GPJittedModel(SurrogateModel):
             overwrite_b=True,
         )
 
-    def predict(self, x_test_mat, support='f', gradient_bool=False):
+    def predict(self, x_test, support='f', gradient_bool=False):
         """Predict the posterior distribution of the trained GP at x_test.
 
         Args:
-            x_test_mat (np.array): Testing matrix for GP with row-wise (vector-valued)
-                                   testing points
+            x_test (np.array): Testing matrix for GP with row-wise (vector-valued) testing points
             support (str): Type of support for which the GP posterior is computed; If:
                             - 'f': Posterior w.r.t. the latent function f
                             - 'y': Latent function is marginalized such that posterior is defined
@@ -341,7 +340,7 @@ class GPJittedModel(SurrogateModel):
             grad_posterior_var_fun,
         ) = self._get_jitted_objects()
 
-        x_test_transformed = self.scaler_x.transform(x_test_mat)
+        x_test_transformed = self.scaler_x.transform(x_test)
         posterior_mean_test_vec = posterior_mean_fun(
             self.k_mat_inv,
             x_test_transformed,
@@ -365,10 +364,10 @@ class GPJittedModel(SurrogateModel):
                 f'Your current noise variance lower bound is: {self.noise_variance_lower_bound}.'
             )
 
-        output = {"x_test": x_test_mat}
+        output = {"x_test": x_test}
         output["mean"] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
             -1, 1
-        ) + self.mean_function(x_test_mat)
+        ) + self.mean_function(x_test)
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2).reshape(-1, 1)
 
         if gradient_bool:
@@ -387,7 +386,7 @@ class GPJittedModel(SurrogateModel):
             )
             output["grad_mean"] = self.scaler_y.inverse_transform_grad_mean(
                 grad_post_mean_test_mat, self.scaler_x.standard_deviation
-            ) + self.gradient_mean_function(x_test_mat)
+            ) + self.gradient_mean_function(x_test)
             output["grad_var"] = self.scaler_y.inverse_transform_grad_var(
                 grad_post_var_test_vec, var, output["variance"], self.scaler_x.standard_deviation
             )
