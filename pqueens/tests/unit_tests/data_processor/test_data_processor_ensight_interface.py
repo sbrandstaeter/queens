@@ -1,7 +1,5 @@
 """Tests for distance to surface measurement data_processor evaluation."""
 
-from re import I
-
 import numpy as np
 import pytest
 import vtk
@@ -22,15 +20,16 @@ def all_dimensions(request):
 @pytest.fixture()
 def default_data_processor(mocker):
     """Default ensight class for upcoming tests."""
-    file_name_identifier = ('dummy_prefix*dummyfix',)
-    file_options_dict = {}
-    experimental_ref_data = 'dummy'
-    displacement_fields = ['first_disp', 'second_disp']
-    time_tol = 1e-03
-    visualization_bool = False
+    file_name_identifier = 'dummy_prefix*dummyfix'
+    file_options_dict = {
+        "path_to_ref_data": 'dummy_path',
+        "time_tol": 1e-03,
+        "visualization": False,
+        "displacement_fields": ['first_disp', 'second_disp'],
+        "problem_dimension": '5d',
+    }
     file_to_be_deleted_regex_lst = []
     data_processor_name = 'data_processor'
-    problem_dim = '5d'
 
     mocker.patch(
         'pqueens.data_processor.data_processor_ensight_interface.'
@@ -38,15 +37,10 @@ def default_data_processor(mocker):
         return_value='None',
     )
     pp = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
+        data_processor_name,
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
-        data_processor_name,
-        time_tol,
-        visualization_bool,
-        displacement_fields,
-        problem_dim,
-        experimental_ref_data,
     )
     return pp
 
@@ -118,9 +112,7 @@ def vtkUnstructuredGridExample3d():
 
 def test_init(mocker):
     """Test the init method."""
-    file_name_identifier = ('dummy_prefix*dummyfix',)
-    file_options_dict = {}
-    experimental_ref_data = 'dummy'
+    experimental_ref_data = 'dummy_data'
     displacement_fields = ['first_disp', 'second_disp']
     time_tol = 1e-03
     visualization_bool = False
@@ -128,16 +120,25 @@ def test_init(mocker):
     data_processor_name = 'data_processor'
     problem_dim = '5d'
 
-    my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
+    file_name_identifier = 'dummy_prefix*dummyfix'
+    file_options_dict = {
+        "path_to_ref_data": 'dummy_path',
+        "time_tol": time_tol,
+        "visualization": visualization_bool,
+        "displacement_fields": displacement_fields,
+        "problem_dimension": problem_dim,
+    }
+
+    mocker.patch(
+        'pqueens.data_processor.data_processor_ensight_interface.'
+        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
+        return_value='dummy_data',
+    )
+    my_data_processor = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
+        data_processor_name,
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        data_processor_name,
-        time_tol,
-        visualization_bool,
-        displacement_fields,
-        problem_dim,
-        experimental_ref_data,
     )
 
     assert my_data_processor.time_tol == time_tol
@@ -186,13 +187,13 @@ def test_from_config_create_data_processor(mocker):
         'delete_field_data': delete_field_data,
         'problem_dimension': problem_dimension,
         'path_to_ref_data': path_to_ref_data,
-        'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
     }
 
     config = {
         'data_processor': {
             'file_name_identifier': file_name_identifier,
             'file_options_dict': file_options_dict,
+            'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
         }
     }
 
@@ -201,15 +202,10 @@ def test_from_config_create_data_processor(mocker):
         data_processor_name,
     )
     mp.assert_called_once_with(
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
-        data_processor_name,
-        time_tol,
-        delete_field_data,
-        displacement_fields,
-        problem_dimension,
-        experimental_ref_data,
+        data_processor_name=data_processor_name,
+        file_name_identifier=file_name_identifier,
+        file_options_dict=file_options_dict,
+        files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
     )
 
 
