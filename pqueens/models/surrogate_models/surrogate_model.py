@@ -109,7 +109,7 @@ class SurrogateModel(Model):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, x_test, support='y', full_cov=False):
+    def predict(self, x_test, support='y'):
         """Predict."""
 
     @abc.abstractmethod

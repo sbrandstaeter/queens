@@ -11,21 +11,21 @@ class NumpyArrayEncoder(JSONEncoder):
     Based on the JSONEncoder object.
     """
 
-    def default(self, obj):
+    def default(self, o):
         """Encode np.array.
 
         Either to int, float or list.
 
         Args:
-            obj (obj): Object to encode.
+            o (obj): Object to encode.
 
         Returns:
             TODO_doc
         """
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super().default(obj)
+        if isinstance(o, np.integer):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
