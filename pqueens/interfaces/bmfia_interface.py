@@ -1,5 +1,6 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
 
+import copy
 import logging
 import multiprocessing as mp
 import time
@@ -9,7 +10,7 @@ import numpy as np
 import tqdm
 
 from pqueens.interfaces.interface import Interface
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -70,12 +71,11 @@ class BmfiaInterface(Interface):
         if z_lf_train.ndim != 3:
             raise IndexError("z_lf_train must be a 3d tensor!")
 
-        probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(
-                config, approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
-            )
-            for (z_lf, y_hf) in (zip(z_lf_train.T, y_hf_train.T, strict=True))
-        ]
+        surrogate_model = from_config_create_model(approx_name, config)
+        probabilistic_mapping_obj_lst = []
+        for (z_lf, y_hf) in zip(z_lf_train.T, y_hf_train.T, strict=True):
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst[-1].setup(np.atleast_2d(z_lf), np.atleast_2d(y_hf).T)
 
         return z_lf_train, y_hf_train, probabilistic_mapping_obj_lst
 
@@ -118,10 +118,11 @@ class BmfiaInterface(Interface):
             )
 
         # loop over all time steps and instantiate the probabilistic mapping
-        probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(config, approx_name, z_lf, y_hf)
-            for (z_lf, y_hf) in (zip(z_lf_array, y_hf_array, strict=True))
-        ]
+        surrogate_model = from_config_create_model(approx_name, config)
+        probabilistic_mapping_obj_lst = []
+        for (z_lf, y_hf) in zip(z_lf_array, y_hf_array, strict=True):
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst[-1].setup(z_lf, y_hf)
 
         return z_lf_array, y_hf_array, probabilistic_mapping_obj_lst
 

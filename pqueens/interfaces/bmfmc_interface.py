@@ -1,6 +1,6 @@
 """Interface for grouping outputs with inputs."""
 from pqueens.interfaces.interface import Interface
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 
 
 class BmfmcInterface(Interface):
@@ -85,8 +85,7 @@ class BmfmcInterface(Interface):
             Z_LF_train (np.array): Training inputs for probabilistic mapping
             Y_HF_train (np.array): Training outputs for probabilistic mapping
         """
-        self.probabilistic_mapping_obj = from_config_create_regression_approximation(
-            self.config, self.approx_name, Z_LF_train, Y_HF_train
-        )
-
+        surrogate_model_name = self.config[self.approx_name]['surrogate_model_name']
+        self.probabilistic_mapping_obj = from_config_create_model(surrogate_model_name, self.config)
+        self.probabilistic_mapping_obj.setup(Z_LF_train, Y_HF_train)
         self.probabilistic_mapping_obj.train()

@@ -9,7 +9,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from gpflow.utilities import print_summary, set_trainable
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 
 _logger = logging.getLogger(__name__)
@@ -22,14 +22,12 @@ else:
     _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
-class GPFlowRegression(RegressionApproximation):
+class GPFlowRegressionModel(SurrogateModel):
     """Class for creating GP regression model based on GPFlow.
 
     This class constructs a GP regression, using a GPFlow model.
 
     Attributes:
-        x_train (np.ndarray): Training inputs.
-        y_train (np.ndarray): Training outputs.
         number_posterior_samples (int): Number of posterior samples.
         number_restarts (int): Number of restarts.
         number_training_iterations (int): Number of iterations in optimizer for training.
@@ -38,119 +36,102 @@ class GPFlowRegression(RegressionApproximation):
         restart_max_value (int): Maximum value for restart.
         model (GPFlow.models.GPR): GPFlow based Gaussian process model.
         dimension_lengthscales (int): Dimension of *lengthscales*.
+        train_likelihood_variance (bool): if true, likelihood variance is trained
         scaler_x (sklearn scaler object): Scaler for inputs.
         scaler_y (sklearn scaler object): Scaler for outputs.
     """
 
     def __init__(
         self,
-        x_train,
-        y_train,
-        number_posterior_samples,
-        number_input_dimensions,
-        restart_min_value,
-        restart_max_value,
-        model,
-        number_restarts,
-        number_training_iterations,
-        dimension_lengthscales,
-        scaler_x,
-        scaler_y,
+        training_iterator=None,
+        testing_iterator=None,
+        eval_fit=None,
+        error_measures=None,
+        plotting_options=None,
+        number_posterior_samples=None,
+        restart_min_value=0,
+        restart_max_value=5,
+        number_restarts=10,
+        number_training_iterations=100,
+        dimension_lengthscales=None,
+        train_likelihood_variance=True,
     ):
-        """TODO_doc.
+        """Initialize an instance of the GPFlow regression model.
 
         Args:
-            x_train (np.ndarray): Training inputs
-            y_train (np.ndarray): Training outputs
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            plotting_options (dict): plotting options
             number_posterior_samples (int): Number of posterior samples
-            number_input_dimensions (int): Dimensionality of random features/input dimension
             restart_min_value (int): Minimum value for restart
             restart_max_value (int): Maximum value for restart
-            model (GPFlow.models.GPR): GPFlow based Regression model
             number_restarts (int): Number of restarts
             number_training_iterations (int): Number of iterations in optimizer for training
             dimension_lengthscales (int): Dimension of lengthscales
-            scaler_x (sklearn scaler object): Scaler for inputs
-            scaler_y (sklearn scaler object): Scaler for outputs
+            train_likelihood_variance (bool): if true, likelihood variance is trained
         """
-        self.x_train = x_train
-        self.y_train = y_train
+        super().__init__(
+            training_iterator=training_iterator,
+            testing_iterator=testing_iterator,
+            eval_fit=eval_fit,
+            error_measures=error_measures,
+            plotting_options=plotting_options,
+        )
         self.number_posterior_samples = number_posterior_samples
         self.number_restarts = number_restarts
         self.number_training_iterations = number_training_iterations
-        self.number_input_dimensions = number_input_dimensions
+        self.number_input_dimensions = None
         self.restart_min_value = restart_min_value
         self.restart_max_value = restart_max_value
-        self.model = model
+        self.model = None
         self.dimension_lengthscales = dimension_lengthscales
-        self.scaler_x = scaler_x
-        self.scaler_y = scaler_y
+        self.train_likelihood_variance = train_likelihood_variance
+        self.scaler_x = None
+        self.scaler_y = None
 
-    @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
-            config (dict):         Dictionary with options
-            approx_name (str):     Name of approximation method
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
-
-        Returns:
-            GPFlowRegression: Approximation object
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
-        number_posterior_samples = config[approx_name].get('number_posterior_samples', None)
-
         if len(x_train.shape) == 1:
-            number_input_dimensions = 1
+            self.number_input_dimensions = 1
         else:
-            number_input_dimensions = x_train.shape[1]
+            self.number_input_dimensions = x_train.shape[1]
 
         if y_train.shape[0] != x_train.shape[0]:
             y_train = np.reshape(y_train, (-1, 1))
 
-        number_restarts = config[approx_name].get('number_restarts', 10)
-        number_training_iterations = config[approx_name].get('number_training_iterations', 100)
-        restart_min_value = config[approx_name].get('restart_min_value', 0)
-        restart_max_value = config[approx_name].get('restart_max_value', 5)
-
-        scaler_x, x_train = init_scaler(x_train)
-        scaler_y, y_train = init_scaler(y_train)
+        self.scaler_x, self.x_train = init_scaler(x_train)
+        self.scaler_y, self.y_train = init_scaler(y_train)
 
         # initialize hyperparameters
-        dimension_lengthscales = config[approx_name].get('dimension_lengthscales', None)
-        lengthscales_0 = 0.1 * np.ones(dimension_lengthscales)
-        variances_0 = max(abs(np.max(y_train) - np.min(y_train)), 1e-6)
+        lengthscales_0 = 0.1 * np.ones(self.dimension_lengthscales)
+        variances_0 = max(abs(np.max(self.y_train) - np.min(self.y_train)), 1e-6)
 
         # choose kernel
         kernel = gpf.kernels.RBF(lengthscales=lengthscales_0, variance=variances_0)
 
         # initialize model
-        model = gpf.models.GPR(data=(x_train, y_train), kernel=kernel, mean_function=None)
-
-        train_likelihood_variance = config[approx_name].get('train_likelihood_variance', True)
-        if not train_likelihood_variance:
-            model.likelihood.variance.assign(1.1e-6)  # small value for numerical stability
-            set_trainable(model.likelihood.variance, False)
-
-        model.kernel.lengthscales = set_transform_function(
-            model.kernel.lengthscales, tfp.bijectors.Exp()
+        self.model = gpf.models.GPR(
+            data=(self.x_train, self.y_train), kernel=kernel, mean_function=None
         )
-        model.kernel.variance = set_transform_function(model.kernel.variance, tfp.bijectors.Exp())
 
-        return cls(
-            x_train,
-            y_train,
-            number_posterior_samples,
-            number_input_dimensions,
-            restart_min_value,
-            restart_max_value,
-            model,
-            number_restarts,
-            number_training_iterations,
-            dimension_lengthscales,
-            scaler_x,
-            scaler_y,
+        if not self.train_likelihood_variance:
+            self.model.likelihood.variance.assign(1.1e-6)  # small value for numerical stability
+            set_trainable(self.model.likelihood.variance, False)
+
+        self.model.kernel.lengthscales = set_transform_function(
+            self.model.kernel.lengthscales, tfp.bijectors.Exp()
+        )
+        self.model.kernel.variance = set_transform_function(
+            self.model.kernel.variance, tfp.bijectors.Exp()
         )
 
     def train(self):
