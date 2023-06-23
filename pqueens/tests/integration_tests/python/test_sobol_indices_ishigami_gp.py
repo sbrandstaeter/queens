@@ -14,8 +14,8 @@ def test_sobol_indices_ishigami_gp(inputdir, tmp_path):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    expected_result_s1 = np.array([0.28977645, 0.43374979, -0.04328034])
-    expected_result_s1_conf = np.array([0.20741671, 0.17213406, 0.10860589])
+    expected_result_s1 = np.array([0.37365542, 0.49936914, -0.00039217])
+    expected_result_s1_conf = np.array([0.14969221, 0.18936135, 0.0280309])
 
     np.testing.assert_allclose(results['sensitivity_indices']['S1'], expected_result_s1, atol=1e-05)
     np.testing.assert_allclose(

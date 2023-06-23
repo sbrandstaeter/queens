@@ -49,6 +49,7 @@ class GPFlowRegressionModel(SurrogateModel):
         error_measures=None,
         plotting_options=None,
         number_posterior_samples=None,
+        seed_optimizer=42,
         restart_min_value=0,
         restart_max_value=5,
         number_restarts=10,
@@ -67,6 +68,7 @@ class GPFlowRegressionModel(SurrogateModel):
             error_measures (list): List of error measures to compute
             plotting_options (dict): plotting options
             number_posterior_samples (int): Number of posterior samples
+            seed_optimizer (int): Seed for optimizer
             restart_min_value (int): Minimum value for restart
             restart_max_value (int): Maximum value for restart
             number_restarts (int): Number of restarts
@@ -82,6 +84,7 @@ class GPFlowRegressionModel(SurrogateModel):
             plotting_options=plotting_options,
         )
         self.number_posterior_samples = number_posterior_samples
+        self.seed_optimizer = seed_optimizer
         self.number_restarts = number_restarts
         self.number_training_iterations = number_training_iterations
         self.number_input_dimensions = None
@@ -143,6 +146,7 @@ class GPFlowRegressionModel(SurrogateModel):
         train_logs = []
         for i in range(self.number_restarts + 1):
             if i > 0:
+                tf.random.set_seed(self.seed_optimizer)
                 hyperparameters = tf.random.uniform(
                     [dimension_hyperparameters],
                     minval=self.restart_min_value,

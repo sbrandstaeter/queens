@@ -24,11 +24,11 @@ truth_model_iterator:
     write_results: true
     plot_results: false
 gp_surrogate_model:
-  type: gp_approximation_gpy
+  type: gp_approximation_gpflow
   training_iterator_name: truth_model_iterator
-  kernel_type: prod_rbf
-  ard: true
-  seed_optimizer: 42
+  number_restarts: 10
+  number_training_iterations: 1000
+  dimension_lengthscales: 3
 truth_model:
   type: simulation_model
   interface_name: interface
