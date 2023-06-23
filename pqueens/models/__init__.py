@@ -28,6 +28,34 @@ VALID_TYPES = {
         'pqueens.models.differentiable_simulation_model_adjoint',
         'DifferentiableSimulationModelAdjoint',
     ],
+    'gp_approximation_gpy': [
+        'pqueens.models.surrogate_models.gp_approximation_gpy',
+        'GPGPyRegressionModel',
+    ],
+    'heteroskedastic_gp': [
+        'pqueens.models.surrogate_models.heteroskedastic_GPflow',
+        'HeteroskedasticGPModel',
+    ],
+    'gp_approximation_gpflow': [
+        'pqueens.models.surrogate_models.gp_approximation_gpflow',
+        'GPFlowRegressionModel',
+    ],
+    'gaussian_bayesian_neural_network': [
+        'pqueens.models.surrogate_models.bayesian_neural_network',
+        'GaussianBayesianNeuralNetworkModel',
+    ],
+    'gp_jitted': [
+        'pqueens.models.surrogate_models.gp_approximation_jitted',
+        'GPJittedModel',
+    ],
+    'gp_approximation_gpflow_svgp': [
+        'pqueens.models.surrogate_models.gp_approximation_gpflow_svgp',
+        'GPflowSVGPModel',
+    ],
+    'gaussian_nn': [
+        'pqueens.models.surrogate_models.gaussian_neural_network',
+        'GaussianNeuralNetworkModel',
+    ],
 }
 
 

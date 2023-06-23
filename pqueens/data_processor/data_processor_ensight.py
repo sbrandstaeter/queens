@@ -35,97 +35,63 @@ class DataProcessorEnsight(DataProcessor):
         geometric_target (lst): List with information about specific geometric target in vtk data
                                 (This might be dependent on the simulation software that generated
                                 the vtk file).
+        geometric_set_data (dict): Dictionary describing the topology of the geometry
     """
 
     def __init__(
         self,
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
         data_processor_name,
         experiment_name,
         experimental_data,
         coordinates_label_experimental,
         time_label_experimental,
         external_geometry_obj,
-        target_time_lst,
-        time_tol,
-        vtk_field_label,
-        vtk_field_components,
-        vtk_array_type,
-        geometric_target,
+        file_name_identifier=None,
+        file_options_dict=None,
+        files_to_be_deleted_regex_lst=None,
     ):
         """Init method for ensight data processor object.
 
         Args:
+            data_processor_name (str): Name of the data processor.
+            experiment_name (str): Name of QUEENS experiment
+            experimental_data (pd.DataFrame): Pandas dataframe with experimental data
+            coordinates_label_experimental (lst): List of (spatial) coordinate labels of the
+                                                  experimental data set
+            time_label_experimental (str): Time label of the experimental data set
+            external_geometry_obj (obj): QUEENS external geometry object
             file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for
-                                      the file
+            file_options_dict (dict): Dictionary with read-in options for the file:
+                - target_time_lst (lst): Target time list for the ensight data, meaning time for
+                                         which the simulation state should be extracted
+                - time_tol (float): Tolerance for the target time extraction
+                - geometric_target (lst): List with information about specific geometric target in
+                                          vtk data (This might be dependent on the simulation
+                                          software that generated the vtk file.)
+                - physical_field_dict (dict): Dictionary with options for physical field:
+                    -- vtk_field_label (str): Label defining which physical field should be
+                                              extracted from the vtk data
+                    -- field_components (lst): List with vector components that should be extracted
+                                        from the field
+                    -- vtk_array_type (str): Type of vtk array (e.g., point_array)
+
+
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
-            database (obj): Database object
-            experiment_name (str): Name of QUEENS experiment
-            experimental_data (pd.DataFrame): Pandas dataframe with experimental data
-            coordinates_label_experimental (lst): List of (spatial) coordinate labels
-                                                  of the experimental data set
-            time_label_experimental (str): Time label of the experimental data set
-            external_geometry_obj (obj): QUEENS external geometry object
-            target_time_lst (lst): Target time list for the ensight data, meaning time for which the
-                                 simulation state should be extracted
-            time_tol (float): Tolerance for the target time extraction
-            vtk_field_label (str): Label defining which physical field should be extraced from
-                                the vtk data
-            vtk_field_components (lst): List with vector components that should be extracted
-                                        from the field
-            vtk_array_type (str): Type of vtk array (e.g., point_array)
-            geometric_target (lst): List with information about specific geometric target in vtk
-                                    data (This might be dependent on the simulation software that
-                                    generated the vtk file.)
 
         Returns:
             Instance of DataProcessorEnsight class (obj)
         """
         super().__init__(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
+            data_processor_name=data_processor_name,
+            file_name_identifier=file_name_identifier,
+            file_options_dict=file_options_dict,
+            files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
-        self.experiment_name = experiment_name
-        self.experimental_data = experimental_data
-        self.coordinates_label_experimental = coordinates_label_experimental
-        self.time_label_experimental = time_label_experimental
-        self.external_geometry_obj = external_geometry_obj
-        self.target_time_lst = target_time_lst
-        self.time_tol = time_tol
-        self.vtk_field_label = vtk_field_label
-        self.vtk_field_components = vtk_field_components
-        self.vtk_array_type = vtk_array_type
-        self.geometric_target = geometric_target
-        self.geometric_set_data = None
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create *data_processor* routine from problem description.
-
-        Args:
-            config (dict): Dictionary with problem description
-            data_processor_name (str): Name of data processor that is used in this job-submission
-
-        Returns:
-            TODO_doc
-        """
-        (
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, data_processor_name)
-
-        cls._check_field_specification_dict(file_options_dict)
+        self._check_field_specification_dict(file_options_dict)
         # load the necessary options from the file options dictionary
         target_time_lst = file_options_dict.get('target_time_lst')
         if not isinstance(target_time_lst, list):
@@ -150,7 +116,7 @@ class DataProcessorEnsight(DataProcessor):
         vtk_field_components = file_options_dict['physical_field_dict']['field_components']
         if not isinstance(vtk_field_components, list):
             raise TypeError(
-                "The option 'vtk_field_components' in the data_processor settings must be of type "
+                "The option 'field_components' in the data_processor settings must be of type "
                 f"'list' but you provided type {type(vtk_field_components)}. Abort..."
             )
 
@@ -173,8 +139,32 @@ class DataProcessorEnsight(DataProcessor):
                 f"'list' but you provided type {type(geometric_target)}. Abort..."
             )
 
-        # Load the database
-        database = DB_module.database
+        self.experiment_name = experiment_name
+        self.experimental_data = experimental_data
+        self.coordinates_label_experimental = coordinates_label_experimental
+        self.time_label_experimental = time_label_experimental
+        self.external_geometry_obj = external_geometry_obj
+        self.target_time_lst = target_time_lst
+        self.time_tol = time_tol
+        self.vtk_field_label = vtk_field_label
+        self.vtk_field_components = vtk_field_components
+        self.vtk_array_type = vtk_array_type
+        self.geometric_target = geometric_target
+        self.geometric_set_data = None
+
+    @classmethod
+    def from_config_create_data_processor(cls, config, data_processor_name):
+        """Create ensight data processor from the problem description.
+
+         Args:
+             config (dict): Dictionary with problem description
+             data_processor_name (str): Name of the data processor
+
+        Returns:
+             DataProcessorEnsight: Instance of DataProcessorEnsight
+        """
+        data_processor_options = config[data_processor_name].copy()
+        data_processor_options.pop('type')
 
         # get experimental data from database to search for corresponding vtk data
         (
@@ -182,27 +172,19 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data,
             coordinates_label_experimental,
             time_label_experimental,
-        ) = cls._get_experimental_data_from_db(config, database)
+        ) = cls._get_experimental_data_from_db(config, DB_module.database)
 
         # generate the external geometry module
         external_geometry_obj = from_config_create_external_geometry(config, 'external_geometry')
 
         return cls(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
-            experiment_name,
-            experimental_data,
-            coordinates_label_experimental,
-            time_label_experimental,
-            external_geometry_obj,
-            target_time_lst,
-            time_tol,
-            vtk_field_label,
-            vtk_field_components,
-            vtk_array_type,
-            geometric_target,
+            data_processor_name=data_processor_name,
+            experiment_name=experiment_name,
+            experimental_data=experimental_data,
+            coordinates_label_experimental=coordinates_label_experimental,
+            time_label_experimental=time_label_experimental,
+            external_geometry_obj=external_geometry_obj,
+            **data_processor_options,
         )
 
     @staticmethod

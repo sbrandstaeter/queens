@@ -1,5 +1,6 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
 
+import copy
 import logging
 import multiprocessing as mp
 import time
@@ -8,10 +9,9 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.interfaces.interface import Interface
+from pqueens.models import from_config_create_model
 from pqueens.utils.valid_options_utils import get_option
-
-from .interface import Interface
 
 _logger = logging.getLogger(__name__)
 
@@ -71,12 +71,11 @@ class BmfiaInterface(Interface):
         if z_lf_train.ndim != 3:
             raise IndexError("z_lf_train must be a 3d tensor!")
 
-        probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(
-                config, approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
-            )
-            for (z_lf, y_hf) in (zip(z_lf_train.T, y_hf_train.T, strict=True))
-        ]
+        surrogate_model = from_config_create_model(approx_name, config)
+        probabilistic_mapping_obj_lst = []
+        for (z_lf, y_hf) in zip(z_lf_train.T, y_hf_train.T, strict=True):
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst[-1].setup(np.atleast_2d(z_lf), np.atleast_2d(y_hf).T)
 
         return z_lf_train, y_hf_train, probabilistic_mapping_obj_lst
 
@@ -119,10 +118,11 @@ class BmfiaInterface(Interface):
             )
 
         # loop over all time steps and instantiate the probabilistic mapping
-        probabilistic_mapping_obj_lst = [
-            from_config_create_regression_approximation(config, approx_name, z_lf, y_hf)
-            for (z_lf, y_hf) in (zip(z_lf_array, y_hf_array, strict=True))
-        ]
+        surrogate_model = from_config_create_model(approx_name, config)
+        probabilistic_mapping_obj_lst = []
+        for (z_lf, y_hf) in zip(z_lf_array, y_hf_array, strict=True):
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst[-1].setup(z_lf, y_hf)
 
         return z_lf_array, y_hf_array, probabilistic_mapping_obj_lst
 
@@ -201,7 +201,7 @@ class BmfiaInterface(Interface):
         *z_lf*.
 
         Args:
-            Z_LF (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
+            z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
                              points on which the probabilistic mapping should be evaluated.
                              Dimensions: Rows: different multi-fidelity vector/points
                              (each row is one multi-fidelity point).
@@ -559,21 +559,22 @@ class BmfiaInterface(Interface):
             update_mappings_method,
         )
 
-    def evaluate(self, z_lf, support='y'):
+    def evaluate(self, samples, support='y'):
         r"""Map the lf-features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
         respectively covariance, for the high-fidelity model, given the inputs
-        *z_lf*.
+        *z_lf* (called samples here).
 
         Args:
-            z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
-                             points, on which the probabilistic mapping should be evaluated.
-                             Dimensions:
+            samples (np.array): Low-fidelity feature vector *z_lf* that contains the corresponding
+                                Monte-Carlo points, on which the probabilistic mapping should
+                                be evaluated.
+                                Dimensions:
 
-                             * Rows: different multi-fidelity vector/points (each row is one
-                               multi-fidelity point)
-                             * Columns: different model outputs/informative features
+                                * Rows: different multi-fidelity vector/points (each row is one
+                                  multi-fidelity point)
+                                * Columns: different model outputs/informative features
             support (str): Support/variable for which we predict the mean and (co)variance. For
                             *support=f*  the Gaussian process predicts w.r.t. the latent function
                             *f*. For the choice of *support=y* we predict w.r.t. the
@@ -597,7 +598,7 @@ class BmfiaInterface(Interface):
                                             :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         mean, variance = self.evaluate_method(
-            z_lf, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
+            samples, support, self.probabilistic_mapping_obj_lst, self.time_vec, self.coords_mat
         )
         return mean, variance
 

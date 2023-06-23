@@ -24,8 +24,7 @@ model:
     stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
     noise_var_lb: 1.0e-07
-    data_scaling:
-      type: standard_scaler
+    data_scaling: standard_scaler
     sigma_0_sq: 1.0
     l_scale_sq: 1.0
     sigma_n_sq: 1.0
@@ -70,8 +69,8 @@ optimizer:
   learning_rate: 0.01
   optimization_type: max
   max_iterations: 1000
-  rel_L1_change_threshold: 0.0001
-  rel_L2_change_threshold: 0.0001
+  rel_l1_change_threshold: 0.0001
+  rel_l2_change_threshold: 0.0001
 data_processor_experimental_data:
   type: csv
   file_name_identifier: '*.csv'

@@ -49,8 +49,8 @@ def adam_optimizer():
             "type": "adam",
             "learning_rate": 1e-2,
             "optimization_type": "max",
-            "rel_L1_change_threshold": 1e-4,
-            "rel_L2_change_threshold": 1e-6,
+            "rel_l1_change_threshold": 1e-4,
+            "rel_l2_change_threshold": 1e-6,
             "max_iter": 1000,
         }
     }
@@ -66,8 +66,8 @@ def adamax_optimizer():
             "type": "adamax",
             "learning_rate": 1e-2,
             "optimization_type": "min",
-            "rel_L1_change_threshold": 1e-4,
-            "rel_L2_change_threshold": 1e-6,
+            "rel_l1_change_threshold": 1e-4,
+            "rel_l2_change_threshold": 1e-6,
             "max_iter": 1000,
         }
     }
@@ -83,8 +83,8 @@ def rmsprop_optimizer():
             "type": "rms_prop",
             "learning_rate": 5e-2,
             "optimization_type": "max",
-            "rel_L1_change_threshold": -1,
-            "rel_L2_change_threshold": -1,
+            "rel_l1_change_threshold": -1,
+            "rel_l2_change_threshold": -1,
             "max_iter": 500,
         }
     }

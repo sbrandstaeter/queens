@@ -53,10 +53,10 @@ def default_data_processor_npy(data_path):
     data_processor_name = 'npy_data_processor'
 
     data_processor = DataProcessorNumpy(
+        data_processor_name,
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        data_processor_name,
     )
     data_processor.file_path = data_path
 
@@ -72,10 +72,10 @@ def test_init():
     data_processor_name = 'npy_data_processor'
 
     data_processor = DataProcessorNumpy(
+        data_processor_name,
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        data_processor_name,
     )
 
     assert data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst

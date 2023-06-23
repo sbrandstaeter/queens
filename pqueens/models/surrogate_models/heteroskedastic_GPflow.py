@@ -10,14 +10,14 @@ import tensorflow_probability as tfp
 from gpflow.utilities import print_summary
 from sklearn.cluster import KMeans
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 _logger = logging.getLogger(__name__)
 tf.get_logger().setLevel(logging.ERROR)
 
 
-class HeteroskedasticGP(RegressionApproximation):
+class HeteroskedasticGPModel(SurrogateModel):
     """Class for creating heteroskedastic GP based regression model.
 
     Class for creating heteroskedastic GP based regression model based on
@@ -30,12 +30,11 @@ class HeteroskedasticGP(RegressionApproximation):
     The basic idea of this latent variable GP model can be found in [1-3].
 
     Attributes:
-        x_train (np.array): Training inputs.
-        y_train (np.array): Training outputs.
         num_posterior_samples (int): Number of posterior GP samples (realizations of posterior GP).
         num_inducing_points (int): Number of inducing points for variational GPs.
         model (gpf.model):  Gpflow based heteroskedastic Gaussian process model.
         optimizer (obj): Tensorflow optimization object.
+        adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
         num_epochs (int): Number of training epochs for variational optimization.
         random_seed (int): Random seed used for initialization of stochastic gradient decent
                               optimizer.
@@ -56,70 +55,43 @@ class HeteroskedasticGP(RegressionApproximation):
 
     def __init__(
         self,
-        x_train,
-        y_train,
-        num_posterior_samples,
-        num_inducing_points,
-        model,
-        optimizer,
-        num_epochs,
-        random_seed_seed,
-        num_samples_stats,
-        posterior_cov_mat_y,
+        training_iterator=None,
+        testing_iterator=None,
+        eval_fit=None,
+        error_measures=None,
+        plotting_options=None,
+        num_posterior_samples=None,
+        num_inducing_points=None,
+        num_epochs=None,
+        adams_training_rate=None,
+        random_seed=None,
+        num_samples_stats=None,
     ):
         """Initialize an instance of the Heteroskedastic GPflow class.
 
         Args:
-            x_train (np.array): Training inputs
-            y_train (np.array): Training outputs
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            plotting_options (dict): plotting options
             num_posterior_samples: Number of posterior GP samples
             num_inducing_points: Number of inducing points for variational GP approximation
-            model (obj): GPFlow model instance
-            optimizer (obj): GPflow optimization object
             num_epochs (int): Number of epochs used for variational training of the GP
-            random_seed_seed (int): Random seed for stochastic optimization routine and samples
+            adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
+            random_seed (int): Random seed for stochastic optimization routine and samples
             num_samples_stats (int): Number of samples used to calculate empirical
                                      variance/covariance
-            posterior_cov_mat_y (np.array): Posterior covariance prediction matrix of GP calculated
-                                            w.r.t. the model output `y`.
         """
-        self.x_train = x_train
-        self.y_train = y_train
-        self.num_posterior_samples = num_posterior_samples
-        self.num_inducing_points = num_inducing_points
-        self.model = model
-        self.optimizer = optimizer
-        self.num_epochs = num_epochs
-        self.random_seed = random_seed_seed
-        self.posterior_cov_mat_y = posterior_cov_mat_y
-        self.num_samples_stats = num_samples_stats
-
-    @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary.
-
-        Args:
-            config (dict): Dictionary with problem description (input file)
-            approx_name (str):     Name of the approximation options in input file
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
-
-
-        Returns:
-            gpflow heteroskedastic GP object
-        """
-        approx_options = config[approx_name]
-        num_posterior_samples = approx_options.get('num_posterior_samples', None)
-        num_inducing_points = approx_options.get('num_inducing_points')
-        num_epochs = approx_options.get('num_epochs')
-        adams_training_rate = approx_options.get('adams_training_rate')
-        random_seed = approx_options.get('random_seed')
-
-        model = HeteroskedasticGP._build_model(num_inducing_points, x_train)
-        optimizer = HeteroskedasticGP._build_optimizer(
-            x_train, y_train, model, adams_training_rate, random_seed
+        super().__init__(
+            training_iterator=training_iterator,
+            testing_iterator=testing_iterator,
+            eval_fit=eval_fit,
+            error_measures=error_measures,
+            plotting_options=plotting_options,
         )
-        num_samples_stats = approx_options.get('num_samples_stats')
         if num_samples_stats is None or num_samples_stats < 100:
             raise RuntimeError(
                 f"You configured {num_samples_stats} number of samples for the calculation "
@@ -127,22 +99,27 @@ class HeteroskedasticGP(RegressionApproximation):
                 "reliable results or not a valid input. Please provide a valide integrer input "
                 "greater than 100. Abort ..."
             )
+        self.num_posterior_samples = num_posterior_samples
+        self.num_inducing_points = num_inducing_points
+        self.model = None
+        self.optimizer = None
+        self.adams_training_rate = adams_training_rate
+        self.num_epochs = num_epochs
+        self.random_seed = random_seed
+        self.posterior_cov_mat_y = None
+        self.num_samples_stats = num_samples_stats
 
-        # initialize some variables
-        posterior_cov_mat_y = None
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
-        return cls(
-            x_train,
-            y_train,
-            num_posterior_samples,
-            num_inducing_points,
-            model,
-            optimizer,
-            num_epochs,
-            random_seed,
-            num_samples_stats,
-            posterior_cov_mat_y,
-        )
+        Args:
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
+        """
+        self.x_train = x_train
+        self.y_train = y_train
+        self._build_model()
+        self.optimizer = self._build_optimizer()
 
     def train(self):
         """TODO_doc: add a one-line explanation.
@@ -242,19 +219,8 @@ class HeteroskedasticGP(RegressionApproximation):
 
         return post_samples[:, :, 0], post_samples[:, :, 1]
 
-    @classmethod
-    def _build_model(cls, num_inducing_points, x_train):
-        """Build the GPflow heteroskedastic GP model.
-
-        Args:
-            num_inducing_points (int): Number of inducing points used for variational GP
-                                       approximation
-            x_train (np.array): Training input points for GP model
-
-
-        Returns:
-            gpf_model (obj): Instance of a GPflow heteroskedastic model
-        """
+    def _build_model(self):
+        """Build the GPflow heteroskedastic GP model."""
         # heteroskedastic conditional likelihood
         likelihood = gpf.likelihoods.HeteroskedasticTFPConditional(
             distribution_class=tfp.distributions.Normal,  # Gaussian Likelihood
@@ -271,8 +237,8 @@ class HeteroskedasticGP(RegressionApproximation):
 
         # Initial inducing points position Z determined by clustering training data and take centers
         # of inferred clusters
-        kmeans = KMeans(n_clusters=num_inducing_points)
-        kmeans.fit(x_train)
+        kmeans = KMeans(n_clusters=self.num_inducing_points)
+        kmeans.fit(self.x_train)
         Z = kmeans.cluster_centers_
 
         inducing_variable = gpf.inducing_variables.SeparateIndependentInducingVariables(
@@ -283,7 +249,7 @@ class HeteroskedasticGP(RegressionApproximation):
         )
 
         # the final model
-        model = gpf.models.SVGP(
+        self.model = gpf.models.SVGP(
             kernel=kernel,
             likelihood=likelihood,
             inducing_variable=inducing_variable,
@@ -291,38 +257,30 @@ class HeteroskedasticGP(RegressionApproximation):
         )
 
         _logger.info('The GPFlow model used in this analysis is constructed as follows:')
-        print_summary(model)
+        print_summary(self.model)
         _logger.info("\n")
-        return model
 
-    @classmethod
-    def _build_optimizer(cls, x_train, y_train, gpflow_model, adams_training_rate, random_seed):
+    def _build_optimizer(self):
         """Build the optimization step for the variational EM step.
-
-        Args:
-            x_train (np.array): Training input points
-            y_train (np.array): Training output points
-            gpflow_model (obj): Instance of a GPflow model
-            random_seed (int): Random seed to make optimization reproducible
 
         Returns:
             optimization_step_fun (obj): Tensorflow optimization EM-step function for variational
                                          optimization of the GP
         """
         # TODO pull below out to json
-        np.random.seed(random_seed)
-        tf.random.set_seed(random_seed)
-        data = (x_train, y_train)
-        loss_fn = gpflow_model.training_loss_closure(data)
+        np.random.seed(self.random_seed)
+        tf.random.set_seed(self.random_seed)
+        data = (self.x_train, self.y_train)
+        loss_fn = self.model.training_loss_closure(data)
 
-        gpf.utilities.set_trainable(gpflow_model.q_mu, False)
-        gpf.utilities.set_trainable(gpflow_model.q_sqrt, False)
+        gpf.utilities.set_trainable(self.model.q_mu, False)
+        gpf.utilities.set_trainable(self.model.q_sqrt, False)
 
-        variational_vars = [(gpflow_model.q_mu, gpflow_model.q_sqrt)]
+        variational_vars = [(self.model.q_mu, self.model.q_sqrt)]
         natgrad_opt = gpf.optimizers.NaturalGradient(gamma=0.1)
 
-        adam_vars = gpflow_model.trainable_variables
-        adam_opt = tf.optimizers.Adam(adams_training_rate)
+        adam_vars = self.model.trainable_variables
+        adam_opt = tf.optimizers.Adam(self.adams_training_rate)
 
         # here we conduct a two step optimization
         @tf.function

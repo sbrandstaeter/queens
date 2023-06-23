@@ -35,8 +35,8 @@ optimizer:
   max_iter: 10000000
   natural_gradient: true
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   type: adam
 model:
   type: bmf_gaussian
@@ -62,8 +62,7 @@ model:
       - false
 mf_approx:
   type: gp_jitted
-  data_scaling:
-    type: standard_scaler
+  data_scaling: standard_scaler
   initial_hyper_params_lst:
     - 0.05
     - 1.0
@@ -71,7 +70,6 @@ mf_approx:
   kernel_type: squared_exponential
   noise_var_lb: 1.0e-06
   mean_function_type: identity_multi_fidelity
-  random_seed: 1
   stochastic_optimizer_name: gp_optimizer
 bmfia_interface:
   type: bmfia
@@ -93,8 +91,8 @@ gp_optimizer:
   max_iterations: 1000
   optimization_type: max
   plot_refresh_rate: 10
-  rel_L1_change_threshold: 0.004
-  rel_L2_change_threshold: 0.004
+  rel_l1_change_threshold: 0.004
+  rel_l2_change_threshold: 0.004
   type: adam
 hf_interface:
   function: park91a_hifi_on_grid

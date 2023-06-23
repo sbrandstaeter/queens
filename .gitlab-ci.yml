@@ -71,8 +71,10 @@ workflow:
   rules:
     - !reference [.default_test_conditions, rules]
   stage: codechecks
+  needs:
+    - imcs-build_conda_env
   tags:
-    - codechecks
+    - imcs-codechecks
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
@@ -81,9 +83,9 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - conda update -n base conda
+    - mamba update -n base -y conda
   script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
@@ -152,8 +154,10 @@ charon-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster_native:
   stage: build
+  before_script:
+    - mamba update -n base -c defaults -y conda
   script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
@@ -175,6 +179,15 @@ bruteforce-native-build_conda_env:
 deep-native-build_conda_env:
   extends:
     - .build_conda_env_cluster_native
+  # once mamba works on deep the before_script and script of .build_conda_env_cluster_native can
+  # be used here too. For now it does not work though so we need to implement a specific solution
+  before_script:
+    - conda update -n base -c defaults -y conda
+  script:
+    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
+    - pip install -e .[develop]
+    - conda env export > pipeline_conda_environment.yml
   tags:
     - deep-native-test
 #----------------------------------------------------------------------------------------------
@@ -206,8 +219,8 @@ update:
     - conda create -n piptools-env python==3.10 -y
     - conda activate piptools-env
     - pip install pip-tools
-    - pip-compile --upgrade requirements.in --output-file requirements.txt
-    - pip-compile --upgrade dev-requirements.in --output-file dev-requirements.txt
+    - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
+    - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
     # Update singularity image requirements
     - pip-compile --upgrade pqueens/singularity/requirements.in --output-file pqueens/singularity/requirements.txt
     - cd $CI_PROJECT_DIR
@@ -260,8 +273,6 @@ code_analysis:
       - track_pydocstyle.txt
     when: on_failure
     expire_in: 4 weeks
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 documentation:
   # build the documentation
@@ -279,8 +290,6 @@ documentation:
       - doc/build/html
     when: on_success
     expire_in: 3 days
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
   # check license compliance
@@ -289,8 +298,6 @@ license_check:
   stage: codechecks
   script:
     - liccheck -s lic_strategy.ini  -r requirements.txt
-  needs:
-    - lnm-build_conda_env
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------

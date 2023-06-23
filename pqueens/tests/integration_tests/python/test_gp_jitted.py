@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 
-from pqueens.regression_approximations import from_config_create_regression_approximation
+from pqueens.models import from_config_create_model
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
     gradient_sinus_test_fun,
@@ -23,15 +23,15 @@ def my_config():
             "initial_hyper_params_lst": [1.0, 1.0, 0.01],
             "plot_refresh_rate": 10,
             "noise_var_lb": 1.0e-04,
-            "data_scaling": {"type": "standard_scaler"},
+            "data_scaling": "standard_scaler",
         },
         "optimizer": {
             "type": "adam",
             "learning_rate": 0.01,
             "optimization_type": "max",
             "max_iterations": 1000,
-            "rel_L1_change_threshold": 0.0001,
-            "rel_L2_change_threshold": 0.0001,
+            "rel_l1_change_threshold": 0.0001,
+            "rel_l2_change_threshold": 0.0001,
         },
     }
     return config
@@ -51,7 +51,8 @@ def test_jitted_gp_one_dim(my_config):
 
     # -- squared exponential kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.setup(x_train, y_train)
     my_model.train()
 
     output = my_model.predict(x_test)
@@ -78,7 +79,8 @@ def test_jitted_gp_one_dim(my_config):
     # -- matern-3-2 kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
     my_config[approx_name]['kernel_type'] = 'matern_3_2'
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.setup(x_train, y_train)
     my_model.train()
 
     output = my_model.predict(x_test)
@@ -106,7 +108,8 @@ def test_jitted_gp_two_dim(my_config):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = from_config_create_regression_approximation(my_config, approx_name, x_train, y_train)
+    my_model = from_config_create_model(approx_name, my_config)
+    my_model.setup(x_train, y_train)
     my_model.train()
 
     # evaluate the testing/benchmark function at testing inputs

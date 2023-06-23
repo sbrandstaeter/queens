@@ -6,136 +6,124 @@ import GPy
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
+from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
+from pqueens.models.surrogate_models.utils.gpy_kernels import get_gpy_kernel_type
 
 _logger = logging.getLogger(__name__)
 
 
-class GPGPyRegression(RegressionApproximation):
+class GPGPyRegressionModel(SurrogateModel):
     """Class for creating GP based regression model based on GPy.
 
     This class constructs a GP regression using a GPy model.
 
     Attributes:
-        x_train (np.array): Training inputs.
-        y_train (np.array): Training outputs.
         scaler_x (sklearn scaler object): Scaler for inputs.
         number_posterior_samples (int): Number of posterior samples.
         number_input_dimensions: TODO_doc
         model (Gpy.model): GPy based Gaussian process model.
         seed_optimizer (int): Seed for optimizer for training the GP.
         seed_posterior_samples (int): Seed for posterior samples.
-        number_restarts: TODO_doc
-        number_optimizer_iterations: TODO_doc
+        number_restarts (int): Number of restarts for optimization
+        number_optimizer_iterations (int): Number of optimizer iterations
+        ard (bool): if true, automatic relevance determination (ARD) is activated
+        kernel_type (str): Kernel type
+        normalize_y (bool): if true, output values are normalized
     """
 
     def __init__(
         self,
-        x_train,
-        y_train,
-        scaler_x,
-        number_posterior_samples,
-        number_input_dimensions,
-        model,
-        seed_optimizer,
-        seed_posterior_samples,
-        number_restarts,
-        number_optimizer_iterations,
+        training_iterator=None,
+        testing_iterator=None,
+        eval_fit=None,
+        error_measures=None,
+        plotting_options=None,
+        num_posterior_samples=None,
+        ard=False,
+        kernel_type="sum_rbf",
+        seed_optimizer=42,
+        seed_posterior_samples=None,
+        num_restart=5,
+        number_optimizer_iterations=1000,
+        normalize_y=True,
     ):
-        """TODO_doc.
+        """Initialize an instance of the GPy regression model.
 
         Args:
-            x_train: TODO_doc
-            y_train: TODO_doc
-            scaler_x: TODO_doc
-            number_posterior_samples: TODO_doc
-            number_input_dimensions: TODO_doc
-            model: TODO_doc
-            seed_optimizer: TODO_doc
-            seed_posterior_samples: TODO_doc
-            number_restarts: TODO_doc
-            number_optimizer_iterations: TODO_doc
+            training_iterator (Iterator): Iterator to evaluate the subordinate model with the
+                                          purpose of getting training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate model with the purpose
+                                         of getting testing data
+            eval_fit (str): How to evaluate goodness of fit
+            error_measures (list): List of error measures to compute
+            plotting_options (dict): plotting options
+            num_posterior_samples (int): Number of posterior samples
+            ard (bool): if true, automatic relevance determination (ARD) is activated
+            kernel_type (str): Kernel type
+            seed_optimizer (int): Seed for optimizer for training the GP.
+            seed_posterior_samples (int): Seed for posterior samples.
+            num_restart (int): Number of restarts for optimization
+            number_optimizer_iterations (int): Number of optimizer iterations
+            normalize_y (bool): if true, output values are normalized
         """
-        self.x_train = x_train
-        self.y_train = y_train
-        self.scaler_x = scaler_x
-        self.number_posterior_samples = number_posterior_samples
-        self.number_input_dimensions = number_input_dimensions
-        self.model = model
+        super().__init__(
+            training_iterator=training_iterator,
+            testing_iterator=testing_iterator,
+            eval_fit=eval_fit,
+            error_measures=error_measures,
+            plotting_options=plotting_options,
+        )
+        self.scaler_x = None
+        self.number_posterior_samples = num_posterior_samples
+        self.number_input_dimensions = None
+        self.model = None
         self.seed_optimizer = seed_optimizer
         self.seed_posterior_samples = seed_posterior_samples
-        self.number_restarts = number_restarts
+        self.number_restarts = num_restart
         self.number_optimizer_iterations = number_optimizer_iterations
+        self.ard = ard
+        self.kernel_type = kernel_type
+        self.normalize_y = normalize_y
 
-    @classmethod
-    def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary.
+    def setup(self, x_train, y_train):
+        """Setup surrogate model.
 
         Args:
-            config (dict):         Dictionary with problem description (input file)
-            approx_name (str):     Name of approximation method
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
-
-        Returns:
-            gp_approximation_gpy: Approximation object
+            x_train (np.array): training inputs
+            y_train (np.array): training outputs
         """
-        approx_options = config[approx_name]
-        number_posterior_samples = approx_options.get('num_posterior_samples', None)
-        ard = approx_options.get('ard', False)
-        kernel_type = approx_options.get('kernel_type', "sum_rbf")
-        seed_optimizer = approx_options.get("seed_optimizer", 42)
-        seed_posterior_samples = approx_options.get("seed_posterior_samples", None)
-        number_restarts = approx_options.get("num_restart", 5)
-        number_optimizer_iterations = approx_options.get("number_optimizer_iterations", 1000)
-
-        normalize_y = approx_options.get("normalize_y", True)
-
         # input dimension
         if len(x_train.shape) == 1:
-            number_input_dimensions = 1
+            self.number_input_dimensions = 1
         else:
-            number_input_dimensions = x_train.shape[1]
+            self.number_input_dimensions = x_train.shape[1]
 
         if y_train.ndim == 1:
             y_train = y_train.reshape((-1, 1))
+        self.y_train = y_train
 
         # scaling of input dimensions
-        scaler_x = StandardScaler()
-        scaler_x.fit(x_train)
-        x_train = scaler_x.transform(x_train)
+        self.scaler_x = StandardScaler()
+        self.scaler_x.fit(x_train)
+        self.x_train = self.scaler_x.transform(x_train)
 
-        lengthscale_0 = 0.1 * abs(np.max(x_train) - np.min(x_train))
+        lengthscale_0 = 0.1 * abs(np.max(self.x_train) - np.min(self.x_train))
 
-        if normalize_y is True:
+        if self.normalize_y is True:
             variance_0 = 1.0
         else:
-            variance_0 = abs(np.max(y_train) - np.min(y_train))
+            variance_0 = abs(np.max(self.y_train) - np.min(self.y_train))
 
-        kernel = cls._setup_kernel(
-            kernel_type, number_input_dimensions, variance_0, lengthscale_0, ard
+        kernel = self._setup_kernel(
+            self.kernel_type, self.number_input_dimensions, variance_0, lengthscale_0, self.ard
         )
-        model = GPy.models.GPRegression(
-            x_train,
-            y_train,
+        self.model = GPy.models.GPRegression(
+            self.x_train,
+            self.y_train,
             kernel=kernel,
-            normalizer=normalize_y,
+            normalizer=self.normalize_y,
         )
-        _logger.info(str(model))
-
-        return cls(
-            x_train,
-            y_train,
-            scaler_x,
-            number_posterior_samples,
-            number_input_dimensions,
-            model,
-            seed_optimizer,
-            seed_posterior_samples,
-            number_restarts,
-            number_optimizer_iterations,
-        )
+        _logger.info(str(self.model))
 
     def train(self):
         """Train the GP by maximizing the likelihood."""

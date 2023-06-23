@@ -27,30 +27,22 @@ interface:
   type: direct_python_interface
   function: ishigami90
 gp_surrogate_model:
-  type: datafit_surrogate_model
-  interface_name: approximation_interface
-  subordinate_iterator_name: truth_model_iterator
-  subordinate_model_name: truth_model
+  type: gp_approximation_gpy
+  training_iterator_name: truth_model_iterator
   testing_iterator_name: testing_iterator
-  nash_sutcliffe_efficiency: true
+  error_measures:
+    - nash_sutcliffe_efficiency
+  kernel_type: prod_rbf
+  ard: true
+  num_restart: 1
+  seed_optimizer: 42
+  seed_posterior_samples: 42
 testing_iterator:
   type: lhs
   seed: 30
   num_samples: 100
   model_name: truth_model
   num_iterations: 10
-approximation_interface:
-  type: approximation_interface
-  approximation: gpy_regression
-gpy_regression:
-  type: gp_approximation_gpy
-  kernel_type: prod_rbf
-  ard: true
-  num_restart: 1
-  length_scale: 1
-  variance: 1
-  seed_optimizer: 42
-  seed_posterior_samples: 42
 truth_model:
   type: simulation_model
   interface_name: interface
