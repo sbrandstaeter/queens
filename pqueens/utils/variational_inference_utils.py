@@ -42,12 +42,12 @@ class VariationalDistribution:
         """
 
     @abc.abstractmethod
-    def draw(self, variational_parameters, num_draws=1):
-        """Draw *num_draws* samples from distribution.
+    def draw(self, variational_parameters, n_draws=1):
+        """Draw *n_draws* samples from distribution.
 
         Args:
            variational_parameters (np.ndarray):  variational parameters (1 x n_params)
-           num_draws (int): Number of samples
+           n_draws (int): Number of samples
         """
 
     @abc.abstractmethod
@@ -218,18 +218,18 @@ class MeanFieldNormalVariational(VariationalDistribution):
         grad_reconstruct_params = np.hstack((grad_mean, grad_std))
         return grad_reconstruct_params
 
-    def draw(self, variational_parameters, num_draws=1):
-        """Draw *num_draw* samples from the variational distribution.
+    def draw(self, variational_parameters, n_draws=1):
+        """Draw *n_draw* samples from the variational distribution.
 
         Args:
             variational_parameters (np.ndarray): Variational parameters
-            num_draw (int): Number of samples to draw
+            n_draw (int): Number of samples to draw
 
         Returns:
             samples (np.ndarray): Row-wise samples of the variational distribution
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
-        samples = np.random.randn(num_draws, self.dimension) * np.sqrt(np.diag(cov)).reshape(
+        samples = np.random.randn(n_draws, self.dimension) * np.sqrt(np.diag(cov)).reshape(
             1, -1
         ) + mean.reshape(1, -1)
         return samples
@@ -326,7 +326,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
             variational_parameters (np.ndarray): Variational parameters
 
         Returns:
-            FIM (np.ndarray): Matrix (num parameters :math:`\times` num parameters)
+            FIM (np.ndarray): Matrix (n_parameters x n_parameters)
         """
         fisher_diag = np.exp(-2 * variational_parameters[self.dimension :])
         fisher_diag = np.hstack((fisher_diag, 2 * np.ones(self.dimension)))
@@ -533,12 +533,12 @@ class FullRankNormalVariational(VariationalDistribution):
         grad_reconstruct_params = np.hstack((grad_mean, grad_cholesky))
         return grad_reconstruct_params
 
-    def draw(self, variational_parameters, num_draws=1):
-        """Draw *num_draw* samples from the variational distribution.
+    def draw(self, variational_parameters, n_draws=1):
+        """Draw *n_draw* samples from the variational distribution.
 
         Args:
             variational_parameters (np.ndarray): Variational parameters
-            num_draw (int): Number of samples to draw
+            n_draw (int): Number of samples to draw
 
         Returns:
             samples (np.ndarray): Row-wise samples of the variational distribution
@@ -546,7 +546,7 @@ class FullRankNormalVariational(VariationalDistribution):
         mean, _, L = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
-        sample = np.dot(L, np.random.randn(self.dimension, num_draws)).T + mean.reshape(1, -1)
+        sample = np.dot(L, np.random.randn(self.dimension, n_draws)).T + mean.reshape(1, -1)
         return sample
 
     def logpdf(self, variational_parameters, x):
@@ -786,23 +786,23 @@ class MixtureModel(VariationalDistribution):
     This allows the weight parameters :math:`\lambda_{weights}` to be unconstrained.
 
     Attributes:
-        num_components (int): Number of mixture components.
+        n_components (int): Number of mixture components.
         base_distribution: Variational distribution object for the components.
         n_parameters (int): Number of parameters used in the parameterization.
     """
 
-    def __init__(self, base_distribution, dimension, num_components):
+    def __init__(self, base_distribution, dimension, n_components):
         """Initialize mixture model.
 
         Args:
             dimension (int): Dimension of the random variable
-            num_components (int): Number of mixture components
+            n_components (int): Number of mixture components
             base_distribution: Variational distribution object for the components
         """
         super().__init__(dimension)
-        self.num_components = num_components
+        self.n_components = n_components
         self.base_distribution = base_distribution
-        self.n_parameters = num_components * base_distribution.n_parameters
+        self.n_parameters = n_components * base_distribution.n_parameters
 
     def initialize_variational_parameters(self, random=False):
         r"""Initialize variational parameters.
@@ -829,7 +829,7 @@ class MixtureModel(VariationalDistribution):
         # Repeat for each component
 
         variational_parameters_components = np.tile(
-            variational_parameters_components, self.num_components
+            variational_parameters_components, self.n_components
         )
         if random:
             variational_parameters_weights = (
@@ -877,13 +877,13 @@ class MixtureModel(VariationalDistribution):
         """
         n_parameters_comp = self.base_distribution.n_parameters
         variational_parameters_list = []
-        for j in range(self.num_components):
+        for j in range(self.n_components):
             params_comp = variational_parameters[
                 n_parameters_comp * j : n_parameters_comp * (j + 1)
             ]
             variational_parameters_list.append(params_comp)
         # Compute the weights from the weight parameters
-        weights = np.exp(variational_parameters[-self.num_components :])
+        weights = np.exp(variational_parameters[-self.n_components :])
         weights = weights / np.sum(weights)
         return variational_parameters_list, weights
 
@@ -902,7 +902,7 @@ class MixtureModel(VariationalDistribution):
         """
         n_parameters_comp = self.base_distribution.n_parameters
         distribution_parameters_list = []
-        for j in range(self.num_components):
+        for j in range(self.n_components):
             params_comp = variational_parameters[
                 n_parameters_comp * j : n_parameters_comp * (j + 1)
             ]
@@ -911,12 +911,12 @@ class MixtureModel(VariationalDistribution):
             )
 
         # Compute the weights from the weight parameters
-        weights = np.exp(variational_parameters[-self.num_components :])
+        weights = np.exp(variational_parameters[-self.n_components :])
         weights = weights / np.sum(weights)
         return distribution_parameters_list, weights
 
-    def draw(self, variational_parameters, num_draws=1):
-        """Draw *num_draw* samples from the variational distribution.
+    def draw(self, variational_parameters, n_draws=1):
+        """Draw *n_draw* samples from the variational distribution.
 
         Uses a two-step process:
             1. From a multinomial distribution, based on the weights, select a component
@@ -924,7 +924,7 @@ class MixtureModel(VariationalDistribution):
 
         Args:
             variational_parameters (np.ndarray): Variational parameters
-            num_draws (int): Number of samples to draw
+            n_draws (int): Number of samples to draw
 
         Returns:
             samples (np.ndarray): Row wise samples of the variational distribution
@@ -933,7 +933,7 @@ class MixtureModel(VariationalDistribution):
             variational_parameters
         )
         samples = []
-        for _ in range(num_draws):
+        for _ in range(n_draws):
             # Select component to draw from
             component = np.argmax(np.random.multinomial(1, weights))
             # Draw a sample of this component
@@ -966,10 +966,10 @@ class MixtureModel(VariationalDistribution):
         x = np.atleast_2d(x)
         # Parameter for the log-sum-exp trick
         max_logpdf = -np.inf * np.ones(len(x))
-        for j in range(self.num_components):
+        for j in range(self.n_components):
             logpdf.append(np.log(weights[j]) + self.base_distribution.logpdf(parameters_list[j], x))
             max_logpdf = np.maximum(max_logpdf, logpdf[-1])
-        logpdf = np.array(logpdf) - np.tile(max_logpdf, (self.num_components, 1))
+        logpdf = np.array(logpdf) - np.tile(max_logpdf, (self.n_components, 1))
         logpdf = np.sum(np.exp(logpdf), axis=0)
         logpdf = np.log(logpdf) + max_logpdf
         return logpdf
@@ -1010,9 +1010,9 @@ class MixtureModel(VariationalDistribution):
         # Score function entries due to the parameters of the components
         component_block = []
         # Score function entries due to the weight parameterization
-        weights_block = np.zeros((self.num_components, len(x)))
+        weights_block = np.zeros((self.n_components, len(x)))
         logpdf = self.logpdf(variational_parameters, x)
-        for j in range(self.num_components):
+        for j in range(self.n_components):
             # coefficient for the score term of every component
             precoeff = np.exp(self.base_distribution.logpdf(parameters_list[j], x) - logpdf)
             # Score function of the jth component
@@ -1020,7 +1020,7 @@ class MixtureModel(VariationalDistribution):
             component_block.append(
                 weights[j] * np.tile(precoeff, (len(score_comp), 1)) * score_comp
             )
-            weights_block += np.tile(precoeff, (self.num_components, 1)) * jacobian_weights[
+            weights_block += np.tile(precoeff, (self.n_components, 1)) * jacobian_weights[
                 :, j
             ].reshape(-1, 1)
         score = np.vstack((np.concatenate(component_block, axis=0), weights_block))
@@ -1059,12 +1059,12 @@ class MixtureModel(VariationalDistribution):
         export_dict = {
             "type": "mixture_model",
             "dimension": self.dimension,
-            "num_components": self.num_components,
+            "n_components": self.n_components,
             "weights": weights,
             "variational_parameters": variational_parameters,
         }
         # Loop over the components
-        for j in range(self.num_components):
+        for j in range(self.n_components):
             component_dict = self.base_distribution.export_dict(parameters_list[j])
             component_key = "component_" + str(j)
             export_dict.update({component_key: component_dict})
@@ -1147,18 +1147,18 @@ class ParticleVariational(VariationalDistribution):
         )
         return probabilities, self.particles_obj.sample_space
 
-    def draw(self, variational_parameters, num_draws=1):
-        """Draw *num_draws* samples from distribution.
+    def draw(self, variational_parameters, n_draws=1):
+        """Draw *n_draws* samples from distribution.
 
         Args:
             variational_parameters (np.ndarray): Variational parameters of the distribution
-            num_draws (int): Number of samples
+            n_draws (int): Number of samples
 
         Returns:
-            samples (np.ndarray): samples (num_draws x n_dim)
+            samples (np.ndarray): samples (n_draws x n_dim)
         """
         self.reconstruct_distribution_parameters(variational_parameters)
-        return self.particles_obj.draw(num_draws)
+        return self.particles_obj.draw(n_draws)
 
     def logpdf(self, variational_parameters, x):
         """Evaluate the natural logarithm of the logpdf at sample.
@@ -1299,19 +1299,19 @@ def create_normal_distribution(dimension, approximation_type):
     return distribution_obj
 
 
-def create_mixture_model_distribution(base_distribution, dimension, num_components):
+def create_mixture_model_distribution(base_distribution, dimension, n_components):
     """Create a mixture model variational distribution.
 
     Args:
         base_distribution: Variational distribution object
         dimension (int): Dimension of latent variable
-        num_components (int): Number of mixture components
+        n_components (int): Number of mixture components
 
     Returns:
         distribution_obj: Variational distribution object
     """
-    if num_components > 1:
-        distribution_obj = MixtureModel(base_distribution, dimension, num_components)
+    if n_components > 1:
+        distribution_obj = MixtureModel(base_distribution, dimension, n_components)
     else:
         raise ValueError(
             "Number of mixture components has be greater than 1. If a single component is"
@@ -1338,12 +1338,12 @@ def create_variational_distribution(distribution_options):
         distribution_obj = create_simple_distribution(distribution_options)
     elif distribution_family in supported_nested_distribution_families:
         dimension = distribution_options.get('dimension')
-        num_components = distribution_options.get('num_components')
+        n_components = distribution_options.get('n_components')
         base_distribution_options = distribution_options.get('base_distribution')
         base_distribution_options.update({"dimension": dimension})
         base_distribution_obj = create_simple_distribution(base_distribution_options)
         distribution_obj = create_mixture_model_distribution(
-            base_distribution_obj, dimension, num_components
+            base_distribution_obj, dimension, n_components
         )
     else:
         supported_distributions = (
