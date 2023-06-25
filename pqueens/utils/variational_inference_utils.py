@@ -643,7 +643,7 @@ class FullRankNormalVariational(VariationalDistribution):
             within one sample. (Third dimension is empty
             and just added to keep slices two-dimensional.)
         """
-        mean, cov, _ = self.reconstruct_distribution_parameters(variational_parameters)
+        mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         gradient_lst = []
         for sample in sample_batch:
             gradient_lst.append(
@@ -727,7 +727,9 @@ class FullRankNormalVariational(VariationalDistribution):
             distribution
         """
         standard_normal_sample_batch = np.random.normal(0, 1, size=(n_samples, self.dimension))
-        mean, _, L = self.reconstruct_distribution_parameters(variational_parameters)
+        mean, _, L = self.reconstruct_distribution_parameters(
+            variational_parameters, return_cholesky=True
+        )
         samples_mat = mean + np.dot(L, standard_normal_sample_batch.T)
 
         return samples_mat.T, standard_normal_sample_batch
