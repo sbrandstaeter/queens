@@ -6,7 +6,7 @@
 cython==0.29.35
 numba==0.57.0
 numpy==1.23.5
-pandas==2.0.1
+pandas==1.5.3
 scikit-learn==1.2.2
 scipy==1.10.1
 

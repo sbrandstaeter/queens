@@ -336,7 +336,7 @@ packaging==23.0
     #   pytest
     #   tensorflow
     #   xarray
-pandas==2.0.1
+pandas==1.5.3
     # via
     #   -r requirements.in
     #   arviz
@@ -537,8 +537,6 @@ typing-extensions==4.5.0
     #   pytensor
     #   tensorflow
     #   torch
-tzdata==2023.3
-    # via pandas
 urllib3==1.26.15
     # via
     #   distributed
