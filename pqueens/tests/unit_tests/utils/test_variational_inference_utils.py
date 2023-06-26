@@ -90,7 +90,7 @@ def fixture_meanfield_reference_data():
         ]
     )
     fisher_information_matrix = np.diag([0.5, 0.5, 0.5, 2, 2, 2])
-    reference_data = ReferenceData(
+    return ReferenceData(
         distribution,
         (mean, cov),
         variational_parameters,
@@ -99,7 +99,6 @@ def fixture_meanfield_reference_data():
         score_function_values,
         fisher_information_matrix,
     )
-    return reference_data
 
 
 @pytest.fixture(name="fullrank_reference_data")
@@ -142,7 +141,7 @@ def fixture_fullrank_reference_data():
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5],
         ]
     )
-    reference_data = ReferenceData(
+    return ReferenceData(
         distribution,
         (mean, cov),
         variational_parameters,
@@ -151,7 +150,6 @@ def fixture_fullrank_reference_data():
         score_function,
         fisher_information_matrix,
     )
-    return reference_data
 
 
 @pytest.fixture(name="mixture_reference_data")
@@ -196,7 +194,7 @@ def fixture_mixture_reference_data(mean_field_reference_data):
             [-0.06836988, -0.18962118],
         ]
     )
-    reference_data = ReferenceData(
+    return ReferenceData(
         distribution,
         (distribution_parameters_components, weights),
         variational_parameters,
@@ -205,7 +203,6 @@ def fixture_mixture_reference_data(mean_field_reference_data):
         score_function,
         None,
     )
-    return reference_data
 
 
 @pytest.fixture(name="particles_reference_data")
@@ -222,7 +219,7 @@ def fixture_particles_reference_data():
 
     score_function = np.array([[0.9, 0.9, -0.1], [-0.9, -0.9, 0.1]])
     fisher_information_matrix = np.array([[0.09, -0.09], [-0.09, 0.09]])
-    reference_data = ReferenceData(
+    return ReferenceData(
         distribution,
         (probabilities, sample_space),
         variational_parameters,
@@ -231,14 +228,14 @@ def fixture_particles_reference_data():
         score_function,
         fisher_information_matrix,
     )
-    return reference_data
 
 
 @pytest.fixture(name="distributions")
 def fixture_distributions(request):
     """Fixture to loop through the distributions."""
-    distribution = request.getfixturevalue(request.param + "_distribution")
-    reference_data = request.getfixturevalue(request.param + "_reference_data")
+    distribution_name = request.param
+    distribution = request.getfixturevalue(distribution_name + "_distribution")
+    reference_data = request.getfixturevalue(distribution_name + "_reference_data")
     return distribution, reference_data
 
 
@@ -371,7 +368,7 @@ def test_fisher_information_matrix_mixture(distributions):
 
     # Seed needs to be fixed due to MC
     np.random.seed(42)
-    reference_fim = np.array(
+    fisher_information_matrix = np.array(
         [
             [
                 3.06080000e-02,
@@ -603,5 +600,5 @@ def test_fisher_information_matrix_mixture(distributions):
         distribution.fisher_information_matrix(
             reference_data.variational_parameters, n_samples=10000
         ),
-        reference_fim,
+        fisher_information_matrix,
     )
