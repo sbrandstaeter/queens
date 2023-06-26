@@ -53,8 +53,8 @@ def build_remote_environment(remote_address, remote_user, remote_queens_reposito
     command_string = (
         f'ssh {remote_user}@{remote_address} "'
         f'cd {remote_queens_repository}; '
-        f'conda env create -f environment.yml --name {environment_name} --force; '
-        f'conda activate {environment_name};'
+        f'mamba env create -f environment.yml --name {environment_name} --force; '
+        f'mamba activate {environment_name};'
         f'pip install -e ."'
     )
     start_time = time.time()
