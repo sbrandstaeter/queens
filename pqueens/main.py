@@ -31,9 +31,11 @@ def run(input_file, output_dir, debug=False):
     config = get_config_dict(input_file, output_dir, debug)
 
     # set up logging
+    log_file_path = Path(config["global_settings"]["output_dir"]) / (
+        f'{config["global_settings"]["experiment_name"]}.log'
+    )
     setup_basic_logging(
-        Path(config["global_settings"]["output_dir"]),
-        config["global_settings"]["experiment_name"],
+        log_file_path=log_file_path,
         debug=debug,
     )
 
@@ -42,7 +44,6 @@ def run(input_file, output_dir, debug=False):
     DB_module.from_config_create_database(config)
 
     with DB_module.database:
-
         # do pre-processing
         pre_processer = from_config_create_external_geometry(config, 'pre_processing')
         if pre_processer:

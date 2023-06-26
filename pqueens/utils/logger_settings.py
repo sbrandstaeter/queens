@@ -62,12 +62,12 @@ class NewLineFormatter(logging.Formatter):
         return formatted_message
 
 
-def setup_basic_logging(output_dir, experiment_name, debug=False):
+def setup_basic_logging(log_file_path, logger=None, debug=False):
     """Setup basic logging.
 
     Args:
-        output_dir (Path): Output directory where to save the log-file
-        experiment_name (str): Experiment name used as file name for the log-file
+        log_file_path (Path): Path to the log-file
+        logger (logging.Logger): Logger instance that should be set up
         debug (bool): Indicates debug mode and controls level of logging
     """
     if debug:
@@ -75,19 +75,20 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     else:
         logging_level = logging.INFO
 
-    library_logger = logging.getLogger(LIBRARY_LOGGER_NAME)
+    if logger is None:
+        # setup library logger
+        logger = logging.getLogger(LIBRARY_LOGGER_NAME)
     # call setLevel() for basic initialisation (this is needed not sure why)
-    library_logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 
     # set up logging to file
-    logging_file_path = output_dir / f"{experiment_name}.log"
-    file_handler = logging.FileHandler(logging_file_path, mode="w")
+    file_handler = logging.FileHandler(log_file_path, mode="w")
     file_formatter = NewLineFormatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging_level)
-    library_logger.addHandler(file_handler)
+    logger.addHandler(file_handler)
 
     # a plain, minimal formatter for streamhandlers
     stream_formatter = NewLineFormatter('%(message)s')
@@ -99,14 +100,14 @@ def setup_basic_logging(output_dir, experiment_name, debug=False):
     console_stdout.addFilter(log_filter)
     console_stdout.setLevel(logging_level)
     console_stdout.setFormatter(stream_formatter)
-    library_logger.addHandler(console_stdout)
+    logger.addHandler(console_stdout)
 
     # set up logging to stderr
     console_stderr = logging.StreamHandler(stream=sys.stderr)
     # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
     console_stderr.setLevel(max(logging_level, logging.ERROR))
     console_stderr.setFormatter(stream_formatter)
-    library_logger.addHandler(console_stderr)
+    logger.addHandler(console_stderr)
 
     if not debug:
         # deactivate logging for specific modules
@@ -283,8 +284,9 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
 def reset_logging():
     """Reset loggers.
 
-    This is only needed during testing, as otherwise the loggers are not destroyed resulting in the
-    same output multiple time. This is taken from:
+    This is only needed during testing, as otherwise the loggers are not
+    destroyed resulting in the same output multiple time. This is taken
+    from:
 
     https://stackoverflow.com/a/56810619
     """
