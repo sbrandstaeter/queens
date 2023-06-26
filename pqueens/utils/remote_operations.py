@@ -1,5 +1,6 @@
 """Module supplies functions to conduct operation on remote resource."""
 import atexit
+import json
 import logging
 import pickle
 import uuid
@@ -62,6 +63,7 @@ class RemoteConnection(Connection):
     Attributes:
         func_file_name (str): Filename of temporary pickle file for the deployed function
         output_file_name (str): Filename of temporary pickle file for the output
+        remote_python (str): Path to remote python
         python_cmd (str): Command that is executed on remote machine to run python function
     """
 
@@ -76,6 +78,7 @@ class RemoteConnection(Connection):
         super().__init__(host, user=user)
         self.func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
         self.output_file_name = f"output_{str(uuid.uuid4())}.pickle"
+        self.remote_python = remote_python
         self.python_cmd = (
             f"{remote_python} -c 'import pickle; from pathlib import Path;"
             f"file = open(\"{self.func_file_name}\", \"rb\");"
@@ -84,6 +87,43 @@ class RemoteConnection(Connection):
             f"file = open(\"{self.output_file_name}\", \"wb\");"
             f"pickle.dump(result, file); file.close();'"
         )
+
+    def start_cluster(
+        self,
+        cluster_queens_repository,
+        workload_manager,
+        dask_cluster_kwargs,
+        dask_cluster_adapt_kwargs,
+        experiment_dir,
+    ):
+        """Start a Dask Cluster remotely using an ssh connection.
+
+        Args:
+            cluster_queens_repository (str): Path to Queens repository on cluster
+            workload_manager (str): Workload manager ("pbs" or "slurm") on cluster
+            dask_cluster_kwargs (dict): collection of keyword arguments to be forwarded to
+                                        DASK Cluster
+            dask_cluster_adapt_kwargs (dict): collection of keyword arguments to be forwarded to
+                                        DASK Cluster adapt method
+            experiment_dir (str): directory holding all data of QUEENS experiment on remote
+        Returns:
+            return_value (obj): Return value of function
+        """
+        _logger.info("Starting Dask cluster on %s", self.host)
+
+        python_cmd = (
+            f"{self.remote_python} "
+            f"{Path(cluster_queens_repository) / 'pqueens' / 'utils' / 'start_dask_cluster.py'} "
+            f"--workload-manager {workload_manager} "
+            f"--dask-cluster-kwargs '{json.dumps(dask_cluster_kwargs)}' "
+            f"--dask-cluster-adapt-kwargs '{json.dumps(dask_cluster_adapt_kwargs)}' "
+            f"--experiment-dir {experiment_dir}"
+        )
+        _logger.debug("Starting cluster with command:")
+        _logger.debug("%s", python_cmd)
+        _, stdout, stderr = self.client.exec_command(python_cmd, get_pty=True)
+
+        return stdout, stderr
 
     def run_function(self, func, *func_args, wait=True, **func_kwargs):
         """Run a python function remotely using an ssh connection.

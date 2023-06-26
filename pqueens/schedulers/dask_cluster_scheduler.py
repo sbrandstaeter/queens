@@ -91,7 +91,6 @@ class ClusterScheduler(Scheduler):
 
         num_cores = max(num_procs, num_procs_post)
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
-        dask_cluster_cls = dask_cluster_options['dask_cluster_cls']
         job_extra_directives = dask_cluster_options['job_extra_directives'](num_nodes, num_cores)
         job_directives_skip = dask_cluster_options['job_directives_skip']
 
@@ -106,31 +105,33 @@ class ClusterScheduler(Scheduler):
             "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
         )
 
-        def start_cluster_on_login_node(port):
-            """Start dask cluster object on login node."""
-            scheduler_options = {"port": port}
-            if cluster_internal_address:
-                scheduler_options["contact_address"] = f"{cluster_internal_address}:{port}"
-            cluster = dask_cluster_cls(
-                job_name=experiment_name,
-                queue=queue,
-                cores=num_cores,
-                memory='10TB',
-                scheduler_options=scheduler_options,
-                walltime=walltime,
-                log_directory=str(experiment_dir),
-                job_directives_skip=job_directives_skip,
-                job_extra_directives=[job_extra_directives],
-            )
-            cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
-            (experiment_dir / 'dask_jobscript').write_text(str(cluster.job_script()))
-            while True:
-                time.sleep(1)
-
         remote_port = connection.run_function(self.get_port)
-        stdout, stderr = connection.run_function(
-            start_cluster_on_login_node, remote_port, wait=False
+        scheduler_options = {"port": remote_port}
+        if cluster_internal_address:
+            scheduler_options["contact_address"] = f"{cluster_internal_address}:{remote_port}"
+        dask_cluster_kwargs = {
+            "job_name": experiment_name,
+            "queue": queue,
+            "cores": num_cores,
+            "memory": '10TB',
+            "scheduler_options": scheduler_options,
+            "walltime": walltime,
+            "log_directory": str(experiment_dir),
+            "job_directives_skip": job_directives_skip,
+            "job_extra_directives": [job_extra_directives],
+        }
+        dask_cluster_adapt_kwargs = {
+            "minimum_jobs": min_jobs,
+            "maximum_jobs": max_jobs,
+        }
+        stdout, stderr = connection.start_cluster(
+            cluster_queens_repository,
+            workload_manager,
+            dask_cluster_kwargs,
+            dask_cluster_adapt_kwargs,
+            experiment_dir,
         )
+
         local_port = self.get_port()
 
         connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
@@ -141,8 +142,6 @@ class ClusterScheduler(Scheduler):
                 break
             except OSError as exc:
                 if i == 1:
-                    stdout.channel.close()
-                    stderr.channel.close()
                     raise OSError(
                         stdout.read().decode('ascii') + stderr.read().decode('ascii')
                     ) from exc
