@@ -23,7 +23,7 @@ class DummyDB(Database):
 
     @classmethod
     def from_config_create_database(cls, config):
-        """Create Mongo database object from problem description.
+        """Create DummyDB database object from problem description.
 
         Args:
             config (dict): Dictionary containing the problem description of the current QUEENS
@@ -56,5 +56,5 @@ class DummyDB(Database):
         """Load from database."""
 
     def __str__(self):
-        """Represen DummyDB as string."""
+        """Represent DummyDB as a human-readable string."""
         return "\nRunning without database.\n"
