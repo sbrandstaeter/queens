@@ -62,7 +62,37 @@ class NewLineFormatter(logging.Formatter):
         return formatted_message
 
 
-def setup_basic_logging(log_file_path, logger=None, debug=False):
+def setup_cli_logging():
+    """Set up logging for CLI utils."""
+    logging_level = logging.INFO
+
+    library_logger = logging.getLogger(LIBRARY_LOGGER_NAME)
+
+    # call setLevel() for basic initialisation (this is needed not sure why)
+    library_logger.setLevel(logging_level)
+
+    # a plain, minimal formatter for streamhandlers
+    stream_formatter = NewLineFormatter('%(message)s')
+
+    # set up logging to stdout
+    console_stdout = logging.StreamHandler(stream=sys.stdout)
+    # messages lower than and including WARNING go to stdout
+    log_filter = LogFilter(logging.WARNING)
+    console_stdout.addFilter(log_filter)
+    console_stdout.setLevel(logging_level)
+    console_stdout.setFormatter(stream_formatter)
+    library_logger.addHandler(console_stdout)
+
+    # set up logging to stderr
+    console_stderr = logging.StreamHandler(stream=sys.stderr)
+
+    # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
+    console_stderr.setLevel(max(logging_level, logging.ERROR))
+    console_stderr.setFormatter(stream_formatter)
+    library_logger.addHandler(console_stderr)
+
+
+def setup_basic_logging(output_dir, experiment_name, debug=False):
     """Setup basic logging.
 
     Args:
