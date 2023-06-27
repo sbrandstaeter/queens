@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pqueens.utils import ascii_art
 from pqueens.utils.exceptions import CLIError
+from pqueens.utils.logger_settings import setup_cli_logging
 from pqueens.utils.manage_singularity import create_singularity_image
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
@@ -14,6 +15,21 @@ from pqueens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 
+def cli_logging(func):
+    """Decorator to create logger for CLI function.
+
+    Args:
+        func (function): Function that is to be decorated
+    """
+
+    def decorated_function(*args, **kwargs):
+        setup_cli_logging()
+        return func(*args, **kwargs)
+
+    return decorated_function
+
+
+@cli_logging
 def build_singularity_cli():
     """Build singularity image CLI wrapper."""
     ascii_art.print_crown(75)
@@ -28,6 +44,7 @@ def build_singularity_cli():
         raise CLIError("Building singularity failed!\n\n") from cli_singularity_error
 
 
+@cli_logging
 def print_pickle_data_cli():
     """Print pickle data wrapper."""
     ascii_art.print_crown(60)
@@ -37,7 +54,7 @@ def print_pickle_data_cli():
         _logger.info('No pickle file was provided!')
     else:
         file_path = args[0]
-        print_pickled_data(file_path)
+        print_pickled_data(Path(file_path))
 
 
 def build_html_coverage_report():
@@ -125,6 +142,7 @@ def get_cli_options(args):
     return input_file, output_dir, debug
 
 
+@cli_logging
 def print_greeting_message():
     """Print a greeting message and how to use QUEENS."""
     ascii_art.print_banner_and_description()
