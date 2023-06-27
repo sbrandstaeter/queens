@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pqueens.utils import ascii_art
 from pqueens.utils.exceptions import CLIError
-from pqueens.utils.logger_settings import setup_cli_logging
+from pqueens.utils.logger_settings import reset_logging, setup_cli_logging
 from pqueens.utils.manage_singularity import create_singularity_image
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
@@ -24,7 +24,11 @@ def cli_logging(func):
 
     def decorated_function(*args, **kwargs):
         setup_cli_logging()
-        return func(*args, **kwargs)
+        results = func(*args, **kwargs)
+        reset_logging()
+
+        # For CLI commands there should be no results, but just in case
+        return results
 
     return decorated_function
 
