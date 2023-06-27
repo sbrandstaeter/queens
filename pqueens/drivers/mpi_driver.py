@@ -307,8 +307,6 @@ class MpiDriver(Driver):
         """Run executable locally via subprocess."""
         execute_cmd = self._assemble_execute_cmd_local()
 
-        _logger.debug("Start executable with command:")
-        _logger.debug(execute_cmd)
         returncode, self.pid, _, _ = run_subprocess(
             execute_cmd,
             subprocess_type='simulation',

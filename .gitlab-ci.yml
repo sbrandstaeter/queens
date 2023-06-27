@@ -10,6 +10,8 @@ variables:
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
+  LNM_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -103,6 +105,50 @@ lnm-build_conda_env:
 imcs-build_conda_env:
   extends:
     - .build_conda_env
+  tags:
+    - imcs-build
+#----------------------------------------------------------------------------------------------
+.build_conda_env_cluster:
+  stage: build
+  before_script:
+    - conda activate queens-$CI_PIPELINE_ID
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+  script:
+    - python pqueens/utils/remote_build.py
+      --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+
+bruteforce-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+  needs:
+    - lnm-build_conda_env
+  tags:
+    - lnm-build
+
+deep-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+  needs:
+    - lnm-build_conda_env
+  tags:
+    - lnm-build
+
+charon-build_conda_env:
+  extends:
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
+  needs:
+    - imcs-build_conda_env
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
@@ -305,27 +351,35 @@ imcs-ubuntu_full_test_suite:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
+    - pytest pqueens/tests/integration_tests/cluster/
+      -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
+      --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
-#lnm-cluster_tests:
-#  extends:
-#    - .cluster_tests
-#  variables:
-#    CLUSTER_MARKER: 'lnm_cluster'
-#  needs:
-#    - lnm-build_conda_env
-#    - lnm-build_singularity
-#  tags:
-#    - lnm-ubuntu
+lnm-cluster_tests:
+  extends:
+    - .cluster_tests
+  variables:
+    CLUSTER_MARKER: 'lnm_cluster'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+  needs:
+    - lnm-build_conda_env
+    - lnm-build_singularity
+    - bruteforce-build_conda_env
+    - deep-build_conda_env
+  tags:
+    - lnm-ubuntu
 
 imcs-cluster_tests:
   extends:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: "imcs_cluster"
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
+    - charon-build_conda_env
   tags:
     - imcs-ubuntu
 #---------------------------------------------------------------------------------------------------
@@ -538,3 +592,43 @@ deep-cluster-native-remove_conda_env:
     - deep-native-build_conda_env
   tags:
     - deep-native-test
+#---------------------------------------------------------------------------------------------------
+# Remove conda env and repository on cluster
+.remove_conda_env_cluster:
+  stage: cleanup
+  script:
+    - ssh queens@$REMOTE_ADDRESS "conda env remove -n queens-$CI_PIPELINE_ID;
+      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID; rm -rf /home/queens/queens-testing/pytest*"
+  when: always
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+
+bruteforce-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - bruteforce-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+  tags:
+    - lnm-build
+
+deep-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - deep-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+  tags:
+    - lnm-build
+
+charon-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - charon-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+  tags:
+    - imcs-build

@@ -16,6 +16,7 @@ class Interface(metaclass=abc.ABCMeta):
     Attributes:
         name (str): Name of the interface.
         parameters (obj): Parameters object.
+        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, name):
@@ -26,6 +27,7 @@ class Interface(metaclass=abc.ABCMeta):
         """
         self.name = name
         self.parameters = parameters_module.parameters
+        self.latest_job_id = 0
 
     @abc.abstractmethod
     def evaluate(self, samples):
@@ -37,3 +39,21 @@ class Interface(metaclass=abc.ABCMeta):
         Args:
             samples (list):  List of variables objects
         """
+
+    def create_samples_list(self, samples):
+        """Create a list of sample dictionaries with job id.
+
+        Args:
+            samples (np.array): Samples of simulation input variables
+
+        Returns:
+            samples_list (list): List of dicts containing samples and job ids
+        """
+        samples_list = []
+        for sample in samples:
+            self.latest_job_id += 1
+            sample_dict = self.parameters.sample_as_dict(sample)
+            sample_dict['job_id'] = self.latest_job_id
+            samples_list.append(sample_dict)
+
+        return samples_list

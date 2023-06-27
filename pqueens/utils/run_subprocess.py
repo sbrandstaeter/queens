@@ -26,6 +26,8 @@ def run_subprocess(command_string, **kwargs):
         stdout (str): Standard output content
         stderr (str): Standard error content
     """
+    _logger.debug('Run subprocess with command:')
+    _logger.debug(command_string)
     # default subprocess type is "simple"
     subprocess_type = kwargs.get('subprocess_type', 'simple')
 

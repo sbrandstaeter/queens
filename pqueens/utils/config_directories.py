@@ -17,16 +17,21 @@ def local_base_directory():
     return base_dir
 
 
-def remote_base_directory(remote_connect):
-    """Hold all queens related data on remote machine."""
-    _, _, remote_home, _ = run_subprocess(
+def remote_home(remote_connect):
+    """Get home of remote user."""
+    _, _, home, _ = run_subprocess(
         "echo ~",
         subprocess_type="remote",
         remote_connect=remote_connect,
         additional_error_message=f"Unable to identify home on remote.\n"
         f"Tried to connect to {remote_connect}.",
     )
-    base_dir = Path(remote_home.rstrip()) / BASE_DATA_DIR
+    return Path(home.rstrip())
+
+
+def remote_base_directory(remote_connect):
+    """Hold all queens related data on remote machine."""
+    base_dir = remote_home(remote_connect) / BASE_DATA_DIR
     create_directory(base_dir, remote_connect=remote_connect)
     return base_dir
 

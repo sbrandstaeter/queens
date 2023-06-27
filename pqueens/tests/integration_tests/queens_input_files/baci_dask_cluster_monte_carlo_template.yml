@@ -1,0 +1,67 @@
+experiment_name: {{ experiment_name }}
+database:
+  type: mongodb
+  address: localhost:27017
+  reset_existing_db: true
+method:
+  type: monte_carlo
+  seed: 42
+  num_samples: 4
+  model_name: model
+  result_description:
+    write_results: true
+    plot_results: false
+model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: dask_job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: dask_cluster
+  max_jobs: 3
+  min_jobs: 3
+  walltime: 00:00:60
+  num_procs: 2
+  num_procs_post: 1
+  num_nodes: 2
+  workload_manager: {{ workload_manager }}
+  cluster_address: {{ cluster_address }}
+  cluster_internal_address: {{ cluster_internal_address }}
+  cluster_user: {{ cluster_user }}
+  cluster_python_path: {{ cluster_python_path }}
+  cluster_queens_repository: {{ cluster_queens_repository }}
+  cluster_build_environment: false
+driver:
+  type: dask_jobscript
+  input_template: {{ input_template }}
+  path_to_executable: {{ path_to_executable }}
+  dask_jobscript_template: {{ dask_jobscript_template }}
+  path_to_postprocessor: {{ path_to_drt_ensight }}
+  post_file_prefix: {{ experiment_name }}
+  post_process_options: "--filter=ensight"
+  cluster_script_path: {{ cluster_script_path }}
+  data_processor_name: data_processor_baci
+data_processor_baci:
+  type: ensight
+  file_name_identifier: "{{ experiment_name }}*.case"
+  file_options_dict:
+    delete_field_data: false
+    geometric_target: [experimental_data]
+    physical_field_dict:
+      vtk_field_type: structure
+      vtk_array_type: point_array
+      vtk_field_label: displacement
+      field_components: [0]
+    target_time_lst: [0.5]
+    time_tol: 0.001
+parameters:
+  nue:
+    type: uniform
+    lower_bound: 0.45
+    upper_bound: 0.49
+  pressure:
+    type: uniform
+    lower_bound: 28000
+    upper_bound: 38000

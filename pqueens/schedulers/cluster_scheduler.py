@@ -3,7 +3,7 @@ import atexit
 import getpass
 import logging
 import socket
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from pqueens.drivers import from_config_create_driver
@@ -39,28 +39,45 @@ class ClusterConfig:
 
     Attributes:
         name (str):                         name of cluster
-        work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
+        cluster_address (str):              hostname or address to reach cluster from network
+        workload_manager (str):          type of work load scheduling software (PBS or SLURM)
         start_cmd (str):                    command to start a job on the cluster
         jobscript_template (Path):          absolute path to jobscript template file
         job_status_command (str):           command to check job status on cluster
         job_status_location (int):          location of job status in return of job_status_command
         singularity_bind (str):             variable for binding directories on the host
                                             to directories in the container
+        singularity_remote_ip (str):               ip address needed for singularity
+        cluster_internal_address (str)      ip address of login node in cluster internal network
+        default_python_path (str):          path indicating the default remote python location
+        cluster_script_path (Path):          path to the cluster_script which defines functions
+                                            needed for the jobscript
+        dask_jobscript_template (Path):     path to the shell script template that runs a
+                                            forward solver call (e.g., BACI plus post-processor)
     """
 
     name: str
-    work_load_scheduler: str
+    cluster_address: str
+    workload_manager: str
     start_cmd: str
     jobscript_template: Path
     job_status_command: str
     job_status_location: int
     job_status_incomplete: list
     singularity_bind: str
+    singularity_remote_ip: str
+    cluster_internal_address: str
+    default_python_path: str
+    cluster_script_path: Path
+    dask_jobscript_template: Path
+
+    dict = asdict
 
 
 DEEP_CONFIG = ClusterConfig(
     name="deep",
-    work_load_scheduler="pbs",
+    cluster_address="deep.lnm.ed.tum.de",
+    workload_manager="pbs",
     start_cmd="qsub",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
     job_status_command="qstat",
@@ -87,10 +104,20 @@ DEEP_CONFIG = ClusterConfig(
         "/lib:/lib,"
         "/lib64:/lib64"
     ),
+    singularity_remote_ip="129.187.58.20",
+    cluster_internal_address="null",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_deep.sh"
+    ),
 )
+
+
 BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
-    work_load_scheduler="slurm",
+    cluster_address="bruteforce.lnm.ed.tum.de",
+    workload_manager="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
     job_status_command="squeue --job",
@@ -105,10 +132,18 @@ BRUTEFORCE_CONFIG = ClusterConfig(
         "/lib:/lib,"
         "/lib64:/lib64"
     ),
+    singularity_remote_ip="10.10.0.1",
+    cluster_internal_address="10.10.0.1",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_bruteforce.sh"
+    ),
 )
 CHARON_CONFIG = ClusterConfig(
-    name="hades",
-    work_load_scheduler="slurm",
+    name="charon",
+    cluster_address="charon.bauv.unibw-muenchen.de",
+    workload_manager="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
     job_status_command="squeue --job",
@@ -126,6 +161,13 @@ CHARON_CONFIG = ClusterConfig(
         "/lib64:/lib64,"
         "/imcs:/imcs,"
         "/home/opt:/home/opt"
+    ),
+    singularity_remote_ip="192.168.1.253",
+    cluster_internal_address="192.168.2.253",
+    default_python_path="$HOME/miniconda3/envs/queens/bin/python",
+    cluster_script_path=Path(),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_dask_charon.sh"
     ),
 )
 

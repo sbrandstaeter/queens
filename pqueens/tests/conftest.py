@@ -6,9 +6,16 @@ from pathlib import Path
 import pytest
 
 from pqueens.utils import config_directories
+from pqueens.utils.logger_settings import reset_logging
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 
 _logger = logging.getLogger(__name__)
+
+
+def pytest_addoption(parser):
+    """Add pytest options."""
+    parser.addoption("--remote-python", action="store", default=None)
+    parser.addoption("--remote-queens-repository", action="store", default="null")
 
 
 def pytest_collection_modifyitems(items):
@@ -92,7 +99,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
 @pytest.fixture(scope="session")
 def mock_value_experiments_base_folder_name():
     """Value to mock the experiments base folder name."""
-    return "tests"
+    return "pytest"
 
 
 @pytest.fixture(autouse=True)
@@ -104,6 +111,11 @@ def global_mock_experiments_base_folder_name(mock_value_experiments_base_folder_
     """
     monkeypatch.setattr(
         config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
+    )
+    _logger.debug("Mocking of EXPERIMENTS_BASE_FOLDER_NAME was successful.")
+    _logger.debug(
+        "EXPERIMENTS_BASE_FOLDER_NAME is mocked to: %s",
+        config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
     )
 
 
@@ -156,3 +168,23 @@ def example_simulator_fun_dir():
         "tests/integration_tests/example_simulator_functions"
     )
     return input_files_path
+
+
+def pytest_sessionfinish():
+    """Register a hook to suppress logging errors after the session."""
+    logging.raiseExceptions = False
+
+
+@pytest.fixture(name="reset_loggers", autouse=True)
+def fixture_reset_logger():
+    """Reset loggers.
+
+    This fixture is called at every test due to `autouse=True`. It acts
+    as a generator and allows us to close all loggers after each test.
+    This should avoid duplicate logger output.
+    """
+    # Do the test.
+    yield
+
+    # Test is done, now reset the loggers.
+    reset_logging()
