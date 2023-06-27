@@ -7,17 +7,17 @@ systems.
 - [QUEENS](#queens)
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
-    - [Anaconda](#anaconda)
-    - [Git](#git)
-    - [MongoDB](#mongodb)
+    - [Mamba (or conda)](#mamba-or-conda)
+    - [Optional: MongoDB](#optional-mongodb)
     - [Optional: Singularity](#optional-singularity)
-  - [Installation](#installation)
+    - [Git](#git)
+  - [QUEENS Installation](#queens-installation)
+  - [Update Dependencies](#update-dependencies)
+  - [Start a QUEENS run](#start-a-queens-run)
   - [Further Topics](#further-topics)
     - [Remote Computing](#remote-computing)
-    - [LNM-specific issues](#lnm-specific-issues)
   - [Documentation](#documentation)
   - [Run Test Suite](#run-test-suite)
-    - [GitLab Test Machine](#gitlab-test-machine)
 
 
 ## Prerequisites
@@ -25,23 +25,74 @@ There are various prerequisites for QUEENS such as (an appropriately configured)
 
 [↑ Contents](#contents)
 
-### Anaconda
-[Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
- *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
+### Mamba (or conda)
+QUEENS relies on [mamba](https://github.com/mamba-org/mamba) or [conda](https://docs.conda.io/en/latest/)
+as package management system and environment management system.
+[Mamba](https://github.com/mamba-org/mamba) is a more performant reimplementation of conda.
+Either of them will work, but we strongly recommend to use **mamba** due to the performance gain.
 
-- Create a new Anaconda environment, e.g., using Python 3.10:
-```
-conda create -n <name_of_your_environment> python=3.10
-```
+#### Installation
+There are multiple ways of installing both mamba and conda.
+However, we recommend the following:
+- **mamba** (recommended): install [mambaforge](https://github.com/conda-forge/miniforge#mambaforge). For detailed instructions see also [here](https://mamba.readthedocs.io/en/latest/installation.html#installation).
+- conda: install [miniforge](https://github.com/conda-forge/miniforge#miniforge3) or [miniconda](https://docs.conda.io/en/latest/miniconda.html#miniconda)
 
-- List all packages linked into an Anaconda environment:
-```
-conda list -n <name_of_your_environment>
-```
+#### Usage
+For instructions on how to use mamba or conda, e.g. on how to activate an environment, please refer to the official guides:
+- [mamba quickstart instructions](https://mamba.readthedocs.io/en/latest/user_guide/mamba.html#quickstart)
+- [getting started with conda](https://docs.conda.io/projects/conda/en/stable/user-guide/getting-started.html#managing-environments)
 
-- Activate an environment:
+[↑ Contents](#contents)
+
+### Optional: MongoDB
+QUEENS uses a [MongoDB](https://www.mongodb.com/) database (Community Edition) for the handling of certain data.
+Therefore, QUEENS requires certain write and access rights.
+MongoDB does not necessarily have to run on the same machine as QUEENS, although this is the default case.
+In certain situations, though, it might make sense to have the database running on a different computer and connect to the database via port-forwarding.
+
+#### Installation
+For installation on various OS, please follow the official [installation instructions](https://www.mongodb.com/docs/manual/administration/install-community/).
+
+>Note: If you are experiencing SELinux warnings follow the solution [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#optional-suppress-ftdc-warnings).
+
+[↑ Contents](#contents)
+
+### Optional: Singularity
+
+[Singularity](https://docs.sylabs.io/guides/3.11/user-guide/) containers are well suited for being used with QUEENS.
+If you are interested in using Singularity containers for your computations,  please make sure
+that `Singularity` is installed on your local machine.
+
+#### Installation
+1. Please follow the official [installation instructions](https://docs.sylabs.io/guides/3.11/user-guide/quick_start.html#quick-installation-steps).
+
+   **Tip**: we recommend to follow the "download SingularityCE from a release" option.
+
+1. QUEENS uses the fakeroot option of singularity.
+   For more information please refer to the singularity documentation for [users](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admins](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot).
+
+   To enable the fakeroot option for your user (on a linux machine) execute the following command once on your workstation:
+   ```
+   sudo singularity config fakeroot --add $USER
+   ```
+
+   To check that the command was successful, you can
+   1. show the generated `/etc/subuid`
+       ```bash
+       cat /etc/subuid
+       ```
+      which should return something like `1000:4294836224:65536`.
+   1. show the generated `/etc/subgid`
+       ```bash
+       cat /etc/subgid
+       ```
+      which should return something like `1000:4294836224:65536`.
+
+#### Building a QUEENS singularity image
+Assuming singularity  and QUEENS are already installed, an image for a QUEENS run can be build
+(in the environment where QUEENS is installed) using the QUEENS CLI with the command:
 ```
-conda activate <name_of_your_environment>
+queens-build-singularity
 ```
 [↑ Contents](#contents)
 
@@ -95,164 +146,69 @@ user profile under the section `User settings - SSH keys`
 
 [↑ Contents](#contents)
 
-### MongoDB
-QUEENS uses a [MongoDB database](https://www.mongodb.com/) for data handling. Therefore, QUEENS requires certain write and access rights. MongoDB does not necessarily have to run on the same machine as QUEENS, although this is the default case. In certain situations, though, it might make sense to have the database running on a different computer and connect to the database via port-forwarding.
-
-For installation on various OS, the following hints might be useful:
-
-- Installation instructions for **macOS** can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)
-
-- When using **CentOS 7**, MongoDB can be installed as follows:
-```
-sudo yum install mongodb-org
-```
-
-- Installation instructions for **Ubuntu** can be found [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/).
-
-- Installation instructions for **Fedora 22** can be found [here](https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/).
-
-The commands for starting and potentially stopping MongoDB read as follows:
-
-- Start MongoDB:
-    ```
-    sudo systemctl start mongod
-    ```
-
-- If required, stop MongoDB:
-    ```
-    sudo systemctl stop mongod
-    ```
-
-- And then potentially restart again:
-    ```
-    sudo systemctl restart mongod
-    ```
-
-- (Optional) For MacOS, you have to run:
-    ```
-    mongod --dbpath <path_to_your_database>`
-    ```
-    > Note: It might be required to edit the sudoers file `/etc/sudoers.d/` (together with your administrator) to get execution rights.
 
 
+## QUEENS Installation
+To install *QUEENS* follow the instructions below.
+It needs to be installed once on the local machine, allowing for both local and remote computing.
 
-Note that the MongoDB config file might be edited such that it allows for connections from anywhere (probably not the safest option, but ok for now). If you followed the standard installation instructions, you should edit the config file using
-```
-sudo vim /etc/mongod.conf
-```
-And comment out the `bindIp` like shown
-```
-# network interfaces
-net:
-port: 27017
-# bindIp: 127.0.0.1  <-- comment out this line
-```
->Note: The machine running the MongoDB database does not need to be the same as either the machine running QUEENS. However, the other machines need to be able to connect to the MongoDB via tcp to write data. Within an internal network, all machines need to be connected to that internal network.
-
->Note: If you are experiencing SELinux warnings follow the solution [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#optional-suppress-ftdc-warnings).
-[↑ Contents](#contents)
-
-### Optional: Singularity
-
-Singularity containers are well suited for being used with QUEENS. If you are interested in using Singularity containers for your computations,  please make sure you either have an existing Singularity image `singularity_image.sif` available or `Singularity` installed on your local machine. For instance, in CentOs7, singularity can directly be installed from the repository via:
-```
-sudo yum install singularity
-```
-After the installation, execute the following command once on your workstation:
-```
-sudo singularity config fakeroot --add <your_username>
-```
-To check that the command was successful, you can
-1. show the generated `/etc/subuid`
-    ```bash
-    cat /etc/subuid
-    ```
-    which should return something like `1000:4294836224:65536`.
-For more information please refer to the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.
-
-Make sure that after the installation process your `.bashrc` file contains
-- for LNM CentOS machines:
-  ```
-  export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm
-  export SINGULARITYENV_APPEND_PATH=$PATH
-  export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-  ```
-- for LNM Ubuntu machines:
-  ```
-  export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm,/usr/share/openmpi:/usr/share/openmpi
-  export SINGULARITYENV_APPEND_PATH=$PATH
-  export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-  ```
-
-(Generally this should be generated automatically. Without `lnm` on external PCs.)
-
-Assuming singularity is already installed, an image for a QUEENS run can be build (in the environment where QUEENS is installed) using the QUEENS CLI with the command:
-```
-queens-build-singularity
-```
-[↑ Contents](#contents)
-
-
-## Installation
-*QUEENS* needs only to be installed once on the local machine, allowing already for both local and remote computing.
-
+> **Note**: replace mamba with conda in the instructions below if you are using plain conda.
+>
 1. After having [Git](#configuration-of-git) availabe and appropriately configured, this repository might be cloned to your local machine:
     ```
     git clone git@gitlab.lrz.de:queens_community/queens.git <target-directory>
     ```
-1. Assuming that Anaconda is installed on your local machine, create a QUEENS environment:
+1. Assuming that [mamba](#mamba-or-conda) is installed on your local machine, create a QUEENS environment:
     ```
     cd <your-path-to-QUEENS>
-    conda env create
+    mamba env create
     ```
-    With this, all required third party libraries will be installed.
 
     For a custom environment name:
     ```
-    conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-env-name>
+    mamba env create --name <your-custom-env-name>
     ```
 1. Activate this newly created environment:
     ```
-    conda activate queens
+    mamba activate queens
     ```
-1. Install QUEENS inside the environment:
-    - For simple use (in the QUEENS directory):
+1. Install QUEENS inside the environment
+
+    - For users :
         ```
         pip install -e .
         ```
-    - For developers (in the QUEENS directory):
+    - For developers:
         ```
         pip install -e .[develop]
         ```
-    The `-e` option (or `--editable`) ensures that QUEENS can be modified in the current location without the need to reinstall it.
+      The `-e` option (or `--editable`) ensures that QUEENS can be modified in the current location without the need to reinstall it.
+
 1. If required, uninstall QUEENS within the activated environment:
     ```
     python uninstall queens
     ```
 
-Updates from time to time are recommended:
-
-- Update your Python packages the easy (default) way:
-   ```
-   cd <your-path-to-QUEENS>
-  conda env update
-   ```
-- Update your Python packages in a more advanced way:
-   ```
-   conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml
-   ```
-
-- Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `main` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
-
 [↑ Contents](#contents)
 
+## Update dependencies
+Updates from time to time are recommended as we try to keep the QUEENS dependencies up to date, too.
+To update Python version of your Conda environment:
+1. Checkout the latest version of QUEENS from the Git repository
+1. Update your Python packages the easy (default) way:
+   ```
+   cd <your-path-to-QUEENS>
+   mamba env update
+   ```
+
+
 ## Start a *QUEENS* run
-To start a *QUEENS* run with your *QUEENS* input file, run the following command in your activated python environment:
+To start a *QUEENS* run with your *QUEENS* input file, run the following command in your [activated python environment](#usage):
 ```
 queens --input <path-to-QUEENS-input> --output_dir <output-folder>
 ```
 
-Note: the output folder needs to be created by the user before starting the simulation.
+> **Note**: the output folder needs to be created by the user before starting the simulation.
 
 More information:
 ```
@@ -273,6 +229,12 @@ In case you do not have a `id_rsa.pub`-key on one of the machines, you can gener
 ```batch
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
 ```
+
+To enable passwordless access onto the localhost itself you need to copy the `ssh-key` of the localhost to the
+   `authorized_keys` files by typing:
+    ```
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    ```
 To learn more about how ssh-port forwarding works click
 [here](https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/).
 
@@ -291,47 +253,6 @@ If you have performed the aforementioned step, yet you are still asked for your 
 
 [↑ Contents](#contents)
 
-### LNM-specific issues
-In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access from the remote to the localhost at `port27017`.By default the firewall software `firewalld` blocks every incoming request. Hence, to enable a connections, we have
-add so called rules to `firewalld` in order to connect to the database.
-1.  First check the current firewall rules by typing:
-    ```bash
-    sudo firewall-cmd --list-all
-    ```
-1. If there is no rule in place which allows you to connect to port 27017, you have to add an exception for the *master-node* of the clusters you want work with:
-    ```bash
-    sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<IP-address-of-cluster-master-node> port port=27017 protocol=tcp accept' --permanent
-    ```
-    Some LNM specific IP addresses are:
-    - Schmarrn: 129.187.58.24
-    - Bruteforce (master node global IP): 129.187.58.13
-    - Deep (master node global IP): 129.187.58.20
-
-1. To apply the changes run:
-    ```
-    sudo firewall-cmd --reload
-    ```
-1. To enable passwordless access onto the localhost itself you need to copy the `ssh-key` of the localhost to the
-   `authorized_keys` files by typing:
-    ```
-    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    ```
-
-In case you want to use queens with `bruteforce` at the beginning of the first execution of queens on `bruteforce` your `.bashrc`-file is manipulated. Three lines with:
-```
-export SINGULARITY*
-```
-are added. However, you need to manually modify the line:
-```
-export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=/something/has/been/added/automatically
-```
-and replace the `/something/has/been/added/automatically` by the output of:
-```
-echo $LD_LIBRARY_PATH
-```
-while you are regularly logged in on bruteforce with your account.
-
-[↑ Contents](#contents)
 ## Documentation
 QUEENS uses [SPHINX](https://www.sphinx-doc.org/en/master/) to automatically build a html-documentation from docstring.
 To build it, navigate into the doc folder with:
@@ -365,27 +286,12 @@ ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 The testing strategy is more closely described in [TESTING.md](pqueens/tests/README.md)
 To run the test suite type:
 ```bash
-pytest pqueens/tests -W ignore::DeprecationWarning
+pytest
+```
+To run the test suite with console output:
+```bash
+pytest -o log_cli=true --log-cli-level=INFO
 ```
 For more info see the [pytest documentation](https://docs.pytest.org/en/latest/warnings.html).
-
-[↑ Contents](#contents)
-
-### GitLab Test Machine
-To get started with Gitlab checkout the help section [here](https://gitlab.lrz.de/help/ci/README.md).
-CI with with gitlab requires the setup of so called runners that build and test the code.
-To turn a machine into a runner, you have to install some software as described
-[here](https://docs.gitlab.com/runner/install/linux-repository.html)
-The steps are as follows:
-1. For RHEL/CentOS/Fedora run
-    ```bash
-    curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash
-    ```
-1. To install run:
-    ```bash
-    sudo yum install gitlab-runner
-    ```
-1. Next, you have to register the runner with your gitlab repo as described
-[here](https://docs.gitlab.com/runner/register/index.html).
 
 [↑ Contents](#contents)
