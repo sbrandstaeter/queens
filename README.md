@@ -12,7 +12,6 @@ systems.
     - [Optional: Singularity](#optional-singularity)
     - [Git](#git)
   - [QUEENS Installation](#queens-installation)
-  - [Update Dependencies](#update-dependencies)
   - [Start a QUEENS run](#start-a-queens-run)
   - [Further Topics](#further-topics)
     - [Remote Computing](#remote-computing)
@@ -190,17 +189,6 @@ It needs to be installed once on the local machine, allowing for both local and 
     ```
 
 [↑ Contents](#contents)
-
-## Update dependencies
-Updates from time to time are recommended as we try to keep the QUEENS dependencies up to date, too.
-To update Python version of your Conda environment:
-1. Checkout the latest version of QUEENS from the Git repository
-1. Update your Python packages the easy (default) way:
-   ```
-   cd <your-path-to-QUEENS>
-   mamba env update
-   ```
-
 
 ## Start a *QUEENS* run
 To start a *QUEENS* run with your *QUEENS* input file, run the following command in your [activated python environment](#usage):
