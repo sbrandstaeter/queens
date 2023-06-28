@@ -6,9 +6,11 @@ from pathlib import Path
 
 from pqueens.utils import ascii_art
 from pqueens.utils.exceptions import CLIError
+from pqueens.utils.injector import inject
 from pqueens.utils.logger_settings import reset_logging, setup_cli_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -30,6 +32,70 @@ def cli_logging(func):
         return results
 
     return decorated_function
+
+
+@cli_logging
+def inject_template_cli():
+    """Use the injector of QUEENS."""
+    ascii_art.print_crown(80)
+    ascii_art.print_banner("Injector", 80)
+    parser = argparse.ArgumentParser(
+        description="QUEENS injection CLI for Jinja2 templates. The parameters '--name <value>'"
+    )
+    parser.add_argument(
+        '--template',
+        type=str,
+        help="Jinja2 template to be injected.",
+    )
+    parser.add_argument(
+        '--output_path',
+        type=str,
+        default=None,
+        help='Output path for the injected template.',
+    )
+
+    # These two are dummy arguments to indicate how to use this CLI
+    parser.add_argument(
+        '--paramter_1',
+        type=str,
+        default=None,
+        help='Parameter 1 and value to be inject into the template.',
+    )
+    parser.add_argument(
+        '--paramter_2',
+        type=str,
+        default=None,
+        help='Parameter 2 and value to be inject into the template.',
+    )
+
+    path_arguments, injection_dict = parser.parse_known_args()
+
+    template_path = Path(path_arguments.template)
+    if path_arguments.output_path is None:
+        output_path = template_path.with_name(
+            template_path.stem + '_injected' + template_path.suffix
+        )
+    else:
+        output_path = Path(path_arguments.output_path)
+
+    _logger.info("Template: %s", template_path.resolve())
+    _logger.info("Output path: %s", template_path.resolve())
+    _logger.info(" ")
+
+    # Get injection parameters
+    injection_parser = argparse.ArgumentParser()
+
+    # Add input parameters to inject
+    for arg in injection_dict:
+        if arg.find("--") > -1:
+            injection_parser.add_argument(arg)
+
+    # Create the dictionary
+    injection_dict = vars(injection_parser.parse_args(injection_dict))
+    _logger.info(get_str_table("Injection parameters", injection_dict))
+    inject(injection_dict, template_path, output_path)
+
+    _logger.info("Injection done, created file %s", output_path)
 
 
 @cli_logging
