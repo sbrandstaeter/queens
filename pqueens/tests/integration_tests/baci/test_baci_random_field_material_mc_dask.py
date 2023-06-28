@@ -1,6 +1,5 @@
-"""TODO_doc."""
+"""Test write material to dat."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -14,13 +13,14 @@ from pqueens.utils import injector
 def test_write_random_material_to_dat(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
 ):
-    """TODO_doc."""
+    """Test dat file creation."""
     # generate json input file from template
-    third_party_input_file = os.path.join(
-        third_party_inputs, "baci_input_files", "coarse_plate_dirichlet_template.dat"
+    third_party_input_file = (
+        third_party_inputs,
+        "baci_input_files/coarse_plate_dirichlet_template.dat",
     )
 
-    dat_file_preprocessed = tmpdir.join("coarse_plate_dirichlet_template_preprocessed.dat")
+    dat_file_preprocessed = tmpdir / "coarse_plate_dirichlet_template_preprocessed.dat"
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
@@ -30,8 +30,8 @@ def test_write_random_material_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci_release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_random_field_material_mc_template_dask.yml")
-    input_file = os.path.join(tmpdir, "baci_write_random_field_material.yml")
+    template = inputdir / "baci_random_field_material_mc_template_dask.yml"
+    input_file = tmpdir / "baci_write_random_field_material.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run a MC simulation with random input for now
@@ -41,7 +41,7 @@ def test_write_random_material_to_dat(
     experiment_name = "baci_write_random_field_to_dat"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = os.path.join(str(tmpdir), result_file_name)
+    result_file = tmpdir / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -55,6 +55,6 @@ def test_write_random_material_to_dat(
 
 @pytest.fixture()
 def expected_result():
-    """TODO_doc."""
+    """Expected result fixture."""
     result = np.array([[0.79857, 0.73370, 0.71603]]).reshape(3, 1)
     return result
