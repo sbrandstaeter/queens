@@ -17,7 +17,7 @@ def load_pickle(file_path):
     if not file_path.is_file():
         raise FileNotFoundError(f"File {file_path} does not exist.")
     try:
-        data = pickle.load(open(file_path, "rb"))
+        data = pickle.load(file_path.open("rb"))
         return data
     except Exception as exception:
         raise IOError(f"Could not open the pickle file {file_path}") from exception
@@ -44,7 +44,7 @@ def print_pickled_data(file_path):
                 )
             item = string.replace("\n", "\n    ")
         _logger.info(_create_single_item_string(key, item, item_type))
-        _logger.info()
+        _logger.info(" ")
 
 
 def _create_single_item_string(key, item, item_type, seperator="="):
