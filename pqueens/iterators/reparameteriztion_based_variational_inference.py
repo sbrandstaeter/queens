@@ -148,7 +148,7 @@ class RPVIIterator(VariationalInferenceIterator):
             self.variational_params, self.n_samples_per_iter
         )
         jacobi_reparameterization_lst = (
-            self.variational_distribution_obj.jacobi_variational_params_reparameterization(
+            self.variational_distribution_obj.jacobi_variational_parameters_reparameterization(
                 standard_normal_sample_batch, self.variational_params
             )
         )

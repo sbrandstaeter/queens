@@ -184,7 +184,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, forward_model):
         results = pickle.load(handle)
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
-    posterior_mean = np.array([-20 / 11, 20 / 11])
+    posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)
 
     # Actual tests
     np.testing.assert_almost_equal(
