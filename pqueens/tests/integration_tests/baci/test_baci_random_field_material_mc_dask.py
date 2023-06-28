@@ -11,37 +11,34 @@ from pqueens.utils import injector
 
 
 def test_write_random_material_to_dat(
-    inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
+    inputdir, tmp_path, third_party_inputs, baci_link_paths, expected_result
 ):
     """Test dat file creation."""
     # generate json input file from template
-    third_party_input_file = (
-        third_party_inputs,
-        "baci_input_files/coarse_plate_dirichlet_template.dat",
-    )
+    baci_input_file = third_party_inputs / "baci_input_files/coarse_plate_dirichlet_template.dat"
 
-    dat_file_preprocessed = tmpdir / "coarse_plate_dirichlet_template_preprocessed.dat"
+    dat_file_preprocessed = tmp_path / "coarse_plate_dirichlet_template_preprocessed.dat"
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
-        'baci_input': third_party_input_file,
+        'baci_input': baci_input_file,
         'baci_input_preprocessed': dat_file_preprocessed,
         'post_drt_monitor': post_drt_monitor,
         'baci_release': baci_release,
     }
     template = inputdir / "baci_random_field_material_mc_template_dask.yml"
-    input_file = tmpdir / "baci_write_random_field_material.yml"
+    input_file = tmp_path / "baci_write_random_field_material.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run a MC simulation with random input for now
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     # Check if we got the expected results
     experiment_name = "baci_write_random_field_to_dat"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = tmpdir / result_file_name
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

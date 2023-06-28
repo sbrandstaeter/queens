@@ -15,7 +15,7 @@ from pqueens.utils import injector
 
 
 def test_baci_lm_shape(
-    tmpdir,
+    tmp_path,
     inputdir,
     third_party_inputs,
     baci_link_paths,
@@ -26,7 +26,7 @@ def test_baci_lm_shape(
     Singularity based BACI simulations.
     """
     template = inputdir / "baci_local_shape_lm_template_dask.yml"
-    input_file = tmpdir / "baci_local_shape_lm.yml"
+    input_file = tmp_path / "baci_local_shape_lm.yml"
     third_party_input_file = third_party_inputs / "baci_input_files/lm_tri_fsi_shape_template.dat"
     third_party_input_file_monitor = (
         third_party_inputs / "baci_input_files/lm_tri_fsi_shape_E2000_nue03_p.monitor"
@@ -44,10 +44,10 @@ def test_baci_lm_shape(
     }
 
     injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     result_file_name = experiment_name + ".csv"
-    result_file = tmpdir / result_file_name
+    result_file = tmp_path / result_file_name
 
     result_data = pd.read_csv(
         result_file,
