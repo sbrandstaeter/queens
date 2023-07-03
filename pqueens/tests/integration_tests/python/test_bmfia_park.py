@@ -12,7 +12,7 @@ from pqueens.utils import injector
 
 def test_bmfia_smc_park(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
     expected_samples,
     expected_weights,
@@ -24,16 +24,16 @@ def test_bmfia_smc_park(
     """
     # generate yml input file from template
     template = inputdir / 'bmfia_smc_park.yml'
-    experimental_data_path = tmpdir
-    dir_dict = {"experimental_data_path": experimental_data_path, "plot_dir": tmpdir}
-    input_file = tmpdir / 'smc_mf_park_realization.yml'
+    experimental_data_path = tmp_path
+    dir_dict = {"experimental_data_path": experimental_data_path, "plot_dir": tmp_path}
+    input_file = tmp_path / 'smc_mf_park_realization.yml'
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmpdir / 'smc_park_mf.pickle'
+    result_file = tmp_path / 'smc_park_mf.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -88,7 +88,7 @@ def expected_weights():
 
 def test_bmfia_rpvi_gp_park(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean,
     expected_variational_cov,
@@ -99,19 +99,19 @@ def test_bmfia_rpvi_gp_park(
     (bmfia) using the park91 function.
     """
     template = inputdir / 'bmfia_rpvi_park_gp_template.yml'
-    experimental_data_path = tmpdir
+    experimental_data_path = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
-        "plot_dir": tmpdir,
+        "plot_dir": tmp_path,
     }
-    input_file = tmpdir / 'bmfia_rpvi_park.yml'
+    input_file = tmp_path / 'bmfia_rpvi_park.yml'
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmpdir / 'bmfia_rpvi_park.pickle'
+    result_file = tmp_path / 'bmfia_rpvi_park.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -140,7 +140,7 @@ def expected_variational_cov():
 
 def test_bmfia_rpvi_NN_park(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean_nn,
     expected_variational_cov_nn,
@@ -151,19 +151,19 @@ def test_bmfia_rpvi_NN_park(
     (bmfia) using the park91 function.
     """
     template = inputdir / 'bmfia_rpvi_park_NN_template.yml'
-    experimental_data_path = tmpdir
+    experimental_data_path = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
-        "plot_dir": tmpdir,
+        "plot_dir": tmp_path,
     }
-    input_file = tmpdir / 'bmfia_rpvi_park.yml'
+    input_file = tmp_path / 'bmfia_rpvi_park.yml'
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmpdir / 'bmfia_rpvi_park.pickle'
+    result_file = tmp_path / 'bmfia_rpvi_park.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

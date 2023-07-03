@@ -5,7 +5,6 @@ Test local simulations with BACI using a minimal FSI model and the
 *post_drt_ensight* post-processor.
 """
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +15,7 @@ from pqueens.utils import injector
 
 
 def test_baci_lm_shape(
-    tmpdir,
+    tmp_path,
     inputdir,
     third_party_inputs,
     baci_link_paths,
@@ -25,19 +24,12 @@ def test_baci_lm_shape(
 
     The test runs local native BACI simulations as well as a local
     Singularity based BACI simulations.
-
-    Args:
-        inputdir (str): Path to the JSON input file
-        third_party_inputs (str): Path to the BACI input files
-        baci_link_paths (str): Symbolic links to executables including BACI
     """
-    template = os.path.join(inputdir, "baci_local_shape_lm_template_dask.yml")
-    input_file = os.path.join(tmpdir, "baci_local_shape_lm.yml")
-    third_party_input_file = os.path.join(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
-    )
-    third_party_input_file_monitor = os.path.join(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_E2000_nue03_p.monitor"
+    template = inputdir / "baci_local_shape_lm_template_dask.yml"
+    input_file = tmp_path / "baci_local_shape_lm.yml"
+    third_party_input_file = third_party_inputs / "baci_input_files/lm_tri_fsi_shape_template.dat"
+    third_party_input_file_monitor = (
+        third_party_inputs / "baci_input_files/lm_tri_fsi_shape_E2000_nue03_p.monitor"
     )
     experiment_name = "OptmizeBaciLM"
 
@@ -52,10 +44,10 @@ def test_baci_lm_shape(
     }
 
     injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     result_file_name = experiment_name + ".csv"
-    result_file = os.path.join(tmpdir, result_file_name)
+    result_file = tmp_path / result_file_name
 
     result_data = pd.read_csv(
         result_file,
