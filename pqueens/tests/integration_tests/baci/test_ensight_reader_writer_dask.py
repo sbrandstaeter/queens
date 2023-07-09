@@ -1,6 +1,5 @@
-"""TODO_doc."""
+"""Test ensight reader."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -12,23 +11,23 @@ from pqueens.utils import injector
 
 
 def test_dask_ensight_reader_writer(
-    inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
+    inputdir, tmp_path, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):
-    """TODO_doc."""
+    """Test Ensight reader."""
     # generate json input file from template
-    third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    third_party_input_file = third_party_inputs / "baci_input_files/invaaa_ee.dat"
     baci_release, _, post_drt_ensight, _ = baci_link_paths
     dir_dict = {
         'baci_input': third_party_input_file,
         'post_drt_ensight': post_drt_ensight,
         'baci_release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_dask_ensight_template.yml")
-    input_file = os.path.join(tmpdir, "baci_dask_ensight.yml")
+    template = inputdir / "baci_dask_ensight_template.yml"
+    input_file = tmp_path / "baci_dask_ensight.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    run(Path(input_file), Path(tmpdir))
+    run(Path(input_file), Path(tmp_path))
 
     # run a MC simulation with random input for now
 
@@ -36,7 +35,7 @@ def test_dask_ensight_reader_writer(
     experiment_name = "baci_ensight"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = os.path.join(str(tmpdir), result_file_name)
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -47,7 +46,7 @@ def test_dask_ensight_reader_writer(
 
 @pytest.fixture()
 def expected_mean():
-    """TODO_doc."""
+    """Expected mean fixture."""
     result = np.array(
         [
             [1.74423399, 4.33662133],
@@ -71,7 +70,7 @@ def expected_mean():
 
 @pytest.fixture()
 def expected_var():
-    """TODO_doc."""
+    """Expected variance fixture."""
     result = np.array(
         [
             [0.03219374, 0.23187617],

@@ -237,7 +237,7 @@ class VariationalInferenceIterator(Iterator):
         mean_change = self.stochastic_optimizer.rel_l2_change * 100
         _logger.info("So far %s simulation runs", self.n_sims)
         _logger.info("L2 change of all variational parameters: %.4f %%", mean_change)
-        _logger.info("The elbo is: %.2f}", self.elbo)
+        _logger.info("The elbo is: %.2f", self.elbo)
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
             _logger.info(
@@ -268,12 +268,14 @@ class VariationalInferenceIterator(Iterator):
         """
         if self.variational_params_initialization_approach == "random":
             self.variational_params = (
-                self.variational_distribution_obj.initialize_parameters_randomly()
+                self.variational_distribution_obj.initialize_variational_parameters(random=True)
             )
         elif self.variational_params_initialization_approach == "prior":
             if self.variational_family == "normal":
                 mu, cov = self._initialize_variational_params_from_prior()
-                var_params = self.variational_distribution_obj.construct_variational_params(mu, cov)
+                var_params = self.variational_distribution_obj.construct_variational_parameters(
+                    mu, cov
+                )
                 self.variational_params = var_params
             else:
                 raise ValueError(

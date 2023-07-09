@@ -62,34 +62,43 @@ class NewLineFormatter(logging.Formatter):
         return formatted_message
 
 
-def setup_basic_logging(log_file_path, logger=None, debug=False):
-    """Setup basic logging.
+def setup_logger(logger=None, debug=False):
+    """Set up the main QUEENS logger.
 
     Args:
-        log_file_path (Path): Path to the log-file
         logger (logging.Logger): Logger instance that should be set up
         debug (bool): Indicates debug mode and controls level of logging
+
+    Returns:
+        logging.logger: QUEENS logger object
     """
+    logging_level = logging.INFO
+
     if debug:
         logging_level = logging.DEBUG
-    else:
-        logging_level = logging.INFO
 
     if logger is None:
-        # setup library logger
         logger = logging.getLogger(LIBRARY_LOGGER_NAME)
+
     # call setLevel() for basic initialisation (this is needed not sure why)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging_level)
 
-    # set up logging to file
-    file_handler = logging.FileHandler(log_file_path, mode="w")
-    file_formatter = NewLineFormatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
-    )
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging_level)
-    logger.addHandler(file_handler)
+    if not debug:
+        # deactivate logging for specific modules
+        logging.getLogger('arviz').setLevel(logging.CRITICAL)
+        logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+        logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
+        logging.getLogger('numba').setLevel(logging.CRITICAL)
 
+    return logger
+
+
+def setup_stream_handler(logger):
+    """Set up a stream handler.
+
+    Args:
+        logger (logging.logger): Logger object to add the stream handler to
+    """
     # a plain, minimal formatter for streamhandlers
     stream_formatter = NewLineFormatter('%(message)s')
 
@@ -98,23 +107,56 @@ def setup_basic_logging(log_file_path, logger=None, debug=False):
     # messages lower than and including WARNING go to stdout
     log_filter = LogFilter(logging.WARNING)
     console_stdout.addFilter(log_filter)
-    console_stdout.setLevel(logging_level)
+    console_stdout.setLevel(logger.level)
     console_stdout.setFormatter(stream_formatter)
     logger.addHandler(console_stdout)
 
     # set up logging to stderr
     console_stderr = logging.StreamHandler(stream=sys.stderr)
     # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
-    console_stderr.setLevel(max(logging_level, logging.ERROR))
+    console_stderr.setLevel(max(logger.level, logging.ERROR))
     console_stderr.setFormatter(stream_formatter)
+
     logger.addHandler(console_stderr)
 
-    if not debug:
-        # deactivate logging for specific modules
-        logging.getLogger('arviz').setLevel(logging.CRITICAL)
-        logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
-        logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
-        logging.getLogger('numba').setLevel(logging.CRITICAL)
+
+def setup_file_handler(logger, log_file_path):
+    """Set up a file handler.
+
+    Args:
+        logger (logging.logger): Logger object to add the stream handler to
+        log_file_path (pathlib.Path): Path of the logging file
+    """
+    file_handler = logging.FileHandler(log_file_path, mode="w")
+    file_formatter = NewLineFormatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
+    )
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logger.level)
+    logger.addHandler(file_handler)
+
+
+def setup_basic_logging(log_file_path, logger=None, debug=False):
+    """Setup basic logging.
+
+    Args:
+        log_file_path (Path): Path to the log-file
+        logger (logging.Logger): Logger instance that should be set up
+        debug (bool): Indicates debug mode and controls level of logging
+    """
+    logger = setup_logger(logger, debug)
+    setup_stream_handler(logger)
+    setup_file_handler(logger, log_file_path)
+
+
+def setup_cli_logging(debug=False):
+    """Set up logging for CLI utils.
+
+    Args:
+        debug (bool): Indicates debug mode and controls level of logging
+    """
+    library_logger = setup_logger(debug=debug)
+    setup_stream_handler(library_logger)
 
 
 def setup_cluster_logging():
