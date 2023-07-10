@@ -33,7 +33,7 @@ def config(approx_name):
     config = {
         approx_name: {"surrogate_model_name": "gp"},
         "gp": {
-            "type": "gp_approximation_gpy",
+            "type": "gp_approximation_gpflow",
             "features_config": "opt_features",
             "num_features": 1,
             "X_cols": 1,

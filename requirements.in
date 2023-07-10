@@ -33,7 +33,6 @@ jinja2
 
 # Machine learning libraries
 arviz # Bayesian visualization
-gpy # for Gaussian Processes
 gpflow # LV and variational GPs
 optax # google jax based optimizer
 tensorflow<2.11.0
