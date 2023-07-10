@@ -26,15 +26,15 @@ interface:
   type: direct_python_interface
   function: ishigami90
 gp_surrogate_model:
-  type: gp_approximation_gpy
+  type: gp_approximation_gpflow
   training_iterator_name: truth_model_iterator
   testing_iterator_name: testing_iterator
   error_measures:
     - nash_sutcliffe_efficiency
-  kernel_type: prod_rbf
-  ard: true
-  num_restart: 1
-  seed_optimizer: 42
+  train_likelihood_variance: false
+  number_restarts: 5
+  number_training_iterations: 1000
+  dimension_lengthscales: 3
   seed_posterior_samples: 42
 testing_iterator:
   type: lhs

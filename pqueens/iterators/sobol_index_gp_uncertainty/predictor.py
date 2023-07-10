@@ -57,14 +57,13 @@ class Predictor:
             seed_posterior_samples=seed_posterior_samples,
         )
 
-    def predict(self, samples, num_procs):
+    def predict(self, samples):
         """Predict output at Monte-Carlo samples.
 
         Sample realizations of Gaussian process or use the posterior mean of the Gaussian process.
 
         Args:
             samples (xr.Array): Monte-Carlo samples
-            num_procs (int): number of processors
 
         Returns:
             prediction (xr.Array): predictions

@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for GPflow based GP model."""
 
 import pickle
 
