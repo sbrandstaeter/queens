@@ -57,7 +57,7 @@ class BMFMCModel(Model):
                                         between HF and LF models, respectively input features.
                                         This includes:
 
-                                        - *types*: `gp_approximation_gpy`
+                                        - *types*: `gp_approximation_gpflow`
                                         - *features_config*: `opt_features`, `no_features` or
                                           `man_features`
                                         - *num_features:* for `opt_features`, number of features

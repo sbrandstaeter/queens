@@ -50,6 +50,7 @@ class GPFlowRegressionModel(SurrogateModel):
         plotting_options=None,
         number_posterior_samples=None,
         seed_optimizer=42,
+        seed_posterior_samples=None,
         restart_min_value=0,
         restart_max_value=5,
         number_restarts=10,
@@ -69,6 +70,7 @@ class GPFlowRegressionModel(SurrogateModel):
             plotting_options (dict): plotting options
             number_posterior_samples (int): Number of posterior samples
             seed_optimizer (int): Seed for optimizer
+            seed_posterior_samples (int): Seed for posterior samples
             restart_min_value (int): Minimum value for restart
             restart_max_value (int): Maximum value for restart
             number_restarts (int): Number of restarts
@@ -85,6 +87,7 @@ class GPFlowRegressionModel(SurrogateModel):
         )
         self.number_posterior_samples = number_posterior_samples
         self.seed_optimizer = seed_optimizer
+        self.seed_posterior_samples = seed_posterior_samples
         self.number_restarts = number_restarts
         self.number_training_iterations = number_training_iterations
         self.number_input_dimensions = None
@@ -216,6 +219,11 @@ class GPFlowRegressionModel(SurrogateModel):
             output['variance'] = var
 
         if self.number_posterior_samples:
+            # set seed for reproducibility of posterior samples
+            if self.seed_posterior_samples:
+                tf.random.set_seed(self.seed_posterior_samples)
+                _logger.warning("Beware, the seed for drawing posterior samples is fixed.")
+
             output['post_samples'] = (
                 self.model.predict_f_samples(x_test, self.number_posterior_samples)
                 .numpy()
@@ -240,7 +248,7 @@ class GPFlowRegressionModel(SurrogateModel):
         self.model.kernel.variance.assign(hyperparameters[self.dimension_lengthscales])
 
     def transform_hyperparameters(self, hyperparameters):
-        """TODO_doc: add a one-line explanation.
+        """Transform hyperparameters.
 
         Transform hyperparameters from unconstrained to constrained
         representation.

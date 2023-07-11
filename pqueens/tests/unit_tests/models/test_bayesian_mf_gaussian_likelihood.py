@@ -51,7 +51,7 @@ def config():
     """Fixture for dummy configuration."""
     config = {
         "joint_density_approx": {
-            "type": "gp_approximation_gpy",
+            "type": "gp_approximation_gpflow",
             "num_processors_multi_processing": 2,
             "features_config": "opt_features",
             "num_features": 1,

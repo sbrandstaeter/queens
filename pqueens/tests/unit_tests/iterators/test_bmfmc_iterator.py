@@ -22,7 +22,7 @@ def default_parameters():
 @pytest.fixture()
 def approx_name():
     """TODO_doc."""
-    name = 'gp_approximation_gpy'
+    name = 'gp_approximation_gpflow'
     return name
 
 
@@ -37,7 +37,7 @@ def default_interface(config):
 def config():
     """TODO_doc."""
     config = {
-        "type": "gp_approximation_gpy",
+        "type": "gp_approximation_gpflow",
         "features_config": "opt_features",
         "num_features": 1,
         "X_cols": 1,
@@ -49,7 +49,7 @@ def config():
 def default_bmfmc_model(default_interface, default_parameters):
     """TODO_doc."""
     settings_probab_mapping = {
-        "type": "gp_approximation_gpy",
+        "type": "gp_approximation_gpflow",
         "features_config": "opt_features",
         "num_features": 1,
     }

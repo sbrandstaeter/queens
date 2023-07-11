@@ -43,10 +43,11 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
     Further details can be found in:
 
-    Wirthl, Barbara, Sebastian Brandstaeter, Jonas Nitzler, Bernhard A. Schrefler, and Wolfgang A.
-    Wall. ‘Global Sensitivity Analysis Based on Gaussian-Process Metamodelling for Complex
-    Biomechanical Problems’. ArXiv:2202.01503 [Cs], 3 February 2022.
-    https://arxiv.org/abs/2202.01503.
+    Wirthl, B., Brandstaeter, S., Nitzler, J., Schrefler, B. A., & Wall, W. A. (2023). Global
+    sensitivity analysis based on Gaussian-process metamodelling for complex biomechanical problems.
+    International Journal for Numerical Methods in Biomedical Engineering, 39(3), e3675.
+    https://doi.org/10.1002/cnm.3675
+
 
     Attributes:
         result_description (dict): Dictionary with desired result description.
@@ -54,7 +55,6 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         sampler (Sampler object): Sampler object.
         predictor (Predictor object): Metamodel predictor object.
         index_estimator (SobolIndexEstimator object): Estimator object.
-        parameter_names (list): List of names of input parameters.
         statistics (list): List of statistics objects.
         calculate_second_order (bool): *True* if second-order indices are calculated.
         calculate_third_order (bool): *True* if third-order indices only are calculated.
@@ -161,7 +161,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         # 1. Generate Monte-Carlo samples
         samples = self.sampler.sample()
         # 2. Samples realizations of metamodel at Monte-Carlo samples
-        prediction = self.predictor.predict(samples, self.num_procs)
+        prediction = self.predictor.predict(samples)
         # 3. Calculate Sobol index estimates (including bootstrap)
         estimates = self.index_estimator.estimate(prediction, self.num_procs)
 

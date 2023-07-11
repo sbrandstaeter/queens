@@ -19,6 +19,8 @@ gp_surrogate_model:
   train_likelihood_variance: false
   number_restarts: 5
   number_training_iterations: 1000
+  number_posterior_samples: 3
+  seed_posterior_samples: 42
   dimension_lengthscales: 2
   plotting_options:
     plot_booleans: [false, false]

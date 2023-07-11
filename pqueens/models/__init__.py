@@ -28,10 +28,6 @@ VALID_TYPES = {
         'pqueens.models.differentiable_simulation_model_adjoint',
         'DifferentiableSimulationModelAdjoint',
     ],
-    'gp_approximation_gpy': [
-        'pqueens.models.surrogate_models.gp_approximation_gpy',
-        'GPGPyRegressionModel',
-    ],
     'heteroskedastic_gp': [
         'pqueens.models.surrogate_models.heteroskedastic_GPflow',
         'HeteroskedasticGPModel',

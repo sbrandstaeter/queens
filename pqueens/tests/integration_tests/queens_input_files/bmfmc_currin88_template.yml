@@ -31,7 +31,11 @@ joint_density_approx:
   num_features: 1
   surrogate_model_name: surrogate_model
 surrogate_model:
-  type: gp_approximation_gpy
+  type: gp_approximation_gpflow
+  train_likelihood_variance: false
+  number_restarts: 2
+  number_training_iterations: 1000
+  dimension_lengthscales: 2
 high_fidelity_model:
   type: simulation_model
   interface_name: interface
