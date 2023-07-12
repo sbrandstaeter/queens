@@ -90,6 +90,7 @@ class DataIterator(Iterator):
             np.array, np.array: Two arrays, the first contains input samples,
             the second the corresponding output samples
         """
-        data = pickle.load(open(self.path_to_data, "rb"))
+        with open(self.path_to_data, "rb") as file:
+            data = pickle.load(file)
 
         return data
