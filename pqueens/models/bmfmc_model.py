@@ -502,14 +502,14 @@ class BMFMCModel(Model):
         *p_yhf_mean* and its credible bounds *p_yhf_var* on the support
         *y_pdf_support* according to equation (14) and (15) in [1].
         """
-        self._calculate_p_yhf_mean()
+        self.calculate_p_yhf_mean()
 
         if self.predictive_var_bool:
             self._calculate_p_yhf_var()
         else:
             self.p_yhf_var = None
 
-    def _calculate_p_yhf_mean(self):
+    def calculate_p_yhf_mean(self):
         """Calculate the posterior mean estimate for the HF density."""
         standard_deviation = np.sqrt(self.var_y_mc)
         pdf_mat = st.norm.pdf(self.y_pdf_support, loc=self.m_f_mc, scale=standard_deviation)
@@ -538,7 +538,6 @@ class BMFMCModel(Model):
         for num1, (mean1, var1) in enumerate(
             zip(tqdm(f_mean_pred, desc=r'Calculating Var_f[p(y_HF|f,z,D)]'), yhf_var_pred)
         ):
-
             for num2, (mean2, var2) in enumerate(
                 zip(f_mean_pred[num1 + 1 :], yhf_var_pred[num1 + 1 :])
             ):

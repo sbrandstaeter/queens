@@ -376,7 +376,7 @@ def test_build_approximation(mocker, default_bmfmc_model):
 
 def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
     """Test computation of the high-fidelity output density prediction."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_mean')
+    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_p_yhf_mean')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_var')
     default_bmfmc_model.predictive_var_bool = True
 
@@ -395,7 +395,7 @@ def test_calculate_p_yhf_mean(default_bmfmc_model):
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
     default_bmfmc_model.m_f_mc = np.linspace(0, 10.0, 10)
 
-    default_bmfmc_model._calculate_p_yhf_mean()
+    default_bmfmc_model.calculate_p_yhf_mean()
 
     expected_mean_pdf = np.array(
         [
