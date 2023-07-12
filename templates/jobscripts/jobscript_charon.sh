@@ -37,7 +37,7 @@
 echo $HOME
 cd $HOME
 source /etc/profile.d/modules.sh
-source $HOME/queens_cluster_suite/load_queens_baci_environment.sh
+source /home/opt/cluster_tools/core/load_queens_environment.sh
 
 ############################
 # SINGULARITY SPECIFICATIONS
