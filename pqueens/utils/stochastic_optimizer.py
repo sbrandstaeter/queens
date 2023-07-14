@@ -157,18 +157,6 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self.current_gradient_value = None
         self.gradient = None
 
-    @classmethod
-    def from_config_create_optimizer(cls, config, optimizer_name):
-        """Create a StochasticOptimizer object from dict.
-
-        Args:
-            config (dict): Configuration dict
-            optimizer_name (str): Name of section in which optimizer is defined
-        """
-        optimizer_options = config[optimizer_name].copy()
-        optimizer_options.pop('type')
-        return cls(**optimizer_options)
-
     @abc.abstractmethod
     def scheme_specific_gradient(self, gradient):
         """Scheme specific gradient computation.
