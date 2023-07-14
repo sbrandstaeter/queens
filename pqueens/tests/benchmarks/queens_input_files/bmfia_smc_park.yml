@@ -65,7 +65,6 @@ optimizer:
   type: adam
   learning_rate: 0.008
   optimization_type: max
-  max_iterations: 1000
   rel_l1_change_threshold: 0.04
   rel_l2_change_threshold: 0.04
 data_processor_experimental_data:
