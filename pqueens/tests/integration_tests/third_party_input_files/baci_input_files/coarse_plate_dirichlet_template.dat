@@ -3,6 +3,8 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+BACI git SHA1: 53abb9c91f90c909e559c8239f12757885dd81e3
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121
@@ -48,16 +50,12 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 10 MAT_Membrane_ElastHyper NUMMAT 1 MATIDS 11 DENS 1.0e-9
 MAT 11 ELAST_IsoNeoHooke MUE {{ mat_param }} //0.25
-
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION l
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME l
 VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 0  2.5
-
 ----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION l
+COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME l
 VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 0  2.5
-
-
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4

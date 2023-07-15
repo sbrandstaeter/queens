@@ -1,4 +1,4 @@
-experiment_name: baci_write_random_field_to_dat
+experiment_name: baci_mc_random_field_ensight_dask
 database:
   type: sqlite
 method:
@@ -22,6 +22,29 @@ pre_processing:
 model:
   type: simulation_model
   interface_name: interface
+external_geometry:
+  type: baci_dat
+  list_geometric_sets: [DSURFACE 1]
+  input_template: {{ baci_input_preprocessed }}
+data_processor_baci:
+  type: ensight
+  file_name_identifier: baci_*structure.case
+  file_options_dict:
+    delete_field_data: false
+    geometric_target: [geometric_set, DSURFACE 1]
+    physical_field_dict:
+      vtk_field_type: structure
+      vtk_array_type: point_array
+      vtk_field_label: displacement
+      field_components: [0, 1]
+    target_time_lst: [last]
+parameters:
+  mat_param:
+    type: random_field
+    corr_length: 5.0
+    std_hyperparam_rf: 0.03
+    mean_type: constant
+    mean_param: 0.25
 interface:
   type: dask_job_interface
   scheduler_name: scheduler
@@ -35,24 +58,6 @@ driver:
   type: dask_mpi
   input_template: {{ baci_input_preprocessed }}
   path_to_executable: {{ baci_release }}
-  path_to_postprocessor: {{ post_drt_monitor }}
-  post_process_options: --field=structure --node=81 --start=1
+  path_to_postprocessor: {{ post_ensight }}
   post_file_prefix: baci_write_random_field_to_dat
   data_processor_name: data_processor_baci
-data_processor_baci:
-  type: csv
-  file_name_identifier: baci_write_random_field_to_dat.mon
-  file_options_dict:
-    delete_field_data: false
-    use_cols_lst: [3]
-    skip_rows: 4
-    filter:
-      type: by_row_index
-      rows: [-1]
-parameters:
-  mat_param:
-    type: random_field
-    corr_length: 5.0
-    std_hyperparam_rf: 0.03
-    mean_type: constant
-    mean_param: 0.25
