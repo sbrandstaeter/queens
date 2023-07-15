@@ -1,7 +1,6 @@
-"""Test ensight reader."""
+"""Test BACI run using dask."""
 
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -10,29 +9,31 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-def test_dask_ensight_reader_writer(
-    inputdir, tmp_path, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
+def test_baci_mc_ensight_dask(
+    inputdir, tmp_path, third_party_inputs, baci_link_paths, expected_mean, expected_var
 ):
-    """Test Ensight reader."""
+    """Test simple BACI run."""
     # generate json input file from template
-    third_party_input_file = third_party_inputs / "baci_input_files/invaaa_ee.dat"
-    baci_release, _, post_drt_ensight, _ = baci_link_paths
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files" / "meshtying3D_patch_lin_duallagr_new_struct.dat"
+    )
+    baci_release, post_ensight, _ = baci_link_paths
     dir_dict = {
         'baci_input': third_party_input_file,
-        'post_drt_ensight': post_drt_ensight,
+        'post_ensight': post_ensight,
         'baci_release': baci_release,
     }
-    template = inputdir / "baci_dask_ensight_template.yml"
-    input_file = tmp_path / "baci_dask_ensight.yml"
+    template = inputdir / "baci_mc_ensight_dask_template.yml"
+    input_file = tmp_path / "baci_mc_ensight.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    run(Path(input_file), Path(tmp_path))
+    run(input_file, tmp_path)
 
     # run a MC simulation with random input for now
 
     # Check if we got the expected results
-    experiment_name = "baci_ensight"
+    experiment_name = "baci_mc_ensight"
     result_file_name = experiment_name + ".pickle"
 
     result_file = tmp_path / result_file_name
@@ -40,53 +41,57 @@ def test_dask_ensight_reader_writer(
         results = pickle.load(handle)
 
     # assert statements
-    np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=4)
-    np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=4)
+    np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=6)
+    np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=6)
 
 
-@pytest.fixture()
-def expected_mean():
-    """Expected mean fixture."""
+@pytest.fixture(name="expected_mean")
+def fixture_expected_mean():
+    """Expected result."""
     result = np.array(
         [
-            [1.74423399, 4.33662133],
-            [1.74423399, 4.33662133],
-            [2.04178376, 3.26816187],
-            [2.04178376, 3.26816187],
-            [1.82349517, 2.04028533],
-            [1.82349517, 2.04028533],
-            [1.05847878, 0.83544016],
-            [1.05847878, 0.83544016],
-            [0.0, 0.0],
-            [0.0, 0.0],
-            [0.17496549, 5.37049122],
-            [0.17496549, 5.37049122],
-            [1.06617833, 5.07653875],
-            [1.06617833, 5.07653875],
+            [0.0041549, 0.00138497, -0.00961201],
+            [0.00138497, 0.00323159, -0.00961201],
+            [0.00230828, 0.00323159, -0.00961201],
+            [0.0041549, 0.00230828, -0.00961201],
+            [0.00138497, 0.0041549, -0.00961201],
+            [0.0041549, 0.00323159, -0.00961201],
+            [0.00230828, 0.0041549, -0.00961201],
+            [0.0041549, 0.0041549, -0.00961201],
+            [0.00138497, 0.00138497, -0.00961201],
+            [0.00323159, 0.00138497, -0.00961201],
+            [0.00138497, 0.00230828, -0.00961201],
+            [0.00230828, 0.00138497, -0.00961201],
+            [0.00323159, 0.00230828, -0.00961201],
+            [0.00230828, 0.00230828, -0.00961201],
+            [0.00323159, 0.00323159, -0.00961201],
+            [0.00323159, 0.0041549, -0.00961201],
         ]
     )
     return result
 
 
-@pytest.fixture()
-def expected_var():
-    """Expected variance fixture."""
+@pytest.fixture(name="expected_var")
+def fixture_expected_var():
+    """Expected variance."""
     result = np.array(
         [
-            [0.03219374, 0.23187617],
-            [0.03219374, 0.23187617],
-            [0.04138086, 0.14548341],
-            [0.04138086, 0.14548341],
-            [0.02985786, 0.07354971],
-            [0.02985786, 0.07354971],
-            [0.00941438, 0.02664331],
-            [0.00941438, 0.02664331],
-            [0.0, 0.0],
-            [0.0, 0.0],
-            [0.00165357, 0.34432005],
-            [0.00165357, 0.34432005],
-            [0.01429646, 0.30811321],
-            [0.01429646, 0.30811321],
+            [3.19513506e-07, 3.55014593e-08, 2.94994460e-07],
+            [3.55014593e-08, 1.93285820e-07, 2.94994460e-07],
+            [9.86153027e-08, 1.93285820e-07, 2.94994460e-07],
+            [3.19513506e-07, 9.86153027e-08, 2.94994460e-07],
+            [3.55014593e-08, 3.19513506e-07, 2.94994460e-07],
+            [3.19513506e-07, 1.93285820e-07, 2.94994460e-07],
+            [9.86153027e-08, 3.19513506e-07, 2.94994460e-07],
+            [3.19513506e-07, 3.19513506e-07, 2.94994460e-07],
+            [3.55014593e-08, 3.55014593e-08, 2.94994460e-07],
+            [1.93285820e-07, 3.55014593e-08, 2.94994460e-07],
+            [3.55014593e-08, 9.86153027e-08, 2.94994460e-07],
+            [9.86153027e-08, 3.55014593e-08, 2.94994460e-07],
+            [1.93285820e-07, 9.86153027e-08, 2.94994460e-07],
+            [9.86153027e-08, 9.86153027e-08, 2.94994460e-07],
+            [1.93285820e-07, 1.93285820e-07, 2.94994460e-07],
+            [1.93285820e-07, 3.19513506e-07, 2.94994460e-07],
         ]
     )
     return result
