@@ -144,10 +144,9 @@ def config_dir():
 def baci_link_paths(config_dir):
     """Set symbolic links for baci on testing machine."""
     baci = config_dir / 'baci-release'
-    post_drt_monitor = config_dir / 'post_drt_monitor'
-    post_drt_ensight = config_dir / 'post_drt_ensight'
+    post_ensight = config_dir / 'post_ensight'
     post_processor = config_dir / 'post_processor'
-    return baci, post_drt_monitor, post_drt_ensight, post_processor
+    return baci, post_ensight, post_processor
 
 
 @pytest.fixture(scope="session")
@@ -155,10 +154,9 @@ def baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
     home = Path.home()
     src_baci = home / 'workspace/build/baci-release'
-    src_drt_monitor = home / 'workspace/build/post_drt_monitor'
-    src_post_drt_ensight = home / 'workspace/build/post_drt_ensight'
+    src_post_ensight = home / 'workspace/build/post_ensight'
     src_post_processor = home / 'workspace/build/post_processor'
-    return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
+    return src_baci, src_post_ensight, src_post_processor
 
 
 @pytest.fixture(scope='session')
