@@ -124,7 +124,7 @@ def baci_cluster_paths_native(
     """Paths to baci for native cluster tests."""
     cluster_address = cluster_settings["cluster_address"]
     path_to_executable = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
+        "/home", cluster_user, "workspace_for_queens", "build_new", "baci-release"
     )
     if not path_to_executable.is_file():
         raise RuntimeError(
@@ -133,7 +133,7 @@ def baci_cluster_paths_native(
         )
 
     path_to_post_ensight = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "post_ensight"
+        "/home", cluster_user, "workspace_for_queens", "build_new", "post_ensight"
     )
     if not path_to_post_ensight.is_file():
         raise RuntimeError(
