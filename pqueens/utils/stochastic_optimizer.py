@@ -124,7 +124,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         rel_l2_change_threshold=None,
         clip_by_l2_norm_threshold=1e6,
         clip_by_value_threshold=1e6,
-        max_iter=1e6,
+        max_iteration=1e6,
     ):
         """Initialize stochastic optimizer.
 
@@ -137,7 +137,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
                                              this value, this criteria catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
-            max_iter (int): Maximum number of iterations
+            max_iteration (int): Maximum number of iterations
         """
         valid_options = {"min": -1, "max": 1}
         self.precoefficient = get_option(
@@ -146,7 +146,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self.learning_rate = learning_rate
         self.clip_by_l2_norm_threshold = clip_by_l2_norm_threshold
         self.clip_by_value_threshold = clip_by_value_threshold
-        self.max_iteration = max_iter
+        self.max_iteration = max_iteration
         self.rel_l2_change_threshold = rel_l2_change_threshold
         self.rel_l1_change_threshold = rel_l1_change_threshold
         self.iteration = 0
@@ -340,7 +340,7 @@ class RMSprop(StochasticOptimizer):
         rel_l2_change_threshold=None,
         clip_by_l2_norm_threshold=1e6,
         clip_by_value_threshold=1e6,
-        max_iter=1e6,
+        max_iteration=1e6,
         beta=0.999,
         eps=1e-8,
     ):
@@ -355,7 +355,7 @@ class RMSprop(StochasticOptimizer):
                                             this value, this criteria catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
-            max_iter (int): Maximum number of iterations
+            max_iteration (int): Maximum number of iterations
             beta (float): :math:`beta` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
         """
@@ -366,7 +366,7 @@ class RMSprop(StochasticOptimizer):
             rel_l2_change_threshold=rel_l2_change_threshold,
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
-            max_iter=max_iter,
+            max_iteration=max_iteration,
         )
         self.beta = beta
         self.v = ExponentialAveraging(coefficient=beta)  # pylint: disable=invalid-name
@@ -414,7 +414,7 @@ class Adam(StochasticOptimizer):
         rel_l2_change_threshold=None,
         clip_by_l2_norm_threshold=1e6,
         clip_by_value_threshold=1e6,
-        max_iter=1e6,
+        max_iteration=1e6,
         beta_1=0.9,
         beta_2=0.999,
         eps=1e-8,
@@ -430,7 +430,7 @@ class Adam(StochasticOptimizer):
                                             this value, this criteria catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
-            max_iter (int): Maximum number of iterations
+            max_iteration (int): Maximum number of iterations
             beta_1 (float): :math:`beta_1` parameter as described in [1]
             beta_2 (float): :math:`beta_1` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
@@ -442,7 +442,7 @@ class Adam(StochasticOptimizer):
             rel_l2_change_threshold=rel_l2_change_threshold,
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
-            max_iter=max_iter,
+            max_iteration=max_iteration,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -495,7 +495,7 @@ class Adamax(StochasticOptimizer):
         rel_l2_change_threshold=None,
         clip_by_l2_norm_threshold=1e6,
         clip_by_value_threshold=1e6,
-        max_iter=1e6,
+        max_iteration=1e6,
         beta_1=0.9,
         beta_2=0.999,
         eps=1e-8,
@@ -511,7 +511,7 @@ class Adamax(StochasticOptimizer):
                                             this value, this criteria catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
-            max_iter (int): Maximum number of iterations
+            max_iteration (int): Maximum number of iterations
             beta_1 (float): :math:`beta_1` parameter as described in [1]
             beta_2 (float): :math:`beta_1` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
@@ -523,7 +523,7 @@ class Adamax(StochasticOptimizer):
             rel_l2_change_threshold=rel_l2_change_threshold,
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
-            max_iter=max_iter,
+            max_iteration=max_iteration,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2

@@ -83,7 +83,7 @@ lf_model:
   type: simulation_model
 optimizer:
   learning_rate: 0.01
-  max_iter: 100
+  max_iteration: 100
   optimization_type: max
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1

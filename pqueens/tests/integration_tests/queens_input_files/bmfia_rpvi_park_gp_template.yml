@@ -26,7 +26,7 @@ method:
   variational_transformation: null
 optimizer:
   learning_rate: 0.03
-  max_iter: 10000000
+  max_iteration: 10000000
   optimization_type: max
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1
