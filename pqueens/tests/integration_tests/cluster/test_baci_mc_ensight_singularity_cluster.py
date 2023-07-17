@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from pqueens import run
@@ -13,6 +14,7 @@ from pqueens.schedulers.cluster_scheduler import (
 )
 from pqueens.utils import config_directories, injector
 from pqueens.utils.config_directories import experiment_directory
+from pqueens.utils.io_utils import load_result
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -131,14 +133,15 @@ class TestClusterSingularity:
 
         return helper_function
 
-    def test_baci_cluster_elementary_effects(
+    def test_baci_mc_ensight_singularity_cluster(
         self,
         inputdir,
         tmp_path,
         cluster_settings,
         prepare_baci_input_template_remote,
         baci_cluster_paths,
-        baci_elementary_effects_check_results,
+        baci_example_expected_mean,
+        baci_example_expected_var,
     ):
         """Test for the Elementary Effects Iterator on the clusters with BACI.
 
@@ -151,13 +154,15 @@ class TestClusterSingularity:
             prepare_baci_input_template_remote (fct): helper function to copy template to remote
             baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
             baci_elementary_effects_check_results (function): function to check the results
+            baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
+            baci_example_expected_var (np.ndarray): Expected var for the MC samples
         """
         cluster_name = cluster_settings["name"]
 
         # unique experiment name
-        experiment_name = f"test_{cluster_name}_morris_salib"
+        experiment_name = f"baci_mc_ensight_singularity_{cluster_name}"
 
-        baci_input_template_name = "invaaa_ee.dat"
+        baci_input_template_name = "meshtying3D_patch_lin_duallagr_new_struct.dat"
         cluster_baci_input_file_template = prepare_baci_input_template_remote(
             baci_input_template_name=baci_input_template_name, experiment_name=experiment_name
         )
@@ -170,11 +175,18 @@ class TestClusterSingularity:
             'cluster': cluster_name,
         }
 
-        queens_input_file_template = Path(inputdir, "baci_cluster_elementary_effects_template.yml")
-        queens_input_file = tmp_path / f"baci_cluster_elementary_effects_{cluster_name}.yml"
+        queens_input_file_template = Path(
+            inputdir, "baci_mc_ensight_singularity_cluster_template.yml"
+        )
+        queens_input_file = tmp_path / f"baci_mc_ensight_singularity_cluster_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
         run(queens_input_file, tmp_path)
 
         result_file = tmp_path / f"{experiment_name}.pickle"
-        baci_elementary_effects_check_results(result_file)
+
+        results = load_result(result_file)
+
+        # assert statements
+        np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
+        np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
