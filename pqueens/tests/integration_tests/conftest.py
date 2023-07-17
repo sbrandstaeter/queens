@@ -72,9 +72,8 @@ def baci_cluster_paths(connect_to_resource):
     base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
-    path_to_drt_monitor = base_directory / "post_drt_monitor"
     path_to_post_processor = base_directory / "post_processor"
-    path_to_drt_ensight = base_directory / "post_drt_ensight"
+    path_to_drt_ensight = base_directory / "post_ensight"
 
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
@@ -88,13 +87,11 @@ def baci_cluster_paths(connect_to_resource):
         )
 
     exists_on_remote(path_to_executable)
-    exists_on_remote(path_to_drt_monitor)
     exists_on_remote(path_to_post_processor)
     exists_on_remote(path_to_drt_ensight)
 
     baci_cluster_paths = {
         'path_to_executable': path_to_executable,
-        'path_to_drt_monitor': path_to_drt_monitor,
         'path_to_drt_ensight': path_to_drt_ensight,
         'path_to_post_processor': path_to_post_processor,
     }
@@ -136,47 +133,69 @@ def baci_cluster_paths_native(
             f"Was looking here: {path_to_executable}"
         )
 
-    path_to_drt_monitor = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "post_drt_monitor"
+    path_to_post_ensight = Path(
+        "/home", cluster_user, "workspace_for_queens", "build", "post_ensight"
     )
-    if not path_to_drt_monitor.is_file():
+    if not path_to_post_ensight.is_file():
         raise RuntimeError(
             f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_drt_monitor}"
+            f"Was looking here: {path_to_post_ensight}"
         )
 
     baci_cluster_paths_native = {
         'path_to_executable': path_to_executable,
-        'path_to_drt_monitor': path_to_drt_monitor,
+        'path_to_post_ensight': path_to_post_ensight,
     }
     return baci_cluster_paths_native
 
 
-@pytest.fixture(scope="session")
-def baci_elementary_effects_check_results():
-    """Check results for baci elementary effects tests."""
+@pytest.fixture(name="baci_example_expected_mean")
+def fixture_baci_example_expected_mean():
+    """Expected result for the BACI example."""
+    result = np.array(
+        [
+            [0.0041549, 0.00138497, -0.00961201],
+            [0.00138497, 0.00323159, -0.00961201],
+            [0.00230828, 0.00323159, -0.00961201],
+            [0.0041549, 0.00230828, -0.00961201],
+            [0.00138497, 0.0041549, -0.00961201],
+            [0.0041549, 0.00323159, -0.00961201],
+            [0.00230828, 0.0041549, -0.00961201],
+            [0.0041549, 0.0041549, -0.00961201],
+            [0.00138497, 0.00138497, -0.00961201],
+            [0.00323159, 0.00138497, -0.00961201],
+            [0.00138497, 0.00230828, -0.00961201],
+            [0.00230828, 0.00138497, -0.00961201],
+            [0.00323159, 0.00230828, -0.00961201],
+            [0.00230828, 0.00230828, -0.00961201],
+            [0.00323159, 0.00323159, -0.00961201],
+            [0.00323159, 0.0041549, -0.00961201],
+        ]
+    )
+    return result
 
-    def check_results(result_file):
-        """Check results for baci elementary effects tests.
 
-        Args:
-            result_file (path): path to result file
-        """
-        results = load_result(result_file)
-
-        np.testing.assert_allclose(
-            results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
-        )
-        np.testing.assert_allclose(
-            results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
-        )
-        np.testing.assert_allclose(
-            results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
-        )
-        np.testing.assert_allclose(
-            results["sensitivity_indices"]["mu_star_conf"],
-            np.array([0.136631, 0.140794]),
-            rtol=1.0e-3,
-        )
-
-    return check_results
+@pytest.fixture(name="baci_example_expected_var")
+def name_baci_example_expected_var():
+    """Expected variance for the BACI example."""
+    result = np.array(
+        [
+            [3.19513506e-07, 3.55014593e-08, 2.94994460e-07],
+            [3.55014593e-08, 1.93285820e-07, 2.94994460e-07],
+            [9.86153027e-08, 1.93285820e-07, 2.94994460e-07],
+            [3.19513506e-07, 9.86153027e-08, 2.94994460e-07],
+            [3.55014593e-08, 3.19513506e-07, 2.94994460e-07],
+            [3.19513506e-07, 1.93285820e-07, 2.94994460e-07],
+            [9.86153027e-08, 3.19513506e-07, 2.94994460e-07],
+            [3.19513506e-07, 3.19513506e-07, 2.94994460e-07],
+            [3.55014593e-08, 3.55014593e-08, 2.94994460e-07],
+            [1.93285820e-07, 3.55014593e-08, 2.94994460e-07],
+            [3.55014593e-08, 9.86153027e-08, 2.94994460e-07],
+            [9.86153027e-08, 3.55014593e-08, 2.94994460e-07],
+            [1.93285820e-07, 9.86153027e-08, 2.94994460e-07],
+            [9.86153027e-08, 9.86153027e-08, 2.94994460e-07],
+            [1.93285820e-07, 1.93285820e-07, 2.94994460e-07],
+            [1.93285820e-07, 3.19513506e-07, 2.94994460e-07],
+        ]
+    )
+    return result
