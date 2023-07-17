@@ -69,7 +69,7 @@ def baci_cluster_paths(connect_to_resource):
 
     Checks also for existence of the executables.
     """
-    base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build"
+    base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build_new"
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
