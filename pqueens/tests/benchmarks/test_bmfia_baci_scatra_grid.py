@@ -20,7 +20,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     )
 
     baci_release = config_dir / "baci-release"
-    post_drt_ensight = config_dir / "post_drt_ensight"
+    post_ensight = config_dir / "post_ensight"
 
     # ----- generate yaml input file from template -----
     # template for actual smc evaluation
@@ -33,7 +33,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
         'baci_hf_input': third_party_input_file_hf,
         'baci_lf_input': third_party_input_file_lf,
         'baci-release': baci_release,
-        'post_drt_ensight': post_drt_ensight,
+        'post_ensight': post_ensight,
         'plot_dir': plot_dir,
     }
     input_file = tmp_path / 'hf_scatra_baci.yml'

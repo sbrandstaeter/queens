@@ -71,7 +71,7 @@ driver:
   type: mpi
   input_template: {baci_hf_input}
   path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_baci
 data_processor_baci:
