@@ -1,0 +1,66 @@
+experiment_name: {{ experiment_name }}
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: monte_carlo
+  seed: 42
+  num_samples: 2
+  model_name: model
+  result_description:
+    write_results: true
+    plot_results: false
+external_geometry:
+  type: baci_dat
+  list_geometric_sets: [DSURFACE 1]
+  input_template: {{ baci_input }}
+model:
+  type: simulation_model
+  interface_name: interface
+data_processor_baci:
+  type: ensight
+  file_name_identifier: "{{ experiment_name }}*.case"
+  file_options_dict:
+    delete_field_data: false
+    geometric_target: [geometric_set, DSURFACE 1]
+    physical_field_dict:
+      vtk_field_type: structure
+      vtk_array_type: point_array
+      vtk_field_label: displacement
+      field_components: [0, 1, 2]
+    target_time_lst: [last]
+parameters:
+  nue:
+    type: uniform
+    lower_bound: 0.40
+    upper_bound: 0.49
+  young:
+    type: uniform
+    lower_bound: 500
+    upper_bound: 1000
+
+interface:
+  type: job_interface
+  driver_name: driver
+driver:
+  type: mpi
+  input_template: {{ input_template }}
+  path_to_executable: {{ path_to_executable }}
+  path_to_postprocessor: {{ path_to_post_ensight }}
+  post_file_prefix: {{ experiment_name }}
+  data_processor_name: data_processor_baci
+resources:
+  cluster:
+    scheduler_name: scheduler
+    max_concurrent: 10
+    max_finished_jobs: 1000
+scheduler:
+  type: cluster
+  cluster_type: {{ cluster }}
+  num_procs: 1
+  num_procs_post: 1
+  cluster:
+    script: /lnm/share/donottouch.sh
+    walltime: 120:00:00
+  remote: false
+  singularity: false
