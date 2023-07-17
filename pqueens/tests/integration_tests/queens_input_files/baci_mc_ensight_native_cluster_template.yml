@@ -13,7 +13,7 @@ method:
 external_geometry:
   type: baci_dat
   list_geometric_sets: [DSURFACE 1]
-  input_template: {{ baci_input }}
+  input_template: {{ input_template }}
 model:
   type: simulation_model
   interface_name: interface
