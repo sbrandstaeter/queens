@@ -10,7 +10,6 @@ import pytest
 
 from pqueens.schedulers.cluster_scheduler import CLUSTER_CONFIGS
 from pqueens.utils import config_directories
-from pqueens.utils.io_utils import load_result
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
