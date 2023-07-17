@@ -10,7 +10,12 @@ from pqueens.utils import injector
 
 
 def test_baci_mc_ensight_dask(
-    inputdir, tmp_path, third_party_inputs, baci_link_paths, expected_mean, expected_var
+    inputdir,
+    tmp_path,
+    third_party_inputs,
+    baci_link_paths,
+    baci_example_expected_mean,
+    baci_example_expected_var,
 ):
     """Test simple BACI run."""
     # generate json input file from template
@@ -41,57 +46,5 @@ def test_baci_mc_ensight_dask(
         results = pickle.load(handle)
 
     # assert statements
-    np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=6)
-    np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=6)
-
-
-@pytest.fixture(name="expected_mean")
-def fixture_expected_mean():
-    """Expected result."""
-    result = np.array(
-        [
-            [0.0041549, 0.00138497, -0.00961201],
-            [0.00138497, 0.00323159, -0.00961201],
-            [0.00230828, 0.00323159, -0.00961201],
-            [0.0041549, 0.00230828, -0.00961201],
-            [0.00138497, 0.0041549, -0.00961201],
-            [0.0041549, 0.00323159, -0.00961201],
-            [0.00230828, 0.0041549, -0.00961201],
-            [0.0041549, 0.0041549, -0.00961201],
-            [0.00138497, 0.00138497, -0.00961201],
-            [0.00323159, 0.00138497, -0.00961201],
-            [0.00138497, 0.00230828, -0.00961201],
-            [0.00230828, 0.00138497, -0.00961201],
-            [0.00323159, 0.00230828, -0.00961201],
-            [0.00230828, 0.00230828, -0.00961201],
-            [0.00323159, 0.00323159, -0.00961201],
-            [0.00323159, 0.0041549, -0.00961201],
-        ]
-    )
-    return result
-
-
-@pytest.fixture(name="expected_var")
-def fixture_expected_var():
-    """Expected variance."""
-    result = np.array(
-        [
-            [3.19513506e-07, 3.55014593e-08, 2.94994460e-07],
-            [3.55014593e-08, 1.93285820e-07, 2.94994460e-07],
-            [9.86153027e-08, 1.93285820e-07, 2.94994460e-07],
-            [3.19513506e-07, 9.86153027e-08, 2.94994460e-07],
-            [3.55014593e-08, 3.19513506e-07, 2.94994460e-07],
-            [3.19513506e-07, 1.93285820e-07, 2.94994460e-07],
-            [9.86153027e-08, 3.19513506e-07, 2.94994460e-07],
-            [3.19513506e-07, 3.19513506e-07, 2.94994460e-07],
-            [3.55014593e-08, 3.55014593e-08, 2.94994460e-07],
-            [1.93285820e-07, 3.55014593e-08, 2.94994460e-07],
-            [3.55014593e-08, 9.86153027e-08, 2.94994460e-07],
-            [9.86153027e-08, 3.55014593e-08, 2.94994460e-07],
-            [1.93285820e-07, 9.86153027e-08, 2.94994460e-07],
-            [9.86153027e-08, 9.86153027e-08, 2.94994460e-07],
-            [1.93285820e-07, 1.93285820e-07, 2.94994460e-07],
-            [1.93285820e-07, 3.19513506e-07, 2.94994460e-07],
-        ]
-    )
-    return result
+    np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
+    np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
