@@ -55,7 +55,7 @@ def test_baci_mc_ensight_native_cluster(
         'experiment_name': experiment_name,
         'input_template': third_party_input_file_local,
         'path_to_executable': path_to_executable,
-        'path_to_drt_monitor': path_to_post_ensight,
+        'path_to_post_ensight': path_to_post_ensight,
         'cluster': cluster,
     }
 

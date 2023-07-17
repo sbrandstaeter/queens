@@ -62,7 +62,7 @@ driver:
   input_template: {{ input_template }}
   path_to_executable: {{ path_to_executable }}
   dask_jobscript_template: {{ dask_jobscript_template }}
-  path_to_postprocessor: {{ path_to_drt_ensight }}
+  path_to_postprocessor: {{ path_to_post_ensight }}
   post_file_prefix: {{ experiment_name }}
   cluster_script_path: {{ cluster_script_path }}
   data_processor_name: data_processor_baci
