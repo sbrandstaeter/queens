@@ -8,11 +8,16 @@ systems.
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
     - [Mamba (or conda)](#mamba-or-conda)
+      - [Installation](#installation)
+      - [Usage](#usage)
     - [Optional: MongoDB](#optional-mongodb)
+      - [Installation](#installation-1)
     - [Optional: Singularity](#optional-singularity)
+      - [Installation](#installation-2)
+      - [Building a QUEENS singularity image](#building-a-queens-singularity-image)
     - [Git](#git)
   - [QUEENS Installation](#queens-installation)
-  - [Start a QUEENS run](#start-a-queens-run)
+  - [Start a *QUEENS* run](#start-a-queens-run)
   - [Further Topics](#further-topics)
     - [Remote Computing](#remote-computing)
   - [Documentation](#documentation)
@@ -237,7 +242,7 @@ If you have performed the aforementioned step, yet you are still asked for your 
    ```batch
    chmod 700 ~
    ```
-   Note that there are other valid choices. Refer to the manual of chmod for details.
+   > **Note** that there are other valid choices. Refer to the manual of chmod for details.
 
 [↑ Contents](#contents)
 
@@ -267,10 +272,11 @@ In order to run local integration tests together with `BACI`, it is necessary th
 `<QUEENS_BaseDir>/config`. The links can be created by running the following commands:
 ```
 ln -s <your/path/to/baci-release> <QUEENS_BaseDir>/config/baci-release
-ln -s <your/path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor
 ln -s <your/path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight
 ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
+> **NOTE**: The workflows with BACI are tested with the BACI version [53abb9c91f90c909e559c8239f12757885dd81e3](https://gitlab.lrz.de/baci/baci/-/commit/53abb9c91f90c909e559c8239f12757885dd81e3)
+
 The testing strategy is more closely described in [TESTING.md](pqueens/tests/README.md)
 To run the test suite type:
 ```bash
