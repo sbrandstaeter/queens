@@ -143,9 +143,7 @@ class TestClusterSingularity:
         baci_example_expected_mean,
         baci_example_expected_var,
     ):
-        """Test for the Elementary Effects Iterator on the clusters with BACI.
-
-        Using the INVAAA minimal model.
+        """Test BACI with MC using singularity.
 
         Args:
             inputdir (Path): Path to the JSON input file
