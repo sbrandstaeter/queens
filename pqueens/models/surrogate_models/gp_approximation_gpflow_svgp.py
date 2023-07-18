@@ -152,7 +152,9 @@ class GPflowSVGPModel(SurrogateModel):
             output (dict): Dictionary with mean, variance, and possibly
             posterior samples at *x_test*
         """
-        assert support == 'f' or support == 'y', "Unknown input for support."
+        assert (
+            support == 'f' or support == 'y'
+        ), "Unknown input for support."  # pylint: disable= consider-using-in
         x_test = np.atleast_2d(x_test).reshape((-1, self.number_input_dimensions))
         number_test_samples = x_test.shape[0]
         x_test = self.scaler_x.transform(x_test)
