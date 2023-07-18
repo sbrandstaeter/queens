@@ -187,7 +187,7 @@ class GridIteratorVisualization:
             samples (np.array): Simulation input/samples/grid-points
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
-        ax = plt.subplots()
+        _, ax = plt.subplots()
 
         # get axes
         x = samples
