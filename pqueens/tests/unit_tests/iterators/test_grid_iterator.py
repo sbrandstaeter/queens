@@ -229,7 +229,6 @@ def test_pre_run_three(
     global_settings,
 ):
     """TODO_doc."""
-    num_params = 3
     parameters_three()
     grid_iterator = GridIterator(
         model=default_model,

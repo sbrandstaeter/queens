@@ -54,7 +54,7 @@ def test_fd_jacobian(x0, method, rel_step, bounds):
     # calculated all necessary inputs
 
     x_stencil_batch, dx = get_positions(x0, method, rel_step, bounds)
-    step, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
+    use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
 
     x_batch = np.vstack((np.atleast_2d(x0), x_stencil_batch))
 

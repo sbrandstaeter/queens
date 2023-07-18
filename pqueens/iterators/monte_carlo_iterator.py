@@ -71,7 +71,7 @@ class MonteCarloIterator(Iterator):
                     # Check for dimensionality of the results
                     plt.rcParams["mathtext.fontset"] = "cm"
                     plt.rcParams.update({'font.size': 23})
-                    fig, ax = plt.subplots()
+                    ax = plt.subplots()
 
                     if results['raw_output_data']['mean'][0].shape[0] > 1:
                         for ele in results['raw_output_data']['mean']:

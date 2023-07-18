@@ -187,7 +187,7 @@ class GridIteratorVisualization:
             samples (np.array): Simulation input/samples/grid-points
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
-        fig, ax = plt.subplots()
+        ax = plt.subplots()
 
         # get axes
         x = samples
@@ -230,8 +230,8 @@ class GridIteratorVisualization:
 
         # --------------------- plot QoI over samples ---------------------
         surf = ax.plot_surface(np.log10(x), y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-        x_formatter = self._get_tick_formatter('x')
-        y_formatter = self._get_tick_formatter('y')
+        self._get_tick_formatter('x')
+        self._get_tick_formatter('y')
 
         # scale axes with user defined tick formatter
         # TODO the formatter contains currently a bug

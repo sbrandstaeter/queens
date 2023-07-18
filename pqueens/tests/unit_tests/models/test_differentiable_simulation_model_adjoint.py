@@ -27,7 +27,6 @@ def default_adjoint_model():
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the adjoint model."""
-    model_name = "my_model_name"
     global_settings = {"experiment_name": "my_experiment"}
     interface = "my_interface"
     gradient_interface = "my_gradient_interface"

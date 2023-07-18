@@ -200,7 +200,7 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.__init__', return_value=None
     )
 
-    my_iterator = BaciLMIterator.from_config_create_iterator(
+    BaciLMIterator.from_config_create_iterator(
         config, iterator_name=iterator_name_cases, model=model_cases
     )
     if model_cases is None:
@@ -238,7 +238,7 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
 
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
@@ -258,7 +258,7 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[
             np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]),
