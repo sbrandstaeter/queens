@@ -139,6 +139,11 @@ class DataProcessorEnsight(DataProcessor):
                 f"'list' but you provided type {type(geometric_target)}. Abort..."
             )
 
+        self.geometric_set_data = None
+
+        if geometric_target[0] == "geometric_set":
+            self.geometric_set_data = self.read_geometry_coordinates(external_geometry_obj)
+
         self.experiment_name = experiment_name
         self.experimental_data = experimental_data
         self.coordinates_label_experimental = coordinates_label_experimental
@@ -150,7 +155,6 @@ class DataProcessorEnsight(DataProcessor):
         self.vtk_field_components = vtk_field_components
         self.vtk_array_type = vtk_array_type
         self.geometric_target = geometric_target
-        self.geometric_set_data = None
 
     @classmethod
     def from_config_create_data_processor(cls, config, data_processor_name):
@@ -387,8 +391,6 @@ class DataProcessorEnsight(DataProcessor):
             data (np.array): Array of field values for nodes of geometric set
         """
         geometric_set = self.geometric_target[1]
-        if self.geometric_set_data is None:
-            self.read_geometry_coordinates()
 
         # get node coordinates by geometric set, loop over all topologies
         for nodes in self.geometric_set_data['node_topology']:
@@ -531,20 +533,29 @@ class DataProcessorEnsight(DataProcessor):
 
         return vtk_solution_field
 
-    def read_geometry_coordinates(self):
+    @staticmethod
+    def read_geometry_coordinates(external_geometry_obj):
         """Write geometry of interest to the database.
 
         This method uses the QUEENS external geometry module.
+
+        Args:
+            external_geometry_obj (pqueens.baci_dat_geometry)
+
+        Returns:
+            dict: set with BACI topology
         """
         # read in the external geometry
-        self.external_geometry_obj.main_run()
+        external_geometry_obj.main_run()
 
-        self.geometric_set_data = {
-            "node_topology": self.external_geometry_obj.node_topology,
-            "line_topology": self.external_geometry_obj.line_topology,
-            "surface_topology": self.external_geometry_obj.surface_topology,
-            "volume_topology": self.external_geometry_obj.volume_topology,
-            "node_coordinates": self.external_geometry_obj.node_coordinates,
-            "element_centers": self.external_geometry_obj.element_centers,
-            "element_topology": self.external_geometry_obj.element_topology,
+        geometric_set_data = {
+            "node_topology": external_geometry_obj.node_topology,
+            "line_topology": external_geometry_obj.line_topology,
+            "surface_topology": external_geometry_obj.surface_topology,
+            "volume_topology": external_geometry_obj.volume_topology,
+            "node_coordinates": external_geometry_obj.node_coordinates,
+            "element_centers": external_geometry_obj.element_centers,
+            "element_topology": external_geometry_obj.element_topology,
         }
+
+        return geometric_set_data
