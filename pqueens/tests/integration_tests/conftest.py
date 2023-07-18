@@ -72,7 +72,7 @@ def baci_cluster_paths(connect_to_resource):
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
-    path_to_drt_ensight = base_directory / "post_ensight"
+    path_to_post_ensight = base_directory / "post_ensight"
 
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
@@ -87,11 +87,11 @@ def baci_cluster_paths(connect_to_resource):
 
     exists_on_remote(path_to_executable)
     exists_on_remote(path_to_post_processor)
-    exists_on_remote(path_to_drt_ensight)
+    exists_on_remote(path_to_post_ensight)
 
     baci_cluster_paths = {
         'path_to_executable': path_to_executable,
-        'path_to_drt_ensight': path_to_drt_ensight,
+        'path_to_post_ensight': path_to_post_ensight,
         'path_to_post_processor': path_to_post_processor,
     }
     return baci_cluster_paths
