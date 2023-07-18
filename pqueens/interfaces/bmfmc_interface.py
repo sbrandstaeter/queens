@@ -19,7 +19,7 @@ class BmfmcInterface(Interface):
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
-    def __init__(self, probabilistic_mapping):
+    def __init__(self, probabilistic_mapping):  # pylint: disable=super-init-not-called
         """Initialize the interface.
 
         Args:

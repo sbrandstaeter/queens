@@ -59,7 +59,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         nugget_std (float): Nugget standard deviation for robustness
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self,
         num_epochs=None,
         batch_size=None,

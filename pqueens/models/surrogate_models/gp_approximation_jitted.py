@@ -68,7 +68,7 @@ class GPJittedModel(SurrogateModel):
         ),
     }
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self,
         stochastic_optimizer,
         initial_hyper_params_lst=None,

@@ -489,7 +489,7 @@ class BmfiaInterface(Interface):
         ),
     }
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self,
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_coordinate",
