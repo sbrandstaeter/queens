@@ -20,11 +20,9 @@ class FakeRegression:
 
     def train(self):
         """Train surrogate model."""
-        pass
 
     def setup(self, *args, **kwargs):
         """Setup surrogate model."""
-        pass
 
 
 @pytest.fixture()

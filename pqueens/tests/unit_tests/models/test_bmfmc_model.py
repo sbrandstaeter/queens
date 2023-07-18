@@ -654,7 +654,6 @@ def test_update_model_variables(default_bmfmc_model):
 
     # bmfmc_model.update_model_variables(Z_LFs_train, Z_mc)
     # TODO method and test do not seem to have any effect for now
-    pass
 
 
 def test_linear_scale_a_to_b():
