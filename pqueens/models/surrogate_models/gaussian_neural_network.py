@@ -59,7 +59,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         nugget_std (float): Nugget standard deviation for robustness
     """
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self,
         num_epochs=None,
         batch_size=None,
@@ -102,6 +102,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         Returns:
             Instance of GaussianBayesianNeuralNetwork
         """
+        super().__init__()
         # check mean function and subtract from y_train
         valid_mean_function_types = {
             "zero": (lambda x: 0, lambda x: 0),

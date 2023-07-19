@@ -489,7 +489,7 @@ class BmfiaInterface(Interface):
         ),
     }
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self,
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_coordinate",
@@ -512,6 +512,7 @@ class BmfiaInterface(Interface):
             BmfiaInterface.valid_probabilistic_mappings_configurations, probabilistic_mapping_type
         )
 
+        super().__init__()
         self.instantiate_probabilistic_mappings = instantiate_probabilistic_mappings
         self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []

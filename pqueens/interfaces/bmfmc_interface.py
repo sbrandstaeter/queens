@@ -19,7 +19,7 @@ class BmfmcInterface(Interface):
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
-    def __init__(self, probabilistic_mapping):  # pylint: disable=super-init-not-called
+    def __init__(self, probabilistic_mapping):
         """Initialize the interface.
 
         Args:
@@ -27,6 +27,7 @@ class BmfmcInterface(Interface):
                                          probabilistic dependency between high-fidelity model,
                                          low-fidelity models and informative input features.
         """
+        super().__init__()
         self.probabilistic_mapping = probabilistic_mapping
 
     def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):

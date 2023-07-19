@@ -68,7 +68,7 @@ class GPJittedModel(SurrogateModel):
         ),
     }
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self,
         stochastic_optimizer,
         initial_hyper_params_lst=None,
@@ -89,6 +89,7 @@ class GPJittedModel(SurrogateModel):
             plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
             noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel.
         """
+        super().__init__()
         if initial_hyper_params_lst is None:
             raise ValueError("The initial hyper-parameters were not provided!")
 
