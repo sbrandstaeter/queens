@@ -88,7 +88,7 @@ def setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runn
             'You can create the necessary symbolic links on Linux via:\n'
             '-------------------------------------------------------------------------\n'
             'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
-            'ln -s <path/to/post_ensightr> <QUEENS_BaseDir>/config/post_ensight\n'
+            'ln -s <path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight\n'
             'ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n'
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
