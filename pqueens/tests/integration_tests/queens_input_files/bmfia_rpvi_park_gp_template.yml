@@ -25,15 +25,8 @@ method:
   variational_parameter_initialization: prior
   variational_transformation: null
 optimizer:
-  FIM_dampening: true
-  FIM_dampening_lower_bound: 1.0e-08
-  dampening_coefficient: 0.01
-  decay_start_iteration: 50
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 10000.0
   learning_rate: 0.03
-  max_iter: 10000000
-  natural_gradient: true
+  max_iteration: 10000000
   optimization_type: max
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1
@@ -88,9 +81,7 @@ bmfia_iterator:
     type: random
 gp_optimizer:
   learning_rate: 0.008
-  max_iterations: 1000
   optimization_type: max
-  plot_refresh_rate: 10
   rel_l1_change_threshold: 0.004
   rel_l2_change_threshold: 0.004
   type: adam
