@@ -2,6 +2,7 @@ experiment_name: {{ experiment_name }}
 database:
   type: mongodb
   address: localhost:27017
+  name: queens_db_{{ experiment_name }}
 method:
   type: monte_carlo
   seed: 42
