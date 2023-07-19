@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
+TESTS_BASE_FOLDER_NAME = "tests"
 
 
 def local_base_directory():

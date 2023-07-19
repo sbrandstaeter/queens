@@ -55,7 +55,7 @@ class TestDaskCluster:
             experiments_dir = (
                 Path.home()
                 / config_directories.BASE_DATA_DIR
-                / config_directories.EXPERIMENTS_BASE_FOLDER_NAME
+                / config_directories.TESTS_BASE_FOLDER_NAME
                 / pytest_basename
                 / experiment_name
             )
