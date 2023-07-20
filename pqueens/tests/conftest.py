@@ -153,9 +153,9 @@ def baci_link_paths(config_dir):
 def baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
     home = Path.home()
-    src_baci = home / 'workspace/build_new/baci-release'
-    src_post_ensight = home / 'workspace/build_new/post_ensight'
-    src_post_processor = home / 'workspace/build_new/post_processor'
+    src_baci = home / 'workspace/build/baci-release'
+    src_post_ensight = home / 'workspace/build/post_ensight'
+    src_post_processor = home / 'workspace/build/post_processor'
     return src_baci, src_post_ensight, src_post_processor
 
 
