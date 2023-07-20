@@ -57,10 +57,17 @@ simulation_model:
   interface_name: interface
 gradient_interface:
   type: job_interface
+  scheduler_name: scheduler
   driver_name: gradient_driver
 interface:
   type: job_interface
+  scheduler_name: scheduler
   driver_name: driver
+scheduler:
+  type: local
+  num_procs: 1
+  num_procs_post: 1
+  max_concurrent: 1
 gradient_driver:
   type: mpi
   input_template: {{ input_file }}
@@ -86,17 +93,6 @@ gradient_data_processor:
     delete_field_data: false
     filter:
       type: entire_file
-resources:
-  local_machine:
-    scheduler_name: local_scheduler
-    max_concurrent: 1
-    max_finished_jobs: 1000
-local_scheduler:
-  experiment_dir: {{ experiment_dir }}
-  type: standard
-  singularity: false
-  num_procs: 1
-  num_procs_post: 1
 parameters:
   x1:
     type: normal

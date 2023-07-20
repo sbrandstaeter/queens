@@ -2,7 +2,6 @@ experiment_name: {{ experiment_name }}
 database:
   type: mongodb
   address: localhost:27017
-  name: queens_db_{{ experiment_name }}
 method:
   type: monte_carlo
   seed: 42
@@ -39,32 +38,31 @@ parameters:
     type: uniform
     lower_bound: 500
     upper_bound: 1000
-
 interface:
   type: job_interface
+  scheduler_name: scheduler
   driver_name: driver
-driver:
-  type: mpi
-  input_template: {{ input_template }}
-  path_to_executable: {{ path_to_executable }}
-  path_to_postprocessor: {{ path_to_post_ensight }}
-  post_file_prefix: {{ experiment_name }}
-  data_processor_name: data_processor_baci
-resources:
-  {{ cluster }}:
-    scheduler_name: scheduler
-    max_concurrent: 10
-    max_finished_jobs: 1000
 scheduler:
   type: cluster
-  cluster_type: {{ cluster }}
-  num_procs: 1
+  max_jobs: 3
+  min_jobs: 3
+  walltime: 00:00:60
+  num_procs: 2
   num_procs_post: 1
-  cluster:
-    script: /lnm/share/donottouch.sh
-    walltime: 00:10:00
-  remote:
-    connect: {{ connect_to_resource }}
-  singularity: true
-  singularity_settings:
-    remote_ip: {{ singularity_remote_ip }}
+  num_nodes: 2
+  workload_manager: {{ workload_manager }}
+  cluster_address: {{ cluster_address }}
+  cluster_internal_address: {{ cluster_internal_address }}
+  cluster_user: {{ cluster_user }}
+  cluster_python_path: {{ cluster_python_path }}
+  cluster_queens_repository: {{ cluster_queens_repository }}
+  cluster_build_environment: false
+driver:
+  type: jobscript
+  input_template: {{ input_template }}
+  path_to_executable: {{ path_to_executable }}
+  dask_jobscript_template: {{ dask_jobscript_template }}
+  path_to_postprocessor: {{ path_to_post_ensight }}
+  post_file_prefix: {{ experiment_name }}
+  cluster_script_path: {{ cluster_script_path }}
+  data_processor_name: data_processor_baci

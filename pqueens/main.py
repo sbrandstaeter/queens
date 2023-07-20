@@ -8,7 +8,7 @@ import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators import from_config_create_iterator
-from pqueens.schedulers.dask_scheduler import SHUTDOWN_CLIENTS
+from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.ascii_art import print_banner_and_description
 from pqueens.utils.cli_utils import get_cli_options, print_greeting_message
 from pqueens.utils.io_utils import load_input_file

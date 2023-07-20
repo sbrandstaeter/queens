@@ -40,7 +40,13 @@ parameters:
     upper_bound: 1000
 interface:
   type: job_interface
+  scheduler_name: scheduler
   driver_name: driver
+scheduler:
+  type: local
+  num_procs: 2
+  num_procs_post: 1
+  max_concurrent: 2
 driver:
   type: mpi
   input_template: {{ baci_input }}
@@ -48,12 +54,3 @@ driver:
   path_to_postprocessor: {{ post_ensight }}
   post_file_prefix: baci_mc_ensight
   data_processor_name: data_processor_baci
-resources:
-  local_machine:
-    scheduler_name: local_scheduler
-    max_concurrent: 1
-    max_finished_jobs: 10
-local_scheduler:
-  type: standard
-  num_procs: 1
-  num_procs_post: 1

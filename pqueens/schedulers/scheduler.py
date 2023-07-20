@@ -1,145 +1,131 @@
 """QUEENS scheduler parent class."""
 import abc
+import copy
+import logging
 
-from pqueens.drivers import from_config_create_driver
+import numpy as np
+
+from pqueens.utils.injector import read_file
+
+_logger = logging.getLogger(__name__)
+
+SHUTDOWN_CLIENTS = []
 
 
 class Scheduler(metaclass=abc.ABCMeta):
     """Abstract base class for schedulers in QUEENS.
 
-    The scheduler manages simulation runs in QUEENS on local or remote
-    computing resources, with or without Singularity containers, using
-    various scheduling systems on respective computing resource (see
-    also respective Wiki article for more details).
-
     Attributes:
-            experiment_name (str):     Name of QUEENS experiment.
-            input_file (path):         Path to QUEENS input file.
-            experiment_dir (path):     Path to QUEENS experiment directory.
-            driver_name (str):         Name of the driver that shall be used for job submission.
-            config (dict):             Dictionary containing configuration as provided in
-                                       QUEENS input file.
-            scheduler_type (str):      Type of scheduler chosen in QUEENS input file.
-            singularity (bool):        Flag for the use of Singularity containers.
-            process_ids (dict): Dict of process-IDs of the submitted process as value with *job_ids*
-                                as keys.
+        experiment_name (str): name of QUEENS experiment.
+        experiment_dir (Path): Path to QUEENS experiment directory.
+        client (Client): Dask client that connects to and submits computation to a Dask cluster
+        num_procs (int): number of cores per job
+        num_procs_post (int): number of cores per job for post-processing
     """
 
     def __init__(
         self,
         experiment_name,
-        input_file,
         experiment_dir,
-        driver_name,
-        config,
-        singularity,
-        scheduler_type,
+        client,
+        num_procs,
+        num_procs_post,
     ):
-        """Initialise Scheduler.
+        """Initialize scheduler.
 
         Args:
-            experiment_name (str):     name of QUEENS experiment
-            input_file (path):         path to QUEENS input file
-            experiment_dir (path):     path to QUEENS experiment directory
-            driver_name (str):         Name of the driver that shall be used for job submission
-            config (dict):             dictionary containing configuration as provided in
-                                       QUEENS input file
-            remote connect (str):      (only for remote scheduling) address of remote
-                                       computing resource
-            singularity (bool):        flag for use of Singularity containers
-            scheduler_type (str):      type of scheduler chosen in QUEENS input file
-
-        Returns:
-            scheduler (obj):           instance of scheduler class
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            client (Client): Dask client that connects to and submits computation to a Dask cluster
+            num_procs (int): number of cores per job
+            num_procs_post (int): number of cores per job for post-processing
         """
         self.experiment_name = experiment_name
-        self.input_file = input_file
         self.experiment_dir = experiment_dir
-        self.driver_name = driver_name
-        self.config = config
-        self.scheduler_type = scheduler_type
-        self.singularity = singularity
-        self.process_ids = {}
+        self.num_procs = num_procs
+        self.num_procs_post = num_procs_post
+        self.client = client
+        _logger.info(client.dashboard_link)
+        global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
+        SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def _create_base_print_dict(self, resource_info):
-        """String description of the ClusterScheduler object.
-
-        Args:
-            resource_info (str): information on location of computing resource
-        Returns:
-            string (str): ClusterScheduler object description
-        """
-        print_dict = {
-            "Type of scheduler": self.scheduler_type,
-            "Jobs will be run": resource_info,
-            "Use singularity": self.singularity,
-        }
-
-        return print_dict
-
-    # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
-    def submit(self, job_id, batch):
-        """Function to submit job to scheduling software on a resource.
+    @classmethod
+    def from_config_create_scheduler(cls, config, scheduler_name):
+        """Create standard scheduler object from config.
 
         Args:
-            job_id (int):            ID of job to submit
-            batch (int):             Batch number of job
+            config (dict): QUEENS input dictionary
+            scheduler_name (str): Name of the scheduler
 
         Returns:
-            pid (int): Process ID of job
+            Instance of  LocalScheduler class
         """
-        if self.singularity:
-            pid = self._submit_singularity(job_id, batch)
-        else:
-            pid = self._submit_driver(job_id, batch)
+        scheduler_options = config[scheduler_name].copy()
+        scheduler_options.pop('type')
+        global_settings = config['global_settings']
+        return cls(global_settings=global_settings, **scheduler_options)
 
-        self.process_ids[str(job_id)] = pid
-
-        return pid
-
-    def submit_data_processor(self, job_id, batch):
-        """Function to submit data processor job to scheduling software.
+    def evaluate(self, samples_list, driver):
+        """Submit jobs to driver.
 
         Args:
-            job_id (int):            ID of job to submit
-            batch (int):             Batch number of job
+            samples_list (list): List of dicts containing samples and job ids
+            driver (Driver): Driver object that runs simulation
+
+        Returns:
+            result_dict (dict): Dictionary containing results
         """
-        # create driver
-        # TODO we should not create a new driver instance here every time
-        # instead only update the driver attributes.
-        driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, self.experiment_dir
+        futures = self.client.map(
+            self.driver_run,
+            samples_list,
+            pure=False,
+            driver=driver,
+            num_procs=self.num_procs,
+            num_procs_post=self.num_procs_post,
+            experiment_dir=self.experiment_dir,
+            experiment_name=self.experiment_name,
         )
+        results = self.client.gather(futures)
 
-        # do post-processing (if required), data-processing,
-        # finish and clean job
-        driver_obj.post_job_run()
+        result_dict = {'mean': [], 'gradient': []}
+        for result in results:
+            # We should remove this squeeze! It is only introduced for consistency with old test.
+            result_dict['mean'].append(np.atleast_1d(np.array(result[0]).squeeze()))
+            result_dict['gradient'].append(result[1])
+        result_dict['mean'] = np.array(result_dict['mean'])
+        result_dict['gradient'] = np.array(result_dict['gradient'])
+        return result_dict
 
-    # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
-    @abc.abstractmethod
-    def pre_run(self):
-        """Pre run routine."""
-
-    @abc.abstractmethod
-    def _submit_singularity(self, job_id, batch):
-        """Submit job using singularity."""
-
-    @abc.abstractmethod
-    def check_job_completion(self, job):
-        """Check whether this job has been completed.
+    @staticmethod
+    def driver_run(sample_dict, driver, num_procs, num_procs_post, experiment_dir, experiment_name):
+        """Run the driver.
 
         Args:
-            job (dict): Job dict
+            sample_dict (list): Dict containing sample and job id
+            driver (Driver): Driver object that runs simulation
+            num_procs (int): number of cores per job
+            num_procs_post (int): number of cores per job for post-processing
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
 
         Returns:
-            completed (bool): If job is completed
-            failed (bool): If job failed
+            Result and potentially the gradient
         """
+        #  This copy is currently necessary because processed data is stored and extended in
+        #  data processor
+        driver = copy.deepcopy(driver)
+        return driver.run(sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name)
 
-    @abc.abstractmethod
-    def post_run(self):
-        """Post run routine."""
+    def copy_file(self, file_path):
+        """Copy file to experiment directory.
 
-    @abc.abstractmethod
-    def _submit_driver(self, job_id, batch):
-        """Submit job to driver."""
+        Args:
+            file_path (Path): path to file that should be copied to experiment directory
+        """
+        file = read_file(file_path)
+        destination = self.experiment_dir / file_path.name
+        self.client.submit(destination.write_text, file, encoding='utf-8').result()
+
+    async def shutdown_client(self):
+        """Shutdown the DASK client."""
+        await self.client.shutdown()
