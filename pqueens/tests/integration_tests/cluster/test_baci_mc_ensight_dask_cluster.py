@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from pqueens.main import run
-from pqueens.schedulers.cluster_scheduler import (
+from pqueens.tests.integration_tests.conftest import (
     BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     DEEP_CLUSTER_TYPE,
