@@ -34,13 +34,7 @@ class ClusterConfig:
         name (str):                         name of cluster
         cluster_address (str):              hostname or address to reach cluster from network
         workload_manager (str):          type of work load scheduling software (PBS or SLURM)
-        start_cmd (str):                    command to start a job on the cluster
         jobscript_template (Path):          absolute path to jobscript template file
-        job_status_command (str):           command to check job status on cluster
-        job_status_location (int):          location of job status in return of job_status_command
-        singularity_bind (str):             variable for binding directories on the host
-                                            to directories in the container
-        singularity_remote_ip (str):               ip address needed for singularity
         cluster_internal_address (str)      ip address of login node in cluster internal network
         default_python_path (str):          path indicating the default remote python location
         cluster_script_path (Path):          path to the cluster_script which defines functions

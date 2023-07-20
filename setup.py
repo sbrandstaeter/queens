@@ -76,7 +76,6 @@ setup(
     entry_points={
         'console_scripts': [
             'queens = pqueens.main:main',
-            'queens-build-singularity = pqueens.utils.cli_utils:build_singularity_cli',
             'queens-print-pickle = pqueens.utils.cli_utils:print_pickle_data_cli',
             'queens-build-html-coverage-report = '
             'pqueens.utils.cli_utils:build_html_coverage_report',

@@ -225,7 +225,7 @@ def get_job_logger(
     joblogger.propagate = propagate
 
     # add handlers for log and error file (remark: python code is run in parallel
-    # for cluster runs with singularity; thus, each processor logs his own file.)
+    # for cluster runs; thus, each processor logs his own file.)
     lfh = logging.FileHandler(log_file, mode='w', delay=False)
     lfh.setLevel(logging.INFO)
     lfh.setFormatter(formatter)
