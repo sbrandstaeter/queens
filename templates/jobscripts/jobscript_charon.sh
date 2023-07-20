@@ -37,7 +37,7 @@
 echo $HOME
 cd $HOME
 source /etc/profile.d/modules.sh
-source /home/opt/cluster_tools/core/load_queens_environment.sh
+source /home/opt/cluster_tools/core/load_queens_environment2306.sh
 
 ############################
 # SINGULARITY SPECIFICATIONS
