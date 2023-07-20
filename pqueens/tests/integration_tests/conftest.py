@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from pqueens.utils import config_directories
-from pqueens.utils.io_utils import load_result
 from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 
