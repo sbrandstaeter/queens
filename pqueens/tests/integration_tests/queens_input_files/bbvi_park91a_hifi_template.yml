@@ -37,7 +37,7 @@ optimizer:
   optimization_type: max
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1
-  max_iter: 10000000
+  max_iteration: 10000000
 model:
   type: gaussian
   forward_model_name: forward_model

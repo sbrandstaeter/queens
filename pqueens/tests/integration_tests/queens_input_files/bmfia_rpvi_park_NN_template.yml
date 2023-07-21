@@ -82,15 +82,8 @@ lf_model:
   interface_name: lf_interface
   type: simulation_model
 optimizer:
-  FIM_dampening: false
-  FIM_dampening_lower_bound: 1.0e-08
-  dampening_coefficient: 0.01
-  decay_start_iteration: 50
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 1000000000.0
   learning_rate: 0.01
-  max_iter: 100
-  natural_gradient: true
+  max_iteration: 100
   optimization_type: max
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1

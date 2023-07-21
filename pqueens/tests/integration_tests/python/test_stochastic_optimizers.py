@@ -51,7 +51,7 @@ def adam_optimizer():
             "optimization_type": "max",
             "rel_l1_change_threshold": 1e-4,
             "rel_l2_change_threshold": 1e-6,
-            "max_iter": 1000,
+            "max_iteration": 1000,
         }
     }
     optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
@@ -68,7 +68,7 @@ def adamax_optimizer():
             "optimization_type": "min",
             "rel_l1_change_threshold": 1e-4,
             "rel_l2_change_threshold": 1e-6,
-            "max_iter": 1000,
+            "max_iteration": 1000,
         }
     }
     optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
@@ -85,7 +85,7 @@ def rmsprop_optimizer():
             "optimization_type": "max",
             "rel_l1_change_threshold": -1,
             "rel_l2_change_threshold": -1,
-            "max_iter": 500,
+            "max_iteration": 500,
         }
     }
     optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")

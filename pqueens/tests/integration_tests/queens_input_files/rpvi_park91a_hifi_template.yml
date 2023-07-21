@@ -33,7 +33,7 @@ optimizer:
   learning_rate: 0.025
   rel_l1_change_threshold: -1
   rel_l2_change_threshold: -1
-  max_iter: 500
+  max_iteration: 500
 model:
   type: {{ likelihood_model_type }}
   external_python_module: {{ external_python_module }}
