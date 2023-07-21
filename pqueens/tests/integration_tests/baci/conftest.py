@@ -12,26 +12,23 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 
 
 @pytest.fixture(autouse=True)
-def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for_gitlab_runner):
+def setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runner):
     """Set-up of BACI symbolic links.
 
     Args:
-        config_dir (Path): Path to the config directory of QUEENS containing BACI executables
         baci_link_paths (Path): destination for symbolic links to executables
         baci_source_paths_for_gitlab_runner (Path): Several paths that are needed to build symbolic
                                                 links to executables
     """
     (
         dst_baci_release,
-        dst_post_drt_monitor,
-        dst_post_drt_ensight,
+        dst_post_ensight,
         dst_post_processor,
     ) = baci_link_paths
 
     (
         src_baci_release,
-        src_post_drt_monitor,
-        src_post_drt_ensight,
+        src_post_ensight,
         src_post_processor,
     ) = baci_source_paths_for_gitlab_runner
     # check if symbolic links are existent
@@ -45,24 +42,15 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
                     f'\t{src_baci_release}\n'
                 )
             dst_baci_release.symlink_to(src_baci_release)
-        # create link to default post_drt_monitor location if no link is available
-        if not dst_post_drt_monitor.is_symlink():
-            if not src_post_drt_monitor.is_file():
+        # create link to default post_ensight location if no link is available
+        if not dst_post_ensight.is_symlink():
+            if not src_post_ensight.is_file():
                 raise FileNotFoundError(
-                    f'Failed to create link to default post_drt_monitor location.\n'
-                    f'No post_drt_monitor found under default location:\n'
-                    f'\t{src_post_drt_monitor}\n'
+                    f'Failed to create link to default post_ensight location.\n'
+                    f'No post_ensight found under default location:\n'
+                    f'\t{src_post_ensight}\n'
                 )
-            dst_post_drt_monitor.symlink_to(src_post_drt_monitor)
-        # create link to default post_drt_ensight location if no link is available
-        if not dst_post_drt_ensight.is_symlink():
-            if not src_post_drt_ensight.is_file():
-                raise FileNotFoundError(
-                    f'Failed to create link to default post_drt_ensight location.\n'
-                    f'No post_drt_ensight found under default location:\n'
-                    f'\t{src_post_drt_ensight}\n'
-                )
-            dst_post_drt_ensight.symlink_to(src_post_drt_ensight)
+            dst_post_ensight.symlink_to(src_post_ensight)
         # create link to default post_processor location if no link is available
         if not dst_post_processor.is_symlink():
             if not src_post_processor.is_file():
@@ -79,17 +67,11 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
                 f'The following link seems to be dead: {dst_baci_release}\n'
                 f'It points to (non-existing): {dst_baci_release.resolve()}\n'
             )
-        # check if existing link to post_drt_monitor works and points to a valid file
-        if not dst_post_drt_monitor.resolve().exists():
+        # check if existing link to post_ensight works and points to a valid file
+        if not dst_post_ensight.resolve().exists():
             raise FileNotFoundError(
-                f'The following link seems to be dead: {dst_post_drt_monitor}\n'
-                f'It points to: {dst_post_drt_monitor.resolve()}\n'
-            )
-        # check if existing link to post_drt_ensight works and points to a valid file
-        if not dst_post_drt_ensight.resolve().exists():
-            raise FileNotFoundError(
-                f'The following link seems to be dead: {dst_post_drt_ensight}\n'
-                f'It points to: {dst_post_drt_ensight.resolve()}\n'
+                f'The following link seems to be dead: {dst_post_ensight}\n'
+                f'It points to: {dst_post_ensight.resolve()}\n'
             )
         # check if existing link to post_processor works and points to a valid file
         if not dst_post_processor.resolve().exists():
@@ -106,8 +88,7 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             'You can create the necessary symbolic links on Linux via:\n'
             '-------------------------------------------------------------------------\n'
             'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
-            'ln -s <path/to/post_drt_monitor> '
-            '<QUEENS_BaseDir>/config/post_drt_monitor'
+            'ln -s <path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight\n'
             'ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n'
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
@@ -134,8 +115,8 @@ def create_experimental_data_park91a_hifi_on_grid(tmp_path):
     np.random.seed(seed=1)
 
     # True input values
-    x1 = 0.5
-    x2 = 0.2
+    x1 = 0.5  # pylint: disable=invalid-name
+    x2 = 0.2  # pylint: disable=invalid-name
 
     y_vec = park91a_hifi_on_grid(x1, x2)
 
@@ -153,5 +134,5 @@ def create_experimental_data_park91a_hifi_on_grid(tmp_path):
         'y_obs': y_fake,
     }
     experimental_data_path = tmp_path / 'experimental_data.csv'
-    df = pd.DataFrame.from_dict(data_dict)
-    df.to_csv(experimental_data_path, index=False)
+    dataframe = pd.DataFrame.from_dict(data_dict)
+    dataframe.to_csv(experimental_data_path, index=False)

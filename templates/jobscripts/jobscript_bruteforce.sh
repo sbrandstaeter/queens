@@ -44,7 +44,7 @@ DoDataProcessing={{ DATAPROCESSINGFLAG }} # post- and data-processing flag for s
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
-LoadBACIModules
+LoadNewBACIModules
 DoChecks
 StageIn
 RunProgram

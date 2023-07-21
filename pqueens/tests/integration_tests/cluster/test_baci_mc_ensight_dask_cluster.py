@@ -2,12 +2,9 @@
 import logging
 from pathlib import Path
 
-import mock
 import numpy as np
-import pandas as pd
 import pytest
 
-from pqueens.data_processor.data_processor_ensight import DataProcessorEnsight
 from pqueens.main import run
 from pqueens.schedulers.cluster_scheduler import (
     BRUTEFORCE_CLUSTER_TYPE,
@@ -29,7 +26,11 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 class TestDaskCluster:
-    """Test class collecting all test with Dask jobqueue clusters and Baci."""
+    """Test class collecting all test with Dask jobqueue clusters and Baci.
+
+    NOTE: we use a class here since our fixture are set to autouse, but we only want to call them
+    for these tests.
+    """
 
     @pytest.fixture(autouse=True)
     def mock_experiment_dir(
@@ -54,7 +55,7 @@ class TestDaskCluster:
             experiments_dir = (
                 Path.home()
                 / config_directories.BASE_DATA_DIR
-                / config_directories.EXPERIMENTS_BASE_FOLDER_NAME
+                / config_directories.TESTS_BASE_FOLDER_NAME
                 / pytest_basename
                 / experiment_name
             )
@@ -84,7 +85,7 @@ class TestDaskCluster:
         """Path to queens repository on remote host."""
         return pytestconfig.getoption("remote_queens_repository")
 
-    def test_baci_dask_cluster_monte_carlo(
+    def test_baci_mc_ensight_cluster(
         self,
         inputdir,
         tmp_path,
@@ -94,6 +95,8 @@ class TestDaskCluster:
         baci_cluster_paths,
         remote_queens_repository,
         remote_python,
+        baci_example_expected_mean,
+        baci_example_expected_var,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
 
@@ -114,13 +117,17 @@ class TestDaskCluster:
             baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
             remote_queens_repository (str): Path to QUEENS repository on remote host
             remote_python (str): Path to Python environment on remote host
+            baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
+            baci_example_expected_var (np.ndarray): Expected var for the MC samples
         """
         cluster_name = cluster_settings["name"]
 
         # unique experiment name
-        experiment_name = f"test_{cluster_name}_monte_carlo"
+        experiment_name = f"baci_mc_ensight_{cluster_name}"
 
-        baci_input_file_template = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+        baci_input_file_template = Path(
+            third_party_inputs, "baci_input_files", "meshtying3D_patch_lin_duallagr_new_struct.dat"
+        )
 
         template_options = {
             **baci_cluster_paths,
@@ -131,35 +138,17 @@ class TestDaskCluster:
             'cluster_python_path': remote_python,
             'cluster_queens_repository': remote_queens_repository,
         }
-        queens_input_file_template = inputdir / "baci_dask_cluster_monte_carlo_template.yml"
-        queens_input_file = tmp_path / f"baci_dask_cluster_monte_carlo_{cluster_name}.yml"
+        queens_input_file_template = inputdir / "baci_mc_ensight_dask_cluster_template.yml"
+        queens_input_file = tmp_path / f"baci_mc_ensight_dask_cluster_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-        def patch_data(*_args):
-            """Patch reading experimental data from database."""
-            return (
-                experiment_name,
-                pd.DataFrame.from_dict({"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}),
-                ['x1', 'x2', 'x3'],
-                None,
-            )
+        # get json file as config dictionary
+        run(queens_input_file, tmp_path)
 
-        with mock.patch.object(DataProcessorEnsight, '_get_experimental_data_from_db', patch_data):
-            run(queens_input_file, tmp_path)
+        # Check if we got the expected results
+        result_file_name = tmp_path / f"{experiment_name}.pickle"
+        results = io_utils.load_result(result_file_name)
 
-        result_file = tmp_path / f"{experiment_name}.pickle"
-        result = io_utils.load_result(result_file)
-
-        reference_mc_mean = np.array([-1.39371249, 1.72861153])
-        reference_mc_var = np.array([0.01399851, 0.02759816])
-        reference_output = np.array(
-            [
-                [-1.40698826, 1.78872097],
-                [-1.29981923, 1.56641328],
-                [-1.31205046, 1.62528300],
-                [-1.55599201, 1.93402886],
-            ]
-        )
-        np.testing.assert_array_almost_equal(reference_mc_mean, result['mean'])
-        np.testing.assert_array_almost_equal(reference_mc_var, result['var'])
-        np.testing.assert_array_almost_equal(reference_output, result['raw_output_data']['mean'])
+        # assert statements
+        np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
+        np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
