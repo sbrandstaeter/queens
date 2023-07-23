@@ -10,7 +10,6 @@ import pandas as pd
 import scipy.optimize
 from scipy.optimize import curve_fit
 
-import pqueens.database.database as DB_module
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
@@ -127,11 +126,6 @@ class OptimizationIterator(Iterator):
             "Optimization Iterator for experiment: %s",
             self.global_settings['experiment_name'],
         )
-
-        if experimental_csv_data_base_dirs is not None:
-            self.db = DB_module.database
-        else:
-            self.db = None
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
@@ -397,13 +391,6 @@ class OptimizationIterator(Iterator):
 
             # potentially scale experimental data
             self._scale_experimental_data()
-
-            self.db.save(
-                self.experimental_data_dict,
-                self.global_settings['experiment_name'],
-                'experimental_data',
-                1,
-            )
 
     def _scale_experimental_data(self):
         # scale the experimental coordinates

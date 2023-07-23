@@ -1,7 +1,4 @@
 experiment_name: bmfia_rpvi_park
-database:
-  address: localhost:27017
-  type: mongodb
 method:
   max_feval: 100
   model_name: model
@@ -30,11 +27,7 @@ model:
   interface_name: bmfia_interface
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
-  output_label: y_obs
-  coordinate_labels: [x3, x4]
   noise_value: 0.0001
-  experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {{ experimental_data_path }}
   plotting_options:
     plot_booleans: [false, false]
     plot_names: [bmfia_plot.png, posterior.png]
@@ -43,6 +36,13 @@ model:
       y_lim: [0, 10]
     plotting_dir: {{ plot_dir }}
     save_bool: [false, false]
+  experimental_data_reader_name: experimental_data_reader
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: '*.csv'
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+  coordinate_labels: [x3, x4]
 mf_approx:
   type: gaussian_nn
   activation_per_hidden_layer_lst: [elu, elu]

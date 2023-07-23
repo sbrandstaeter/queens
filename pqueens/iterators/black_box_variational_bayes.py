@@ -191,7 +191,7 @@ class BBVIIterator(VariationalInferenceIterator):
             samples of the current batch
         """
         # The first samples belong to simulation input
-        # get simulation output (run actual forward problem)--> data is saved to DB
+        # get simulation output (run actual forward problem)
         log_likelihood = self.model.evaluate(sample_batch)
 
         return log_likelihood.flatten()

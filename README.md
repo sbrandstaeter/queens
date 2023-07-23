@@ -45,12 +45,6 @@ For instructions on how to use mamba or conda, e.g. on how to activate an enviro
 
 [↑ Contents](#contents)
 
-### Optional: MongoDB
-QUEENS uses a [MongoDB](https://www.mongodb.com/) database (Community Edition) for the handling of certain data.
-Therefore, QUEENS requires certain write and access rights.
-MongoDB does not necessarily have to run on the same machine as QUEENS, although this is the default case.
-In certain situations, though, it might make sense to have the database running on a different computer and connect to the database via port-forwarding.
-
 #### Installation
 For installation on various OS, please follow the official [installation instructions](https://www.mongodb.com/docs/manual/administration/install-community/).
 

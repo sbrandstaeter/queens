@@ -7,9 +7,9 @@ import pandas as pd
 import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
-import pqueens.database.database as DB_module
 from pqueens.data_processor.data_processor import DataProcessor
 from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.utils.get_experimental_data import ExperimentalDataReader
 
 _logger = logging.getLogger(__name__)
 
@@ -18,7 +18,6 @@ class DataProcessorEnsight(DataProcessor):
     """Class for data-processing ensight output.
 
     Attributes:
-        experiment_name (str): Name of the current QUEENS experiment.
         experimental_data (pd.DataFrame): Pandas dataframe with experimental data.
         coordinates_label_experimental (lst): List of (spatial) coordinate labels
                                                 of the experimental data set.
@@ -41,25 +40,16 @@ class DataProcessorEnsight(DataProcessor):
     def __init__(
         self,
         data_processor_name,
-        experiment_name,
-        experimental_data,
-        coordinates_label_experimental,
-        time_label_experimental,
-        external_geometry_obj,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
+        external_geometry_obj=None,
+        experimental_data_reader=None,
     ):
         """Init method for ensight data processor object.
 
         Args:
             data_processor_name (str): Name of the data processor.
-            experiment_name (str): Name of QUEENS experiment
-            experimental_data (pd.DataFrame): Pandas dataframe with experimental data
-            coordinates_label_experimental (lst): List of (spatial) coordinate labels of the
-                                                  experimental data set
-            time_label_experimental (str): Time label of the experimental data set
-            external_geometry_obj (obj): QUEENS external geometry object
             file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
@@ -80,6 +70,8 @@ class DataProcessorEnsight(DataProcessor):
 
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
+            external_geometry_obj (obj): QUEENS external geometry object
+            experimental_data_reader (obj): Experimental data reader object
 
         Returns:
             Instance of DataProcessorEnsight class (obj)
@@ -144,10 +136,12 @@ class DataProcessorEnsight(DataProcessor):
         if geometric_target[0] == "geometric_set":
             self.geometric_set_data = self.read_geometry_coordinates(external_geometry_obj)
 
-        self.experiment_name = experiment_name
-        self.experimental_data = experimental_data
-        self.coordinates_label_experimental = coordinates_label_experimental
-        self.time_label_experimental = time_label_experimental
+        (
+            self.experimental_data,
+            self.coordinates_label_experimental,
+            self.time_label_experimental,
+        ) = self._get_experimental_data(experimental_data_reader)
+
         self.external_geometry_obj = external_geometry_obj
         self.target_time_lst = target_time_lst
         self.time_tol = time_tol
@@ -170,23 +164,22 @@ class DataProcessorEnsight(DataProcessor):
         data_processor_options = config[data_processor_name].copy()
         data_processor_options.pop('type')
 
-        # get experimental data from database to search for corresponding vtk data
-        (
-            experiment_name,
-            experimental_data,
-            coordinates_label_experimental,
-            time_label_experimental,
-        ) = cls._get_experimental_data_from_db(config, DB_module.database)
+        # get experimental data to search for corresponding vtk data
+        experimental_data_reader_name = data_processor_options.get("experimental_data_reader_name")
+        experimental_data_reader = None
+        if experimental_data_reader_name:
+            experimental_data_reader = (
+                ExperimentalDataReader.from_config_create_experimental_data_reader(
+                    config, experimental_data_reader_name
+                )
+            )
 
         # generate the external geometry module
         external_geometry_obj = from_config_create_external_geometry(config, 'external_geometry')
 
         return cls(
             data_processor_name=data_processor_name,
-            experiment_name=experiment_name,
-            experimental_data=experimental_data,
-            coordinates_label_experimental=coordinates_label_experimental,
-            time_label_experimental=time_label_experimental,
+            experimental_data_reader=experimental_data_reader,
             external_geometry_obj=external_geometry_obj,
             **data_processor_options,
         )
@@ -224,47 +217,28 @@ class DataProcessorEnsight(DataProcessor):
             )
 
     @staticmethod
-    def _get_experimental_data_from_db(config, database):
-        """Get the experimental data form the database.
+    def _get_experimental_data(experimental_data_reader):
+        """Get the experimental data.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            database (obj): Database object
+            experimental_data_reader
 
         Returns:
-            experiment_name (str): Name of the current QUEENS experiment
-            experimental_data (np.array): Experimental data loaded from the database
+            experimental_data (np.array): Experimental data
             coordinates_label_experimental (lst): List with coordinate labels of the
                                                   experimental data
             time_label_experimental (str): Time label of the experimental data
         """
-        experiment_name = config['global_settings']['experiment_name']
-        try:
-            experimental_data = database.load(experiment_name, 1, 'experimental_data')
-            experimental_data = pd.DataFrame.from_dict(experimental_data)
-
-            # get label names of experimental data
-            model_name = config['method']['model_name']
-            coordinates_label_experimental = config[model_name].get('coordinate_labels')
-            time_label_experimental = config[model_name].get('time_label')
-
-        except KeyError:
-            _logger.warning(
-                "No experimental data was found in database, for experiment name %s.",
-                experiment_name,
-            )
+        if experimental_data_reader:
+            _, _, _, experimental_data_dict = experimental_data_reader.get_experimental_data()
+            time_label_experimental = experimental_data_reader.time_label
+            coordinates_label_experimental = experimental_data_reader.coordinate_labels
+        else:
             experimental_data = None
-
-            # get label names of experimental data
             coordinates_label_experimental = None
             time_label_experimental = None
 
-        return (
-            experiment_name,
-            experimental_data,
-            coordinates_label_experimental,
-            time_label_experimental,
-        )
+        return experimental_data, coordinates_label_experimental, time_label_experimental
 
     def _get_raw_data_from_file(self):
         """Read-in EnSight files using the vtkEnsightGoldBinaryReader."""
@@ -535,7 +509,7 @@ class DataProcessorEnsight(DataProcessor):
 
     @staticmethod
     def read_geometry_coordinates(external_geometry_obj):
-        """Write geometry of interest to the database.
+        """Read geometry of interest.
 
         This method uses the QUEENS external geometry module.
 

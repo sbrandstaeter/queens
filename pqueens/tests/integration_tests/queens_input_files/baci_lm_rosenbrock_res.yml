@@ -1,7 +1,4 @@
 experiment_name: OptimizeLM
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: baci_lm
   model_name: model

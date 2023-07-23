@@ -1,7 +1,4 @@
 experiment_name: points_iterator_rosenbrock
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: points
   model_name: model

@@ -1,7 +1,4 @@
 experiment_name: bmfmc_currin88
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: bmfmc
   model_name: joint_density_approx

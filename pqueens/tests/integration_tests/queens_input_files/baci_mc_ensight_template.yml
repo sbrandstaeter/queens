@@ -1,7 +1,4 @@
 experiment_name: baci_mc_ensight
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: monte_carlo
   seed: 42

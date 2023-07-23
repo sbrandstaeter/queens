@@ -308,7 +308,6 @@ ignored-classes=optparse.Values,
                 pqueens.visualization.sa_visualization,
                 pqueens.visualization.surrogate_visualization,
                 pqueens.visualization.variational_inference_visualization,
-                pqueens.database.database,
                 matplotlib.cm,
                 logging.RootLogger,
 
