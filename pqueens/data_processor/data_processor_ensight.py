@@ -3,7 +3,6 @@
 import logging
 
 import numpy as np
-import pandas as pd
 import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
@@ -18,7 +17,7 @@ class DataProcessorEnsight(DataProcessor):
     """Class for data-processing ensight output.
 
     Attributes:
-        experimental_data (pd.DataFrame): Pandas dataframe with experimental data.
+        experimental_data (dict): dict with experimental data.
         coordinates_label_experimental (lst): List of (spatial) coordinate labels
                                                 of the experimental data set.
         time_label_experimental (str): Time label of the experimental data set.
@@ -224,13 +223,13 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data_reader
 
         Returns:
-            experimental_data (np.array): Experimental data
+            experimental_data (dict): Experimental data
             coordinates_label_experimental (lst): List with coordinate labels of the
                                                   experimental data
             time_label_experimental (str): Time label of the experimental data
         """
         if experimental_data_reader:
-            _, _, _, experimental_data_dict = experimental_data_reader.get_experimental_data()
+            _, _, _, experimental_data = experimental_data_reader.get_experimental_data()
             time_label_experimental = experimental_data_reader.time_label
             coordinates_label_experimental = experimental_data_reader.coordinate_labels
         else:
