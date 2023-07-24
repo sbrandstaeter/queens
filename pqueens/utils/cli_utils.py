@@ -7,7 +7,6 @@ from pathlib import Path
 from pqueens.utils import ascii_art
 from pqueens.utils.exceptions import CLIError
 from pqueens.utils.logger_settings import reset_logging, setup_cli_logging
-from pqueens.utils.manage_singularity import create_singularity_image
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
 from pqueens.utils.run_subprocess import run_subprocess
@@ -31,21 +30,6 @@ def cli_logging(func):
         return results
 
     return decorated_function
-
-
-@cli_logging
-def build_singularity_cli():
-    """Build singularity image CLI wrapper."""
-    ascii_art.print_crown(75)
-    ascii_art.print_banner("SINBUILD", 75)
-    _logger.info('Singularity image builder for QUEENS runs'.center(75))
-
-    _logger.info('\n\nBuilding a singularity image! This might take some time ...')
-    try:
-        create_singularity_image()
-        _logger.info('Done!')
-    except Exception as cli_singularity_error:
-        raise CLIError("Building singularity failed!\n\n") from cli_singularity_error
 
 
 @cli_logging

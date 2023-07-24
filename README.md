@@ -12,9 +12,6 @@ systems.
       - [Usage](#usage)
     - [Optional: MongoDB](#optional-mongodb)
       - [Installation](#installation-1)
-    - [Optional: Singularity](#optional-singularity)
-      - [Installation](#installation-2)
-      - [Building a QUEENS singularity image](#building-a-queens-singularity-image)
     - [Git](#git)
   - [QUEENS Installation](#queens-installation)
   - [Start a *QUEENS* run](#start-a-queens-run)
@@ -59,45 +56,6 @@ For installation on various OS, please follow the official [installation instruc
 
 >Note: If you are experiencing SELinux warnings follow the solution [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#optional-suppress-ftdc-warnings).
 
-[↑ Contents](#contents)
-
-### Optional: Singularity
-
-[Singularity](https://docs.sylabs.io/guides/3.11/user-guide/) containers are well suited for being used with QUEENS.
-If you are interested in using Singularity containers for your computations,  please make sure
-that `Singularity` is installed on your local machine.
-
-#### Installation
-1. Please follow the official [installation instructions](https://docs.sylabs.io/guides/3.11/user-guide/quick_start.html#quick-installation-steps).
-
-   **Tip**: we recommend to follow the "download SingularityCE from a release" option.
-
-1. QUEENS uses the fakeroot option of singularity.
-   For more information please refer to the singularity documentation for [users](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admins](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot).
-
-   To enable the fakeroot option for your user (on a linux machine) execute the following command once on your workstation:
-   ```
-   sudo singularity config fakeroot --add $USER
-   ```
-
-   To check that the command was successful, you can
-   1. show the generated `/etc/subuid`
-       ```bash
-       cat /etc/subuid
-       ```
-      which should return something like `1000:4294836224:65536`.
-   1. show the generated `/etc/subgid`
-       ```bash
-       cat /etc/subgid
-       ```
-      which should return something like `1000:4294836224:65536`.
-
-#### Building a QUEENS singularity image
-Assuming singularity  and QUEENS are already installed, an image for a QUEENS run can be build
-(in the environment where QUEENS is installed) using the QUEENS CLI with the command:
-```
-queens-build-singularity
-```
 [↑ Contents](#contents)
 
 ### Git

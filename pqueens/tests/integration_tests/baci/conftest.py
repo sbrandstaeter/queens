@@ -95,19 +95,6 @@ def setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runn
         ) from error
 
 
-@pytest.fixture(params=[True, False])
-def singularity_bool(request):
-    """Return boolean to run with or without singularity.
-
-    Args:
-        request (SubRequest): *True* = with singularity; *False* = without singularity
-
-    Returns:
-        request.param (bool): *True* = with singularity; *False* = without singularity
-    """
-    return request.param
-
-
 @pytest.fixture()
 def create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""

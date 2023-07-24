@@ -126,8 +126,7 @@ resources:
     max_finished_jobs: 10000
 local_scheduler:
   experiment_dir: {experiment_dir}
-  type: standard
-  singularity: false
+  type: local
   num_procs: 1
   num_procs_post: 1
 hf_driver:

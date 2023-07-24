@@ -3,7 +3,6 @@
 import logging
 
 from pqueens.interfaces import from_config_create_interface
-from pqueens.interfaces.dask_job_interface import JobInterface as DaskJobInterface
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.utils.config_directories import current_job_directory
 from pqueens.utils.io_utils import write_to_csv
@@ -99,14 +98,10 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         """
         num_samples = samples.shape[0]
         # get last job_ids
-        if isinstance(self.interface, DaskJobInterface):
-            last_job_ids = [
-                self.interface.latest_job_id - num_samples + i + 1 for i in range(num_samples)
-            ]
-            experiment_dir = self.gradient_interface.scheduler.experiment_dir
-        else:
-            last_job_ids = self.interface.job_ids[-samples.shape[0] :]
-            experiment_dir = self.gradient_interface.experiment_dir
+        last_job_ids = [
+            self.interface.latest_job_id - num_samples + i + 1 for i in range(num_samples)
+        ]
+        experiment_dir = self.gradient_interface.scheduler.experiment_dir
 
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_objective in zip(last_job_ids, upstream_gradient):

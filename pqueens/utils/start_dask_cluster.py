@@ -6,7 +6,7 @@ import logging
 import sys
 from pathlib import Path
 
-from pqueens.schedulers.dask_cluster_scheduler import VALID_WORKLOAD_MANAGERS
+from pqueens.schedulers.cluster_scheduler import VALID_WORKLOAD_MANAGERS
 from pqueens.utils.logger_settings import setup_basic_logging
 from pqueens.utils.valid_options_utils import get_option
 

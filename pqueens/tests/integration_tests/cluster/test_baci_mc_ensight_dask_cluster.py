@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from pqueens.main import run
-from pqueens.schedulers.cluster_scheduler import (
+from pqueens.tests.integration_tests.conftest import (
     BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     DEEP_CLUSTER_TYPE,
@@ -138,8 +138,8 @@ class TestDaskCluster:
             'cluster_python_path': remote_python,
             'cluster_queens_repository': remote_queens_repository,
         }
-        queens_input_file_template = inputdir / "baci_mc_ensight_dask_cluster_template.yml"
-        queens_input_file = tmp_path / f"baci_mc_ensight_dask_cluster_{cluster_name}.yml"
+        queens_input_file_template = inputdir / "baci_mc_ensight_cluster_template.yml"
+        queens_input_file = tmp_path / f"baci_mc_ensight_cluster_{cluster_name}.yml"
         injector.inject(template_options, queens_input_file_template, queens_input_file)
 
         # get json file as config dictionary

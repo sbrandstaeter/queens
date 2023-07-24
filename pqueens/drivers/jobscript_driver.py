@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 
-from pqueens.drivers.dask_driver import Driver
+from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject_in_template, read_file
 from pqueens.utils.run_subprocess import run_subprocess
 
