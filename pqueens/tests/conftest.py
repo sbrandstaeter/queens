@@ -42,44 +42,6 @@ def hostname(name_of_host=NAME_OF_HOST):
 
 
 @pytest.fixture(autouse=True)
-def global_mock_abs_singularity_image_path(monkeypatch):
-    """Mock the absolute singularity image path.
-
-    The singularity image path depends on local_base_directory() which
-    is mocked globally and per test. This would however mean that every
-    test that needs singularity has to build the image again. Because
-    one test does not know about the other ones. To prevent this we
-    store the standard image path that is used by the user here and make
-    sure that this path is used in all tests by mocking the respective
-    variable globally. This way the image has to be built only once.
-    """
-    mock_abs_singularity_image_path = config_directories.ABS_SINGULARITY_IMAGE_PATH
-    monkeypatch.setattr(
-        config_directories, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
-    )
-    _logger.debug(
-        "Singularity image for the tests: %s", config_directories.ABS_SINGULARITY_IMAGE_PATH
-    )
-
-
-if NAME_OF_HOST in ["master.service", "login.cluster"]:
-    # Decide if local base directory should be mocked.
-    #
-    # For most tests the local base directory should be mocked to the
-    # standard pytest temp folder. The only exceptions are the cluster
-    # native tests, where the jobs don't have access to that folder. For
-    # this reason, the local base dir is not mocked for the cluster native
-    # tests. Whether the tests are run on the cluster natively is detected
-    # based on the hostname.
-    #
-    _logger.debug("Deactivating mocking of local base dir.")
-    MOCK_LOCAL_BASE_DIR = False
-else:
-    _logger.debug("Activating mocking of local base dir.")
-    MOCK_LOCAL_BASE_DIR = True
-
-
-@pytest.fixture(autouse=MOCK_LOCAL_BASE_DIR)
 def global_mock_local_base_dir(monkeypatch, tmp_path):
     """Mock the local base directory for all tests.
 

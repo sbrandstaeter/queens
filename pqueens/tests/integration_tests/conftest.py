@@ -2,17 +2,97 @@
 
 import getpass
 import logging
-import shutil
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.schedulers.cluster_scheduler import CLUSTER_CONFIGS
 from pqueens.utils import config_directories
+from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
+
+DEEP_CLUSTER_TYPE = "deep"
+BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
+CHARON_CLUSTER_TYPE = "charon"
+
+VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
+VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
+
+VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
+
+
+@dataclass(frozen=True)
+class ClusterConfig:
+    """Configuration data of cluster.
+
+    Attributes:
+        name (str):                         name of cluster
+        cluster_address (str):              hostname or address to reach cluster from network
+        workload_manager (str):          type of work load scheduling software (PBS or SLURM)
+        jobscript_template (Path):          absolute path to jobscript template file
+        cluster_internal_address (str)      ip address of login node in cluster internal network
+        default_python_path (str):          path indicating the default remote python location
+        cluster_script_path (Path):          path to the cluster_script which defines functions
+                                            needed for the jobscript
+        dask_jobscript_template (Path):     path to the shell script template that runs a
+                                            forward solver call (e.g., BACI plus post-processor)
+    """
+
+    name: str
+    cluster_address: str
+    workload_manager: str
+    jobscript_template: Path
+    cluster_internal_address: str
+    default_python_path: str
+    cluster_script_path: Path
+    dask_jobscript_template: Path
+
+    dict = asdict
+
+
+DEEP_CONFIG = ClusterConfig(
+    name="deep",
+    cluster_address="deep.lnm.ed.tum.de",
+    workload_manager="pbs",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+    cluster_internal_address="null",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+)
+
+
+BRUTEFORCE_CONFIG = ClusterConfig(
+    name="bruteforce",
+    cluster_address="bruteforce.lnm.ed.tum.de",
+    workload_manager="slurm",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
+    cluster_internal_address="10.10.0.1",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+    dask_jobscript_template=relative_path_from_queens(
+        "templates/jobscripts/jobscript_bruteforce.sh"
+    ),
+)
+CHARON_CONFIG = ClusterConfig(
+    name="charon",
+    cluster_address="charon.bauv.unibw-muenchen.de",
+    workload_manager="slurm",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
+    cluster_internal_address="192.168.2.253",
+    default_python_path="$HOME/miniconda3/envs/queens/bin/python",
+    cluster_script_path=Path(),
+    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
+)
+
+CLUSTER_CONFIGS = {
+    DEEP_CLUSTER_TYPE: DEEP_CONFIG,
+    BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
+    CHARON_CLUSTER_TYPE: CHARON_CONFIG,
+}
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
@@ -95,57 +175,6 @@ def baci_cluster_paths(connect_to_resource):
         'path_to_post_processor': path_to_post_processor,
     }
     return baci_cluster_paths
-
-
-@pytest.fixture(scope="session")
-def prepare_cluster_testing_environment_native(mock_value_experiments_base_folder_name):
-    """Create a clean testing environment."""
-    cluster_native_queens_testing_folder = (
-        config_directories.local_base_directory() / mock_value_experiments_base_folder_name
-    )
-    if (
-        cluster_native_queens_testing_folder.exists()
-        and cluster_native_queens_testing_folder.is_dir()
-    ):
-        _logger.info("Delete testing folder")
-        shutil.rmtree(cluster_native_queens_testing_folder)
-
-    _logger.info("Create testing folder")
-    cluster_native_queens_testing_folder.mkdir(parents=True, exist_ok=True)
-
-    return True
-
-
-# prepare_cluster_testing_environment_native is passed on purpose to force its creation
-@pytest.fixture(scope="session")
-def baci_cluster_paths_native(
-    cluster_user, cluster_settings, prepare_cluster_testing_environment_native
-):  # pylint: disable=unused-argument
-    """Paths to baci for native cluster tests."""
-    cluster_address = cluster_settings["cluster_address"]
-    path_to_executable = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
-    )
-    if not path_to_executable.is_file():
-        raise RuntimeError(
-            f"Could not find executable on {cluster_address}.\n"
-            f"Was looking here: {path_to_executable}"
-        )
-
-    path_to_post_ensight = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "post_ensight"
-    )
-    if not path_to_post_ensight.is_file():
-        raise RuntimeError(
-            f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_post_ensight}"
-        )
-
-    baci_cluster_paths_native = {
-        'path_to_executable': path_to_executable,
-        'path_to_post_ensight': path_to_post_ensight,
-    }
-    return baci_cluster_paths_native
 
 
 @pytest.fixture(name="baci_example_expected_mean")
