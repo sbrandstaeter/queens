@@ -147,7 +147,9 @@ class ClusterScheduler(Scheduler):
                     ) from exc
                 time.sleep(1)
 
-        client.submit(lambda: "Dummy job").result(timeout=60)  # Check basic functionality of client
+        _logger.debug("Submitting dummy job to check basic functionality of client.")
+        client.submit(lambda: "Dummy job").result(timeout=180)
+        _logger.debug("Dummy job was successful.")
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 

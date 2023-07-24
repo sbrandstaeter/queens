@@ -95,6 +95,3 @@ def current_job_directory(experiment_dir, job_id):
     """
     job_dir = experiment_dir / str(job_id)
     return job_dir
-
-
-LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"

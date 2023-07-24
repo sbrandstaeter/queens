@@ -2,7 +2,6 @@
 
 import getpass
 import logging
-import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -176,57 +175,6 @@ def baci_cluster_paths(connect_to_resource):
         'path_to_post_processor': path_to_post_processor,
     }
     return baci_cluster_paths
-
-
-@pytest.fixture(scope="session")
-def prepare_cluster_testing_environment_native(mock_value_experiments_base_folder_name):
-    """Create a clean testing environment."""
-    cluster_native_queens_testing_folder = (
-        config_directories.local_base_directory() / mock_value_experiments_base_folder_name
-    )
-    if (
-        cluster_native_queens_testing_folder.exists()
-        and cluster_native_queens_testing_folder.is_dir()
-    ):
-        _logger.info("Delete testing folder")
-        shutil.rmtree(cluster_native_queens_testing_folder)
-
-    _logger.info("Create testing folder")
-    cluster_native_queens_testing_folder.mkdir(parents=True, exist_ok=True)
-
-    return True
-
-
-# prepare_cluster_testing_environment_native is passed on purpose to force its creation
-@pytest.fixture(scope="session")
-def baci_cluster_paths_native(
-    cluster_user, cluster_settings, prepare_cluster_testing_environment_native
-):  # pylint: disable=unused-argument
-    """Paths to baci for native cluster tests."""
-    cluster_address = cluster_settings["cluster_address"]
-    path_to_executable = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
-    )
-    if not path_to_executable.is_file():
-        raise RuntimeError(
-            f"Could not find executable on {cluster_address}.\n"
-            f"Was looking here: {path_to_executable}"
-        )
-
-    path_to_post_ensight = Path(
-        "/home", cluster_user, "workspace_for_queens", "build", "post_ensight"
-    )
-    if not path_to_post_ensight.is_file():
-        raise RuntimeError(
-            f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_post_ensight}"
-        )
-
-    baci_cluster_paths_native = {
-        'path_to_executable': path_to_executable,
-        'path_to_post_ensight': path_to_post_ensight,
-    }
-    return baci_cluster_paths_native
 
 
 @pytest.fixture(name="baci_example_expected_mean")

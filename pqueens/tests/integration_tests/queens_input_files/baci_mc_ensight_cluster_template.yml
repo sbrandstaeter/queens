@@ -43,7 +43,7 @@ scheduler:
   type: cluster
   max_jobs: 3
   min_jobs: 3
-  walltime: 00:00:60
+  walltime: 00:10:00
   num_procs: 2
   num_procs_post: 1
   num_nodes: 2
