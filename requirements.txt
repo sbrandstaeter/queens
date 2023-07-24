@@ -11,8 +11,6 @@ absl-py==1.4.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
-anyio==3.7.1
-    # via httpcore
 arviz==0.16.0
     # via
     #   -r requirements.in
@@ -30,9 +28,7 @@ cachetools==5.3.1
     #   google-auth
     #   pymc
 certifi==2023.5.7
-    # via
-    #   httpcore
-    #   requests
+    # via requests
 cffi==1.15.1
     # via
     #   cryptography
@@ -99,16 +95,12 @@ dm-tree==0.1.8
     # via
     #   chex
     #   tensorflow-probability
-dnspython==2.4.0
-    # via pymongo
 etuples==0.3.9
     # via
     #   minikanren
     #   pytensor
 exceptiongroup==1.1.2
-    # via
-    #   anyio
-    #   pytest
+    # via pytest
 execnet==2.0.2
     # via pytest-xdist
 fabric==3.1.0
@@ -148,20 +140,14 @@ grpcio==1.56.0
     # via
     #   tensorboard
     #   tensorflow
-h11==0.14.0
-    # via httpcore
 h5netcdf==1.2.0
     # via arviz
 h5py==3.9.0
     # via
     #   h5netcdf
     #   tensorflow
-httpcore==0.17.3
-    # via dnspython
 idna==3.4
-    # via
-    #   anyio
-    #   requests
+    # via requests
 importlib-metadata==6.8.0
     # via
     #   chaospy
@@ -394,8 +380,6 @@ pyfiglet==0.8.post1
     # via -r requirements.in
 pymc==5.0.2
     # via -r requirements.in
-pymongo==4.4.1
-    # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
 pyparsing==3.0.9
@@ -468,11 +452,6 @@ six==1.16.0
     #   python-dateutil
     #   tensorflow
     #   tensorflow-probability
-sniffio==1.3.0
-    # via
-    #   anyio
-    #   dnspython
-    #   httpcore
 sortedcontainers==2.4.0
     # via distributed
 sympy==1.12
