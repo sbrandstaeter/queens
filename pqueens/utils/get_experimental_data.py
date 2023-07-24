@@ -67,6 +67,8 @@ class ExperimentalDataReader:
                                                  corresponds to one coordinate point
             time_vec (np.array): Unique vector of observation times
             experimental_data_dict (dict): Dictionary containing the experimental data
+            time_label (str): Name of the time variable in csv file
+            coordinate_labels (lst): List of column-wise coordinate labels in csv files
         """
         experimental_data_dict = self.data_processor.get_data_from_file(self.base_dir)
 
@@ -89,7 +91,15 @@ class ExperimentalDataReader:
             -1,
         )
 
-        return y_obs_vec, experimental_coordinates, time_vec, experimental_data_dict
+        return (
+            y_obs_vec,
+            experimental_coordinates,
+            time_vec,
+            experimental_data_dict,
+            self.time_label,
+            self.coordinate_labels,
+            self.output_label,
+        )
 
     @classmethod
     def from_config_create_experimental_data_reader(cls, config, experimental_data_reader_name):

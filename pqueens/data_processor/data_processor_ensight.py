@@ -135,11 +135,19 @@ class DataProcessorEnsight(DataProcessor):
         if geometric_target[0] == "geometric_set":
             self.geometric_set_data = self.read_geometry_coordinates(external_geometry_obj)
 
-        (
-            self.experimental_data,
-            self.coordinates_label_experimental,
-            self.time_label_experimental,
-        ) = self._get_experimental_data(experimental_data_reader)
+        if experimental_data_reader is not None:
+            (
+                _,
+                _,
+                _,
+                self.experimental_data,
+                self.time_label_experimental,
+                self.coordinates_label_experimental,
+            ) = experimental_data_reader.get_experimental_data()
+        else:
+            self.experimental_data = None
+            self.time_label_experimental = None
+            self.coordinates_label_experimental = None
 
         self.external_geometry_obj = external_geometry_obj
         self.target_time_lst = target_time_lst
@@ -214,30 +222,6 @@ class DataProcessorEnsight(DataProcessor):
                 f"contain the following keys: {required_field_keys}. You only provided the keys: "
                 f"{file_options_dict['physical_field_dict'].keys()}"
             )
-
-    @staticmethod
-    def _get_experimental_data(experimental_data_reader):
-        """Get the experimental data.
-
-        Args:
-            experimental_data_reader
-
-        Returns:
-            experimental_data (dict): Experimental data
-            coordinates_label_experimental (lst): List with coordinate labels of the
-                                                  experimental data
-            time_label_experimental (str): Time label of the experimental data
-        """
-        if experimental_data_reader:
-            _, _, _, experimental_data = experimental_data_reader.get_experimental_data()
-            time_label_experimental = experimental_data_reader.time_label
-            coordinates_label_experimental = experimental_data_reader.coordinate_labels
-        else:
-            experimental_data = None
-            coordinates_label_experimental = None
-            time_label_experimental = None
-
-        return experimental_data, coordinates_label_experimental, time_label_experimental
 
     def _get_raw_data_from_file(self):
         """Read-in EnSight files using the vtkEnsightGoldBinaryReader."""

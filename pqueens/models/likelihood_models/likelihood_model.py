@@ -79,9 +79,10 @@ class LikelihoodModel(Model):
             coords_mat,
             time_vec,
             experimental_data_dict,
+            _,
+            coord_labels,
+            output_label,
         ) = experimental_data_reader.get_experimental_data()
-        output_label = experimental_data_reader.output_label
-        coord_labels = experimental_data_reader.coordinate_labels
 
         return forward_model, coords_mat, time_vec, y_obs, output_label, coord_labels
 

@@ -228,7 +228,7 @@ class OptimizationIterator(Iterator):
     def pre_run(self):
         """Get initial guess."""
         _logger.info("Initialize Optimization run.")
-        self._get_experimental_data_and_write_to_db()
+        self._get_experimental_data()
 
     def core_run(self):
         """Core run of Optimization iterator."""
@@ -341,7 +341,7 @@ class OptimizationIterator(Iterator):
                 )
 
     # -------------- private helper functions --------------------------
-    def _get_experimental_data_and_write_to_db(self):
+    def _get_experimental_data(self):
         """Loop over post files in given output directory."""
         if self.experimental_data_path_list is not None:
             # iteratively load all csv files in specified directory
