@@ -41,7 +41,6 @@ class TestMCIterator(unittest.TestCase):
         random_variables['x3'] = uncertain_parameter3
         some_settings = {}
         some_settings["experiment_name"] = "test"
-        dummy_db = None
 
         parameters_module.from_config_create_parameters({"parameters": random_variables})
 
