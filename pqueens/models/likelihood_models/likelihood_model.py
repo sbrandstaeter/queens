@@ -4,7 +4,7 @@ import abc
 
 from pqueens.models import from_config_create_model
 from pqueens.models.model import Model
-from pqueens.utils.get_experimental_data import ExperimentalDataReader
+from pqueens.utils.experimental_data_reader import ExperimentalDataReader
 
 
 class LikelihoodModel(Model):
@@ -78,7 +78,7 @@ class LikelihoodModel(Model):
             y_obs,
             coords_mat,
             time_vec,
-            experimental_data_dict,
+            _,
             _,
             coord_labels,
             output_label,

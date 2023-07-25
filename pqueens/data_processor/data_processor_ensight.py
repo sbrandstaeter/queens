@@ -8,7 +8,7 @@ from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 from pqueens.data_processor.data_processor import DataProcessor
 from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.utils.get_experimental_data import ExperimentalDataReader
+from pqueens.utils.experimental_data_reader import ExperimentalDataReader
 
 _logger = logging.getLogger(__name__)
 
