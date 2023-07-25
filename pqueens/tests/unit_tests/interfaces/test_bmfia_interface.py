@@ -132,7 +132,8 @@ def test_fcc():
         is BmfiaInterface._instantiate_per_coordinate
     )
     assert bmfia_interface.num_processors_multi_processing == 2
-    assert bmfia_interface.probabilistic_mapping_obj_lst == []
+    assert not bmfia_interface.probabilistic_mapping_obj_lst
+    assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
     assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_coordinate
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
@@ -155,7 +156,8 @@ def test_fcc():
         is BmfiaInterface._instantiate_per_time_step
     )
     assert bmfia_interface.num_processors_multi_processing == 2
-    assert bmfia_interface.probabilistic_mapping_obj_lst == []
+    assert not bmfia_interface.probabilistic_mapping_obj_lst
+    assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
     assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_time_step
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
@@ -193,7 +195,8 @@ def test__init__():
         == instantiate_probabilistic_mappings.__name__
     )
     assert interface.num_processors_multi_processing == num_processors_multi_processing
-    assert interface.probabilistic_mapping_obj_lst == []
+    assert not interface.probabilistic_mapping_obj_lst
+    assert isinstance(interface.probabilistic_mapping_obj_lst, list)
     assert interface.evaluate_method.__name__ == evaluate_method.__name__
     assert interface.evaluate_and_gradient_method.__name__ == evaluate_and_gradient_method.__name__
     assert interface.update_mappings_method.__name__ == update_mappings_method.__name__
@@ -264,7 +267,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
 
 
 def test_instantiate_per_coordinate(
-    default_bmfia_interface, mocker, dummy_reg_obj, default_probabilistic_obj_lst
+    default_bmfia_interface, dummy_reg_obj, default_probabilistic_obj_lst
 ):
     """Test the instantiation of the probabilistic mappings."""
     z_lf_train = np.zeros((1, 2))

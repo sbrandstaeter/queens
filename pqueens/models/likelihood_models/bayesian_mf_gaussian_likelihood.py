@@ -74,6 +74,7 @@ class BMFGaussianModel(LikelihoodModel):
             mf_interface (obj): QUEENS multi-fidelity interface
             bmfia_subiterator (obj): Subiterator to select the training data of the
                                      probabilistic regression model
+            experimental_data_reader (obj): Experimental data reader object
             mf_approx (Model): Probabilistic mapping
             noise_value (array_like): Noise variance of the observations
             num_refinement_samples (int): Number of additional samples to train the multi-fidelity

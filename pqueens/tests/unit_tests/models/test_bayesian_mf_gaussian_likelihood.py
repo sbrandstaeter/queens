@@ -163,10 +163,12 @@ def default_mf_likelihood(
         output_label,
     )
     mocker.patch(
-        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._build_approximation"
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
+        "._build_approximation"
     )
     mocker.patch(
-        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormalDistribution",
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
+        ".MeanFieldNormalDistribution",
         return_value=dummy_normal_distr,
     )
     mf_likelihood = BMFGaussianModel(
@@ -249,10 +251,12 @@ def test_init(mocker, dummy_model, parameters, default_interface, default_bmfia_
         output_label,
     )
     mocker.patch(
-        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._build_approximation"
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
+        "._build_approximation"
     )
     mocker.patch(
-        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormalDistribution",
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
+        ".MeanFieldNormalDistribution",
         return_value=mean_field_normal,
     )
     model = BMFGaussianModel(
@@ -342,9 +346,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
         'BMFGaussianModel._refine_mf_likelihood'
     )
     with pytest.raises(NotImplementedError):
-        mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
-            mf_log_likelihood_exp, y_lf_mat
-        )
+        default_mf_likelihood.evaluate_from_output(mf_log_likelihood_exp, y_lf_mat)
 
 
 def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
