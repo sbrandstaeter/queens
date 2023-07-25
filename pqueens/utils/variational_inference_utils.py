@@ -1649,10 +1649,9 @@ def create_variational_distribution(distribution_options):
     """
     distribution_family = distribution_options.get('variational_family', None)
     supported_simple_distribution_families = ['normal', 'particles']
-    supported_nested_distribution_families = ['mixture_model']
     if distribution_family in supported_simple_distribution_families:
         distribution_obj = create_simple_distribution(distribution_options)
-    elif distribution_family in supported_nested_distribution_families:
+    elif distribution_family == "mixture_model":
         dimension = distribution_options.get('dimension')
         n_components = distribution_options.get('n_components')
         base_distribution_options = distribution_options.get('base_distribution')
@@ -1661,10 +1660,17 @@ def create_variational_distribution(distribution_options):
         distribution_obj = create_mixture_model_distribution(
             base_distribution_obj, dimension, n_components
         )
+    elif distribution_family == "joint":
+        dimension = distribution_options.get('dimension')
+        distributions = []
+        for distribution_config in distribution_options["distributions"]:
+            distributions.append(create_variational_distribution(distribution_config))
+        distribution_obj = JointVariational(distributions, dimension)
     else:
-        supported_distributions = (
-            supported_nested_distribution_families + supported_simple_distribution_families
-        )
+        supported_distributions = [
+            "mixture_model",
+            "joint",
+        ] + supported_simple_distribution_families
         raise ValueError(
             f"Requested variational family type not supported: {distribution_family}.\n"
             f"Supported types:  {supported_distributions}."
