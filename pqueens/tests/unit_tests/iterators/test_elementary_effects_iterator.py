@@ -7,9 +7,6 @@ import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
 
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
@@ -32,8 +29,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         parameters_module.from_config_create_parameters({"parameters": parameters})
         some_settings = {"experiment_name": "test"}
 
-        function = example_simulator_function_by_name("ishigami90")
-        self.interface = DirectPythonInterface('test_interface', function, None)
+        self.interface = DirectPythonInterface(function="ishigami90", num_workers=1)
 
         # create mock model
         self.model = SimulationModel("my_model", self.interface)

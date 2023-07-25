@@ -13,11 +13,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
 from pqueens.utils.path_utils import relative_path_from_pqueens
-from pqueens.utils.pool_utils import create_pool
 
 _logger = logging.getLogger(__name__)
 
@@ -104,19 +100,13 @@ def config_parallel(config):
 @pytest.fixture(scope='module')
 def direct_python_interface(parameters):
     """Direct python interface."""
-    interface_name = 'test_interface'
-    function = example_simulator_function_by_name("ishigami90")
-    pool = None
-    return DirectPythonInterface(interface_name, function, pool)
+    return DirectPythonInterface(function="ishigami90", num_workers=1)
 
 
 @pytest.fixture(scope='module')
 def direct_python_interface_parallel(parameters):
     """An instance of Variables class."""
-    interface_name = 'test_interface'
-    function = example_simulator_function_by_name("ishigami90")
-    pool = create_pool(2)
-    return DirectPythonInterface(interface_name, function, pool)
+    return DirectPythonInterface(function="ishigami90", num_workers=2)
 
 
 def test_map(samples, expected_results, direct_python_interface):
