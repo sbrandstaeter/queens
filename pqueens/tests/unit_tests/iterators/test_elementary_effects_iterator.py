@@ -32,7 +32,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         self.interface = DirectPythonInterface(function="ishigami90", num_workers=1)
 
         # create mock model
-        self.model = SimulationModel("my_model", self.interface)
+        self.model = SimulationModel(self.interface)
 
         self.my_iterator = ElementaryEffectsIterator(
             model=self.model,

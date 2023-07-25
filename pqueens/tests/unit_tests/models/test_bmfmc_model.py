@@ -21,9 +21,8 @@ def result_description():
 @pytest.fixture()
 def dummy_high_fidelity_model(parameters):
     """Create dummy high-fidelity model."""
-    model_name = 'dummy'
     interface = 'my_dummy_interface'
-    hf_model = SimulationModel(model_name, interface)
+    hf_model = SimulationModel(interface)
     hf_model.response = {'mean': 1.0}
     return hf_model
 

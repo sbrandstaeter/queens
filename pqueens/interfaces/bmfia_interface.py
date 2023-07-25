@@ -10,7 +10,6 @@ import numpy as np
 import tqdm
 
 from pqueens.interfaces.interface import Interface
-from pqueens.models import from_config_create_model
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -24,7 +23,6 @@ class BmfiaInterface(Interface):
     multi-fidelity space.
 
     Attributes:
-        approx_name (str): Name of the used approximation model.
         num_processors_multi_processing (int): Number of processors that should be used in the
                                                multi-processing pool.
         evaluate_method (method): Configured method to evaluate the probabilistic mapping
@@ -50,7 +48,11 @@ class BmfiaInterface(Interface):
 
     @staticmethod
     def _instantiate_per_coordinate(
-        z_lf_train, y_hf_train, _time_vec, _coords_mat, config, approx_name
+        z_lf_train,
+        y_hf_train,
+        _time_vec,
+        _coords_mat,
+        approx,
     ):
         """Instantiate probabilistic mappings per coordinate.
 
@@ -61,8 +63,7 @@ class BmfiaInterface(Interface):
                                    Rows: Samples, Columns: Coordinates
             _time_vec (np.array): Time vector of the experimental data.
             _coords_mat (np.array): (Spatial) Coordinates of the experimental data.
-            config (dict): Configuration dictionary
-            approx_name (str): Name of the probabilistic mapping
+            approx (Model): Probabilistic mapping
 
         Returns:
             z_lf_train (np.array): Input matrix in correct ordering
@@ -71,18 +72,15 @@ class BmfiaInterface(Interface):
         if z_lf_train.ndim != 3:
             raise IndexError("z_lf_train must be a 3d tensor!")
 
-        surrogate_model = from_config_create_model(approx_name, config)
         probabilistic_mapping_obj_lst = []
         for (z_lf, y_hf) in zip(z_lf_train.T, y_hf_train.T, strict=True):
-            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(approx))
             probabilistic_mapping_obj_lst[-1].setup(np.atleast_2d(z_lf), np.atleast_2d(y_hf).T)
 
         return z_lf_train, y_hf_train, probabilistic_mapping_obj_lst
 
     @staticmethod
-    def _instantiate_per_time_step(
-        z_lf_train, y_hf_train, time_vec, coords_mat, config, approx_name
-    ):
+    def _instantiate_per_time_step(z_lf_train, y_hf_train, time_vec, coords_mat, approx):
         """Instantiate probabilistic mappings per time step.
 
         This means that one probabilistic mapping is build for all space locations
@@ -95,8 +93,7 @@ class BmfiaInterface(Interface):
                                    Rows: Samples, Columns: Coordinates
             time_vec (np.array): Time vector of the experimental data.
             coords_mat (np.array): (Spatial) Coordinates of the experimental data.
-            config (dict): Configuration dictionary
-            approx_name (str): Name of the probabilistic mapping
+            approx (Model): Probabilistic mapping
 
         Returns:
             z_lf_array (np.array): Input matrix in correct ordering
@@ -118,10 +115,9 @@ class BmfiaInterface(Interface):
             )
 
         # loop over all time steps and instantiate the probabilistic mapping
-        surrogate_model = from_config_create_model(approx_name, config)
         probabilistic_mapping_obj_lst = []
         for (z_lf, y_hf) in zip(z_lf_array, y_hf_array, strict=True):
-            probabilistic_mapping_obj_lst.append(copy.deepcopy(surrogate_model))
+            probabilistic_mapping_obj_lst.append(copy.deepcopy(approx))
             probabilistic_mapping_obj_lst[-1].setup(z_lf, y_hf)
 
         return z_lf_array, y_hf_array, probabilistic_mapping_obj_lst
@@ -495,24 +491,28 @@ class BmfiaInterface(Interface):
 
     def __init__(
         self,
-        instantiate_probabilistic_mappings,
-        num_processors_multi_processing,
-        evaluate_method,
-        evaluate_and_gradient_method,
-        update_mappings_method,
+        num_processors_multi_processing=1,
+        probabilistic_mapping_type="per_coordinate",
     ):
         """Instantiate a BMFIA interface.
 
         Args:
-            instantiate_probabilistic_mappings (method): Configured method to instantiate the
-                                                            probabilistic mapping objects
             num_processors_multi_processing (int): Number of processors that should be used in the
                                                    multi-processing pool.
-            evaluate_method (method): Configured method to evaluate the probabilistic mapping
-            evaluate_and_gradient_method (method): Configured method to evaluate the probabilistic
-                                                   mapping and its gradient
-            update_mappings_method (method): Configured method to update the probabilistic mapping
+            probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
+                                              mapping objects
         """
+
+        # instantiate probabilistic mapping objects
+        (
+            instantiate_probabilistic_mappings,
+            evaluate_method,
+            evaluate_and_gradient_method,
+            update_mappings_method,
+        ) = get_option(
+            BmfiaInterface.valid_probabilistic_mappings_configurations, probabilistic_mapping_type
+        )
+
         self.instantiate_probabilistic_mappings = instantiate_probabilistic_mappings
         self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []
@@ -535,29 +535,9 @@ class BmfiaInterface(Interface):
             BmfiaInterface (obj): Instance of the BmfiaInterface
         """
         # get settings from config file
-        interface_options = config[interface_name]
-        num_processors_multi_processing = interface_options.get(
-            "num_processors_multi_processing", 1
-        )
-        probabilistic_mapping_type = interface_options.get(
-            "probabilistic_mapping_type", "per_coordinate"
-        )
-
-        # instantiate probabilistic mapping objects
-        (
-            instantiate_probabilistic_mappings,
-            evaluate_method,
-            evaluate_and_gradient_method,
-            update_mappings_method,
-        ) = get_option(cls.valid_probabilistic_mappings_configurations, probabilistic_mapping_type)
-
-        return cls(
-            instantiate_probabilistic_mappings,
-            num_processors_multi_processing,
-            evaluate_method,
-            evaluate_and_gradient_method,
-            update_mappings_method,
-        )
+        interface_options = config[interface_name].copy()
+        interface_options.pop('type')
+        return cls(**interface_options)
 
     def evaluate(self, samples, support='y'):
         r"""Map the lf-features to a probabilistic response for the hf model.
@@ -650,7 +630,7 @@ class BmfiaInterface(Interface):
         return mean, variance, grad_mean, grad_variance
 
     def build_approximation(
-        self, z_lf_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+        self, z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
     ):
         r"""Build the probabilistic regression models.
 
@@ -669,8 +649,7 @@ class BmfiaInterface(Interface):
                 *  Rows: Samples
                 *  Columns: Coordinates
 
-            config (dict): Configuration dictionary for the probabilistic mapping.
-            approx_name (str): Name of the probabilistic mapping in configuration dictionary.
+            approx (Model): Probabilistic mapping in configuration dictionary.
             coord_labels (list): List of coordinate labels.
             time_vec (np.array): Time vector of the experimental data.
             coords_mat (np.array): (Spatial) Coordinates of the experimental data.
@@ -693,7 +672,7 @@ class BmfiaInterface(Interface):
             y_hf_train,
             self.probabilistic_mapping_obj_lst,
         ) = self.instantiate_probabilistic_mappings(
-            z_lf_train, y_hf_train, self.time_vec, self.coords_mat, config, approx_name
+            z_lf_train, y_hf_train, self.time_vec, self.coords_mat, approx
         )
 
         if self.num_processors_multi_processing > 1:

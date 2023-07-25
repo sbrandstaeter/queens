@@ -127,9 +127,8 @@ def expected_samples_three():
 @pytest.fixture()
 def default_model(parameters_two):
     """TODO_doc."""
-    model_name = 'dummy_model'
     interface = 'dummy_interface'
-    model = SimulationModel(model_name, interface)
+    model = SimulationModel(interface)
     return model
 
 

@@ -37,9 +37,8 @@ def parameters():
 @pytest.fixture()
 def dummy_model(parameters):
     """Fixture for dummy model."""
-    model_name = 'dummy'
     interface = 'my_dummy_interface'
-    model = SimulationModel(model_name, interface)
+    model = SimulationModel(interface)
     return model
 
 

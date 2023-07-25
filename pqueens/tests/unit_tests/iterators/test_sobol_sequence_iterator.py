@@ -49,7 +49,7 @@ def default_model():
     interface = DirectPythonInterface(function="ishigami90", num_workers=1)
 
     # create mock model
-    model = SimulationModel("my_model", interface)
+    model = SimulationModel(interface)
 
     return model
 

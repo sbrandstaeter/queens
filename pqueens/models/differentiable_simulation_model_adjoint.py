@@ -22,7 +22,6 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
 
     def __init__(
         self,
-        model_name,
         global_settings,
         interface,
         gradient_interface,
@@ -32,13 +31,12 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
 
         Args:
             global_settings (dict): Dictionary containing global settings for the QUEENS run.
-            model_name (str): Model name
             interface (obj): Interface object for forward simulation run
             gradient_interface (obj): Interface object for the adjoint simulation run.
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """
-        super().__init__(model_name, interface)
+        super().__init__(interface)
         self.gradient_interface = gradient_interface
         self.adjoint_file = adjoint_file
         self.experiment_name = global_settings['experiment_name']
@@ -64,7 +62,6 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         model_options.pop('type')
 
         return cls(
-            model_name=model_name,
             interface=interface,
             gradient_interface=gradient_interface,
             global_settings=global_settings,

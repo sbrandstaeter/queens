@@ -13,14 +13,13 @@ class SimulationModel(Model):
         interface (interface): Interface to simulations/functions.
     """
 
-    def __init__(self, model_name, interface, **kwargs):
+    def __init__(self, interface, **kwargs):
         """Initialize simulation model.
 
         Args:
-            model_name (string):        Name of model
             interface (interface):      Interface to simulator
         """
-        super().__init__(model_name)
+        super().__init__()
         self.interface = interface
 
     @classmethod
@@ -39,7 +38,7 @@ class SimulationModel(Model):
         interface = from_config_create_interface(interface_name, config)
         model_options.pop('type')
 
-        return cls(model_name=model_name, interface=interface, **model_options)
+        return cls(interface=interface, **model_options)
 
     def evaluate(self, samples):
         """Evaluate model with current set of input samples.
