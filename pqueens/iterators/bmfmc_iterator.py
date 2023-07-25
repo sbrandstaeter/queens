@@ -8,7 +8,6 @@ from diversipy import psa_select
 
 import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -67,25 +66,13 @@ class BMFMCIterator(Iterator):
 
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping.
-        predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
-                               :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` if
-                               set to *True* (default value: *False*).
-        BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                *True* (default value: *False*).
 
     Returns:
        BMFMCIterator (obj): Instance of the BMFMCIterator
     """
 
     def __init__(
-        self,
-        model,
-        result_description,
-        initial_design,
-        predictive_var,
-        BMFMC_reference,
-        global_settings,
+        self, model, result_description, initial_design, global_settings, plotting_options=None
     ):
         r"""Initialize BMFMC iterator object.
 
@@ -95,14 +82,8 @@ class BMFMCIterator(Iterator):
                                        results
             initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                    design of training points for the probabilistic mapping
-            predictive_var (bool): Boolean flag that triggers the computation of the posterior
-                                   variance
-                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
-                                   if set to True. (default value: False)
-            BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                    True (default value: False)
             global_settings (dict): Settings for the QUEENS run.
+            plotting_options (dict): Plotting options
         """
         #  TODO check if None for the model is appropriate here
         super().__init__(None, global_settings)  # Input prescribed by iterator.py
@@ -112,48 +93,10 @@ class BMFMCIterator(Iterator):
         self.Y_LFs_train = None
         self.output = None
         self.initial_design = initial_design
-        self.predictive_var = predictive_var
-        self.BMFMC_reference = BMFMC_reference
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create LHS iterator from problem description in input file.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section in options dict
-            model (obj): Instance of model class
-
-        Returns:
-            iterator (obj): BMFMCIterator object
-        """
-        # Initialize Iterator and model
-        method_options = config[iterator_name]
-
-        BMFMC_reference = method_options["BMFMC_reference"]
-        result_description = method_options["result_description"]
-        predictive_var = method_options["predictive_var"]
-
-        initial_design = config["method"]["initial_design"]
-        global_settings = config.get('global_settings', None)
-
-        # ----------------------------- CREATE BMFMC MODEL ----------------------------
-        if model is None:
-            model_name = method_options["model_name"]
-            model = BMFMCModel.from_config_create_model(model_name, config)
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        if result_description.get("plotting_options"):
-            qvis.from_config_create(config)
-
-        return cls(
-            model=model,
-            result_description=result_description,
-            initial_design=initial_design,
-            predictive_var=predictive_var,
-            BMFMC_reference=BMFMC_reference,
-            global_settings=global_settings,
-        )
+        if plotting_options:
+            qvis.from_config_create(plotting_options, model.predictive_var, model.BMFMC_reference)
 
     def core_run(self):
         r"""Main run of the BMFMCIterator.

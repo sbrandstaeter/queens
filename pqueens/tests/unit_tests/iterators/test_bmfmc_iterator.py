@@ -2,11 +2,11 @@
 
 import numpy as np
 import pytest
+from mock import Mock
 
 import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
-from pqueens.models.bmfmc_model import BMFMCModel
 
 
 # ------ general input fixture ---------------------------------------
@@ -27,9 +27,10 @@ def approx_name():
 
 
 @pytest.fixture()
-def default_interface(config):
+def default_interface():
     """TODO_doc."""
-    interface = BmfmcInterface(config, approx_name)
+    approx = "dummy_approx"
+    interface = BmfmcInterface(approx)
     return interface
 
 
@@ -48,28 +49,10 @@ def config():
 @pytest.fixture()
 def default_bmfmc_model(default_interface, default_parameters):
     """TODO_doc."""
-    settings_probab_mapping = {
-        "type": "gp_approximation_gpflow",
-        "features_config": "opt_features",
-        "num_features": 1,
-    }
-    y_pdf_support = np.linspace(-1, 1, 10)
-    uncertain_parameters = None
-
-    model = BMFMCModel(
-        settings_probab_mapping,
-        False,
-        y_pdf_support,
-        default_interface,
-        hf_model=None,
-        no_features_comparison_bool=False,
-        lf_data_iterators=None,
-        hf_data_iterator=None,
-    )
     np.random.seed(1)
+    model = Mock()
     model.X_mc = np.random.random((20, 2))
     model.Y_LFs_mc = np.random.random((20, 2))
-
     return model
 
 
@@ -125,8 +108,6 @@ def default_bmfmc_iterator(
         default_bmfmc_model,
         result_description,
         initial_design,
-        predictive_var,
-        BMFMC_reference,
         global_settings,
     )
     return my_bmfmc_iterator
@@ -166,8 +147,6 @@ def test_init(
     default_bmfmc_model,
     result_description,
     initial_design,
-    predictive_var,
-    BMFMC_reference,
 ):
     """TODO_doc."""
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
@@ -175,8 +154,6 @@ def test_init(
         default_bmfmc_model,
         result_description,
         initial_design,
-        predictive_var,
-        BMFMC_reference,
         global_settings,
     )
     # tests / asserts
@@ -187,26 +164,22 @@ def test_init(
     assert my_bmfmc_iterator.Y_LFs_train is None
     assert my_bmfmc_iterator.output is None
     assert my_bmfmc_iterator.initial_design == initial_design
-    assert my_bmfmc_iterator.predictive_var == predictive_var
-    assert my_bmfmc_iterator.BMFMC_reference == BMFMC_reference
 
 
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     """TODO_doc."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.load_sampling_data')
-    mp2 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
-    mp3 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
+    mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
 
     default_bmfmc_iterator.core_run()
 
     # -------- Load MC data from model -----------------------
-    mp1.assert_called_once()
+    default_bmfmc_model.load_sampling_data.assert_called_once()
 
     # ---- determine optimal input points for which HF should be simulated -------
-    mp2.assert_called_once()
+    mp1.assert_called_once()
 
     # ----- build model on training points and evaluate it -----------------------
-    mp3.assert_called_once()
+    default_bmfmc_model.evaluate.assert_called_once()
 
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
@@ -300,11 +273,10 @@ def test_random_design(mocker, default_bmfmc_iterator):
     np.testing.assert_array_almost_equal(Y_LFs_train, expected_Y_LFs_train, decimal=6)
 
 
-def test_model_evaluate(mocker, default_bmfmc_iterator):
+def test_model_evaluate(default_bmfmc_iterator):
     """TODO_doc."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
     default_bmfmc_iterator.model.evaluate(None)
-    mp1.assert_called_once()
+    default_bmfmc_iterator.model.evaluate.assert_called_once()
 
 
 def test_post_run(mocker, default_bmfmc_iterator):

@@ -1,6 +1,5 @@
 """Interface for grouping outputs with inputs."""
 from pqueens.interfaces.interface import Interface
-from pqueens.models import from_config_create_model
 
 
 class BmfmcInterface(Interface):
@@ -12,8 +11,6 @@ class BmfmcInterface(Interface):
     implicit function relationships.
 
     Attributes:
-        config (dict): Dictionary with problem description (input file).
-        approx_name (str): Name of the used approximation model.
         probabilistic_mapping_obj (obj): Instance of the probabilistic mapping,
                                          which models the probabilistic
                                          dependency between high-fidelity
@@ -24,16 +21,15 @@ class BmfmcInterface(Interface):
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
-    def __init__(self, config, approx_name):
+    def __init__(self, probabilistic_mapping_obj):
         """Initialize the interface.
 
         Args:
-            config (dict): Dictionary with problem description
-            approx_name (str): Name of the approximation model
+            probabilistic_mapping_obj (obj): Instance of the probabilistic mapping, which models the
+                                             probabilistic dependency between high-fidelity model,
+                                             low-fidelity models and informative input features.
         """
-        self.config = config
-        self.approx_name = approx_name
-        self.probabilistic_mapping_obj = None
+        self.probabilistic_mapping_obj = probabilistic_mapping_obj
 
     def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):
         r"""Predict on probabilistic mapping.
@@ -85,7 +81,5 @@ class BmfmcInterface(Interface):
             Z_LF_train (np.array): Training inputs for probabilistic mapping
             Y_HF_train (np.array): Training outputs for probabilistic mapping
         """
-        surrogate_model_name = self.config[self.approx_name]['surrogate_model_name']
-        self.probabilistic_mapping_obj = from_config_create_model(surrogate_model_name, self.config)
         self.probabilistic_mapping_obj.setup(Z_LF_train, Y_HF_train)
         self.probabilistic_mapping_obj.train()

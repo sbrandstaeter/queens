@@ -1,10 +1,9 @@
 """Test BMFMC model."""
 import numpy as np
 import pytest
-from mock import patch
+from mock import Mock, patch
 
 import pqueens.parameters.parameters as parameters_module
-from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.models import bmfmc_model
 from pqueens.models.bmfmc_model import BMFMCModel
@@ -94,7 +93,7 @@ def approximation_name():
 @pytest.fixture()
 def default_interface(config, approximation_name):
     """Create default interface."""
-    interface = BmfmcInterface(config, approximation_name)
+    interface = Mock()
     return interface
 
 
@@ -111,14 +110,17 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
     y_pdf_support = np.linspace(-1, 1, 10)
 
     model = BMFMCModel(
-        settings_probab_mapping,
-        False,
-        y_pdf_support,
-        default_interface,
+        probabilistic_mapping_obj=Mock(),
+        features_config=settings_probab_mapping["features_config"],
+        predictive_var=False,
+        BMFMC_reference=True,
+        y_pdf_support_max=1,
+        y_pdf_support_min=-1,
+        X_cols=settings_probab_mapping["X_cols"],
+        num_features=settings_probab_mapping["num_features"],
         hf_model=None,
-        no_features_comparison_bool=True,
-        lf_data_iterators=None,
-        hf_data_iterator=None,
+        path_to_lf_mc_data=[],
+        path_to_hf_mc_reference_data=None,
     )
 
     np.random.seed(1)
@@ -172,27 +174,32 @@ def mock_visualization():
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, settings_probab_mapping, default_interface):
+def test_init(mocker, settings_probab_mapping):
     """Test initialization."""
-    y_pdf_support = np.linspace(-1, 1, 10)
+    y_pdf_support = np.linspace(-1, 1, 200)
 
-    mp = mocker.patch('pqueens.models.model.Model.__init__')
-
+    mp1 = mocker.patch('pqueens.models.model.Model.__init__')
+    mp2 = mocker.patch(
+        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.__init__', return_value=None
+    )
+    approx = "dummy_approx"
     model = BMFMCModel(
-        settings_probab_mapping,
-        True,
-        y_pdf_support,
-        default_interface,
+        probabilistic_mapping_obj=approx,
+        features_config=settings_probab_mapping["features_config"],
+        predictive_var=True,
+        BMFMC_reference=False,
+        y_pdf_support_max=y_pdf_support.max(),
+        y_pdf_support_min=y_pdf_support.min(),
+        X_cols=settings_probab_mapping["X_cols"],
+        num_features=settings_probab_mapping["num_features"],
         hf_model=None,
-        no_features_comparison_bool=False,
-        lf_data_iterators=None,
-        hf_data_iterator=None,
+        path_to_lf_mc_data=[],
+        path_to_hf_mc_reference_data=None,
     )
 
     # tests/ asserts ------------------
-    mp.assert_called_once_with(name='bmfmc_model')
-    assert model.interface == default_interface
-    assert model.settings_probab_mapping == settings_probab_mapping
+    mp1.assert_called_once()
+    mp2.assert_called_once_with(probabilistic_mapping_obj=approx)
     assert model.high_fidelity_model is None
     assert model.X_train is None
     assert model.Y_HF_train is None
@@ -216,7 +223,7 @@ def test_init(mocker, settings_probab_mapping, default_interface):
     assert model.eigenvals is None
     assert model.f_mean_train is None
     np.testing.assert_array_almost_equal(model.y_pdf_support, y_pdf_support, decimal=6)
-    assert model.lf_data_iterators is None
+    assert model.lf_data_iterators == []
     assert model.hf_data_iterator is None
     assert model.training_indices is None
 
@@ -485,7 +492,7 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
     default_bmfmc_model.gammas_ext_mc = np.random.random((20, 2))
 
     # test man_features
-    default_bmfmc_model.settings_probab_mapping['features_config'] = "man_features"
+    default_bmfmc_model.features_config = "man_features"
     default_bmfmc_model.X_train = np.array([[1.0, 1.0], [2.0, 2.0]])
     default_bmfmc_model.Y_LFs_train = np.array([[1.2, 1.2]]).T
     default_bmfmc_model.set_feature_strategy()
@@ -500,16 +507,16 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
     np.testing.assert_array_almost_equal(default_bmfmc_model.Z_mc, expected_Z_mc, decimal=6)
 
     # test opt_features
-    default_bmfmc_model.settings_probab_mapping['features_config'] = "opt_features"
+    default_bmfmc_model.features_config = "opt_features"
     default_bmfmc_model.set_feature_strategy()
     mp1.assert_called_once()
 
-    default_bmfmc_model.settings_probab_mapping['num_features'] = 0
+    default_bmfmc_model.num_features = 0
     with pytest.raises(ValueError):
         default_bmfmc_model.set_feature_strategy()
 
     # test no_features
-    default_bmfmc_model.settings_probab_mapping['features_config'] = "no_features"
+    default_bmfmc_model.features_config = "no_features"
     default_bmfmc_model.set_feature_strategy()
     np.testing.assert_array_almost_equal(
         default_bmfmc_model.Z_train, default_bmfmc_model.Y_LFs_train, decimal=6
@@ -568,7 +575,7 @@ def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model)
     )
 
     default_bmfmc_model.gammas_ext_mc = np.random.random((20, 5))
-    default_bmfmc_model.settings_probab_mapping['num_features'] = 1
+    default_bmfmc_model.num_features = 1
     default_bmfmc_model.Y_LFs_mc = np.random.random((20, 1))
     default_bmfmc_model.training_indices = 1
 

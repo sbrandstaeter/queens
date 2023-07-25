@@ -12,9 +12,8 @@ import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.models import from_config_create_model
+from pqueens.models.model import Model
 from pqueens.parameters.fields import RandomField
-
-from .model import Model
 
 _logger = logging.getLogger(__name__)
 
@@ -53,18 +52,12 @@ class BMFMCModel(Model):
 
     Attributes:
         interface (obj): Interface object.
-        settings_probab_mapping (dict): Settings/configurations for the probabilistic mapping model
-                                        between HF and LF models, respectively input features.
-                                        This includes:
-
-                                        - *types*: `gp_approximation_gpflow`
-                                        - *features_config*: `opt_features`, `no_features` or
-                                          `man_features`
-                                        - *num_features:* for `opt_features`, number of features
-                                          to be used
-                                        - *X_cols*: for `man_features`, columns of X-matrix that
-                                          should be used as an informative feature
-
+        features_config (str): strategy that will be used to calculate the low-fidelity features
+                                   :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
+                                   `man_features`
+        X_cols (list): for `man_features`, columns of X-matrix that should be used as an informative
+                       feature
+        num_features (int): for `opt_features`, number of features to be used
         high_fidelity_model (obj): HF (simulation) model to run simulations that yield the HF
                                  training set :math:`\mathcal{D}_{HF}=\\{Z, Y_{HF}\\}`.
         X_train (np.array): Matrix of simulation inputs corresponding to the training
@@ -147,29 +140,62 @@ class BMFMCModel(Model):
 
     def __init__(
         self,
-        settings_probab_mapping,
-        predictive_var_bool,
-        y_pdf_support,
-        interface,
-        hf_model,
-        no_features_comparison_bool,
-        lf_data_iterators,
-        hf_data_iterator,
+        probabilistic_mapping_obj,
+        features_config,
+        predictive_var,
+        BMFMC_reference,
+        y_pdf_support_max,
+        y_pdf_support_min,
+        X_cols=None,
+        num_features=None,
+        hf_model=None,
+        path_to_lf_mc_data=None,
+        path_to_hf_mc_reference_data=None,
     ):
-        """Initialize BMFMC model.
+        r"""Initialize BMFMC model.
 
         Args:
-            settings_probab_mapping (dict): settings for probabilistic mapping
-            predictive_var_bool (bool): true if predictive variance is computed
-            y_pdf_support (ndarray): PDF support used in this analysis
-            interface (bmfmc_interface): BMFMC interface
+            probabilistic_mapping_obj (obj): Instance of the probabilistic mapping, which models the
+                                             probabilistic dependency between high-fidelity model,
+                                             low-fidelity models and informative input features.
+            features_config (str): strategy that will be used to calculate the low-fidelity features
+                                   :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
+                                   `man_features`
+            predictive_var (bool): Boolean flag that triggers the computation of the posterior
+                                   variance
+                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
+                                   if set to True. (default value: False)
+            BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
+                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
+                                    True (default value: False)
+            y_pdf_support_max (float): Max value of pdf support used in this analysis
+            y_pdf_support_min (float): Min value of pdf support used in this analysis
+            X_cols (list): for `man_features`, columns of X-matrix that should be used as an
+                           informative feature
+            num_features (int): for `opt_features`, number of features to be used
             hf_model (mode): model for high-fidelity data
-            no_features_comparison_bool (bool): true if feature comparison
-            lf_data_iterators (iterator): iterator for low-fidelity data
-            hf_data_iterator (iterator): iterator for high-fidelity data
+            path_to_lf_mc_data (str): path to low fidelity monte carlo data
+            path_to_hf_mc_reference_data (str): path to high fidelity monte carlo reference data
         """
+        # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
+        #  random fields is prone to errors and should be changed! The implementation should
+        #  rather use the variable module and reconstruct the eigenfunctions of the random fields
+        #  if not provided in the data field
+
+        interface = BmfmcInterface(probabilistic_mapping_obj=probabilistic_mapping_obj)
+
+        if path_to_hf_mc_reference_data is not None:
+            hf_data_iterator = DataIterator(path_to_hf_mc_reference_data, None, None)
+        else:
+            hf_data_iterator = None
+
+        # ----------------------- create subordinate data iterators ------------------------------
+        self.lf_data_iterators = [DataIterator(path, None, None) for path in path_to_lf_mc_data]
+
         self.interface = interface
-        self.settings_probab_mapping = settings_probab_mapping
+        self.features_config = features_config
+        self.X_cols = X_cols
+        self.num_features = num_features
         self.high_fidelity_model = hf_model
         self.X_train = None
         self.Y_HF_train = None
@@ -185,19 +211,18 @@ class BMFMCModel(Model):
         self.var_y_mc = None
         self.p_yhf_mean = None
         self.p_yhf_var = None
-        self.predictive_var_bool = predictive_var_bool
+        self.predictive_var_bool = predictive_var
         self.p_yhf_mc = None
         self.p_ylf_mc = None
-        self.no_features_comparison_bool = no_features_comparison_bool
+        self.no_features_comparison_bool = BMFMC_reference
         self.eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
         self.eigenvals = None
         self.f_mean_train = None
-        self.y_pdf_support = y_pdf_support
-        self.lf_data_iterators = lf_data_iterators
+        self.y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
         self.hf_data_iterator = hf_data_iterator
         self.training_indices = None
 
-        super().__init__(name="bmfmc_model")
+        super().__init__()
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -214,50 +239,21 @@ class BMFMCModel(Model):
         Returns:
             BMFMCModel (obj): A BMFMCModel object
         """
-        # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
-        #  random fields is prone to errors and should be changed! The implementation should
-        #  rather use the variable module and reconstruct the eigenfunctions of the random fields
-        #  if not provided in the data field
-
         # get model options
-        model_options = config[model_name]
-        interface = BmfmcInterface(config, model_name)
-        lf_data_paths = model_options.get("path_to_lf_mc_data")
-        hf_data_path = model_options.get("path_to_hf_mc_reference_data")
-        hf_model_name = model_options.get("high_fidelity_model_name")
+        model_options = config[model_name].copy()
+        model_options.pop('type')
 
-        # get some method options
-        method_options = config["method"]
-        no_features_comparison_bool = method_options["BMFMC_reference"]
-        predictive_var_bool = method_options["predictive_var"]
-        y_pdf_support_max = method_options["y_pdf_support_max"]
-        y_pdf_support_min = method_options["y_pdf_support_min"]
-
-        y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
+        surrogate_model_name = model_options.pop('surrogate_model_name')
+        probabilistic_mapping_obj = from_config_create_model(surrogate_model_name, config)
 
         # if HF model is specified create an HF model object
+        hf_model_name = model_options.pop("high_fidelity_model_name", None)
+        hf_model = None
         if hf_model_name is not None:
             hf_model = from_config_create_model(hf_model_name, config)
-        else:
-            hf_model = None
-
-        if hf_data_path is not None:
-            hf_data_iterator = DataIterator(hf_data_path, None, None)
-        else:
-            hf_data_iterator = None
-
-        # ----------------------- create subordinate data iterators ------------------------------
-        lf_data_iterators = [DataIterator(path, None, None) for path in lf_data_paths]
 
         return cls(
-            model_options,
-            predictive_var_bool,
-            y_pdf_support,
-            interface,
-            lf_data_iterators=lf_data_iterators,
-            hf_data_iterator=hf_data_iterator,
-            hf_model=hf_model,
-            no_features_comparison_bool=no_features_comparison_bool,
+            probabilistic_mapping_obj=probabilistic_mapping_obj, hf_model=hf_model, **model_options
         )
 
     def evaluate(self, samples):
@@ -604,21 +600,21 @@ class BMFMCModel(Model):
         strategy that will be used to calculate the low-fidelity features
         :math:`Z_{\text{LF}}`.
         """
-        if self.settings_probab_mapping['features_config'] == "man_features":
-            idx_vec = self.settings_probab_mapping['X_cols']
+        if self.features_config == "man_features":
+            idx_vec = self.X_cols
             self.gammas_ext_train = np.atleast_2d(self.X_train[:, idx_vec]).T
             self.gammas_ext_mc = np.atleast_2d(self.X_mc[:, idx_vec]).T
             self.Z_train = np.hstack([self.Y_LFs_train, self.gammas_ext_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.gammas_ext_mc])
-        elif self.settings_probab_mapping['features_config'] == "opt_features":
-            if self.settings_probab_mapping['num_features'] < 1:
+        elif self.features_config == "opt_features":
+            if self.num_features < 1:
                 raise ValueError(
-                    f'You specified {self.settings_probab_mapping["num_features"]} features, '
+                    f'You specified {self.num_features} features, '
                     'which is an '
                     f'invalid value! Please only specify integer values greater than zero! Abort...'
                 )
             self.update_probabilistic_mapping_with_features()
-        elif self.settings_probab_mapping['features_config'] == "no_features":
+        elif self.features_config == "no_features":
             self.Z_train = self.Y_LFs_train
             self.Z_mc = self.Y_LFs_mc
         else:
@@ -683,7 +679,7 @@ class BMFMCModel(Model):
         this place.
         """
         # Select demanded number of features
-        gamma_mc = self.gammas_ext_mc[:, 0 : self.settings_probab_mapping['num_features']]
+        gamma_mc = self.gammas_ext_mc[:, 0 : self.num_features]
         self.Z_mc = np.hstack([self.Y_LFs_mc, gamma_mc])
 
         # Get training data from training_indices previously calculated in the iterator
