@@ -19,7 +19,6 @@ bokeh<3 # for dask dashboard
 fabric  # for ssh connection
 
 # Others
-pymongo # MongoDB
 xarray # Special array format
 pyDOE # design of experiments
 SALib # for sensitivity analysis

@@ -1,7 +1,4 @@
 experiment_name: ParabulaResLSQ
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: optimization
   model_name: model

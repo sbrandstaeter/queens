@@ -1,8 +1,4 @@
 experiment_name: xxx
-database:
-  address: localhost:27017
-  type: mongodb
-  drop_existing: true
 method:
   type: sobol_indices_gp_uncertainty
   seed_monte_carlo: 42

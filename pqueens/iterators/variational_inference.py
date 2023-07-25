@@ -33,8 +33,6 @@ class VariationalInferenceIterator(Iterator):
 
     Attributes:
         result_description (dict): Settings for storing and visualizing the results.
-        db (obj): QUEENS database object.
-        experiment_name (str): Name of the QUEENS simulation.
         variational_params_initialization_approach (str): Flag to decide how to initialize the
                                                           variational parameters.
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to

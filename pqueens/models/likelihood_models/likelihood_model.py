@@ -1,12 +1,10 @@
 """Module to define likelihood functions."""
 
 import abc
-from pathlib import Path
 
-import pqueens.database.database as DB_module
 from pqueens.models import from_config_create_model
 from pqueens.models.model import Model
-from pqueens.utils.get_experimental_data import get_experimental_data, write_experimental_data_to_db
+from pqueens.utils.experimental_data_reader import ExperimentalDataReader
 
 
 class LikelihoodModel(Model):
@@ -70,27 +68,22 @@ class LikelihoodModel(Model):
         forward_model_name = model_options.get("forward_model_name")
         forward_model = from_config_create_model(forward_model_name, config)
 
-        # get further model options
-        output_label = model_options.get('output_label')
-        coord_labels = model_options.get('coordinate_labels')
-        time_label = model_options.get('time_label')
-        db = DB_module.database
-        global_settings = config.get('global_settings', None)
-        experiment_name = global_settings["experiment_name"]
-        data_processor_name = model_options.get('data_processor_name')
-        file_name = model_options.get('experimental_file_name_identifier')
-        base_dir = Path(model_options.get('experimental_csv_data_base_dir'))
-
-        y_obs, coords_mat, time_vec, experimental_data_dict = get_experimental_data(
-            config=config,
-            data_processor_name=data_processor_name,
-            base_dir=base_dir,
-            file_name=file_name,
-            coordinate_labels=coord_labels,
-            time_label=time_label,
-            output_label=output_label,
+        experimental_data_reader_name = model_options.get("experimental_data_reader_name")
+        experimental_data_reader = (
+            ExperimentalDataReader.from_config_create_experimental_data_reader(
+                config, experimental_data_reader_name
+            )
         )
-        write_experimental_data_to_db(experimental_data_dict, experiment_name, db)
+        (
+            y_obs,
+            coords_mat,
+            time_vec,
+            _,
+            _,
+            coord_labels,
+            output_label,
+        ) = experimental_data_reader.get_experimental_data()
+
         return forward_model, coords_mat, time_vec, y_obs, output_label, coord_labels
 
     @abc.abstractmethod

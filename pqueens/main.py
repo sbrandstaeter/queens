@@ -4,7 +4,6 @@ import sys
 import time
 from pathlib import Path
 
-import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators import from_config_create_iterator
@@ -40,36 +39,33 @@ def run(input_file, output_dir, debug=False):
     )
 
     print_banner_and_description()
-    # create database
-    DB_module.from_config_create_database(config)
 
-    with DB_module.database:
-        # do pre-processing
-        pre_processer = from_config_create_external_geometry(config, 'pre_processing')
-        if pre_processer:
-            pre_processer.main_run()
-            pre_processer.write_random_fields_to_dat()
+    # do pre-processing
+    pre_processer = from_config_create_external_geometry(config, 'pre_processing')
+    if pre_processer:
+        pre_processer.main_run()
+        pre_processer.write_random_fields_to_dat()
 
-        # create parameters
-        parameters_module.from_config_create_parameters(config, pre_processer)
+    # create parameters
+    parameters_module.from_config_create_parameters(config, pre_processer)
 
-        # create iterator
-        my_iterator = from_config_create_iterator(config)
+    # create iterator
+    my_iterator = from_config_create_iterator(config)
 
-        end_time_input = time.time()
+    end_time_input = time.time()
 
-        _logger.info("")
-        _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
-        _logger.info("")
+    _logger.info("")
+    _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
+    _logger.info("")
 
-        start_time_calc = time.time()
+    start_time_calc = time.time()
 
-        _logger.info("")
-        _logger.info("Starting Analysis...")
-        _logger.info("")
+    _logger.info("")
+    _logger.info("Starting Analysis...")
+    _logger.info("")
 
-        # perform analysis
-        my_iterator.run()
+    # perform analysis
+    my_iterator.run()
 
     end_time_calc = time.time()
     _logger.info("")

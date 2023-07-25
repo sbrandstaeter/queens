@@ -242,7 +242,7 @@ class RPVIIterator(VariationalInferenceIterator):
                                               samples.
         """
         # The first samples belong to simulation input
-        # get simulation output (run actual forward problem)--> data is saved to DB
+        # get simulation output (run actual forward problem)
         log_likelihood, grad_log_likelihood_x = self.model.evaluate_and_gradient(
             sample_batch.reshape(-1, self.num_parameters)
         )

@@ -10,8 +10,6 @@ systems.
     - [Mamba (or conda)](#mamba-or-conda)
       - [Installation](#installation)
       - [Usage](#usage)
-    - [Optional: MongoDB](#optional-mongodb)
-      - [Installation](#installation-1)
     - [Git](#git)
   - [QUEENS Installation](#queens-installation)
   - [Start a *QUEENS* run](#start-a-queens-run)
@@ -22,7 +20,7 @@ systems.
 
 
 ## Prerequisites
-There are various prerequisites for QUEENS such as (an appropriately configured) Git, Anaconda, and MongoDB.
+There are various prerequisites for QUEENS such as (an appropriately configured) Git and Anaconda.
 
 [↑ Contents](#contents)
 
@@ -42,19 +40,6 @@ However, we recommend the following:
 For instructions on how to use mamba or conda, e.g. on how to activate an environment, please refer to the official guides:
 - [mamba quickstart instructions](https://mamba.readthedocs.io/en/latest/user_guide/mamba.html#quickstart)
 - [getting started with conda](https://docs.conda.io/projects/conda/en/stable/user-guide/getting-started.html#managing-environments)
-
-[↑ Contents](#contents)
-
-### Optional: MongoDB
-QUEENS uses a [MongoDB](https://www.mongodb.com/) database (Community Edition) for the handling of certain data.
-Therefore, QUEENS requires certain write and access rights.
-MongoDB does not necessarily have to run on the same machine as QUEENS, although this is the default case.
-In certain situations, though, it might make sense to have the database running on a different computer and connect to the database via port-forwarding.
-
-#### Installation
-For installation on various OS, please follow the official [installation instructions](https://www.mongodb.com/docs/manual/administration/install-community/).
-
->Note: If you are experiencing SELinux warnings follow the solution [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#optional-suppress-ftdc-warnings).
 
 [↑ Contents](#contents)
 

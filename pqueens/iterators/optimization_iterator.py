@@ -10,7 +10,6 @@ import pandas as pd
 import scipy.optimize
 from scipy.optimize import curve_fit
 
-import pqueens.database.database as DB_module
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
@@ -128,11 +127,6 @@ class OptimizationIterator(Iterator):
             self.global_settings['experiment_name'],
         )
 
-        if experimental_csv_data_base_dirs is not None:
-            self.db = DB_module.database
-        else:
-            self.db = None
-
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
         if bounds is None:
@@ -234,7 +228,7 @@ class OptimizationIterator(Iterator):
     def pre_run(self):
         """Get initial guess."""
         _logger.info("Initialize Optimization run.")
-        self._get_experimental_data_and_write_to_db()
+        self._get_experimental_data()
 
     def core_run(self):
         """Core run of Optimization iterator."""
@@ -347,7 +341,7 @@ class OptimizationIterator(Iterator):
                 )
 
     # -------------- private helper functions --------------------------
-    def _get_experimental_data_and_write_to_db(self):
+    def _get_experimental_data(self):
         """Loop over post files in given output directory."""
         if self.experimental_data_path_list is not None:
             # iteratively load all csv files in specified directory
@@ -397,13 +391,6 @@ class OptimizationIterator(Iterator):
 
             # potentially scale experimental data
             self._scale_experimental_data()
-
-            self.db.save(
-                self.experimental_data_dict,
-                self.global_settings['experiment_name'],
-                'experimental_data',
-                1,
-            )
 
     def _scale_experimental_data(self):
         # scale the experimental coordinates

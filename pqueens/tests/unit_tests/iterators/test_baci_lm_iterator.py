@@ -43,7 +43,6 @@ def fix_tolerance(request):
 def default_baci_lm_iterator():
     """TODO_doc."""
     config = {
-        'database': OrderedDict([('address', 'localhost:27017'), ('drop_all_existing_dbs', True)]),
         'method': OrderedDict(
             [
                 ('type', 'baci_lm'),
