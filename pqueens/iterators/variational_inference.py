@@ -385,7 +385,6 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             elbo gradient as column vector (np.array)
         """
-        pass
 
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
@@ -448,7 +447,6 @@ class VariationalInferenceIterator(Iterator):
         Returns:
              function: Gradient function wrapped with the counter
         """
-        pass
 
         def nan_counter_and_warner(*args, **kwargs):
             """Count iterations with NaNs and write warning."""

@@ -18,7 +18,6 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
 
     def __init__(self):
         """TODO_doc."""
-        pass
 
     def main_run(self):
         """Main routine of *external_geometry_obj* object."""
@@ -35,7 +34,6 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
         Method that reads in external files containing an
         *external_geometry_obj* definition.
         """
-        pass
 
     @abc.abstractmethod
     def organize_sections(self):
@@ -44,9 +42,7 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
         Organizes (geometric) sections in external file to read in
         geometric data efficiently.
         """
-        pass
 
     @abc.abstractmethod
     def finish_and_clean(self):
         """Finishing, postprocessing and cleaning."""
-        pass

@@ -88,7 +88,6 @@ class MyContextManagerPool:
 
     def __exit__(self, *_, **__):
         """Dummy exit method for context manager."""
-        pass
 
     def imap(self, *_, **__):
         """A dummy map method for the dummy pool."""
@@ -96,7 +95,6 @@ class MyContextManagerPool:
 
     def close(self):
         """A dummy close method."""
-        pass
 
 
 class MyContext:
@@ -118,7 +116,6 @@ def dummy_plot_instance():
 
         def plot(self):
             """Fake plot method."""
-            pass
 
     my_plot_obj = my_plot()
     return my_plot_obj

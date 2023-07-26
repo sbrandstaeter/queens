@@ -25,5 +25,3 @@ def test_baci_lm_rosenbrock_res(inputdir, tmp_path):
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
     assert (tmp_path / 'OptimizeLM.html').is_file()
-
-    pass
