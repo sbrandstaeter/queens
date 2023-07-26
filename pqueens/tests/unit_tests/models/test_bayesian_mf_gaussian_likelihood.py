@@ -174,7 +174,7 @@ def default_mf_likelihood(
     mf_likelihood = BMFGaussianModel(
         forward_model=forward_model,
         mf_interface=mf_interface,
-        bmfia_subiterator=bmfia_subiterator,
+        mf_subiterator=bmfia_subiterator,
         noise_value=noise_var,
         num_refinement_samples=num_refinement_samples,
         likelihood_evals_for_refinement=likelihood_evals_for_refinement_lst,
@@ -262,7 +262,7 @@ def test_init(mocker, dummy_model, parameters, default_interface, default_bmfia_
     model = BMFGaussianModel(
         forward_model=forward_model,
         mf_interface=mf_interface,
-        bmfia_subiterator=bmfia_subiterator,
+        mf_subiterator=bmfia_subiterator,
         noise_value=noise_var,
         num_refinement_samples=num_refinement_samples,
         likelihood_evals_for_refinement=likelihood_evals_for_refinement_lst,
@@ -279,7 +279,7 @@ def test_init(mocker, dummy_model, parameters, default_interface, default_bmfia_
     assert model.coord_labels == coord_labels
 
     assert model.mf_interface == mf_interface
-    assert model.bmfia_subiterator == bmfia_subiterator
+    assert model.mf_subiterator == bmfia_subiterator
     assert model.min_log_lik_mf is None
     assert model.normal_distribution == mean_field_normal
     assert model.noise_var == noise_var

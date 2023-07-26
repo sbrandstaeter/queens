@@ -29,7 +29,7 @@ class BMFGaussianModel(LikelihoodModel):
         output_label (str): Name of the experimental outputs (column label in csv-file)
         coord_labels (lst): List with coordinate labels for (column labels in csv-file)
         mf_interface (obj): QUEENS multi-fidelity interface
-        bmfia_subiterator (obj): Subiterator to select the training data of the
+        mf_subiterator (obj): Subiterator to select the training data of the
                                 probabilistic regression model
         normal_distribution (obj): Mean field normal distribution object
         noise_var (np.array): Noise variance of the observations
@@ -59,7 +59,7 @@ class BMFGaussianModel(LikelihoodModel):
         self,
         forward_model,
         mf_interface,
-        bmfia_subiterator,
+        mf_subiterator,
         experimental_data_reader,
         mf_approx,
         noise_value=None,
@@ -72,7 +72,7 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             forward_model (obj): Forward model to iterate; here: the low fidelity model
             mf_interface (obj): QUEENS multi-fidelity interface
-            bmfia_subiterator (obj): Subiterator to select the training data of the
+            mf_subiterator (obj): Subiterator to select the training data of the
                                      probabilistic regression model
             experimental_data_reader (obj): Experimental data reader object
             mf_approx (Model): Probabilistic mapping
@@ -108,9 +108,9 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ---------------------- initialize some model settings/train surrogates -----------------
-        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, y_obs, bmfia_subiterator)
+        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, y_obs, mf_subiterator)
         self._build_approximation(
-            bmfia_subiterator,
+            mf_subiterator,
             mf_interface,
             mf_approx,
             self.coord_labels,
@@ -123,7 +123,7 @@ class BMFGaussianModel(LikelihoodModel):
             qvis.from_config_create(plotting_options)
 
         self.mf_interface = mf_interface
-        self.bmfia_subiterator = bmfia_subiterator
+        self.mf_subiterator = mf_subiterator
         self.min_log_lik_mf = None
         self.normal_distribution = mean_field_normal
         self.noise_var = noise_variance
@@ -151,12 +151,12 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ---------- create multi-fidelity interface --------------------------------------------
-        bmfia_interface_name = model_options.pop("interface_name")
-        bmfia_interface = from_config_create_interface(bmfia_interface_name, config)
+        mf_interface_name = model_options.pop("mf_interface_name")
+        mf_interface = from_config_create_interface(mf_interface_name, config)
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options.pop("mf_subiterator_name")
-        bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
+        mf_subiterator_name = model_options.pop("mf_subiterator_name")
+        mf_subiterator = from_config_create_iterator(config, mf_subiterator_name)
 
         mf_approx_name = model_options.pop("mf_approx_name")
         mf_approx = from_config_create_model(mf_approx_name, config)
@@ -164,8 +164,8 @@ class BMFGaussianModel(LikelihoodModel):
         return cls(
             forward_model=forward_model,
             experimental_data_reader=experimental_data_reader,
-            mf_interface=bmfia_interface,
-            bmfia_subiterator=bmfia_subiterator,
+            mf_interface=mf_interface,
+            mf_subiterator=mf_subiterator,
             mf_approx=mf_approx,
             **model_options
         )
@@ -256,7 +256,7 @@ class BMFGaussianModel(LikelihoodModel):
                                  w.r.t. the output of the underlying sub-model.
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator.set_feature_strategy(
+        z_mat = self.mf_subiterator.set_feature_strategy(
             forward_model_output,
             forward_model_input,
             self.coords_mat[: forward_model_output.shape[0]],
@@ -315,7 +315,7 @@ class BMFGaussianModel(LikelihoodModel):
             additional_y_lf_train (np.array, optional): New output training points.
                                                         Defaults to None.
         """
-        z_train, y_hf_train = self.bmfia_subiterator.expand_training_data(
+        z_train, y_hf_train = self.mf_subiterator.expand_training_data(
             additional_x_train, additional_y_lf_train=additional_y_lf_train
         )
         _logger.info('Start updating the probabilistic model...')
@@ -347,7 +347,7 @@ class BMFGaussianModel(LikelihoodModel):
                 Propagation in Complex Physical Simulations", arXiv:2001.02892
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator.set_feature_strategy(
+        z_mat = self.mf_subiterator.set_feature_strategy(
             y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
         )
         # Get the response matrices of the multi-fidelity mapping
