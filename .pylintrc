@@ -252,7 +252,7 @@ contextmanager-decorators=contextlib.contextmanager
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
-generated-members=
+generated-members=vtkDoubleArray
 
 # Tells whether missing members accessed in mixin class should be ignored. A
 # class is considered mixin if its name matches the mixin-class-rgx option.
@@ -291,6 +291,8 @@ ignored-classes=optparse.Values,
 # supports qualified module names, as well as Unix pattern matching.
 ignored-modules=vtk,
                 particles,
+                vtkmodules,
+                vtkCommonCore
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.
