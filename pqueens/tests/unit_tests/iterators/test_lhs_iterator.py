@@ -10,9 +10,6 @@ import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.lhs_iterator import LHSIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
 
 
 class TestLHSIterator(unittest.TestCase):
@@ -45,9 +42,8 @@ class TestLHSIterator(unittest.TestCase):
         some_settings = {}
         some_settings["experiment_name"] = "test"
 
-        function = example_simulator_function_by_name("ishigami90")
         # create interface
-        self.interface = DirectPythonInterface('test_interface', function, pool=None)
+        self.interface = DirectPythonInterface(function="ishigami90", num_workers=1)
 
         # create mock model
         self.model = SimulationModel("my_model", self.interface)

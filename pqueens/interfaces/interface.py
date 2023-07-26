@@ -14,18 +14,12 @@ class Interface(metaclass=abc.ABCMeta):
     the derived class.
 
     Attributes:
-        name (str): Name of the interface.
         parameters (obj): Parameters object.
         latest_job_id (int):    Latest job ID.
     """
 
-    def __init__(self, name):
-        """Initialize interface object.
-
-        Args:
-            name (obj): Name of the interface.
-        """
-        self.name = name
+    def __init__(self):
+        """Initialize interface object."""
         self.parameters = parameters_module.parameters
         self.latest_job_id = 0
 

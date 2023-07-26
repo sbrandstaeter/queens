@@ -9,26 +9,22 @@ class JobInterface(Interface):
     """Class for mapping input variables to responses.
 
     Attributes:
-        name (string):    name of interface
         scheduler (Scheduler):      scheduler for the simulations
         driver (Driver):            driver for the simulations
     """
 
     def __init__(
         self,
-        interface_name,
         scheduler,
         driver,
     ):
         """Create JobInterface.
 
         Args:
-            interface_name (string):    name of interface
             scheduler (Scheduler):      scheduler for the simulations
             driver (Driver):            driver for the simulations
         """
-        super().__init__(interface_name)
-        self.name = interface_name
+        super().__init__()
         self.scheduler = scheduler
         self.driver = driver
         self.scheduler.copy_file(self.driver.simulation_input_template)
@@ -59,7 +55,7 @@ class JobInterface(Interface):
         )
 
         # instantiate object
-        return cls(interface_name=interface_name, scheduler=scheduler, driver=driver)
+        return cls(scheduler=scheduler, driver=driver)
 
     def evaluate(self, samples):
         """Evaluate.

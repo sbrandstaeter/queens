@@ -7,9 +7,6 @@ import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
 
 
 @pytest.fixture()
@@ -48,9 +45,8 @@ def default_model():
 
     parameters_module.from_config_create_parameters({"parameters": random_variables})
 
-    function = example_simulator_function_by_name("ishigami90")
     # create interface
-    interface = DirectPythonInterface('test_interface', function, None)
+    interface = DirectPythonInterface(function="ishigami90", num_workers=1)
 
     # create mock model
     model = SimulationModel("my_model", interface)
