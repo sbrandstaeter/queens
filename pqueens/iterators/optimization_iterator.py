@@ -1,5 +1,5 @@
 """Deterministic optimization toolbox."""
-
+import ast
 import glob
 import logging
 import time
@@ -136,7 +136,7 @@ class OptimizationIterator(Iterator):
         if constraints:
             for value in constraints.values():
                 # evaluate string of lambda function into real lambda function
-                value['fun'] = eval(value['fun'])
+                value['fun'] = ast.literal_eval(value['fun'])
                 constraints_list.append(value)
 
         algorithm = algorithm.upper()
