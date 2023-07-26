@@ -77,7 +77,7 @@ def test_init(config, approx_name):
     interface = BmfmcInterface(approx)
 
     # asserts / tests
-    assert interface.probabilistic_mapping_obj == approx
+    assert interface.probabilistic_mapping == approx
 
 
 def test_map(default_interface, map_output_dict):
@@ -89,7 +89,7 @@ def test_map(default_interface, map_output_dict):
     mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.evaluate(Z_LF)
 
     with pytest.raises(RuntimeError):
-        default_interface.probabilistic_mapping_obj = None
+        default_interface.probabilistic_mapping = None
         default_interface.evaluate(Z_LF)
 
     np.testing.assert_array_almost_equal(mean_Y_HF_given_Z_LF, expected_Y_HF_mean, decimal=6)

@@ -107,10 +107,8 @@ def settings_probab_mapping(config, approximation_name):
 @pytest.fixture()
 def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
     """Create default BMFMC model."""
-    y_pdf_support = np.linspace(-1, 1, 10)
-
     model = BMFMCModel(
-        probabilistic_mapping_obj=Mock(),
+        probabilistic_mapping=Mock(),
         features_config=settings_probab_mapping["features_config"],
         predictive_var=False,
         BMFMC_reference=True,
@@ -184,7 +182,7 @@ def test_init(mocker, settings_probab_mapping):
     )
     approx = "dummy_approx"
     model = BMFMCModel(
-        probabilistic_mapping_obj=approx,
+        probabilistic_mapping=approx,
         features_config=settings_probab_mapping["features_config"],
         predictive_var=True,
         BMFMC_reference=False,
@@ -199,7 +197,7 @@ def test_init(mocker, settings_probab_mapping):
 
     # tests/ asserts ------------------
     mp1.assert_called_once()
-    mp2.assert_called_once_with(probabilistic_mapping_obj=approx)
+    mp2.assert_called_once_with(probabilistic_mapping=approx)
     assert model.high_fidelity_model is None
     assert model.X_train is None
     assert model.Y_HF_train is None

@@ -140,7 +140,7 @@ class BMFMCModel(Model):
 
     def __init__(
         self,
-        probabilistic_mapping_obj,
+        probabilistic_mapping,
         features_config,
         predictive_var,
         BMFMC_reference,
@@ -155,9 +155,9 @@ class BMFMCModel(Model):
         r"""Initialize BMFMC model.
 
         Args:
-            probabilistic_mapping_obj (obj): Instance of the probabilistic mapping, which models the
-                                             probabilistic dependency between high-fidelity model,
-                                             low-fidelity models and informative input features.
+            probabilistic_mapping (obj): Instance of the probabilistic mapping, which models the
+                                         probabilistic dependency between high-fidelity model,
+                                         low-fidelity models and informative input features.
             features_config (str): strategy that will be used to calculate the low-fidelity features
                                    :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
                                    `man_features`
@@ -182,7 +182,7 @@ class BMFMCModel(Model):
         #  rather use the variable module and reconstruct the eigenfunctions of the random fields
         #  if not provided in the data field
 
-        interface = BmfmcInterface(probabilistic_mapping_obj=probabilistic_mapping_obj)
+        interface = BmfmcInterface(probabilistic_mapping=probabilistic_mapping)
 
         if path_to_hf_mc_reference_data is not None:
             hf_data_iterator = DataIterator(path_to_hf_mc_reference_data, None, None)
@@ -243,18 +243,16 @@ class BMFMCModel(Model):
         model_options = config[model_name].copy()
         model_options.pop('type')
 
-        surrogate_model_name = model_options.pop('surrogate_model_name')
-        probabilistic_mapping_obj = from_config_create_model(surrogate_model_name, config)
+        probabilistic_mapping_name = model_options.pop('probabilistic_mapping_name')
+        probabilistic_mapping = from_config_create_model(probabilistic_mapping_name, config)
 
         # if HF model is specified create an HF model object
-        hf_model_name = model_options.pop("high_fidelity_model_name", None)
+        hf_model_name = model_options.pop("hf_model_name", None)
         hf_model = None
         if hf_model_name is not None:
             hf_model = from_config_create_model(hf_model_name, config)
 
-        return cls(
-            probabilistic_mapping_obj=probabilistic_mapping_obj, hf_model=hf_model, **model_options
-        )
+        return cls(probabilistic_mapping=probabilistic_mapping, hf_model=hf_model, **model_options)
 
     def evaluate(self, samples):
         """Evaluate.
