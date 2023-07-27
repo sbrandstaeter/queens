@@ -4,19 +4,18 @@ import numpy as np
 import pytest
 from mock import Mock
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
+from pqueens.parameters.parameters import Parameters
 
 
 # ------ general input fixture ---------------------------------------
 @pytest.fixture()
 def default_parameters():
     """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
+    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=rv, x2=rv)
 
 
 @pytest.fixture()
@@ -97,6 +96,7 @@ def BMFMC_reference():
 @pytest.fixture()
 def default_bmfmc_iterator(
     global_settings,
+    default_parameters,
     default_bmfmc_model,
     result_description,
     initial_design,
@@ -105,10 +105,11 @@ def default_bmfmc_iterator(
 ):
     """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
-        default_bmfmc_model,
-        result_description,
-        initial_design,
-        global_settings,
+        model=default_bmfmc_model,
+        global_settings=global_settings,
+        parameters=default_parameters,
+        result_description=result_description,
+        initial_design=initial_design,
     )
     return my_bmfmc_iterator
 
@@ -144,6 +145,7 @@ def mock_visualization():
 def test_init(
     mocker,
     global_settings,
+    default_parameters,
     default_bmfmc_model,
     result_description,
     initial_design,
@@ -151,14 +153,14 @@ def test_init(
     """TODO_doc."""
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
     my_bmfmc_iterator = BMFMCIterator(
-        default_bmfmc_model,
-        result_description,
-        initial_design,
-        global_settings,
+        model=default_bmfmc_model,
+        global_settings=global_settings,
+        parameters=default_parameters,
+        result_description=result_description,
+        initial_design=initial_design,
     )
     # tests / asserts
-    mp.assert_called_once_with(None, global_settings)
-    assert my_bmfmc_iterator.model == default_bmfmc_model
+    mp.assert_called_once_with(default_bmfmc_model, global_settings, default_parameters)
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None

@@ -3,11 +3,13 @@ import numpy as np
 import pytest
 from mock import Mock, patch
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.models import bmfmc_model
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.fields.random_fields import RandomField
+from pqueens.parameters.parameters import Parameters
 
 
 # ------------ fixtures --------------------------
@@ -47,25 +49,17 @@ class PreProcessor:
 @pytest.fixture()
 def parameters():
     """Create parameters."""
-    params = {
-        "x1": {"type": "uniform", "lower_bound": -2.0, "upper_bound": 2.0},
-        "x2": {"type": "uniform", "lower_bound": -2.0, "upper_bound": 2.0},
-        'random_inflow': {
-            'type': 'random_field',
-            'dimension': 1,
-            'min': 0,
-            'max': 1,
-            'corrstruct': 'non_stationary_squared_exp',
-            'corr_length': 0.08,
-            'std_hyperparam_rf': 0.1,
-            'mean_fun': 'inflow_parabola',
-            'mean_fun_params': [1.5],
-            'num_points': 10,
-        },
-    }
+    rv = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     pre_processor = PreProcessor()
-    parameters_module.from_config_create_parameters({"parameters": params}, pre_processor)
-    return params
+    rf_coords = pre_processor.coords_dict["random_inflow"]
+    rf = RandomField(
+        coords=rf_coords,
+        corr_length=0.08,
+        std_hyperparam_rf=0.1,
+        mean_type='inflow_parabola',
+        mean_param=1.5,
+    )
+    return Parameters(x1=rv, x2=rv, random_inflow=rf)
 
 
 @pytest.fixture()
@@ -107,6 +101,7 @@ def settings_probab_mapping(config, approximation_name):
 def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
     """Create default BMFMC model."""
     model = BMFMCModel(
+        parameters=parameters,
         probabilistic_mapping=Mock(),
         features_config=settings_probab_mapping["features_config"],
         predictive_var=False,
@@ -171,7 +166,7 @@ def mock_visualization():
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, settings_probab_mapping):
+def test_init(mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 
@@ -181,6 +176,7 @@ def test_init(mocker, settings_probab_mapping):
     )
     approx = "dummy_approx"
     model = BMFMCModel(
+        parameters=parameters,
         probabilistic_mapping=approx,
         features_config=settings_probab_mapping["features_config"],
         predictive_var=True,

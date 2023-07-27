@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import scipy.stats
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.beta import BetaDistribution
 
 
 @pytest.fixture(params=[0.5, [-1.0, 0.0, 1.0, 2.0]])
@@ -40,14 +40,7 @@ def shape_b():
 @pytest.fixture(scope='module')
 def beta(lower_bound, upper_bound, shape_a, shape_b):
     """A beta distribution."""
-    distribution_options = {
-        'type': 'beta',
-        'lower_bound': lower_bound,
-        'upper_bound': upper_bound,
-        'a': shape_a,
-        'b': shape_b,
-    }
-    return from_config_create_distribution(distribution_options)
+    return BetaDistribution(lower_bound=lower_bound, upper_bound=upper_bound, a=shape_a, b=shape_b)
 
 
 # -----------------------------------------------------------------------
@@ -75,27 +68,15 @@ def test_init_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
 def test_init_beta_wrong_interval(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
-        distribution_options = {
-            'type': 'beta',
-            'lower_bound': lower_bound,
-            'upper_bound': lower_bound - np.abs(lower_bound),
-            'a': shape_a,
-            'b': shape_b,
-        }
-        from_config_create_distribution(distribution_options)
+        upper_bound = lower_bound - np.abs(lower_bound)
+        BetaDistribution(lower_bound=lower_bound, upper_bound=upper_bound, a=shape_a, b=shape_b)
 
 
 def test_init_beta_negative_shape(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'b\' has to be positive.*'):
-        distribution_options = {
-            'type': 'beta',
-            'lower_bound': lower_bound,
-            'upper_bound': lower_bound - np.abs(lower_bound),
-            'a': shape_a,
-            'b': -shape_b,
-        }
-        from_config_create_distribution(distribution_options)
+        upper_bound = lower_bound - np.abs(lower_bound)
+        BetaDistribution(lower_bound=lower_bound, upper_bound=upper_bound, a=shape_a, b=-shape_b)
 
 
 def test_cdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):

@@ -14,7 +14,9 @@ from pqueens.utils.exceptions import InvalidOptionError
 def default_bmfia_interface():
     """Fixture for a dummy bmfia interface."""
     default_interface = BmfiaInterface(
-        probabilistic_mapping_type="per_coordinate", num_processors_multi_processing=2
+        parameters="dummy_parameters",
+        probabilistic_mapping_type="per_coordinate",
+        num_processors_multi_processing=2,
     )
     return default_interface
 
@@ -113,19 +115,16 @@ def dummy_plot_instance():
 
 
 # ---- Actual unit_tests ------------------------------
-def test_fcc():
+def test_init():
     """Test from config create method."""
-    interface_name = "bmfia_interface"
+    parameters = "dummy_parameters"
 
     # test configuration with settings per_coordinate
-    dummy_config = {
-        "bmfia_interface": {
-            "type": "bmfia",
-            "num_processors_multi_processing": 2,
-            "probabilistic_mapping_type": "per_coordinate",
-        }
-    }
-    bmfia_interface = BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+    bmfia_interface = BmfiaInterface(
+        parameters=parameters,
+        num_processors_multi_processing=2,
+        probabilistic_mapping_type="per_coordinate",
+    )
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
@@ -148,8 +147,11 @@ def test_fcc():
     assert bmfia_interface.coords_mat is None
 
     # test configuration with settings per_time_step
-    dummy_config["bmfia_interface"]["probabilistic_mapping_type"] = "per_time_step"
-    bmfia_interface = BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+    bmfia_interface = BmfiaInterface(
+        parameters=parameters,
+        num_processors_multi_processing=2,
+        probabilistic_mapping_type="per_time_step",
+    )
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
@@ -172,9 +174,12 @@ def test_fcc():
     assert bmfia_interface.coords_mat is None
 
     # test wrong configuration
-    dummy_config["bmfia_interface"]["probabilistic_mapping_type"] = "blabla"
     with pytest.raises(InvalidOptionError):
-        BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+        BmfiaInterface(
+            parameters=parameters,
+            num_processors_multi_processing=2,
+            probabilistic_mapping_type="blabla",
+        )
 
 
 def test__init__():
@@ -186,6 +191,7 @@ def test__init__():
     update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
 
     interface = BmfiaInterface(
+        parameters="dummy_parameters",
         num_processors_multi_processing=num_processors_multi_processing,
         probabilistic_mapping_type="per_coordinate",
     )

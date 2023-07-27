@@ -5,9 +5,10 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.parameters import Parameters
 
 
 # ------------ fixtures and params -----------------------------------
@@ -28,10 +29,8 @@ def global_settings():
 @pytest.fixture()
 def parameters():
     """Fixture for dummy parameters."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv}
-    parameters_module.from_config_create_parameters({'parameters': params})
-    return params
+    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=rv, x2=rv)
 
 
 @pytest.fixture()
@@ -56,6 +55,7 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             global_settings=global_settings,
+            parameters=parameters,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -123,6 +123,7 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             global_settings=global_settings,
+            parameters=parameters,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -148,7 +149,7 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     assert iterator.coord_cols == coord_cols
 
 
-def test_calculate_optimal_x_train(dummy_model, mocker):
+def test_calculate_optimal_x_train(dummy_model, mocker, parameters):
     """Test calculation of optimal *x_train*.
 
     **Note:** Here we return the input arguments of the design method to
@@ -162,7 +163,9 @@ def test_calculate_optimal_x_train(dummy_model, mocker):
         return_value=my_mock_design,
     )
 
-    x_train, (arg0, arg1) = BMFIAIterator._calculate_initial_x_train(initial_design_dict, model)
+    x_train, (arg0, arg1, arg2) = BMFIAIterator._calculate_initial_x_train(
+        initial_design_dict, model, parameters
+    )
 
     np.testing.assert_array_almost_equal(x_train, expected_x_train)
     assert mo_1.call_args[0][0] == initial_design_dict
@@ -170,6 +173,7 @@ def test_calculate_optimal_x_train(dummy_model, mocker):
     # test if the input arguments are correct
     assert arg0 == initial_design_dict
     assert arg1 == dummy_model
+    assert arg2 == parameters
 
 
 def test_get_design_method(mocker):
@@ -204,7 +208,7 @@ def test_random_design(dummy_model, parameters):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])
-    x_out = BMFIAIterator._random_design(initial_design_dict, dummy_model)
+    x_out = BMFIAIterator._random_design(initial_design_dict, dummy_model, parameters)
 
     np.testing.assert_array_almost_equal(x_train, x_out, decimal=4)
 

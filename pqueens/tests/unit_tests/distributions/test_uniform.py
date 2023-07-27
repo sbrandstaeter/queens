@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import scipy.stats
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.uniform import UniformDistribution
 
 
 # ------------- univariate --------------
@@ -29,12 +29,7 @@ def upper_bound_1d():
 @pytest.fixture(scope='module')
 def uniform_1d(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
-    distribution_options = {
-        'type': 'uniform',
-        'lower_bound': lower_bound_1d,
-        'upper_bound': upper_bound_1d,
-    }
-    return from_config_create_distribution(distribution_options)
+    return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
 
 
 # ------------- multivariate --------------
@@ -64,12 +59,7 @@ def upper_bound_2d():
 @pytest.fixture(scope='module')
 def uniform_2d(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
-    distribution_options = {
-        'type': 'uniform',
-        'lower_bound': lower_bound_2d,
-        'upper_bound': upper_bound_2d,
-    }
-    return from_config_create_distribution(distribution_options)
+    return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
 
 
 # -----------------------------------------------------------------------
@@ -96,12 +86,8 @@ def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
 def test_init_uniform_1d_wrong_interval(lower_bound_1d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
-        distribution_options = {
-            'type': 'uniform',
-            'lower_bound': lower_bound_1d,
-            'upper_bound': lower_bound_1d - np.abs(lower_bound_1d),
-        }
-        from_config_create_distribution(distribution_options)
+        upper_bound = lower_bound_1d - np.abs(lower_bound_1d)
+        return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound)
 
 
 def test_cdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1d):
@@ -176,12 +162,8 @@ def test_init_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
 def test_init_uniform_2d_wrong_interval(lower_bound_2d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
-        distribution_options = {
-            'type': 'uniform',
-            'lower_bound': lower_bound_2d,
-            'upper_bound': lower_bound_2d + np.array([0.1, -0.1]),
-        }
-        from_config_create_distribution(distribution_options)
+        upper_bound = lower_bound_2d + np.array([0.1, -0.1])
+        return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound)
 
 
 def test_cdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2d):

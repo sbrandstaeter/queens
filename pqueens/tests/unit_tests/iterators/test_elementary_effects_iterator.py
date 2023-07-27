@@ -3,10 +3,11 @@ import unittest
 
 import numpy as np
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.parameters import Parameters
 
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
@@ -14,28 +15,20 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
 
     def setUp(self):
         """TODO.doc."""
-        uncertain_parameter = {
-            "type": "uniform",
-            "upper_bound": 3.14159265359,
-            "lower_bound": -3.14159265359,
-        }
-
-        parameters = {
-            'x1': uncertain_parameter,
-            'x2': uncertain_parameter,
-            'x3': uncertain_parameter,
-        }
-
-        parameters_module.from_config_create_parameters({"parameters": parameters})
+        rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+        parameters = Parameters(x1=rv, x2=rv, x3=rv)
         some_settings = {"experiment_name": "test"}
 
-        self.interface = DirectPythonInterface(function="ishigami90", num_workers=1)
+        self.interface = DirectPythonInterface(
+            parameters=parameters, function="ishigami90", num_workers=1
+        )
 
         # create mock model
         self.model = SimulationModel(self.interface)
 
         self.my_iterator = ElementaryEffectsIterator(
             model=self.model,
+            parameters=parameters,
             num_trajectories=20,
             local_optimization=True,
             num_optimal_trajectories=4,

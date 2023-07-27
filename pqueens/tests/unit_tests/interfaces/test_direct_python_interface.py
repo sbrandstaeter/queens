@@ -1,18 +1,13 @@
-"""Testing suite for DirectPythonInterface.
-
-Created on April 10th 2019.
-
-@author: Sebastian Brandstaeter
-"""
+"""Testing suite for DirectPythonInterface."""
 import logging
 
 import numpy as np
 import pytest
 from pathos.multiprocessing import ProcessingPool as Pool
 
-import pqueens.parameters.parameters as parameters_module
-from pqueens.interfaces import from_config_create_interface
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.parameters.parameters import Parameters
 from pqueens.utils.path_utils import relative_path_from_pqueens
 
 _logger = logging.getLogger(__name__)
@@ -25,15 +20,8 @@ def parameters():
     uncertain_parameter['type'] = "uniform"
     uncertain_parameter['lower_bound'] = -3.14
     uncertain_parameter['upper_bound'] = 3.14
-
-    random_variables = {}
-    random_variables['x1'] = uncertain_parameter
-    random_variables['x2'] = uncertain_parameter
-    random_variables['x3'] = uncertain_parameter
-
-    parameters = {'parameters': random_variables}
-
-    parameters_module.from_config_create_parameters(parameters)
+    rv = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    return Parameters(x1=rv, x2=rv, x3=rv)
 
 
 @pytest.fixture(scope='module')
@@ -57,56 +45,27 @@ def expected_results(expected_result):
 
 
 @pytest.fixture(scope='module')
-def config(parameters):
-    """Minimal config dict to create a Direct-Python-Interface."""
-    config = {}
-    config['test_interface'] = {
-        'type': 'direct_python_interface',
-        'function': 'ishigami90',
-    }
-
-    return config
-
-
-@pytest.fixture(scope='module')
-def config_by_path(parameters):
-    """Minimal config dict to create a Direct-Python-Interface."""
-    path_to_file = relative_path_from_pqueens(
-        "tests/integration_tests/example_simulator_functions/ishigami90.py"
-    )
-    _logger.info(path_to_file)
-    config = {}
-    config['test_interface'] = {
-        'type': 'direct_python_interface',
-        'function': "ishigami90",
-        'external_python_module_function': path_to_file,
-    }
-
-    return config
-
-
-@pytest.fixture(scope='module')
-def config_parallel(config):
-    """Configure parallel evaluation.
-
-    Minimal config dict to create a Direct-Python-Interface with
-    parallel evaluation of multiple forward calls.
-    """
-    config['test_interface']['num_workers'] = 2
-
-    return config
-
-
-@pytest.fixture(scope='module')
 def direct_python_interface(parameters):
     """Direct python interface."""
-    return DirectPythonInterface(function="ishigami90", num_workers=1)
+    return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=1)
 
 
 @pytest.fixture(scope='module')
 def direct_python_interface_parallel(parameters):
     """An instance of Variables class."""
-    return DirectPythonInterface(function="ishigami90", num_workers=2)
+    return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
+
+
+@pytest.fixture(scope='module')
+def direct_python_interface_path(parameters):
+    """Minimal config dict to create a Direct-Python-Interface."""
+    path_to_file = relative_path_from_pqueens(
+        "tests/integration_tests/example_simulator_functions/ishigami90.py"
+    )
+    _logger.info(path_to_file)
+    return DirectPythonInterface(
+        parameters=parameters, function='ishigami90', external_python_module_function=path_to_file
+    )
 
 
 def test_map(samples, expected_results, direct_python_interface):
@@ -129,33 +88,23 @@ def test_map_parallel(samples, expected_results, direct_python_interface_paralle
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
-def test_create_from_config(parameters, config):
-    """Given a config dict instantiate DirectPythonInterface."""
-    direct_python_interface = from_config_create_interface('test_interface', config)
+def test_init(parameters, direct_python_interface):
+    """Test init of DirectPythonInterface."""
     # ensure correct types
     assert direct_python_interface.pool is None
     assert isinstance(direct_python_interface, DirectPythonInterface)
 
 
-def test_create_from_config_parallel(parameters, config_parallel):
-    """Test creation from config file.
-
-    Given a config dict instantiate DirectPythonInterface with parallel
-    evaluation of multiple forward calls.
-    """
-    direct_python_interface_parallel = from_config_create_interface(
-        'test_interface', config_parallel
-    )
+def test_create_from_config_parallel(parameters, direct_python_interface_parallel):
+    """Test DirectPythonInterface with parallel evaluation."""
     # ensure correct types
     assert isinstance(direct_python_interface_parallel.pool, Pool)
     assert isinstance(direct_python_interface_parallel, DirectPythonInterface)
 
 
-def test_function_keywords(samples, config, config_by_path):
+def test_function_keywords(samples, direct_python_interface_path, direct_python_interface):
     """Test interface by path and by name."""
-    direct_python_interface_function_name = from_config_create_interface('test_interface', config)
-    direct_python_interface_path = from_config_create_interface('test_interface', config_by_path)
-    results_function_name = direct_python_interface_function_name.evaluate(samples)
-    results_path = direct_python_interface_path.evaluate(samples)
+    results_function_name = direct_python_interface_path.evaluate(samples)
+    results_path = direct_python_interface.evaluate(samples)
 
     np.testing.assert_equal(results_function_name, results_path)

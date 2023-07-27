@@ -1,44 +1,42 @@
 """Integration test for jitted GP model."""
 
 
+from copy import deepcopy
+
 import numpy as np
 import pytest
 
-from pqueens.models import from_config_create_model
+from pqueens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
     gradient_sinus_test_fun,
     sinus_test_fun,
 )
+from pqueens.utils.stochastic_optimizer import Adam
 
 
 @pytest.fixture()
-def my_config():
+def gp_model():
     """Configuration for jitted GP model."""
-    config = {
-        "my_regression_model": {
-            "type": "gp_jitted",
-            "stochastic_optimizer_name": "optimizer",
-            "kernel_type": "squared_exponential",
-            "initial_hyper_params_lst": [1.0, 1.0, 0.01],
-            "plot_refresh_rate": 10,
-            "noise_var_lb": 1.0e-04,
-            "data_scaling": "standard_scaler",
-        },
-        "optimizer": {
-            "type": "adam",
-            "learning_rate": 0.01,
-            "optimization_type": "max",
-            "rel_l1_change_threshold": 0.0001,
-            "rel_l2_change_threshold": 0.0001,
-        },
-    }
-    return config
+    optimizer = Adam(
+        learning_rate=0.01,
+        optimization_type="max",
+        rel_l1_change_threshold=0.0001,
+        rel_l2_change_threshold=0.0001,
+    )
+    model = GPJittedModel(
+        stochastic_optimizer=optimizer,
+        kernel_type="squared_exponential",
+        initial_hyper_params_lst=[1.0, 1.0, 0.01],
+        plot_refresh_rate=10,
+        noise_var_lb=1.0e-4,
+        data_scaling="standard_scaler",
+    )
+    return model
 
 
-def test_jitted_gp_one_dim(my_config):
+def test_jitted_gp_one_dim(gp_model):
     """Test one dimensional jitted GP."""
-    approx_name = 'my_regression_model'
     n_train = 25
     x_train = np.linspace(-5, 5, n_train).reshape(-1, 1)
     y_train = sinus_test_fun(x_train)
@@ -50,7 +48,7 @@ def test_jitted_gp_one_dim(my_config):
 
     # -- squared exponential kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    my_model = from_config_create_model(approx_name, my_config)
+    my_model = deepcopy(gp_model)
     my_model.setup(x_train, y_train)
     my_model.train()
 
@@ -77,8 +75,8 @@ def test_jitted_gp_one_dim(my_config):
 
     # -- matern-3-2 kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    my_config[approx_name]['kernel_type'] = 'matern_3_2'
-    my_model = from_config_create_model(approx_name, my_config)
+    my_model = deepcopy(gp_model)
+    my_model.kernel_type = 'matern_3_2'
     my_model.setup(x_train, y_train)
     my_model.train()
 
@@ -94,9 +92,8 @@ def test_jitted_gp_one_dim(my_config):
         my_model.predict(x_test, gradient_bool=True)
 
 
-def test_jitted_gp_two_dim(my_config):
+def test_jitted_gp_two_dim(gp_model):
     """Test two dimensional jitted GP."""
-    approx_name = 'my_regression_model'
     n_train = 7
     x_3, x_4 = 0.5, 0.5
     x_1 = np.linspace(0.001, 0.999, n_train)
@@ -107,7 +104,7 @@ def test_jitted_gp_two_dim(my_config):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = from_config_create_model(approx_name, my_config)
+    my_model = deepcopy(gp_model)
     my_model.setup(x_train, y_train)
     my_model.train()
 
