@@ -118,26 +118,19 @@ class InstanceMock:
     """TODO_doc."""
 
     @staticmethod
-    def plot_pdfs(self, *args, **kwargs):
+    def plot_pdfs(Mock, *args, **kwargs):
         """TODO_doc."""
         return 1
 
     @staticmethod
-    def plot_manifold(self, *args, **kwargs):
+    def plot_manifold(Mock, *args, **kwargs):
         """TODO_doc."""
         return 1
 
     @staticmethod
-    def plot_feature_ranking(self, *args, **kwargs):
+    def plot_feature_ranking(Mock, *args, **kwargs):
         """TODO_doc."""
         return 1
-
-
-@pytest.fixture
-def mock_visualization():
-    """TODO_doc."""
-    my_mock = InstanceMock()
-    return my_mock
 
 
 # ------ actual unit_tests --------------------------------------------
@@ -187,7 +180,7 @@ def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
+        return_value=InstanceMock(),
     )
 
     mocker.patch(
@@ -283,7 +276,7 @@ def test_post_run(mocker, default_bmfmc_iterator):
     """TODO_doc."""
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
+        return_value=InstanceMock(),
     )
 
     mp1 = mocker.patch(
