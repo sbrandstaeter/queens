@@ -1,7 +1,5 @@
 """Test-module for Parameters class."""
 
-from copy import deepcopy
-
 import numpy as np
 import pytest
 
