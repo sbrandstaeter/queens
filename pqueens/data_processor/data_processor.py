@@ -193,7 +193,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 for file in sorted(base_dir_file.glob(regex)):
                     current_file = file
                     file.unlink()
-        except Exception as exception:
+        except FileNotFoundError as exception:
             _logger.debug(
                 "Could not remove file with path: '%s'. The following error was raised: %s",
                 str(current_file.resolve()),
