@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pqueens.data_processor import from_config_create_data_processor
 from pqueens.utils.injector import inject
+from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class Driver(metaclass=abc.ABCMeta):
         return cls(
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
-            **driver_options
+            **driver_options,
         )
 
     @abc.abstractmethod
@@ -116,6 +117,28 @@ class Driver(metaclass=abc.ABCMeta):
         error_file = output_dir.joinpath(output_prefix + '.err')
 
         return job_dir, output_dir, output_file, input_file, log_file, error_file
+
+    @staticmethod
+    def _run_executable(job_id, execute_cmd, log_file, error_file, verbose=False):
+        """Run executable.
+
+        Args:
+            job_id (int): Job id
+            execute_cmd (str): Executed command
+            log_file (Path): Path to log file
+            error_file (Path): Path to error file
+            verbose (bool, opt): flag for additional streaming to terminal
+        """
+        run_subprocess(
+            execute_cmd,
+            subprocess_type='simulation',
+            terminate_expr='PROC.*ERROR',
+            loggername=__name__ + f'_{job_id}',
+            log_file=str(log_file),
+            error_file=str(error_file),
+            streaming=verbose,
+            raise_error_on_subprocess_failure=False,
+        )
 
     def _get_results(self, output_dir):
         """Get results from driver run.
