@@ -56,7 +56,7 @@ class JobscriptDriver(Driver):
             "EXE": path_to_executable,
             "BUILDDIR": Path(path_to_executable).parent,
             "OUTPUTPREFIX": post_file_prefix,
-            "POSTPROCESS": bool(post_processor),
+            "POSTPROCESS": str(bool(post_processor)).lower(),
             "POSTEXE": str(post_processor),
             "POSTOPTIONS": post_process_options,
             "CLUSTERSCRIPT": cluster_script_path,
