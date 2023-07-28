@@ -17,7 +17,7 @@ model:
   forward_model_name: forward_model
   noise_type: fixed_variance
   noise_value: 1.0
-  nugget_noise_var: 1.0e-05
+  nugget_noise_variance: 1.0e-05
   experimental_data_reader_name: experimental_data_reader
 experimental_data_reader:
   type: experimental_data_reader

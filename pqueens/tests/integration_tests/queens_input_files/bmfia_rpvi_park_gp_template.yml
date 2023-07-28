@@ -30,7 +30,7 @@ optimizer:
   type: adam
 model:
   type: bmf_gaussian
-  interface_name: bmfia_interface
+  mf_interface_name: bmfia_interface
   mf_approx_name: mf_approx
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
@@ -65,13 +65,13 @@ mf_approx:
   mean_function_type: identity_multi_fidelity
   stochastic_optimizer_name: gp_optimizer
 bmfia_interface:
-  type: bmfia
+  type: bmfia_interface
   num_processors_multi_processing: 4
   probabilistic_mapping_type: per_coordinate
 bmfia_iterator:
   type: bmfia
-  high_fidelity_model_name: hf_model
-  low_fidelity_model_name: lf_model
+  hf_model_name: hf_model
+  lf_model_name: lf_model
   features_config: man_features
   num_features: 1
   X_cols: [0]

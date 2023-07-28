@@ -19,20 +19,14 @@ class Model(metaclass=abc.ABCMeta):
         Two, it acts as a factory for the instantiation of model objects.
 
     Attributes:
-        name (str): Name of the model.
         parameters (obj): Parameters object.
         response (dict): Response corresponding to parameters.
     """
 
     _evaluate_and_gradient_bool = False
 
-    def __init__(self, name=None):
-        """Init model object.
-
-        Args:
-            name (optional, string): Name of model
-        """
-        self.name = name
+    def __init__(self):
+        """Init model object."""
         self.parameters = parameters_module.parameters
         self.response = None
 

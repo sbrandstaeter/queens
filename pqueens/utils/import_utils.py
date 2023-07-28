@@ -71,7 +71,7 @@ def get_module_class(module_options, valid_types, module_type_specifier='type'):
     # determine which object to create
     module_type = module_options.get(module_type_specifier)
     if module_options.get("external_python_module"):
-        module_path = module_options["external_python_module"]
+        module_path = module_options.pop("external_python_module")
         module_class = get_module_attribute(module_path, module_type)
     else:
         module_path, module_attribute = get_option(valid_types, module_type)

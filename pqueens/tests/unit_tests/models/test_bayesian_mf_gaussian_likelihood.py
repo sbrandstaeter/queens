@@ -4,7 +4,7 @@ from unittest import mock
 
 import numpy as np
 import pytest
-from mock import patch
+from mock import Mock, patch
 
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
@@ -40,9 +40,8 @@ def parameters():
 @pytest.fixture()
 def dummy_model(parameters):
     """Fixture for dummy model."""
-    model_name = 'dummy'
     interface = 'my_dummy_interface'
-    model = SimulationModel(model_name, interface)
+    model = SimulationModel(interface)
     return model
 
 
@@ -75,17 +74,10 @@ def default_interface(config, approximation_name):
     coord_labels = ["x1", "x2"]
     time_vec = None
     coords_mat = np.array([[1, 0], [1, 0]])
-    instantiate_probabilistic_mappings = BmfiaInterface._instantiate_per_coordinate
-    evaluate_method = BmfiaInterface._evaluate_per_coordinate
-    evaluate_and_gradient_method = BmfiaInterface._evaluate_and_gradient_per_coordinate
-    update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
 
     interface = BmfiaInterface(
-        instantiate_probabilistic_mappings,
-        num_processors_multi_processing,
-        evaluate_method,
-        evaluate_and_gradient_method,
-        update_mappings_method,
+        num_processors_multi_processing=num_processors_multi_processing,
+        probabilistic_mapping_type="per_coordinate",
     )
     interface.time_vec = time_vec
     interface.coords_mat = coords_mat
@@ -105,7 +97,7 @@ def default_bmfia_iterator(global_settings):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
-    lf_model = 'dummy_lf_model'
+    lf_model = Mock()
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -140,6 +132,7 @@ def default_bmfia_iterator(global_settings):
 
 @pytest.fixture()
 def default_mf_likelihood(
+    mocker,
     dummy_model,
     parameters,
     default_interface,
@@ -154,26 +147,39 @@ def default_mf_likelihood(
     coord_labels = ['c', 'd']
     mf_interface = default_interface
     bmfia_subiterator = default_bmfia_iterator
-    model_name = 'bmfia_model'
     noise_var = np.array([0.1])
     num_refinement_samples = 0
     likelihood_evals_for_refinement_lst = []
     dummy_normal_distr = "dummy"
 
-    mf_likelihood = BMFGaussianModel(
-        model_name,
-        forward_model,
+    experimental_data_reader = Mock()
+    experimental_data_reader.get_experimental_data = lambda: (
+        y_obs,
         coords_mat,
         time_vec,
-        y_obs,
-        output_label,
+        None,
+        None,
         coord_labels,
-        mf_interface,
-        bmfia_subiterator,
-        dummy_normal_distr,
-        noise_var,
-        num_refinement_samples,
-        likelihood_evals_for_refinement_lst,
+        output_label,
+    )
+    mocker.patch(
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
+        "._build_approximation"
+    )
+    mocker.patch(
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
+        ".MeanFieldNormalDistribution",
+        return_value=dummy_normal_distr,
+    )
+    mf_likelihood = BMFGaussianModel(
+        forward_model=forward_model,
+        mf_interface=mf_interface,
+        mf_subiterator=bmfia_subiterator,
+        noise_value=noise_var,
+        num_refinement_samples=num_refinement_samples,
+        likelihood_evals_for_refinement=likelihood_evals_for_refinement_lst,
+        experimental_data_reader=experimental_data_reader,
+        mf_approx=Mock(),
     )
 
     return mf_likelihood
@@ -219,7 +225,7 @@ def mock_model():
 
 
 # ------------ unit_tests -------------------------
-def test_init(dummy_model, parameters, default_interface, default_bmfia_iterator):
+def test_init(mocker, dummy_model, parameters, default_interface, default_bmfia_iterator):
     """Test the init of the multi-fidelity Gaussian likelihood function."""
     forward_model = dummy_model
     coords_mat = np.array([[1, 2], [3, 4]])
@@ -229,30 +235,42 @@ def test_init(dummy_model, parameters, default_interface, default_bmfia_iterator
     coord_labels = ['c', 'd']
     mf_interface = default_interface
     bmfia_subiterator = default_bmfia_iterator
-    model_name = 'bmfia_model'
-    noise_var = None
-    mean_field_normal = 'dummy'
+    noise_var = 1.0
+    mean_field_normal = 'dummy_mean_field'
     num_refinement_samples = 0
     likelihood_evals_for_refinement_lst = []
 
-    model = BMFGaussianModel(
-        model_name,
-        forward_model,
+    experimental_data_reader = Mock()
+    experimental_data_reader.get_experimental_data = lambda: (
+        y_obs,
         coords_mat,
         time_vec,
-        y_obs,
-        output_label,
+        None,
+        None,
         coord_labels,
-        mf_interface,
-        bmfia_subiterator,
-        mean_field_normal,
-        noise_var,
-        num_refinement_samples,
-        likelihood_evals_for_refinement_lst,
+        output_label,
+    )
+    mocker.patch(
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
+        "._build_approximation"
+    )
+    mocker.patch(
+        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
+        ".MeanFieldNormalDistribution",
+        return_value=mean_field_normal,
+    )
+    model = BMFGaussianModel(
+        forward_model=forward_model,
+        mf_interface=mf_interface,
+        mf_subiterator=bmfia_subiterator,
+        noise_value=noise_var,
+        num_refinement_samples=num_refinement_samples,
+        likelihood_evals_for_refinement=likelihood_evals_for_refinement_lst,
+        experimental_data_reader=experimental_data_reader,
+        mf_approx=Mock(),
     )
 
     # tests / asserts ----------------------------------
-    assert model.name == model_name
     assert model.forward_model == forward_model
     np.testing.assert_array_equal(model.coords_mat, coords_mat)
     np.testing.assert_array_equal(model.time_vec, time_vec)
@@ -261,10 +279,10 @@ def test_init(dummy_model, parameters, default_interface, default_bmfia_iterator
     assert model.coord_labels == coord_labels
 
     assert model.mf_interface == mf_interface
-    assert model.bmfia_subiterator == bmfia_subiterator
+    assert model.mf_subiterator == bmfia_subiterator
     assert model.min_log_lik_mf is None
     assert model.normal_distribution == mean_field_normal
-    assert model.noise_var is None
+    assert model.noise_var == noise_var
     assert model.likelihood_counter == 1
     assert model.num_refinement_samples == num_refinement_samples
 
@@ -328,9 +346,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
         'BMFGaussianModel._refine_mf_likelihood'
     )
     with pytest.raises(NotImplementedError):
-        mf_log_likelihood = default_mf_likelihood.evaluate_from_output(
-            mf_log_likelihood_exp, y_lf_mat
-        )
+        default_mf_likelihood.evaluate_from_output(mf_log_likelihood_exp, y_lf_mat)
 
 
 def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
@@ -527,7 +543,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
     coord_labels = ['x', 'y', 'z']
     time_vec = default_bmfia_iterator.time_vec
     coords_mat = default_bmfia_iterator.coords_experimental_data
-    approx_name = 'bmfia'
+    approx = Mock()
 
     mo_1 = mocker.patch(
         'pqueens.iterators.bmfia_iterator.BMFIAIterator.core_run',
@@ -541,8 +557,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
     BMFGaussianModel._build_approximation(
         default_bmfia_iterator,
         default_interface,
-        config,
-        approx_name,
+        approx,
         coord_labels,
         time_vec,
         coords_mat,
@@ -550,9 +565,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
 
     # actual asserts/tests
     mo_1.assert_called_once()
-    mo_2.assert_called_once_with(
-        z_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
-    )
+    mo_2.assert_called_once_with(z_train, y_hf_train, approx, coord_labels, time_vec, coords_mat)
 
 
 def test_evaluate_forward_model(default_mf_likelihood, mock_model):

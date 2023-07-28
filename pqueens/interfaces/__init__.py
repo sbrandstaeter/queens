@@ -20,7 +20,7 @@ VALID_TYPES = {
         'pqueens.interfaces.direct_python_interface',
         'DirectPythonInterface',
     ],
-    'bmfia': ['pqueens.interfaces.bmfia_interface', 'BmfiaInterface'],
+    'bmfia_interface': ['pqueens.interfaces.bmfia_interface', 'BmfiaInterface'],
 }
 
 

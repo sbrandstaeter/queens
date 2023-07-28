@@ -14,7 +14,6 @@ from pqueens.utils.valid_options_utils import InvalidOptionError
 def default_fd_model():
     """A default finite difference model."""
     model_obj = DifferentiableSimulationModelFD(
-        model_name="my_model_name",
         interface=Mock(),
         finite_difference_method='2-point',
     )
@@ -24,20 +23,17 @@ def default_fd_model():
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the finite difference model."""
-    model_name = "my_model_name"
     interface = "my_interface"
     finite_difference_method = '3-point'
     step_size = 1e-6
     bounds = [-10, np.inf]
 
     model_obj = DifferentiableSimulationModelFD(
-        model_name=model_name,
         interface=interface,
         finite_difference_method=finite_difference_method,
         step_size=step_size,
         bounds=bounds,
     )
-    assert model_obj.name == model_name
     assert model_obj.interface == interface
     assert model_obj.finite_difference_method == finite_difference_method
     assert model_obj.step_size == step_size
@@ -45,7 +41,6 @@ def test_init():
 
     with pytest.raises(InvalidOptionError):
         DifferentiableSimulationModelFD(
-            model_name=model_name,
             interface=interface,
             finite_difference_method='invalid_method',
             step_size=step_size,

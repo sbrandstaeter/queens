@@ -15,17 +15,11 @@ def dummy_config():
     """A dummy config dictionary."""
     config = {
         "my_lik_model": {
+            "type": "gaussian",
             "nugget_noise_variance": 1e-6,
             "forward_model_name": "my_forward_model",
             "noise_type": "fixed_variance",
             "noise_value": 1e-3,
-            "noise_var_iterative_averaging": None,
-            "normal_distribution": "dummy_distr",
-            "coords_mat": np.array([[1.0]]),
-            "time_vec": np.array([1.0, 2.0]),
-            "y_obs": np.array([[3.0]]),
-            "output_label": ["out"],
-            "coord_labels": ["c1", "c2"],
         },
         "my_forward_model": "dummy_model",
     }
@@ -58,119 +52,77 @@ def my_lik_model():
 
     distr_dummy = FakeDistr()
 
-    model_name = "my_lik_model"
-    nugget_noise_variance = 0.1
+    nugget_noise_variance = 1e-6
+    noise_value = 1e-3
     forward_model = forward_model_dummy(lambda x: {"mean": x + 1})
-    noise_type = "static"
-    noise_var_iterative_averaging = None
-    normal_distribution = distr_dummy
-    coords_mat = np.array([[1.0]])
-    time_vec = np.array([1.0, 2.0])
+    noise_type = "fixed_variance"
     y_obs = np.array([[3.0]])
-    output_label = ["out"]
-    coord_labels = ["c1", "c2"]
 
     gauss_lik_obj = GaussianLikelihood(
-        model_name,
-        nugget_noise_variance,
-        forward_model,
-        noise_type,
-        noise_var_iterative_averaging,
-        normal_distribution,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
+        forward_model=forward_model,
+        noise_type=noise_type,
+        noise_value=noise_value,
+        nugget_noise_variance=nugget_noise_variance,
+        y_obs=y_obs,
     )
+    gauss_lik_obj.normal_distribution = distr_dummy
     return gauss_lik_obj
 
 
 # ----------------- actual unit tests ------------------------------#
 def test_init():
     """Test for the init method."""
-    model_name = "my_lik_model"
-    nugget_noise_variance = 0.1
+
+    nugget_noise_variance = 1e-6
     forward_model = "my_forward_model"
-    noise_type = "static"
+    noise_type = "fixed_variance"
+    noise_value = 0.1
     noise_var_iterative_averaging = None
-    normal_distribution = "dummy_distr"
-    coords_mat = np.array([[1.0]])
-    time_vec = np.array([1.0, 2.0])
     y_obs = np.array([[3.0]])
-    output_label = ["out"]
-    coord_labels = ["c1", "c2"]
 
     gauss_lik_obj = GaussianLikelihood(
-        model_name,
-        nugget_noise_variance,
-        forward_model,
-        noise_type,
-        noise_var_iterative_averaging,
-        normal_distribution,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
+        forward_model=forward_model,
+        noise_type=noise_type,
+        noise_value=noise_value,
+        nugget_noise_variance=nugget_noise_variance,
+        noise_var_iterative_averaging=noise_var_iterative_averaging,
+        y_obs=y_obs,
     )
-    assert gauss_lik_obj.name == model_name
     assert gauss_lik_obj.nugget_noise_variance == nugget_noise_variance
     assert gauss_lik_obj.forward_model == forward_model
     assert gauss_lik_obj.noise_type == noise_type
     assert gauss_lik_obj.noise_var_iterative_averaging == noise_var_iterative_averaging
-    assert gauss_lik_obj.normal_distribution == normal_distribution
-    assert gauss_lik_obj.coords_mat == coords_mat
-    np.testing.assert_array_equal(gauss_lik_obj.time_vec, time_vec)
+    assert isinstance(gauss_lik_obj.normal_distribution, NormalDistribution)
+    assert gauss_lik_obj.normal_distribution.mean == y_obs
+    assert gauss_lik_obj.normal_distribution.covariance == np.eye(y_obs.size) * noise_value
+
     assert gauss_lik_obj.y_obs == y_obs
-    assert gauss_lik_obj.output_label == output_label
-    assert gauss_lik_obj.coord_labels == coord_labels
-    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
 
 
 def test_fcc(dummy_config, mocker):
     """Test for the fcc method."""
     model_name = "my_lik_model"
     forward_model = "my_forward_model"
-    coords_mat = np.array([[1.0, 1.0]])
-    time_vec = np.array([[2.0, 2.0]])
     y_obs = np.array([3.0])
-    output_label = ["y_obs"]
-    coord_labels = ["c1", "c2"]
     m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood."
-        "LikelihoodModel.get_base_attributes_from_config",
-        return_value=(
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        ),
+        "pqueens.models.likelihood_models.gaussian_likelihood.from_config_create_model",
+        return_value=forward_model,
     )
     # create the normal distribution of the Gaussian likelihood model for testing
     covariance = dummy_config[model_name]["noise_value"] * np.eye(y_obs.size)
     normal_distribution = NormalDistribution(y_obs, covariance)
+    dummy_config[model_name]["y_obs"] = y_obs
 
     # test valid configuration
     gauss_lik_obj = GaussianLikelihood.from_config_create_model(model_name, dummy_config)
     assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
-    assert gauss_lik_obj.name == model_name
     assert gauss_lik_obj.nugget_noise_variance == dummy_config[model_name]["nugget_noise_variance"]
     assert gauss_lik_obj.forward_model == forward_model
     assert gauss_lik_obj.noise_type == dummy_config[model_name]["noise_type"]
-    assert (
-        gauss_lik_obj.noise_var_iterative_averaging
-        == dummy_config[model_name]["noise_var_iterative_averaging"]
-    )
+    assert gauss_lik_obj.noise_var_iterative_averaging is None
     assert gauss_lik_obj.normal_distribution.mean == normal_distribution.mean
     assert gauss_lik_obj.normal_distribution.covariance == normal_distribution.covariance
-    np.testing.assert_equal(gauss_lik_obj.coords_mat, coords_mat)
-    np.testing.assert_array_equal(gauss_lik_obj.time_vec, time_vec)
     assert gauss_lik_obj.y_obs == y_obs
-    assert gauss_lik_obj.output_label == output_label
-    assert gauss_lik_obj.coord_labels == coord_labels
     assert m1.called_once()
 
 
