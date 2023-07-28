@@ -305,7 +305,7 @@ class SequentialMonteCarloIterator(Iterator):
         try:
             root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method='toms748')
             gamma_new = root_result.root
-        except:
+        except Exception:
             _logger.info(
                 "Could not find suitable gamma within %s: setting gamma=1.0", search_interval
             )
