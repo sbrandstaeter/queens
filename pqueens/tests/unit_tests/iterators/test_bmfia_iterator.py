@@ -182,7 +182,7 @@ def test_get_design_method(mocker):
     )
 
     design = BMFIAIterator._get_design_method(initial_design_dict)
-    assert design == mo_1
+    assert design is mo_1
 
     # test invalid design
     with pytest.raises(NotImplementedError):
