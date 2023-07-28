@@ -54,6 +54,7 @@ class ClusterScheduler(Scheduler):
         cluster_internal_address=None,
         cluster_queens_repository=None,
         cluster_build_environment=False,
+        progressbar=True,
     ):
         """Init method for the cluster scheduler.
 
@@ -74,6 +75,8 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
             cluster_build_environment (bool, opt): Flag to decide if queens environment should be
                                                    build on cluster
+            progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
+                                     schedulers are used, the progressbar must be disabled.
         """
         if cluster_queens_repository is None:
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
@@ -106,7 +109,8 @@ class ClusterScheduler(Scheduler):
         )
 
         remote_port = connection.run_function(self.get_port)
-        scheduler_options = {"port": remote_port}
+        remote_port_dashboard = connection.run_function(self.get_port)
+        scheduler_options = {"port": remote_port, "dashboard_address": remote_port_dashboard}
         if cluster_internal_address:
             scheduler_options["contact_address"] = f"{cluster_internal_address}:{remote_port}"
         dask_cluster_kwargs = {
@@ -133,8 +137,10 @@ class ClusterScheduler(Scheduler):
         )
 
         local_port = self.get_port()
+        local_port_dashboard = self.get_port()
 
-        connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
+        connection.open_port_forwarding(local_port, remote_port)
+        connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
             try:
@@ -150,8 +156,16 @@ class ClusterScheduler(Scheduler):
         _logger.debug("Submitting dummy job to check basic functionality of client.")
         client.submit(lambda: "Dummy job").result(timeout=180)
         _logger.debug("Dummy job was successful.")
+        _logger.info("http://localhost:%i/status", local_port_dashboard)
 
-        super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
+        super().__init__(
+            experiment_name=experiment_name,
+            experiment_dir=experiment_dir,
+            client=client,
+            num_procs=num_procs,
+            num_procs_post=num_procs_post,
+            progressbar=progressbar,
+        )
 
     @staticmethod
     def get_port():
