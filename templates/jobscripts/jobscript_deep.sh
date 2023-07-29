@@ -21,7 +21,7 @@ RESTART_FROM_PREFIX=xxx                  #
 #                                        #
 #     POSTPROCESSING SPECIFICATION       #
 #                                        #
-DoPostprocess=true          #
+DoPostprocess={{ POSTPROCESS }}          #
 # Note: supported post processor is the  #
 #       post_processor.                  #
 POSTEXE={{ POSTEXE }}                    #
