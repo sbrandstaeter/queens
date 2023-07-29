@@ -41,9 +41,9 @@ def test_load_input_file_nonexisting_file():
 
 
 def test_load_input_file_wrong_file_type(tmp_path):
-    """Test if exception is raised for wrong file type."""
+    """Test if an exception is raised for the wrong file type."""
     input_path = tmp_path / "input.file"
-    open(input_path, "a+", encoding='utf-8')
+    input_path.touch(mode=438)
     with pytest.raises(FileTypeError):
         load_input_file(input_path)
 
