@@ -43,7 +43,6 @@ def fix_tolerance(request):
 @pytest.fixture()
 def default_baci_lm_iterator():
     """TODO_doc."""
-
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     model = SimulationModel(interface="interface")
 
@@ -321,8 +320,7 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]})
     mocker.patch('pandas.read_csv', return_value=pdata)
 
-    rv = FreeVariable(1)
-    parameters = Parameters(x1=rv, x2=rv, x3=rv)
+    parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1), x3=FreeVariable(1))
     default_baci_lm_iterator.parameters = parameters
 
     with caplog.at_level(logging.WARNING):

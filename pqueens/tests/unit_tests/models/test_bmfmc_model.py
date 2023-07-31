@@ -49,7 +49,8 @@ class PreProcessor:
 @pytest.fixture()
 def parameters():
     """Create parameters."""
-    rv = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     pre_processor = PreProcessor()
     rf_coords = pre_processor.coords_dict["random_inflow"]
     rf = RandomField(
@@ -59,7 +60,7 @@ def parameters():
         mean_type='inflow_parabola',
         mean_param=1.5,
     )
-    return Parameters(x1=rv, x2=rv, random_inflow=rf)
+    return Parameters(x1=x1, x2=x2, random_inflow=rf)
 
 
 @pytest.fixture()

@@ -29,8 +29,9 @@ def global_settings():
 @pytest.fixture()
 def parameters():
     """Fixture for dummy parameters."""
-    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv, x2=rv)
+    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=x1, x2=x2)
 
 
 @pytest.fixture()

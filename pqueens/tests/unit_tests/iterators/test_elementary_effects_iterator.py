@@ -1,5 +1,6 @@
 """Unit tests for the elementary effects iterator."""
 import unittest
+from copy import deepcopy
 
 import numpy as np
 
@@ -16,7 +17,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
     def setUp(self):
         """TODO.doc."""
         rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-        parameters = Parameters(x1=rv, x2=rv, x3=rv)
+        parameters = Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
         some_settings = {"experiment_name": "test"}
 
         self.interface = DirectPythonInterface(

@@ -16,12 +16,10 @@ _logger = logging.getLogger(__name__)
 @pytest.fixture(scope='module')
 def parameters():
     """Options dictionary to create variables."""
-    uncertain_parameter = {}
-    uncertain_parameter['type'] = "uniform"
-    uncertain_parameter['lower_bound'] = -3.14
-    uncertain_parameter['upper_bound'] = 3.14
-    rv = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
-    return Parameters(x1=rv, x2=rv, x3=rv)
+    x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    x2 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    x3 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    return Parameters(x1=x1, x2=x2, x3=x3)
 
 
 @pytest.fixture(scope='module')

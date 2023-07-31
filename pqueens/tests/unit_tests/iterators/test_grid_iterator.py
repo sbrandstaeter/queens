@@ -1,4 +1,5 @@
 """TODO_doc."""
+from copy import deepcopy
 
 import numpy as np
 import pytest
@@ -53,14 +54,14 @@ def parameters_one():
 def parameters_two():
     """TODO_doc."""
     rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv, x2=rv)
+    return Parameters(x1=rv, x2=deepcopy(rv))
 
 
 @pytest.fixture()
 def parameters_three():
     """TODO_doc."""
     rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv, x2=rv, x3=rv)
+    return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
 
 
 @pytest.fixture()
