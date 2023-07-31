@@ -75,12 +75,11 @@ def test_jitted_gp_one_dim(gp_model):
 
     # -- matern-3-2 kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    my_model = deepcopy(gp_model)
-    my_model.kernel_type = 'matern_3_2'
-    my_model.setup(x_train, y_train)
-    my_model.train()
+    gp_model.kernel_type = 'matern_3_2'
+    gp_model.setup(x_train, y_train)
+    gp_model.train()
 
-    output = my_model.predict(x_test)
+    output = gp_model.predict(x_test)
     mean = output['mean']
     variance = output['variance']
 
@@ -89,7 +88,7 @@ def test_jitted_gp_one_dim(gp_model):
 
     # -- now call the gradient function of the model---
     with pytest.raises(NotImplementedError):
-        my_model.predict(x_test, gradient_bool=True)
+        gp_model.predict(x_test, gradient_bool=True)
 
 
 def test_jitted_gp_two_dim(gp_model):
@@ -104,9 +103,8 @@ def test_jitted_gp_two_dim(gp_model):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = deepcopy(gp_model)
-    my_model.setup(x_train, y_train)
-    my_model.train()
+    gp_model.setup(x_train, y_train)
+    gp_model.train()
 
     # evaluate the testing/benchmark function at testing inputs
     n_test = 25
@@ -124,7 +122,7 @@ def test_jitted_gp_two_dim(gp_model):
     var_ref = np.zeros(mean_ref.shape)
 
     # --- get the mean and variance of the model (no gradient call here) ---
-    output = my_model.predict(x_test)
+    output = gp_model.predict(x_test)
     mean = output['mean']
     variance = output['variance']
 
@@ -132,7 +130,7 @@ def test_jitted_gp_two_dim(gp_model):
     np.testing.assert_array_almost_equal(variance, var_ref, decimal=2)
 
     # -- now call the gradient function of the model---
-    output = my_model.predict(x_test, gradient_bool=True)
+    output = gp_model.predict(x_test, gradient_bool=True)
     mean = output['mean']
     variance = output['variance']
     gradient_mean = output['grad_mean']

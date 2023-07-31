@@ -75,7 +75,11 @@ def from_config_create_iterator(config):
                     deadlock = False
                     break
         if deadlock or obj_key is None:
-            raise RuntimeError('Queens run can not be configured!')
+            raise RuntimeError(
+                "Queens run can not be configured due to missing 'method' "
+                "description, circular dependencies or missing object descriptions! "
+                f"Remaining uninitialized objects are: {list(config.keys())}"
+            )
 
         try:
             if config[obj_key]['type'] in ["baci_dat"]:  # TODO: refactor fcc of external geometry
@@ -156,5 +160,5 @@ def insert_new_obj(config, new_obj_key, new_obj):
 
     for key in referenced_keys:
         config.pop(key)  # remove key "<example>_name"
-        config[key[:-5]] = new_obj  # add key "<example>" with initialized object
+        config[key.removesuffix("_name")] = new_obj  # add key "<example>" with initialized object
     return config
