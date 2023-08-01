@@ -66,7 +66,7 @@ def from_config_create_iterator(config):
     parameters = from_config_create_parameters(config.pop('parameters', {}), pre_processer)
     global_settings = config.pop('global_settings')
     obj_key = None
-    while True:
+    for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
         deadlock = True
         for obj_key, obj_dict in config.items():
             if isinstance(obj_dict, dict):
@@ -98,6 +98,11 @@ def from_config_create_iterator(config):
             return new_obj  # returns initialized iterator
 
         config = insert_new_obj(config, obj_key, new_obj)
+
+    raise RuntimeError(
+        "Queens run can not be configured. If you provided less than 1000 object descriptions in "
+        "the input file, this behaviour is unexpected and you should raise an issue."
+    )
 
 
 def from_config_create_object(obj_description, global_settings=None, parameters=None):
