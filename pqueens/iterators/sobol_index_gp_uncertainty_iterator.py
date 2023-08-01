@@ -65,6 +65,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         self,
         model,
         global_settings,
+        parameters,
         result_description,
         num_procs=mp.cpu_count() - 2,
         second_order=False,
@@ -76,12 +77,13 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         Args:
             model (Model object): QUEENS model to evaluate
             global_settings (dict): dictionary with global (all) settings of the analysis
+            parameters (obj): Parameters object
             result_description (dict): dictionary with desired result description
             num_procs (int, opt): number of processors
             second_order (bool, opt): true if second-order indices are calculated
             third_order (bool, opt): true if third-order indices only are calculated
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         additional_options['second_order'] = second_order
         additional_options['third_order'] = third_order

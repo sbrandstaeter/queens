@@ -20,39 +20,21 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results.
     """
 
-    def __init__(self, path_to_data, result_description, global_settings):
+    def __init__(self, path_to_data, result_description, global_settings, parameters=None):
         """Initialise data iterator.
 
         Args:
             path_to_data (string):      Path to pickle file containing data
             result_description (dict):  Description of desired results
             global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj, optional): Parameters
         """
-        super().__init__(None, global_settings)
+        super().__init__(None, global_settings, parameters)
         self.samples = None
         self.output = None
         self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
         self.path_to_data = path_to_data
         self.result_description = result_description
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create data iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: DataIterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        global_settings = config["global_settings"]
-
-        return cls(**method_options, global_settings=global_settings)
 
     def core_run(self):
         """Read data from file."""

@@ -3,7 +3,6 @@ import abc
 import logging
 from pathlib import Path
 
-from pqueens.data_processor import from_config_create_data_processor
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -35,42 +34,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.simulation_input_template = Path(simulation_input_template)
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
-
-    @classmethod
-    def from_config_create_driver(
-        cls,
-        config,
-        driver_name,
-    ):
-        """Create Driver to run executable.
-
-        Args:
-            config (dict): Dictionary containing configuration from QUEENS input file
-            driver_name (str): Name of the driver
-
-        Returns:
-            MpiDriver (obj): Instance of MpiDriver class
-        """
-        driver_options = config[driver_name].copy()
-        driver_options.pop('type')
-
-        data_processor = None
-        data_processor_name = driver_options.pop('data_processor_name', None)
-        if data_processor_name:
-            data_processor = from_config_create_data_processor(config, data_processor_name)
-
-        gradient_data_processor = None
-        gradient_data_processor_name = driver_options.pop('gradient_data_processor_name', None)
-        if gradient_data_processor_name:
-            gradient_data_processor = from_config_create_data_processor(
-                config, gradient_data_processor_name
-            )
-
-        return cls(
-            data_processor=data_processor,
-            gradient_data_processor=gradient_data_processor,
-            **driver_options,
-        )
 
     @abc.abstractmethod
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):

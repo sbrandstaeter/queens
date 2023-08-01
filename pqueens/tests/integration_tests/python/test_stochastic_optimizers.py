@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
+from pqueens.utils.stochastic_optimizer import Adam, Adamax, RMSprop
 
 
 def test_RMSprop_max(rmsprop_optimizer):
@@ -44,51 +44,39 @@ def test_Adam(adam_optimizer):
 @pytest.fixture()
 def adam_optimizer():
     """Adam optimizer."""
-    opt_config = {
-        "optimizer": {
-            "type": "adam",
-            "learning_rate": 1e-2,
-            "optimization_type": "max",
-            "rel_l1_change_threshold": 1e-4,
-            "rel_l2_change_threshold": 1e-6,
-            "max_iteration": 1000,
-        }
-    }
-    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
+    optimizer = Adam(
+        learning_rate=1e-2,
+        optimization_type="max",
+        rel_l1_change_threshold=1e-4,
+        rel_l2_change_threshold=1e-6,
+        max_iteration=1000,
+    )
     return optimizer
 
 
 @pytest.fixture()
 def adamax_optimizer():
     """Adamax optimizer."""
-    opt_config = {
-        "optimizer": {
-            "type": "adamax",
-            "learning_rate": 1e-2,
-            "optimization_type": "min",
-            "rel_l1_change_threshold": 1e-4,
-            "rel_l2_change_threshold": 1e-6,
-            "max_iteration": 1000,
-        }
-    }
-    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
+    optimizer = Adamax(
+        learning_rate=1e-2,
+        optimization_type="min",
+        rel_l1_change_threshold=1e-4,
+        rel_l2_change_threshold=1e-6,
+        max_iteration=1000,
+    )
     return optimizer
 
 
 @pytest.fixture()
 def rmsprop_optimizer():
     """Rmsprop optimzer."""
-    opt_config = {
-        "optimizer": {
-            "type": "rms_prop",
-            "learning_rate": 5e-2,
-            "optimization_type": "max",
-            "rel_l1_change_threshold": -1,
-            "rel_l2_change_threshold": -1,
-            "max_iteration": 500,
-        }
-    }
-    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
+    optimizer = RMSprop(
+        learning_rate=5e-2,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=500,
+    )
     return optimizer
 
 

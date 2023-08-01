@@ -7,7 +7,6 @@ the iterators orchestrate the evaluations on one or multiple models.
 QUEENS also permits nesting of iterators to enable hierarchical methods
 or surrogate based UQ approaches.
 """
-from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
     'hmc': [
@@ -55,21 +54,3 @@ VALID_TYPES = {
     'bmfia': ['pqueens.iterators.bmfia_iterator', 'BMFIAIterator'],
     'rpvi': ['pqueens.iterators.reparameteriztion_based_variational_inference', 'RPVIIterator'],
 }
-
-
-def from_config_create_iterator(config, iterator_name='method', model=None):
-    """Create iterator from problem description.
-
-    Args:
-        config (dict):       Dictionary with QUEENS problem description
-        iterator_name (str): Name of iterator to identify right section
-                             in options dict (optional)
-        model (model):       Model to use (optional)
-
-    Returns:
-        iterator: Iterator object
-    """
-    iterator_options = config.get(iterator_name)
-    iterator_class = get_module_class(iterator_options, VALID_TYPES, "type")
-    iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
-    return iterator

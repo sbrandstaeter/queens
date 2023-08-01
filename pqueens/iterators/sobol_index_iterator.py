@@ -40,27 +40,29 @@ class SobolIndexIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         seed,
         num_samples,
         calc_second_order,
         num_bootstrap_samples,
         confidence_level,
         result_description,
-        global_settings,
     ):
         """Initialize Saltelli SALib iterator object.
 
         Args:
             model (model): Model to be evaluated by iterator
+            global_settings (dict): Dictionary with global settings for the analysis
+            parameters (obj): Parameters object
             seed (int): Seed for random number generation
             num_samples (int): Number of desired (random) samples
             calc_second_order (bool): Calculate second-order sensitivities
             num_bootstrap_samples (int): Number of bootstrap samples
             confidence_level (float): The confidence interval level
             result_description (dict): Dictionary with desired result description
-            global_settings (dict): Dictionary with global settings for the analysis
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         self.seed = seed
         self.num_samples = num_samples

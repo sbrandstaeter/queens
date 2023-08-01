@@ -99,33 +99,6 @@ def test_init():
     assert gauss_lik_obj.y_obs == y_obs
 
 
-def test_fcc(dummy_config, mocker):
-    """Test for the fcc method."""
-    model_name = "my_lik_model"
-    forward_model = "my_forward_model"
-    y_obs = np.array([3.0])
-    m1 = mocker.patch(
-        "pqueens.models.likelihood_models.gaussian_likelihood.from_config_create_model",
-        return_value=forward_model,
-    )
-    # create the normal distribution of the Gaussian likelihood model for testing
-    covariance = dummy_config[model_name]["noise_value"] * np.eye(y_obs.size)
-    normal_distribution = NormalDistribution(y_obs, covariance)
-    dummy_config[model_name]["y_obs"] = y_obs
-
-    # test valid configuration
-    gauss_lik_obj = GaussianLikelihood.from_config_create_model(model_name, dummy_config)
-    assert gauss_lik_obj.__class__.__name__ == "GaussianLikelihood"
-    assert gauss_lik_obj.nugget_noise_variance == dummy_config[model_name]["nugget_noise_variance"]
-    assert gauss_lik_obj.forward_model == forward_model
-    assert gauss_lik_obj.noise_type == dummy_config[model_name]["noise_type"]
-    assert gauss_lik_obj.noise_var_iterative_averaging is None
-    assert gauss_lik_obj.normal_distribution.mean == normal_distribution.mean
-    assert gauss_lik_obj.normal_distribution.covariance == normal_distribution.covariance
-    assert gauss_lik_obj.y_obs == y_obs
-    assert m1.called_once()
-
-
 def test_evaluate(mocker, my_lik_model):
     """Test for the evaluate method."""
     samples = np.array([[1.0]])

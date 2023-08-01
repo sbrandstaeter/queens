@@ -22,27 +22,25 @@ class RandomField:
 
     def __init__(
         self,
-        dimension,
         coords,
-        mean_param,
-        mean_type,
         std_hyperparam_rf,
         corr_length,
-        explained_variance,
+        mean_param=0,
+        mean_type="constant",
+        explained_variance=0.95,
     ):
         """Initialize random field object.
 
         Args:
-            dimension (int): Dimension of the random field (number of coordinates)
             coords (dict): Dictionary with coordinates of discretized random field and the
                            corresponding keys
-            mean_param (float): Parameter for mean function parameterization of random field
-            mean_type (str): Type of mean function of the random field
             std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
             corr_length (float): Hyperparameter for the correlation length
+            mean_param (float): Parameter for mean function parameterization of random field
+            mean_type (str): Type of mean function of the random field
             explained_variance (float): Explained variance of by the eigen decomposition
         """
-        self.dimension = dimension
+        self.dimension = len(coords['keys'])
         self.mean_param = mean_param
         self.mean_type = mean_type
         self.mean = None

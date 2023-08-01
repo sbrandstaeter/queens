@@ -4,31 +4,12 @@ import abc
 import numpy as np
 
 from pqueens.utils.print_utils import get_str_table
-from pqueens.utils.valid_options_utils import get_option
 
-
-def from_config_create_iterative_averaging(config, iterative_averaging_name):
-    """Build an iterative averaging scheme from config.
-
-    Args:
-        config (dict): Configuration dict for the iterative averaging
-        iterative_averaging_name (str): Name of iterative averaging object
-
-    Returns:
-        Iterative averaging object
-    """
-    valid_options = {
-        "moving_average": MovingAveraging,
-        "polyak_averaging": PolyakAveraging,
-        "exponential_averaging": ExponentialAveraging,
-    }
-    iterative_averaging_options = config[iterative_averaging_name].copy()
-    averaging_type = iterative_averaging_options.pop("type")
-
-    averaging_class = get_option(
-        valid_options, averaging_type, error_message="Iterative averaging option not found."
-    )
-    return averaging_class(**iterative_averaging_options)
+VALID_TYPES = {
+    "moving_average": ['pqueens.utils.iterative_averaging_utils', 'MovingAveraging'],
+    "polyak_averaging": ['pqueens.utils.iterative_averaging_utils', 'PolyakAveraging'],
+    "exponential_averaging": ['pqueens.utils.iterative_averaging_utils', 'ExponentialAveraging'],
+}
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):

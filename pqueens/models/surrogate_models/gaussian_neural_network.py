@@ -134,21 +134,6 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         self.kernel_initializer = kernel_initializer
         self.nugget_std = nugget_std
 
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create simulation model from problem description.
-
-        Args:
-            model_name (string): Name of model
-            config (dict):       Dictionary containing problem description
-
-        Returns:
-            simulation_model: Instance of SimulationModels
-        """
-        model_options = config[model_name].copy()
-        model_options.pop('type')
-        return cls(**model_options)
-
     def _build_model(self):
         """Build/compile the neural network.
 

@@ -53,6 +53,8 @@ class RPVIIterator(VariationalInferenceIterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         result_description,
         variational_distribution,
         n_samples_per_iter,
@@ -60,7 +62,6 @@ class RPVIIterator(VariationalInferenceIterator):
         random_seed,
         max_feval,
         stochastic_optimizer,
-        global_settings,
         variational_parameter_initialization=None,
         natural_gradient=True,
         FIM_dampening=True,
@@ -73,6 +74,8 @@ class RPVIIterator(VariationalInferenceIterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
@@ -83,7 +86,6 @@ class RPVIIterator(VariationalInferenceIterator):
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
-            global_settings (dict): Global settings of the QUEENS simulations
             variational_parameter_initialization (str): Flag to decide how to initialize the
                                                         variational parameters
             natural_gradient (boolean): True if natural gradient should be used
@@ -101,6 +103,8 @@ class RPVIIterator(VariationalInferenceIterator):
 
         super().__init__(
             model=model,
+            global_settings=global_settings,
+            parameters=parameters,
             result_description=result_description,
             variational_distribution=variational_distribution,
             variational_params_initialization=variational_parameter_initialization,
@@ -115,7 +119,6 @@ class RPVIIterator(VariationalInferenceIterator):
             FIM_dampening_lower_bound=FIM_dampening_lower_bound,
             stochastic_optimizer=stochastic_optimizer,
             iteration_data=iteration_data,
-            global_settings=global_settings,
         )
         self.score_function_bool = score_function_bool
 

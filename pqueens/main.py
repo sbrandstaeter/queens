@@ -4,12 +4,10 @@ import sys
 import time
 from pathlib import Path
 
-import pqueens.parameters.parameters as parameters_module
-from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.iterators import from_config_create_iterator
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.ascii_art import print_banner_and_description
 from pqueens.utils.cli_utils import get_cli_options, print_greeting_message
+from pqueens.utils.fcc_utils import from_config_create_iterator
 from pqueens.utils.io_utils import load_input_file
 from pqueens.utils.logger_settings import setup_basic_logging
 
@@ -39,15 +37,6 @@ def run(input_file, output_dir, debug=False):
     )
 
     print_banner_and_description()
-
-    # do pre-processing
-    pre_processer = from_config_create_external_geometry(config, 'pre_processing')
-    if pre_processer:
-        pre_processer.main_run()
-        pre_processer.write_random_fields_to_dat()
-
-    # create parameters
-    parameters_module.from_config_create_parameters(config, pre_processer)
 
     # create iterator
     my_iterator = from_config_create_iterator(config)
