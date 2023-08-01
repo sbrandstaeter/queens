@@ -4,7 +4,7 @@
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKSUBDIR={{ JOB_ID }}
+JOB_ID={{ JOB_ID }}
 DESTDIR={{ DESTDIR }}  # output directory for run
 EXE={{ EXE }} # CAE executable
 INPUT={{ INPUT }}  # input file
