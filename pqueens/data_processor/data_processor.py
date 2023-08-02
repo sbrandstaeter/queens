@@ -188,14 +188,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                     contains the file of interest.
         """
         current_file = None
-        try:
-            for regex in self.files_to_be_deleted_regex_lst:
-                for file in sorted(base_dir_file.glob(regex)):
-                    current_file = file
-                    file.unlink()
-        except FileNotFoundError as exception:
-            _logger.debug(
-                "Could not remove file with path: '%s'. The following error was raised: %s",
-                str(current_file.resolve()),
-                exception,
-            )
+        for regex in self.files_to_be_deleted_regex_lst:
+            for file in sorted(base_dir_file.glob(regex)):
+                current_file = file
+                file.unlink(missing_ok=True)

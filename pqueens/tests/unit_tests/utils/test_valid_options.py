@@ -1,7 +1,8 @@
 """Test valid options utils."""
 import pytest
 
-from pqueens.utils.valid_options_utils import InvalidOptionError, check_if_valid_options, get_option
+from pqueens.utils.exceptions import InvalidOptionError
+from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
 
 
 def test_check_if_valid_options_valid(requested_options_valid, valid_options):
