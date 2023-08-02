@@ -113,26 +113,6 @@ def default_bmfmc_iterator(
     return my_bmfmc_iterator
 
 
-# custom class to mock the visualization module
-class InstanceMock:
-    """TODO_doc."""
-
-    @staticmethod
-    def plot_pdfs(*args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_manifold(*args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_feature_ranking(*args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-
 # ------ actual unit_tests --------------------------------------------
 def test_init(
     mocker,
@@ -178,10 +158,7 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     """TODO_doc."""
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=InstanceMock(),
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance'
@@ -274,10 +251,7 @@ def test_model_evaluate(default_bmfmc_iterator):
 
 def test_post_run(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=InstanceMock(),
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mp1 = mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs'
