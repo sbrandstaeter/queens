@@ -250,30 +250,12 @@ def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     assert default_grid_iterator.output == 2
 
 
-# custom class to mock the visualization module
-class InstanceMock:
-    """TODO_doc."""
-
-    @staticmethod
-    def plot_QoI_grid(*args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-
-@pytest.fixture
-def mock_visualization():
-    """TODO_doc."""
-    my_mock = InstanceMock()
-    return my_mock
-
-
 def test_post_run(mocker, default_grid_iterator, mock_visualization):
     """TODO_doc."""
     # test if save results is called
     mp1 = mocker.patch('pqueens.iterators.grid_iterator.write_results', return_value=None)
     mocker.patch(
         'pqueens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance',
-        return_value=mock_visualization,
     )
     mp3 = mocker.patch(
         'pqueens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance'
