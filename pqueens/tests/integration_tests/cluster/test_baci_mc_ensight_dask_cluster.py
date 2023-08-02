@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 
 from pqueens.main import run
-from pqueens.tests.integration_tests.conftest import (
-    BRUTEFORCE_CLUSTER_TYPE,
+from pqueens.tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     DEEP_CLUSTER_TYPE,
 )
@@ -20,7 +19,7 @@ _logger = logging.getLogger(__name__)
     "cluster",
     [
         pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
-        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        # pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,

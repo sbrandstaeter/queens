@@ -11,9 +11,8 @@ import pqueens.utils.pdf_estimation as est
 import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
-from pqueens.models import from_config_create_model
 from pqueens.models.model import Model
-from pqueens.parameters.fields import RandomField
+from pqueens.parameters.fields.random_fields import RandomField
 
 _logger = logging.getLogger(__name__)
 
@@ -51,6 +50,7 @@ class BMFMCModel(Model):
         been sampled before and this data exists anyway.
 
     Attributes:
+        parameters (obj): Parameters object
         interface (obj): Interface object.
         features_config (str): strategy that will be used to calculate the low-fidelity features
                                    :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
@@ -140,6 +140,7 @@ class BMFMCModel(Model):
 
     def __init__(
         self,
+        parameters,
         probabilistic_mapping,
         features_config,
         predictive_var,
@@ -155,9 +156,10 @@ class BMFMCModel(Model):
         r"""Initialize BMFMC model.
 
         Args:
+            parameters (obj): Parameters object
             probabilistic_mapping (obj): Instance of the probabilistic mapping, which models the
-                                         probabilistic dependency between high-fidelity model,
-                                         low-fidelity models and informative input features.
+                                             probabilistic dependency between high-fidelity model,
+                                             low-fidelity models and informative input features.
             features_config (str): strategy that will be used to calculate the low-fidelity features
                                    :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
                                    `man_features`
@@ -173,7 +175,7 @@ class BMFMCModel(Model):
             X_cols (list): for `man_features`, columns of X-matrix that should be used as an
                            informative feature
             num_features (int): for `opt_features`, number of features to be used
-            hf_model (mode): model for high-fidelity data
+            hf_model (model): model for high-fidelity data
             path_to_lf_mc_data (str): path to low fidelity monte carlo data
             path_to_hf_mc_reference_data (str): path to high fidelity monte carlo reference data
         """
@@ -181,7 +183,7 @@ class BMFMCModel(Model):
         #  random fields is prone to errors and should be changed! The implementation should
         #  rather use the variable module and reconstruct the eigenfunctions of the random fields
         #  if not provided in the data field
-
+        self.parameters = parameters
         interface = BmfmcInterface(probabilistic_mapping=probabilistic_mapping)
 
         if path_to_hf_mc_reference_data is not None:
@@ -223,36 +225,6 @@ class BMFMCModel(Model):
         self.training_indices = None
 
         super().__init__()
-
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create a BMFMC model from config file.
-
-        Create a BMFMC model from a problem description defined in the input
-        file of QUEENS.
-
-        Args:
-            model_name (str): Name of the model
-            config (dict): Dictionary containing the problem description and created from the
-                           json-input file
-
-        Returns:
-            BMFMCModel (obj): A BMFMCModel object
-        """
-        # get model options
-        model_options = config[model_name].copy()
-        model_options.pop('type')
-
-        probabilistic_mapping_name = model_options.pop('probabilistic_mapping_name')
-        probabilistic_mapping = from_config_create_model(probabilistic_mapping_name, config)
-
-        # if HF model is specified create an HF model object
-        hf_model_name = model_options.pop("hf_model_name", None)
-        hf_model = None
-        if hf_model_name is not None:
-            hf_model = from_config_create_model(hf_model_name, config)
-
-        return cls(probabilistic_mapping=probabilistic_mapping, hf_model=hf_model, **model_options)
 
     def evaluate(self, samples):
         """Evaluate.

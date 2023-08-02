@@ -72,18 +72,17 @@ def setup_logger(logger=None, debug=False):
     Returns:
         logging.logger: QUEENS logger object
     """
-    logging_level = logging.INFO
-
-    if debug:
-        logging_level = logging.DEBUG
-
     if logger is None:
         logger = logging.getLogger(LIBRARY_LOGGER_NAME)
 
-    # call setLevel() for basic initialisation (this is needed not sure why)
-    logger.setLevel(logging_level)
+        # The default logging level is INFO (for QUEENS)
+        # If the parent logger uses a lower level (e.g. pytest) that level is set
+        parent_level = logger.parent.getEffectiveLevel()
+        logger.setLevel(min(parent_level, logging.INFO))
 
-    if not debug:
+    if debug:
+        logger.setLevel(logging.DEBUG)
+    else:
         # deactivate logging for specific modules
         logging.getLogger('arviz').setLevel(logging.CRITICAL)
         logging.getLogger('matplotlib').setLevel(logging.CRITICAL)

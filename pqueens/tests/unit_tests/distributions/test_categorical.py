@@ -29,12 +29,10 @@ def test_probabilities(reference_distribution_data, categorical_distribution):
     np.testing.assert_almost_equal(probabilities, categorical_distribution.probabilities)
 
 
-def test_fcc(reference_distribution_data, categorical_distribution):
+def test_init(reference_distribution_data, categorical_distribution):
     """Test from config create."""
     weights, categories, _ = reference_distribution_data
-    distribution = CategoricalDistribution.from_config_create_distribution(
-        {"probabilities": weights, "categories": categories}
-    )
+    distribution = CategoricalDistribution(probabilities=weights, categories=categories)
     np.testing.assert_equal(categorical_distribution.probabilities, distribution.probabilities)
     np.testing.assert_equal(categorical_distribution.categories, distribution.categories)
 

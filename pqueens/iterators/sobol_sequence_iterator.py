@@ -27,25 +27,27 @@ class SobolSequenceIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         seed,
         number_of_samples,
         result_description,
-        global_settings,
         randomize=False,
     ):
         """Initialize Sobol sequence iterator.
 
         Args:
              model (model): Model to be evaluated by iterator
+             global_settings (dict): Settings for the QUEENS run.
+             parameters (obj): Parameters object
              seed  (int): This is the seed for the scrambling. The seed of the random number
                           generator is set to this, if specified. Otherwise, it uses a random seed.
              number_of_samples (int): Number of samples to compute
              result_description (dict):  Description of desired results
-             global_settings (dict): Settings for the QUEENS run.
              randomize (bool): Setting this to True will produce scrambled Sobol sequences.
                                Scrambling is capable of producing better Sobol sequences.
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         self.seed = seed
         self.number_of_samples = number_of_samples

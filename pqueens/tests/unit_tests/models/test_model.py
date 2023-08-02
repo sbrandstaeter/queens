@@ -5,7 +5,6 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens.models.model import Model
 
 
@@ -19,27 +18,14 @@ class DummyModel(Model):
         """Evaluate gradient of model with current set of samples."""
 
 
-@pytest.fixture(scope='module')
-def uncertain_parameters():
-    """Possible uncertain parameters dictionary."""
-    uncertain_parameters = {
-        'x1': {'type': 'free', 'dimension': 1},
-        'x2': {'type': 'free', 'dimension': 2},
-    }
-
-    parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
-    return parameters_module.parameters
-
-
 @pytest.fixture()
-def model(uncertain_parameters):
+def model():
     """An instance of an empty Model class."""
     return DummyModel()
 
 
-def test_init(model, uncertain_parameters):
+def test_init(model):
     """Test init."""
-    assert model.parameters is uncertain_parameters
     assert model.response is None
     assert model._evaluate_and_gradient_bool is False
 

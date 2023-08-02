@@ -1,69 +1,42 @@
 """Parameters module."""
 
 import logging
-import sys
 
 import numpy as np
 
-from pqueens.distributions import from_config_create_distribution
-from pqueens.parameters.fields import RandomField, from_config_create_random_field
+from pqueens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
+from pqueens.distributions.distributions import ContinuousDistribution
+from pqueens.parameters.fields import VALID_TYPES as VALID_FIELD_TYPES
+from pqueens.parameters.fields.random_fields import RandomField
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = VALID_DISTRIBUTION_TYPES | VALID_FIELD_TYPES
 
 _logger = logging.getLogger(__name__)
 
-this = sys.modules[__name__]
-this.parameters = None
 
-
-def from_config_create_parameters(config, pre_processor=None):
+def from_config_create_parameters(parameters_options, pre_processor=None):
     """Create a QUEENS parameter object from config.
 
-    This construct follows the spirit of singleton design patterns.
-    Informally: there only exists one parameter instance.
-
     Args:
-        config (dict): Problem configuration
+        parameters_options (dict): Parameters description
         pre_processor (obj, optional): Pre-processor object to read coordinates of random field
                                        discretization
     """
-    parameters_options = config.get('parameters', None)
+    joint_parameters_dict = {}
+    for parameter_name, parameter_dict in parameters_options.items():
+        parameter_class = get_module_class(parameter_dict, VALID_TYPES)
+        if issubclass(parameter_class, ContinuousDistribution):
+            parameter_object = parameter_class(**parameter_dict)
+        elif issubclass(parameter_class, RandomField):
+            parameter_object = parameter_class(
+                **parameter_dict, coords=pre_processor.coords_dict[parameter_name]
+            )
+        else:
+            raise NotImplementedError(f"Parameter type '{parameter_class.__name__}' not supported.")
+        joint_parameters_dict[parameter_name] = parameter_object
 
-    if parameters_options is not None:
-        joint_parameters_dict = {}
-        joint_parameters_keys = []
-        joint_parameters_dim = 0
-        random_field_flag = False
-
-        for parameter_name, parameter_dict in parameters_options.items():
-            parameter_type = parameter_dict['type']
-            if parameter_type in [
-                'normal',
-                'uniform',
-                'lognormal',
-                'beta',
-                'exponential',
-                'free',
-                'mean_field_normal',
-            ]:
-                distribution = from_config_create_distribution(parameter_dict)
-                joint_parameters_dict[parameter_name] = distribution
-                joint_parameters_keys = _add_parameters_keys(
-                    joint_parameters_keys, parameter_name, distribution.dimension
-                )
-                joint_parameters_dim += distribution.dimension
-            elif parameter_type == 'random_field':
-                random_field = from_config_create_random_field(
-                    parameter_dict, pre_processor.coords_dict[parameter_name]
-                )
-                joint_parameters_dict[parameter_name] = random_field
-                joint_parameters_keys += random_field.coords['keys']
-                joint_parameters_dim += random_field.dim_truncated
-                random_field_flag = True
-            else:
-                raise NotImplementedError(f"Parameter type '{parameter_type}' not supported.")
-
-        this.parameters = Parameters(
-            joint_parameters_dict, joint_parameters_keys, joint_parameters_dim, random_field_flag
-        )
+    return Parameters(**joint_parameters_dict)
 
 
 def _add_parameters_keys(parameters_keys, parameter_name, dimension):
@@ -100,20 +73,36 @@ class Parameters:
         names (list): Parameter names.
     """
 
-    def __init__(self, parameters_dict, parameters_keys, num_parameters, random_field_flag):
+    def __init__(self, **parameters):
         """Initialize parameters object.
 
         Args:
-            parameters_dict (dict): Random variables and random fields stored in a dict
-            parameters_keys (list): List of keys for all parameter members
-            num_parameters (int): Number of (truncated) parameters
-            random_field_flag (bool): Specifies if random fields are used
+            **parameters (ContinuousDistribution, RandomField): parameters as keyword arguments
         """
-        self.dict = parameters_dict
-        self.parameters_keys = parameters_keys
-        self.num_parameters = num_parameters
+        joint_parameters_keys = []
+        joint_parameters_dim = 0
+        random_field_flag = False
+
+        for parameter_name, parameter_obj in parameters.items():
+            if isinstance(parameter_obj, ContinuousDistribution):
+                joint_parameters_keys = _add_parameters_keys(
+                    joint_parameters_keys, parameter_name, parameter_obj.dimension
+                )
+                joint_parameters_dim += parameter_obj.dimension
+            elif isinstance(parameter_obj, RandomField):
+                joint_parameters_keys += parameter_obj.coords['keys']
+                joint_parameters_dim += parameter_obj.dim_truncated
+                random_field_flag = True
+            else:
+                raise NotImplementedError(
+                    f"Parameter class '{parameter_obj.__class__.__name__}' " "not supported."
+                )
+
+        self.dict = parameters
+        self.parameters_keys = joint_parameters_keys
+        self.num_parameters = joint_parameters_dim
         self.random_field_flag = random_field_flag
-        self.names = list(parameters_dict.keys())
+        self.names = list(parameters.keys())
 
     def draw_samples(self, num_samples):
         """Draw samples from all parameters.

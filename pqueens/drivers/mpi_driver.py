@@ -14,7 +14,6 @@ class MpiDriver(Driver):
 
     Attributes:
         executable (path): path to main executable of respective software
-        cae_output_streaming (bool): flag for additional streaming to given stream
         post_file_prefix (str): unique prefix to name the post-processed files
         post_options (str): options for post-processing
         post_processor (path): path to post_processor
@@ -31,6 +30,7 @@ class MpiDriver(Driver):
         data_processor=None,
         gradient_data_processor=None,
         mpi_cmd='/usr/bin/mpirun --bind-to none -np',
+        verbose=False,
     ):
         """Initialize MpiDriver object.
 
@@ -43,6 +43,7 @@ class MpiDriver(Driver):
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             mpi_cmd (str, opt): mpi command
+            verbose (bool, opt): flag for additional streaming to terminal
         """
         super().__init__(
             input_template,
@@ -51,7 +52,7 @@ class MpiDriver(Driver):
         )
         self.executable = Path(path_to_executable)
         self.post_processor = Path(path_to_postprocessor) if path_to_postprocessor else None
-        self.cae_output_streaming = not data_processor
+        self.verbose = verbose
         self.mpi_cmd = mpi_cmd
         self.post_file_prefix = post_file_prefix
         self.post_options = post_process_options
@@ -74,34 +75,11 @@ class MpiDriver(Driver):
             job_id, experiment_dir, experiment_name
         )
         self.prepare_input_files(sample_dict, experiment_dir, input_file)
-        self._run_executable(job_id, num_procs, input_file, output_file, log_file, error_file)
+        execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
+        self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=self.verbose)
         self._run_post_processing(num_procs_post, output_file, output_dir)
 
         return self._get_results(output_dir)
-
-    def _run_executable(self, job_id, num_procs, input_file, output_file, log_file, error_file):
-        """Run executable.
-
-        Args:
-            job_id (int): Job id
-            num_procs (int): number of cores
-            input_file (Path): Path to input file
-            output_file (Path): Path to output file(s)
-            log_file (Path): Path to log file
-            error_file (Path): Path to error file
-        """
-        execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
-
-        run_subprocess(
-            execute_cmd,
-            subprocess_type='simulation',
-            terminate_expr='PROC.*ERROR',
-            loggername=__name__ + f'_{job_id}',
-            log_file=str(log_file),
-            error_file=str(error_file),
-            streaming=self.cae_output_streaming,
-            raise_error_on_subprocess_failure=False,
-        )
 
     def _run_post_processing(self, num_procs_post, output_file, output_dir):
         """Run post-processing.

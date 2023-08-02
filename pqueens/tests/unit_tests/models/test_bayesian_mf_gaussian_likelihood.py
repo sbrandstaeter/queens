@@ -28,17 +28,7 @@ def global_settings():
 
 
 @pytest.fixture()
-def parameters():
-    """Fixture for dummy parameters."""
-    params = {
-        "x1": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
-        "x2": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
-    }
-    return params
-
-
-@pytest.fixture()
-def dummy_model(parameters):
+def dummy_model():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
     model = SimulationModel(interface)
@@ -46,29 +36,7 @@ def dummy_model(parameters):
 
 
 @pytest.fixture()
-def config():
-    """Fixture for dummy configuration."""
-    config = {
-        "joint_density_approx": {
-            "type": "gp_approximation_gpflow",
-            "num_processors_multi_processing": 2,
-            "features_config": "opt_features",
-            "num_features": 1,
-            "X_cols": 1,
-        }
-    }
-    return config
-
-
-@pytest.fixture()
-def approximation_name():
-    """Dummy approximation name for testing."""
-    name = 'joint_density_approx'
-    return name
-
-
-@pytest.fixture()
-def default_interface(config, approximation_name):
+def default_interface():
     """Dummy BMFIA interface for testing."""
     num_processors_multi_processing = 2
     coord_labels = ["x1", "x2"]
@@ -76,6 +44,7 @@ def default_interface(config, approximation_name):
     coords_mat = np.array([[1, 0], [1, 0]])
 
     interface = BmfiaInterface(
+        parameters="dummy_parameters",
         num_processors_multi_processing=num_processors_multi_processing,
         probabilistic_mapping_type="per_coordinate",
     )
@@ -83,13 +52,6 @@ def default_interface(config, approximation_name):
     interface.coords_mat = coords_mat
     interface.coord_labels = coord_labels
     return interface
-
-
-@pytest.fixture()
-def settings_probab_mapping(config, approximation_name):
-    """Dummy settings for the probabilistic mapping for testing."""
-    settings = config[approximation_name]
-    return settings
 
 
 @pytest.fixture()
@@ -111,10 +73,11 @@ def default_bmfia_iterator(global_settings):
 
     with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
-            global_settings,
-            features_config,
-            hf_model,
-            lf_model,
+            global_settings=global_settings,
+            parameters="dummy_parameters",
+            features_config=features_config,
+            hf_model=hf_model,
+            lf_model=lf_model,
             initial_design={},
             X_cols=x_cols,
             num_features=num_features,
@@ -134,7 +97,6 @@ def default_bmfia_iterator(global_settings):
 def default_mf_likelihood(
     mocker,
     dummy_model,
-    parameters,
     default_interface,
     default_bmfia_iterator,
 ):
@@ -225,7 +187,7 @@ def mock_model():
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, dummy_model, parameters, default_interface, default_bmfia_iterator):
+def test_init(mocker, dummy_model, default_interface, default_bmfia_iterator):
     """Test the init of the multi-fidelity Gaussian likelihood function."""
     forward_model = dummy_model
     coords_mat = np.array([[1, 2], [3, 4]])
@@ -536,7 +498,7 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
     np.testing.assert_array_almost_equal(default_bmfia_iterator.y_obs, y_obs, decimal=4)
 
 
-def test_build_approximation(default_bmfia_iterator, default_interface, config, mocker):
+def test_build_approximation(default_bmfia_iterator, default_interface, mocker):
     """Test for the build stage of the probabilistic regression model."""
     z_train = np.array([[1, 1, 1], [2, 2, 2]])
     y_hf_train = np.array([[1, 1], [2, 2]])

@@ -16,6 +16,7 @@ model:
   interface_name: interface
 data_processor_baci:
   type: ensight
+  external_geometry_name: external_geometry
   file_name_identifier: baci_mc_ensight_*structure.case
   file_options_dict:
     delete_field_data: false

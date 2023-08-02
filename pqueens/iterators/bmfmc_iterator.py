@@ -72,22 +72,27 @@ class BMFMCIterator(Iterator):
     """
 
     def __init__(
-        self, model, result_description, initial_design, global_settings, plotting_options=None
+        self,
+        model,
+        global_settings,
+        parameters,
+        result_description,
+        initial_design,
+        plotting_options=None,
     ):
         r"""Initialize BMFMC iterator object.
 
         Args:
             model (obj): Instance of the BMFMCModel
+            global_settings (dict): Settings for the QUEENS run.
+            parameters (obj): Parameters object
             result_description (dict): Dictionary containing settings for plotting and saving data/
                                        results
             initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                    design of training points for the probabilistic mapping
-            global_settings (dict): Settings for the QUEENS run.
             plotting_options (dict): Plotting options
         """
-        #  TODO check if None for the model is appropriate here
-        super().__init__(None, global_settings)  # Input prescribed by iterator.py
-        self.model = model
+        super().__init__(model, global_settings, parameters)  # Input prescribed by iterator.py
         self.result_description = result_description
         self.X_train = None
         self.Y_LFs_train = None
