@@ -41,7 +41,9 @@ class LocalScheduler(Scheduler):
             silence_logs=False,
         )
         client = Client(cluster)
-        _logger.info(client.dashboard_link)
+        _logger.info(
+            "To view the Dask dashboard open this link in your browser: %s", client.dashboard_link
+        )
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,

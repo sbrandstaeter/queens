@@ -68,7 +68,6 @@ scheduler:
   num_procs: 1
   num_procs_post: 1
   max_concurrent: 1
-  progressbar: false
 gradient_driver:
   type: mpi
   input_template: {{ input_file }}

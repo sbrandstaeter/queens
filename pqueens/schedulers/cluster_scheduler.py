@@ -156,7 +156,11 @@ class ClusterScheduler(Scheduler):
         _logger.debug("Submitting dummy job to check basic functionality of client.")
         client.submit(lambda: "Dummy job").result(timeout=180)
         _logger.debug("Dummy job was successful.")
-        _logger.info("http://localhost:%i/status", local_port_dashboard)
+        _logger.info(
+            'To view the Dask dashboard open this link in your browser: '
+            'http://localhost:%i/status',
+            local_port_dashboard,
+        )
 
         super().__init__(
             experiment_name=experiment_name,
