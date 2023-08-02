@@ -27,52 +27,37 @@ class DirectPythonInterface(Interface):
         verbose (boolean):      Verbosity of evaluations.
     """
 
-    def __init__(self, interface_name, function, pool, verbose=True):
+    def __init__(
+        self,
+        parameters,
+        function,
+        num_workers=1,
+        external_python_module_function=None,
+        verbose=True,
+    ):
         """Create interface.
 
         Args:
-            interface_name (string):    name of interface
-            function (function):        function to evaluate
-            pool (pathos pool):         multiprocessing pool
-            verbose (boolean):          verbosity of evaluations
+            parameters (obj): Parameters object
+            function (str): Name of function to evaluate
+            external_python_module_function (pathos pool): Path to external module with function
+            num_workers (int): Number of workers
+            verbose (boolean): verbosity of evaluations
         """
-        super().__init__(interface_name)
-        # Wrap function to clean the output
-        self.function = self.function_wrapper(function)
-        self.pool = pool
-        self.verbose = verbose
-
-    @classmethod
-    def from_config_create_interface(cls, interface_name, config):
-        """Create interface from config dictionary.
-
-        Args:
-            interface_name (str):   Name of interface
-            config(dict):           Dictionary containing problem description
-
-        Returns:
-            interface: Instance of DirectPythonInterface
-        """
-        interface_options = config[interface_name]
-
-        num_workers = interface_options.get('num_workers', 1)
-        function_name = interface_options.get("function", None)
-        external_python_function = interface_options.get("external_python_module_function", None)
-        verbose = interface_options.get("verbose", True)
-
-        if function_name is None:
-            raise ValueError(f"Keyword 'function' is missing in interface '{interface_name}'")
-
-        if external_python_function is None:
+        super().__init__(parameters)
+        if external_python_module_function is None:
             # Try to load existing simulator functions
-            my_function = example_simulator_function_by_name(function_name)
+            my_function = example_simulator_function_by_name(function)
         else:
             # Try to load external simulator functions
-            my_function = get_module_attribute(external_python_function, function_name)
+            my_function = get_module_attribute(external_python_module_function, function)
 
         pool = create_pool(num_workers)
 
-        return cls(interface_name=interface_name, function=my_function, pool=pool, verbose=verbose)
+        # Wrap function to clean the output
+        self.function = self.function_wrapper(my_function)
+        self.pool = pool
+        self.verbose = verbose
 
     def evaluate(self, samples):
         """Orchestrate call to simulator function.

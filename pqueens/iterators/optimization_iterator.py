@@ -82,9 +82,10 @@ class OptimizationIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         initial_guess,
         result_description,
-        global_settings,
         jac_rel_step=None,
         verbose_output=False,
         bounds=None,
@@ -103,9 +104,10 @@ class OptimizationIterator(Iterator):
 
         Args:
             model: TODO_doc
+            global_settings: TODO_doc
+            parameters (obj): Parameters object
             initial_guess: TODO_doc
             result_description: TODO_doc
-            global_settings: TODO_doc
             jac_rel_step: TODO_doc
             verbose_output: TODO_doc
             bounds: TODO_doc
@@ -120,7 +122,7 @@ class OptimizationIterator(Iterator):
             axis_scaling_experimental: TODO_doc
             output_scaling_experimental: TODO_doc
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
         _logger.info(
             "Optimization Iterator for experiment: %s",
             self.global_settings['experiment_name'],

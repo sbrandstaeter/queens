@@ -1,7 +1,7 @@
 experiment_name: inverse_rpvi_park91a_hifi
 method:
   type: rpvi
-  model_name: model
+  model_name: {{ model }}
   max_feval: 1000
   n_samples_per_iter: 2
   score_function_bool: true
@@ -32,7 +32,13 @@ optimizer:
   rel_l2_change_threshold: -1
   max_iteration: 500
 model:
-  type: {{ likelihood_model_type }}
+  type: gaussian
+  forward_model_name: {{ forward_model_name }}
+  noise_type: MAP_jeffrey_variance
+  nugget_noise_variance: 1.0e-08
+  experimental_data_reader_name: experimental_data_reader
+model_external:
+  type: MyLikelihood
   external_python_module: {{ external_python_module }}
   forward_model_name: {{ forward_model_name }}
   noise_type: MAP_jeffrey_variance

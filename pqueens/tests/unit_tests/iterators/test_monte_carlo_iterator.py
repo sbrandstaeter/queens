@@ -1,18 +1,15 @@
-"""Created on November 23th  2017.
-
-@author: jbi
-"""
+"""Unit tests for Monte Carlo iterator."""
 import unittest
 
 import numpy as np
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.lognormal import LogNormalDistribution
+from pqueens.distributions.normal import NormalDistribution
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
+from pqueens.parameters.parameters import Parameters
 
 
 class TestMCIterator(unittest.TestCase):
@@ -20,40 +17,25 @@ class TestMCIterator(unittest.TestCase):
 
     def setUp(self):
         """TODO_doc."""
-        random_variables = {}
-        uncertain_parameter1 = {}
-        uncertain_parameter1["type"] = "uniform"
-        uncertain_parameter1["lower_bound"] = -3.14159265359
-        uncertain_parameter1["upper_bound"] = 3.14159265359
+        x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+        x2 = NormalDistribution(mean=0, covariance=4)
+        x3 = LogNormalDistribution(normal_mean=0.3, normal_covariance=1)
+        parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
-        uncertain_parameter2 = {}
-        uncertain_parameter2["type"] = "normal"
-        uncertain_parameter2["mean"] = 0
-        uncertain_parameter2["covariance"] = 4
+        some_settings = {"experiment_name": "test"}
 
-        uncertain_parameter3 = {}
-        uncertain_parameter3["type"] = "lognormal"
-        uncertain_parameter3["normal_mean"] = 0.3
-        uncertain_parameter3["normal_covariance"] = 1
-
-        random_variables['x1'] = uncertain_parameter1
-        random_variables['x2'] = uncertain_parameter2
-        random_variables['x3'] = uncertain_parameter3
-        some_settings = {}
-        some_settings["experiment_name"] = "test"
-
-        parameters_module.from_config_create_parameters({"parameters": random_variables})
-
-        function = example_simulator_function_by_name("ishigami90")
         # create interface
-        self.interface = DirectPythonInterface('test_interface', function, pool=None)
+        self.interface = DirectPythonInterface(
+            parameters=parameters, function="ishigami90", num_workers=1
+        )
 
         # create mock model
-        self.model = SimulationModel("my_model", self.interface)
+        self.model = SimulationModel(self.interface)
 
         # create LHS iterator
         self.my_iterator = MonteCarloIterator(
             self.model,
+            parameters=parameters,
             seed=42,
             num_samples=100,
             result_description=None,

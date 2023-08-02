@@ -7,7 +7,6 @@ from scipy.stats import multivariate_normal as mvn
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import mcmc_utils, variational_inference_utils
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 # Needed here to ensure that the target density is always the same.
 np.random.seed(666)

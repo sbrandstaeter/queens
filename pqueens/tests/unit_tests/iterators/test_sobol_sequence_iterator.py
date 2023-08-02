@@ -3,13 +3,13 @@
 import numpy as np
 import pytest
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.lognormal import LogNormalDistribution
+from pqueens.distributions.normal import NormalDistribution
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.tests.integration_tests.example_simulator_functions import (
-    example_simulator_function_by_name,
-)
+from pqueens.parameters.parameters import Parameters
 
 
 @pytest.fixture()
@@ -20,49 +20,34 @@ def global_settings():
 
 
 @pytest.fixture()
-def default_model():
+def default_parameters():
+    """Default parameters."""
+    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = NormalDistribution(mean=0, covariance=4)
+    x3 = LogNormalDistribution(normal_mean=0.3, normal_covariance=1)
+    return Parameters(x1=x1, x2=x2, x3=x3)
+
+
+@pytest.fixture()
+def default_model(default_parameters):
     """TODO_doc."""
-    uncertain_parameter1 = {
-        "type": "uniform",
-        "lower_bound": -3.14159265359,
-        "upper_bound": 3.14159265359,
-    }
-
-    uncertain_parameter2 = {
-        "type": "normal",
-        "mean": 0,
-        "covariance": 4,
-    }
-
-    uncertain_parameter3 = {
-        "type": "lognormal",
-        "normal_mean": 0.3,
-        "normal_covariance": 1,
-    }
-
-    random_variables = {
-        'x1': uncertain_parameter1,
-        'x2': uncertain_parameter2,
-        'x3': uncertain_parameter3,
-    }
-
-    parameters_module.from_config_create_parameters({"parameters": random_variables})
-
-    function = example_simulator_function_by_name("ishigami90")
     # create interface
-    interface = DirectPythonInterface('test_interface', function, None)
+    interface = DirectPythonInterface(
+        parameters=default_parameters, function="ishigami90", num_workers=1
+    )
 
     # create mock model
-    model = SimulationModel("my_model", interface)
+    model = SimulationModel(interface)
 
     return model
 
 
 @pytest.fixture()
-def default_qmc_iterator(default_model, global_settings):
+def default_qmc_iterator(default_model, global_settings, default_parameters):
     """TODO_doc."""
     my_iterator = SobolSequenceIterator(
         default_model,
+        parameters=default_parameters,
         seed=42,
         number_of_samples=100,
         randomize=True,

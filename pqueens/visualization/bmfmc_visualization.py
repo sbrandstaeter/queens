@@ -22,17 +22,26 @@ this = sys.modules[__name__]
 this.bmfmc_visualization_instance = None
 
 
-def from_config_create(config):
-    """Create class from config.
+def from_config_create(plotting_options, predictive_var, BMFMC_reference):
+    r"""Create class from config.
 
     Module function that calls the class function *from_config_create* and
     creates instance of the BMFMCVisualization class from the problem
     description.
 
     Args:
-        config (dict): Dictionary created from the input file, containing the problem description
+        plotting_options (dict): Plotting options
+        predictive_var (bool): Boolean flag that triggers the computation of the posterior
+                                   variance
+                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
+                                   if set to True. (default value: False)
+        BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
+                                features :math:`\boldsymbol{\gamma}` for comparison if set to
+                                True (default value: False)
     """
-    this.bmfmc_visualization_instance = BMFMCVisualization.from_config_create(config)
+    this.bmfmc_visualization_instance = BMFMCVisualization.from_config_create(
+        plotting_options, predictive_var, BMFMC_reference
+    )
 
 
 class BMFMCVisualization:
@@ -70,28 +79,31 @@ class BMFMCVisualization:
         self.plot_booleans = plot_booleans
 
     @classmethod
-    def from_config_create(cls, config):
-        """Create the BMFMC visualization object from config.
+    def from_config_create(cls, plotting_options, predictive_var, BMFMC_reference):
+        r"""Create the BMFMC visualization object from config.
 
         Args:
-            config (dict): Dictionary containing the problem description
+            plotting_options (dict): Plotting options
+            predictive_var (bool): Boolean flag that triggers the computation of the posterior
+                                   variance
+                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
+                                   if set to True. (default value: False)
+            BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
+                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
+                                    True (default value: False)
 
         Returns:
             Instance of BMFMCVisualization (obj)
         """
-        method_options = config["method"]
-        plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
             Path(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]
         ]
         save_bools = plotting_options.get("save_bool")
         animation_bool = plotting_options.get("save_bool")
-        predictive_var = method_options.get("predictive_var")
-        no_features_ref = method_options.get("BMFMC_reference")
         plot_booleans = plotting_options.get("plot_booleans")
         return cls(
-            paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
+            paths, save_bools, animation_bool, predictive_var, BMFMC_reference, plot_booleans
         )
 
     def plot_pdfs(self, output):

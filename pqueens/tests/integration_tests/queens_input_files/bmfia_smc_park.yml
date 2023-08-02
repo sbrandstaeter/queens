@@ -14,7 +14,7 @@ method:
     cov: true
 model:
   type: bmf_gaussian
-  interface_name: bmfia_interface
+  mf_interface_name: bmfia_interface
   mf_approx_name: mf_approx
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
@@ -41,7 +41,7 @@ mf_approx:
   initial_hyper_params_lst: [0.05, 1.0, 0.05]
   mean_function_type: identity_multi_fidelity
 bmfia_interface:
-  type: bmfia
+  type: bmfia_interface
   num_processors_multi_processing: 4
   probabilistic_mapping_type: per_coordinate
 optimizer:
@@ -51,19 +51,13 @@ optimizer:
   max_iteration: 1000
   rel_l1_change_threshold: 0.004
   rel_l2_change_threshold: 0.004
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 50
-  num_samples: 2
-  proposal_distribution: proposal_distribution
 bmfia_iterator:
   type: bmfia
   features_config: man_features
   X_cols: [0]
   num_features: 1
-  low_fidelity_model_name: lf_model
-  high_fidelity_model_name: hf_model
+  lf_model_name: lf_model
+  hf_model_name: hf_model
   initial_design:
     type: random
     num_HF_eval: 20

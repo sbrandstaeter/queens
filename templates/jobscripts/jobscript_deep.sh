@@ -4,7 +4,7 @@
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKSUBDIR={{ JOB_ID }}
+JOB_ID={{ JOB_ID }}
 DESTDIR={{ DESTDIR }}  # output directory for run
 EXE={{ EXE }} # CAE executable
 INPUT={{ INPUT }}  # input file
@@ -21,7 +21,7 @@ RESTART_FROM_PREFIX=xxx                  #
 #                                        #
 #     POSTPROCESSING SPECIFICATION       #
 #                                        #
-DoPostprocess=true          #
+DoPostprocess={{ POSTPROCESS }}          #
 # Note: supported post processor is the  #
 #       post_processor.                  #
 POSTEXE={{ POSTEXE }}                    #

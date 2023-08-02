@@ -4,29 +4,12 @@ import abc
 import numpy as np
 
 from pqueens.utils.print_utils import get_str_table
-from pqueens.utils.valid_options_utils import get_option
 
-
-def from_config_create_iterative_averaging(config):
-    """Build an iterative averaging scheme from config.
-
-    Args:
-        config (dict): Configuration dict for the iterative averaging
-
-    Returns:
-        Iterative averaging object
-    """
-    valid_options = {
-        "moving_average": MovingAveraging,
-        "polyak_averaging": PolyakAveraging,
-        "exponential_averaging": ExponentialAveraging,
-    }
-    averaging_type = config.get("averaging_type")
-
-    averaging_class = get_option(
-        valid_options, averaging_type, error_message="Iterative averaging option not found."
-    )
-    return averaging_class.from_config_create_iterative_averaging(config)
+VALID_TYPES = {
+    "moving_average": ['pqueens.utils.iterative_averaging_utils', 'MovingAveraging'],
+    "polyak_averaging": ['pqueens.utils.iterative_averaging_utils', 'PolyakAveraging'],
+    "exponential_averaging": ['pqueens.utils.iterative_averaging_utils', 'ExponentialAveraging'],
+}
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
@@ -120,23 +103,6 @@ class MovingAveraging(IterativeAveraging):
         self.num_iter_for_avg = num_iter_for_avg
         self.data = []
 
-    @classmethod
-    def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """Build a moving averaging object from config.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section where the averaging object is configured
-
-        Returns:
-            MovingAveraging object
-        """
-        if section_name:
-            num_iter_for_avg = config[section_name].get("num_iter_for_avg")
-        else:
-            num_iter_for_avg = config.get("num_iter_for_avg")
-        return cls(num_iter_for_avg=num_iter_for_avg)
-
     def average_computation(self, new_value):
         """Compute the moving average.
 
@@ -183,21 +149,6 @@ class PolyakAveraging(IterativeAveraging):
         super().__init__()
         self.iteration_counter = 1
         self.sum_over_iter = 0
-
-    @classmethod
-    def from_config_create_iterative_averaging(
-        cls, config, section_name=None
-    ):  # pylint: disable=unused-argument
-        """Build a Polyak averaging object from config.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section where the averaging object is created
-
-        Returns:
-            PolyakAveraging object
-        """
-        return cls()
 
     def average_computation(self, new_value):
         """Compute the Polyak average.
@@ -251,24 +202,6 @@ class ExponentialAveraging(IterativeAveraging):
             raise ValueError("Coefficient for exponential averaging needs to be in (0,1)")
         super().__init__()
         self.coefficient = coefficient
-
-    @classmethod
-    def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """Build a exponential averaging object from config.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section where the averaging object is created
-
-        Returns:
-            ExponentialAveraging object
-        """
-        if section_name:
-            coefficient = config[section_name].get("coefficient")
-        else:
-            coefficient = config.get("coefficient")
-
-        return cls(coefficient=coefficient)
 
     def average_computation(self, new_value):
         """Compute the exponential average.

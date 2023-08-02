@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.bernoulli import BernoulliDistribution
 
 
@@ -30,41 +29,6 @@ def test_init_success(reference_data, distribution):
         reference_probabilities,
     ) = reference_data
 
-    reference_mean = np.sum(
-        [
-            probability * np.array(value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    )
-
-    reference_covariance = np.sum(
-        [
-            probability * np.outer(value, value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    ) - np.outer(reference_mean, reference_mean)
-
-    np.testing.assert_allclose(reference_probabilities, distribution.probabilities)
-    np.testing.assert_allclose(reference_sample_space, distribution.sample_space)
-    np.testing.assert_allclose(1, distribution.dimension)
-    np.testing.assert_allclose(reference_mean, distribution.mean)
-    np.testing.assert_allclose(reference_covariance, distribution.covariance)
-    np.testing.assert_allclose(reference_success_probability, distribution.success_probability)
-
-
-def test_fcc(reference_data, distribution):
-    """Test fcc function."""
-    (
-        reference_success_probability,
-        reference_sample_space,
-        reference_probabilities,
-    ) = reference_data
-
-    distribution = from_config_create_distribution(
-        {"type": "bernoulli", "success_probability": reference_success_probability}
-    )
     reference_mean = np.sum(
         [
             probability * np.array(value)

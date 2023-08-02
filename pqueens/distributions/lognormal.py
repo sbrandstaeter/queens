@@ -15,9 +15,6 @@ class LogNormalDistribution(ContinuousDistribution):
     Attributes:
         normal_distribution (NormalDistribution): Underlying normal
                                                   distribution.
-        logpdf_const (float): Constant for evaluation of log pdf.
-        precision (np.ndarray): Precision matrix of underlying normal
-                                distribution.
         normal_distribution (obj): underlying normal distribution
     """
 
@@ -25,8 +22,8 @@ class LogNormalDistribution(ContinuousDistribution):
         """Initialize lognormal distribution.
 
         Args:
-            normal_mean (np.ndarray): mean of the normal distribution
-            normal_covariance (np.ndarray): covariance of the normal distribution
+            normal_mean (array_like): mean of the normal distribution
+            normal_covariance (array_like): covariance of the normal distribution
         """
         self.normal_distribution = NormalDistribution(normal_mean, normal_covariance)
 

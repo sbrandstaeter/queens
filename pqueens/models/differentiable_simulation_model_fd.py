@@ -31,13 +31,10 @@ class DifferentiableSimulationModelFD(SimulationModel):
                            of function evaluation.
     """
 
-    def __init__(
-        self, model_name, interface, finite_difference_method, step_size=1e-5, bounds=None
-    ):
+    def __init__(self, interface, finite_difference_method, step_size=1e-5, bounds=None):
         """Initialize model.
 
         Args:
-            model_name (str): Name of the model
             interface (Interface): Interface object for simulation run
             finite_difference_method (str): Method to calculate a finite difference
                                             based approximation of the Jacobian matrix:
@@ -52,7 +49,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
                                                same for all variables. Use it to limit the
                                                range of function evaluation.
         """
-        super().__init__(model_name, interface)
+        super().__init__(interface)
 
         check_if_valid_options(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_method)
         self.finite_difference_method = finite_difference_method

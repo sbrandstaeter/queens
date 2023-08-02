@@ -47,6 +47,8 @@ class ElementaryEffectsIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         num_trajectories,
         local_optimization,
         num_optimal_trajectories,
@@ -55,12 +57,13 @@ class ElementaryEffectsIterator(Iterator):
         confidence_level,
         num_bootstrap_samples,
         result_description,
-        global_settings,
     ):
         """Initialize ElementaryEffectsIterator.
 
         Args:
             model (model): QUEENS model to evaluate
+            global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             num_trajectories (int): number of trajectories to generate
             local_optimization (bool): flag whether to use local optimization according to Ruano
                                        et al. (2012). Speeds up the process tremendously for
@@ -74,9 +77,8 @@ class ElementaryEffectsIterator(Iterator):
             num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
                                          intervals for sensitivity measures
             result_description (dict): dictionary with desired result description
-            global_settings (dict): Global settings of the QUEENS simulations
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories

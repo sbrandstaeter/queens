@@ -24,7 +24,7 @@ method:
 model:
   type: bmf_gaussian
   mf_approx_name: mf_approx
-  interface_name: bmfia_interface
+  mf_interface_name: bmfia_interface
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
   noise_value: 0.0001
@@ -55,13 +55,13 @@ mf_approx:
   refinement_epochs_decay: 0.7
   verbosity_on: true
 bmfia_interface:
-  type: bmfia
+  type: bmfia_interface
   num_processors_multi_processing: 1
   probabilistic_mapping_type: per_time_step
 bmfia_iterator:
   type: bmfia
-  high_fidelity_model_name: hf_model
-  low_fidelity_model_name: lf_model
+  hf_model_name: hf_model
+  lf_model_name: lf_model
   features_config: no_features
   initial_design:
     num_HF_eval: 50

@@ -17,30 +17,24 @@ def dummy_config():
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the simulation model."""
-    model_name = "my_model_name"
     interface = "my_interface"
 
-    model_obj = SimulationModel(model_name, interface)
-    assert model_obj.name == model_name
+    model_obj = SimulationModel(interface)
     assert model_obj.interface == interface
 
 
-def test_fcc(dummy_config, mocker):
+def test_fcc(dummy_config):
     """Test the fcc method."""
-    model_name = "my_model"
+    interface = "dummy_interface"
 
-    mocker.patch(
-        "pqueens.models.simulation_model.from_config_create_interface", return_value="my_interface"
-    )
-    model_obj = SimulationModel.from_config_create_model(model_name, dummy_config)
-    assert model_obj.name == model_name
-    assert model_obj.interface == "my_interface"
+    model_obj = SimulationModel(interface)
+    assert model_obj.interface == interface
     assert model_obj.__class__.__name__ == "SimulationModel"
 
 
 def test_evaluate():
     """Test the evaluation method."""
-    model_obj = SimulationModel("my_model_name", Mock())
+    model_obj = SimulationModel(Mock())
     model_obj.interface.evaluate = lambda x: {"mean": x**2, "gradient": 2 * x}
 
     samples = np.array([[2.0]])
@@ -52,7 +46,7 @@ def test_evaluate():
 
 def test_grad():
     """Test grad method."""
-    model = SimulationModel("model", 'dummy_interface')
+    model = SimulationModel('dummy_interface')
     np.random.seed(42)
     upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))

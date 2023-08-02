@@ -7,11 +7,10 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens import run
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import injector
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
+from pqueens.utils.stochastic_optimizer import Adam
 
 
 def test_bbvi_density_match(
@@ -128,16 +127,12 @@ def dummy_bbvi_instance(tmp_path, my_variational_distribution):
             "save_bool": False,
         },
     }
-    optimizer_config = {
-        "type": "adam",
-        "learning_rate": 0.01,
-        "optimization_type": "max",
-        "rel_l1_change_threshold": -1,
-        "rel_l2_change_threshold": -1,
-        "max_iteration": 10000000,
-    }
-    stochastic_optimizer = from_config_create_optimizer(
-        {"optimizer": optimizer_config}, "optimizer"
+    stochastic_optimizer = Adam(
+        learning_rate=0.01,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
     )
 
     # ------ other params ----------------------------------------------------------
@@ -147,12 +142,13 @@ def dummy_bbvi_instance(tmp_path, my_variational_distribution):
     global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
     random_seed = 1
 
-    parameters_module.parameters = Mock()
-    parameters_module.parameters.num_parameters = num_variables
+    parameters = Mock()
+    parameters.num_parameters = num_variables
 
     bbvi_instance = BBVIIterator(
-        global_settings=global_settings,
         model=model,
+        global_settings=global_settings,
+        parameters=parameters,
         result_description=result_description,
         variational_parameter_initialization=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,

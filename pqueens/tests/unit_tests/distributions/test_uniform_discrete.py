@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.uniform_discrete import UniformDiscreteDistribution
 
 
@@ -37,10 +36,7 @@ def fixture_distribution_for_init(reference_data, distribution, request):
         _,
     ) = reference_data
 
-    fcc_distribution = from_config_create_distribution(
-        {"type": "uniform_discrete", "sample_space": reference_sample_space}
-    )
-    return fcc_distribution
+    return UniformDiscreteDistribution(sample_space=reference_sample_space)
 
 
 def test_init_success(reference_data, distribution_for_init):

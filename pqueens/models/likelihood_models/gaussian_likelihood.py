@@ -3,7 +3,7 @@ import numpy as np
 
 from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
-from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
+from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
 
 
@@ -33,86 +33,45 @@ class GaussianLikelihood(LikelihoodModel):
 
     def __init__(
         self,
-        model_name,
-        nugget_noise_variance,
         forward_model,
         noise_type,
-        noise_var_iterative_averaging,
-        normal_distribution,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
+        noise_value=None,
+        nugget_noise_variance=0,
+        noise_var_iterative_averaging=None,
+        y_obs=None,
+        experimental_data_reader=None,
     ):
         """Initialize likelihood model.
 
         Args:
-            model_name (str): Model name
             forward_model (obj): Forward model on which the likelihood model is based
-            nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_type (str): String encoding the type of likelihood noise model:
-                                         Fixed or MAP estimate with Jeffreys prior
+                                Fixed or MAP estimate with Jeffreys prior
+            noise_value (array_like): Likelihood (co)variance value
+            nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_var_iterative_averaging (obj): Iterative averaging object
-            normal_distribution (obj): Underlying normal distribution object
-            coords_mat (np.array): Matrix of observation coordinates (new coordinates row-wise)
-            time_vec (np.array): Vector containing time stamps for each observation
-            y_obs (np.array): Matrix with row-wise observation vectors
-            output_label (str): Output label name of the observations
-            coord_labels (list): List of coordinate label names. One name per column in coord_mat
+            y_obs (array_like): Vector with observations
+            experimental_data_reader (obj): Experimental data reader
         """
-        super().__init__(
-            model_name,
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        )
-        self.nugget_noise_variance = nugget_noise_variance
-        self.noise_type = noise_type
-        self.noise_var_iterative_averaging = noise_var_iterative_averaging
-        self.normal_distribution = normal_distribution
+        if y_obs is None:
+            if experimental_data_reader is None:
+                raise InvalidOptionError(
+                    "You must either provide 'y_obs' or an "
+                    "'experimental_data_reader' for GaussianLikelihood."
+                )
+            y_obs = experimental_data_reader.get_experimental_data()[0]
+        if y_obs is not None and experimental_data_reader is not None:
+            Warning(
+                "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
+                "Only provided 'y_obs' is used."
+            )
 
-    @classmethod
-    def from_config_create_model(
-        cls,
-        model_name,
-        config,
-    ):
-        """Create Gaussian likelihood model from problem description.
+        super().__init__(forward_model, y_obs)
 
-        Args:
-            model_name (str): Name of the likelihood model
-            config (dict): Dictionary containing problem description
-
-        Returns:
-            instance of GaussianLikelihood class
-        """
-        (
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        ) = super().get_base_attributes_from_config(model_name, config)
         y_obs_dim = y_obs.size
 
-        # get options
-        model_options = config[model_name]
-
-        # get specifics of gaussian likelihood model
-        noise_type = model_options["noise_type"]
-        noise_value = model_options.get("noise_value")
-        nugget_noise_variance = model_options.get("nugget_noise_variance", 1e-6)
-
-        noise_var_iterative_averaging = model_options.get("noise_var_iterative_averaging", None)
-        if noise_var_iterative_averaging:
-            noise_var_iterative_averaging = from_config_create_iterative_averaging(
-                noise_var_iterative_averaging
-            )
+        if noise_value is None and noise_type.startswith("fixed"):
+            raise InvalidOptionError(f"You have to provide a 'noise_value' for {noise_type}.")
 
         if noise_type == 'fixed_variance':
             covariance = noise_value * np.eye(y_obs_dim)
@@ -129,20 +88,12 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        normal_distribution = NormalDistribution(y_obs, covariance)
-        return cls(
-            model_name=model_name,
-            nugget_noise_variance=nugget_noise_variance,
-            forward_model=forward_model,
-            noise_type=noise_type,
-            noise_var_iterative_averaging=noise_var_iterative_averaging,
-            normal_distribution=normal_distribution,
-            coords_mat=coords_mat,
-            time_vec=time_vec,
-            y_obs=y_obs,
-            output_label=output_label,
-            coord_labels=coord_labels,
-        )
+        normal_distribution = NormalDistribution(self.y_obs, covariance)
+
+        self.nugget_noise_variance = nugget_noise_variance
+        self.noise_type = noise_type
+        self.noise_var_iterative_averaging = noise_var_iterative_averaging
+        self.normal_distribution = normal_distribution
 
     def evaluate(self, samples):
         """Evaluate likelihood with current set of input samples.

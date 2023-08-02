@@ -1,7 +1,6 @@
 """Test for baci LM iterator."""
 
 import logging
-from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
@@ -9,8 +8,10 @@ import pandas as pd
 import plotly.express as px
 import pytest
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.free import FreeVariable
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
+from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.parameters import Parameters
 
 _logger = logging.getLogger(__name__)
 
@@ -42,56 +43,24 @@ def fix_tolerance(request):
 @pytest.fixture()
 def default_baci_lm_iterator():
     """TODO_doc."""
-    config = {
-        'method': OrderedDict(
-            [
-                ('type', 'baci_lm'),
-                ('model_name', 'model'),
-                ('jac_rel_step', 1e-05),
-                ('jac_abs_step', 0.001),
-                ('max_feval', 99),
-                ('init_reg', 1.0),
-                ('update_reg', 'grad'),
-                ('convergence_tolerance', 1e-06),
-                ('initial_guess', [0.1, 0.2]),
-                (
-                    'result_description',
-                    OrderedDict([('write_results', True), ('plot_results', True)]),
-                ),
-            ]
-        ),
-        'model': OrderedDict(
-            [
-                ('type', 'simulation_model'),
-                ('interface_name', 'interface'),
-            ]
-        ),
-        'interface': OrderedDict(
-            [
-                ('type', 'direct_python_interface'),
-                ('function', 'rosenbrock60_residual'),
-            ]
-        ),
-        'parameters': OrderedDict(
-            OrderedDict(
-                [
-                    ('x1', OrderedDict([('type', 'free'), ('dimension', 1)])),
-                    ('x2', OrderedDict([('type', 'free'), ('dimension', 1)])),
-                ]
-            ),
-        ),
-        'debug': False,
-        'input_file': 'dummy_input',
-        'global_settings': {
-            'output_dir': 'dummy_output',
-            'experiment_name': 'OptimizeLM',
-        },
-    }
+    parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
+    model = SimulationModel(interface="interface")
 
-    parameters_module.from_config_create_parameters(config)
-    baci_lm_i = BaciLMIterator.from_config_create_iterator(config, iterator_name='method')
+    my_baci_lm_iterator = BaciLMIterator(
+        model=model,
+        global_settings={'output_dir': 'dummy_output', 'experiment_name': 'OptimizeLM'},
+        parameters=parameters,
+        result_description={'write_results': True, 'plot_results': True},
+        initial_guess=[0.1, 0.2],
+        jac_rel_step=1e-05,
+        jac_abs_step=0.001,
+        init_reg=1.0,
+        update_reg='grad',
+        convergence_tolerance=1e-06,
+        max_feval=99,
+    )
 
-    return baci_lm_i
+    return my_baci_lm_iterator
 
 
 @pytest.fixture(scope='module', params=[True, False])
@@ -113,7 +82,7 @@ def fix_plotly_fig():
     return fig
 
 
-def test_init(mocker):
+def test_init():
     """TODO_doc."""
     global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     initial_guess = np.array([1, 2.2])
@@ -131,6 +100,7 @@ def test_init(mocker):
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
         global_settings=global_settings,
+        parameters="dummy_parameters",
         result_description=result_description,
         initial_guess=initial_guess,
         bounds=bounds,
@@ -154,79 +124,6 @@ def test_init(mocker):
     assert my_baci_lm_iterator.reg_param == init_reg
     assert my_baci_lm_iterator.update_reg == update_reg
     assert my_baci_lm_iterator.verbose_output == verbose_output
-
-
-def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
-    """TODO_doc."""
-    config = {
-        'method': OrderedDict(
-            [
-                ('type', 'baci_lm'),
-                ('model_name', 'model'),
-                ('jac_method', '2-point'),
-                ('jac_rel_step', 1e-05),
-                ('jac_abs_step', 0.001),
-                ('max_feval', 99),
-                ('init_reg', 1.0),
-                ('update_reg', 'grad'),
-                ('convergence_tolerance', 1e-06),
-                ('initial_guess', [0.1, 0.2]),
-                (
-                    'result_description',
-                    OrderedDict([('write_results', True), ('plot_results', True)]),
-                ),
-            ]
-        ),
-        'model': OrderedDict(
-            [
-                ('type', 'simulation_model'),
-                ('interface_name', 'interface'),
-                ('parameters', 'parameters'),
-            ]
-        ),
-        'input_file': 'input_path',
-        'global_settings': {
-            'output_dir': 'output_path',
-            'experiment_name': 'experimentname',
-        },
-    }
-
-    mp = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel.from_config_create_model',
-        return_value='dummy_model',
-    )
-
-    mockinit = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.__init__', return_value=None
-    )
-
-    my_iterator = BaciLMIterator.from_config_create_iterator(
-        config, iterator_name=iterator_name_cases, model=model_cases
-    )
-    if model_cases is None:
-        mp.assert_called_once_with('model', config)
-
-    mockinit.assert_called_once()
-
-    callargs = mockinit.call_args[1]
-
-    assert callargs['global_settings'] == {
-        'output_dir': 'output_path',
-        'experiment_name': 'experimentname',
-    }
-    # assert_called_once_with not possible because we need numpy array comparison
-    np.testing.assert_equal(callargs['initial_guess'], np.array([0.1, 0.2]))
-    assert callargs['jac_rel_step'] == 1e-05
-    assert callargs['jac_abs_step'] == 0.001
-    assert callargs['init_reg'] == 1.0
-    assert callargs['update_reg'] == 'grad'
-    assert callargs['convergence_tolerance'] == 1e-06
-    assert callargs['max_feval'] == 99
-    assert callargs['model'] == 'dummy_model'
-    assert callargs['result_description'] == OrderedDict(
-        [('write_results', True), ('plot_results', True)]
-    )
-    assert callargs.get('verbose_output') is None
 
 
 def test_model_evaluate(default_baci_lm_iterator, mocker):
@@ -423,15 +320,8 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]})
     mocker.patch('pandas.read_csv', return_value=pdata)
 
-    options = {
-        "parameters": {
-            "x1": {"type": "free", "dimension": 1},
-            "x2": {"type": "free", "dimension": 1},
-            "x3": {"type": "free", "dimension": 1},
-        }
-    }
-    parameters_module.from_config_create_parameters(options)
-    default_baci_lm_iterator.parameters = parameters_module.parameters
+    parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1), x3=FreeVariable(1))
+    default_baci_lm_iterator.parameters = parameters
 
     with caplog.at_level(logging.WARNING):
         default_baci_lm_iterator.post_run()

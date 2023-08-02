@@ -4,8 +4,11 @@ from pathlib import Path
 
 import numpy as np
 
-from pqueens.data_processor import from_config_create_data_processor
 from pqueens.data_processor.data_processor_csv_data import DataProcessorCsv
+
+VALID_TYPES = {
+    "experimental_data_reader": ['pqueens.utils.experimental_data_reader', 'ExperimentalDataReader']
+}
 
 
 class ExperimentalDataReader:
@@ -47,7 +50,6 @@ class ExperimentalDataReader:
 
         if data_processor is None:
             self.data_processor = DataProcessorCsv(
-                data_processor_name="experimental_data_reader",
                 file_name_identifier=self.file_name,
                 file_options_dict={
                     "header_row": 0,
@@ -100,24 +102,3 @@ class ExperimentalDataReader:
             self.coordinate_labels,
             self.output_label,
         )
-
-    @classmethod
-    def from_config_create_experimental_data_reader(cls, config, experimental_data_reader_name):
-        """Create ExperimentalDataReader from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            experimental_data_reader_name (str): Name of experimental data reader
-
-        Returns:
-            ExperimentalDataReader object
-        """
-        experimental_data_reader_options = config[experimental_data_reader_name].copy()
-        experimental_data_reader_options.pop('type')
-
-        data_processor = None
-        data_processor_name = experimental_data_reader_options.get('data_processor_name')
-        if data_processor_name:
-            data_processor = from_config_create_data_processor(config, data_processor_name)
-
-        return cls(**experimental_data_reader_options, data_processor=data_processor)
