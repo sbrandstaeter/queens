@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 
-from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 
 
 def test_external_geometry_from_dat(
@@ -15,16 +15,10 @@ def test_external_geometry_from_dat(
         third_party_inputs / "baci_input_files" / "meshtying3D_patch_lin_duallagr_new_struct.dat"
     )
 
-    config = {
-        "pre_processing": {
-            "type": "baci_dat",
-            "list_geometric_sets": ["DSURFACE 1"],
-            "input_template": dat_input_template,
-        }
-    }
-
     # Create pre-processing module form config
-    preprocessor_obj = from_config_create_external_geometry(config, 'pre_processing')
+    preprocessor_obj = BaciDatExternalGeometry(
+        input_template=dat_input_template, list_geometric_sets=["DSURFACE 1"]
+    )
     preprocessor_obj.main_run()
 
     # Check if we got the expected results

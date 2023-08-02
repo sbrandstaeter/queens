@@ -5,7 +5,7 @@ import logging
 from pqueens.data_processor import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from pqueens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from pqueens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
-from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.external_geometry import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
 from pqueens.interfaces import VALID_TYPES as VALID_INTERFACE_TYPES
 from pqueens.interfaces.interface import Interface
 from pqueens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
@@ -27,16 +27,17 @@ _logger = logging.getLogger(__name__)
 
 
 VALID_TYPES = {
+    **VALID_DATA_PROCESSOR_TYPES,
+    **VALID_DISTRIBUTION_TYPES,
+    **VALID_DRIVER_TYPES,
+    **VALID_EXTERNAL_GEOMETRY_TYPES,
+    **VALID_INTERFACE_TYPES,
     **VALID_ITERATOR_TYPES,
     **VALID_MODEL_TYPES,
-    **VALID_INTERFACE_TYPES,
-    **VALID_DATA_PROCESSOR_TYPES,
-    **VALID_STOCHASTIC_OPTIMIZER_TYPES,
-    **VALID_DISTRIBUTION_TYPES,
+    **VALID_SCHEDULER_TYPES,
     **VALID_EXPERIMENTAL_DATA_READER_TYPES,
     **VALID_ITERATIVE_AVERAGING_TYPES,
-    **VALID_SCHEDULER_TYPES,
-    **VALID_DRIVER_TYPES,
+    **VALID_STOCHASTIC_OPTIMIZER_TYPES,
 }
 
 
@@ -57,13 +58,14 @@ def from_config_create_iterator(config):
         new_obj (iterator): Main queens iterator with all initialized objects.
     """
     # do pre-processing
-    pre_processer = from_config_create_external_geometry(config, 'pre_processing')
-    if pre_processer:
-        config.pop('pre_processing')
-        pre_processer.main_run()
-        pre_processer.write_random_fields_to_dat()
+    pre_processor = None
+    pre_processor_options = config.pop('pre_processing', None)
+    if pre_processor_options:
+        pre_processor = from_config_create_object(pre_processor_options)
+        pre_processor.main_run()
+        pre_processor.write_random_fields_to_dat()
 
-    parameters = from_config_create_parameters(config.pop('parameters', {}), pre_processer)
+    parameters = from_config_create_parameters(config.pop('parameters', {}), pre_processor)
     global_settings = config.pop('global_settings')
     obj_key = None
     for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
@@ -82,12 +84,8 @@ def from_config_create_iterator(config):
             )
 
         try:
-            if config[obj_key]['type'] in ["baci_dat"]:  # TODO: refactor fcc of external geometry
-                new_obj = from_config_create_external_geometry(config, obj_key)
-                config.pop(obj_key)
-            else:
-                obj_description = config.pop(obj_key)
-                new_obj = from_config_create_object(obj_description, global_settings, parameters)
+            obj_description = config.pop(obj_key)
+            new_obj = from_config_create_object(obj_description, global_settings, parameters)
         except (TypeError, InvalidOptionError) as err:
             raise InvalidOptionError(f"Object '{obj_key}' can not be initialized.") from err
 
