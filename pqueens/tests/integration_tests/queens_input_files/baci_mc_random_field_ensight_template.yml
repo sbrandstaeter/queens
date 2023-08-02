@@ -1,0 +1,62 @@
+experiment_name: baci_mc_random_field_ensight
+method:
+  type: monte_carlo
+  seed: 1
+  num_samples: 3
+  model_name: model
+  result_description:
+    write_results: true
+    plot_results: false
+pre_processing:
+  type: baci_dat
+  list_geometric_sets: [DSURFACE 1]
+  associated_material_numbers_geometric_set: [[10, 11]]
+  random_fields:
+    - name: mat_param
+      type: material
+      external_instance: DSURFACE 1
+  input_template: {{ baci_input }}
+  input_template_preprocessed: {{ baci_input_preprocessed }}
+model:
+  type: simulation_model
+  interface_name: interface
+external_geometry:
+  type: baci_dat
+  list_geometric_sets: [DSURFACE 1]
+  input_template: {{ baci_input_preprocessed }}
+data_processor_baci:
+  type: ensight
+  external_geometry_name: external_geometry
+  file_name_identifier: baci_*structure.case
+  file_options_dict:
+    delete_field_data: false
+    geometric_target: [geometric_set, DSURFACE 1]
+    physical_field_dict:
+      vtk_field_type: structure
+      vtk_array_type: point_array
+      vtk_field_label: displacement
+      field_components: [0, 1]
+    target_time_lst: [last]
+parameters:
+  mat_param:
+    type: random_field
+    corr_length: 5.0
+    std_hyperparam_rf: 0.03
+    mean_type: constant
+    mean_param: 0.25
+interface:
+  type: job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: local
+  num_procs: 1
+  num_procs_post: 1
+  max_concurrent: 1
+driver:
+  type: mpi
+  input_template: {{ baci_input_preprocessed }}
+  path_to_executable: {{ baci_release }}
+  path_to_postprocessor: {{ post_ensight }}
+  post_file_prefix: baci_mc_random_field_ensight
+  data_processor_name: data_processor_baci

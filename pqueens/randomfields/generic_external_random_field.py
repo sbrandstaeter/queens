@@ -211,7 +211,6 @@ class GenericExternalRandomField:
         eigen_val_red_diag_mat = np.diagflat(eig_val_vec_red)
 
         # weight the eigenbasis with the eigenvalues
-        # will be written to the db externally
         self.weighted_eigen_val_mat_truncated = np.dot(
             eigen_vec_mat_red, np.sqrt(eigen_val_red_diag_mat)
         )

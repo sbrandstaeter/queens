@@ -6,33 +6,20 @@ import numpy as np
 
 from pqueens.utils.iterative_averaging_utils import (
     ExponentialAveraging,
-    L1_norm,
-    L2_norm,
+    l1_norm,
+    l2_norm,
     relative_change,
 )
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.valid_options_utils import get_option
 
+VALID_TYPES = {
+    "adam": ['pqueens.utils.stochastic_optimizer', 'Adam'],
+    "rms_prop": ['pqueens.utils.stochastic_optimizer', 'RMSprop'],
+    "adamax": ['pqueens.utils.stochastic_optimizer', 'Adamax'],
+}
+
 _logger = logging.getLogger(__name__)
-
-
-def from_config_create_optimizer(config, optimizer_name=None):
-    """Create an optimizer object from dict.
-
-    Args:
-        config (dict): Configuration dict
-        optimizer_name (str): Name of the stochastic optimizer
-
-    Returns:
-        StochasticOptimizer object
-    """
-    valid_types = {"adam": Adam, "rms_prop": RMSprop, "adamax": Adamax}
-    optimizer_type = config.get(optimizer_name)["type"]
-    optimizer_class = get_option(
-        valid_types, optimizer_type, error_message="Unknown stochastic optimizer."
-    )
-    optimizer = optimizer_class.from_config_create_optimizer(config, optimizer_name)
-    return optimizer
 
 
 class StochasticOptimizer(metaclass=abc.ABCMeta):
@@ -52,7 +39,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
             for parameters in optimizer:
 
-                rel_L2_change_params=optimizer.rel_L2_change
+                rel_l2_change_params=optimizer.rel_l2_change
 
                 iteration=optimizer.iteration
 
@@ -60,7 +47,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
                 print(f"Iter {iteration}, parameters {parameters}, rel L2 change "
 
-                f"{rel_L2_change:.2f}")
+                f"{rel_l2_change:.2f}")
 
                 # Some additional condition to stop optimization
 
@@ -92,19 +79,19 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
     Attributes:
         learning_rate (float): Learning rate for the optimizer.
-        clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm.
+        clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm.
         clip_by_value_threshold (float): Threshold to clip the gradient components.
         max_iteration (int): Maximum number of iterations.
         precoefficient (int): Is 1 in case of maximization and -1 for minimization.
-        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this
+        rel_l1_change_threshold (float): If the L1 relative change in parameters falls below this
                                          value, this criteria catches.
-        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this
+        rel_l2_change_threshold (float): If the L2 relative change in parameters falls below this
                                          value, this criteria catches.
         iteration (int): Number of iterations done in the optimization so far.
         done (bool): True if the optimization is done.
-        rel_L2_change (float): Relative change in L2-norm of variational params w.r.t. the previous
+        rel_l2_change (float): Relative change in L2-norm of variational params w.r.t. the previous
                               iteration.
-        rel_L1_change (float): Relative change in L1-norm of variational params w.r.t. the previous
+        rel_l1_change (float): Relative change in L1-norm of variational params w.r.t. the previous
                               iteration.
         current_variational_parameters (np.array): Variational parameters.
         current_gradient_value (np.array): Current gradient vector w.r.t. the variational
@@ -112,87 +99,50 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         gradient (function): Function to compute the gradient.
     """
 
+    _name = "Stochastic Optimizer"
+
     def __init__(
         self,
         learning_rate,
-        precoefficient,
-        rel_L1_change_threshold,
-        rel_L2_change_threshold,
-        clip_by_L2_norm_threshold,
-        clip_by_value_threshold,
-        max_iteration,
+        optimization_type,
+        rel_l1_change_threshold=None,
+        rel_l2_change_threshold=None,
+        clip_by_l2_norm_threshold=1e6,
+        clip_by_value_threshold=1e6,
+        max_iteration=1e6,
     ):
         """Initialize stochastic optimizer.
 
         Args:
             learning_rate (float): Learning rate for the optimizer
-            precoefficient (int): is 1 in case of maximization and -1 for minimization
-            rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
+            optimization_type (str): "max" in case of maximization and "min" for minimization
+            rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
                                              this value, this criteria catches.
-            rel_L2_change_threshold (float): If the L2 relative change in parameters falls below
+            rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
                                              this value, this criteria catches.
-            clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
+            clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
         """
+        valid_options = {"min": -1, "max": 1}
+        self.precoefficient = get_option(
+            valid_options, optimization_type, error_message="Unknown optimization type."
+        )
         self.learning_rate = learning_rate
-        self.clip_by_L2_norm_threshold = clip_by_L2_norm_threshold
+        self.clip_by_l2_norm_threshold = clip_by_l2_norm_threshold
         self.clip_by_value_threshold = clip_by_value_threshold
         self.max_iteration = max_iteration
-        self.precoefficient = precoefficient
-        self.rel_L2_change_threshold = rel_L2_change_threshold
-        self.rel_L1_change_threshold = rel_L1_change_threshold
+        self.rel_l2_change_threshold = rel_l2_change_threshold
+        self.rel_l1_change_threshold = rel_l1_change_threshold
         self.iteration = 0
         self.done = False
-        self.rel_L2_change = None
-        self.rel_L1_change = None
+        self.rel_l2_change = None
+        self.rel_l1_change = None
         self.current_variational_parameters = None
         self.current_gradient_value = None
         self.gradient = None
 
-    @staticmethod
-    def get_base_attributes_from_config(config):
-        """Extract base attributes from config.
-
-        Args:
-            config (dict): optimizer description in dictionary
-
-        Returns:
-            learning_rate (float): Learning rate for the optimizer
-            precoefficient (int): 1 in case of maximization and -1
-              for minimization
-            rel_L1_change_threshold (float): If the L1 relative change in
-              parameters falls below this value, this criteria catches
-            rel_L2_change_threshold (float): If the L2 relative change
-              in parameters falls below this value, this criteria catches
-            clip_by_L2_norm_threshold (float): Threshold to clip the gradient by
-              L2-norm
-            clip_by_value_threshold (float): Threshold to clip the gradient
-              components
-             max_iteration (int): Maximum number of iterations
-        """
-        learning_rate = config.get("learning_rate")
-        optimization_type = config.get("optimization_type")
-        valid_options = {"min": -1, "max": 1}
-        precoefficient = get_option(
-            valid_options, optimization_type, error_message="Unknown optimization type."
-        )
-        rel_L1_change_threshold = config.get("rel_L1_change_threshold")
-        rel_L2_change_threshold = config.get("rel_L2_change_threshold")
-        clip_by_L2_norm_threshold = config.get("clip_by_L2_norm_threshold", 1e6)
-        clip_by_value_threshold = config.get("clip_by_value_threshold", 1e6)
-        max_iteration = config.get("max_iter", 1e6)
-        return (
-            learning_rate,
-            precoefficient,
-            rel_L1_change_threshold,
-            rel_L2_change_threshold,
-            clip_by_L2_norm_threshold,
-            clip_by_value_threshold,
-            max_iteration,
-        )
-
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def scheme_specific_gradient(self, gradient):
         """Scheme specific gradient computation.
 
@@ -201,7 +151,6 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         Args:
             gradient (np.array): Current gradient
         """
-        pass
 
     def set_gradient_function(self, gradient_function):
         """Set the gradient function.
@@ -221,11 +170,11 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             old_parameters (np.array): Old parameters
             new_parameters (np.array): New parameters
         """
-        self.rel_L2_change = relative_change(
-            old_parameters, new_parameters, lambda x: L2_norm(x, averaged=True)
+        self.rel_l2_change = relative_change(
+            old_parameters, new_parameters, lambda x: l2_norm(x, averaged=True)
         )
-        self.rel_L1_change = relative_change(
-            old_parameters, new_parameters, lambda x: L1_norm(x, averaged=True)
+        self.rel_l1_change = relative_change(
+            old_parameters, new_parameters, lambda x: l1_norm(x, averaged=True)
         )
 
     def do_single_iteration(self, gradient):
@@ -255,7 +204,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             gradient (np.array): The clipped gradient
         """
         gradient = clip_by_value(gradient, self.clip_by_value_threshold)
-        gradient = clip_by_L2_norm(gradient, self.clip_by_L2_norm_threshold)
+        gradient = clip_by_l2_norm(gradient, self.clip_by_l2_norm_threshold)
         return gradient
 
     def __next__(self):
@@ -306,30 +255,26 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         if np.any(np.isnan(self.current_variational_parameters)):
             raise ValueError("At least one of the variational parameters is NaN")
         self.done = (
-            self.rel_L2_change <= self.rel_L2_change_threshold
-            and self.rel_L1_change <= self.rel_L1_change_threshold
+            self.rel_l2_change <= self.rel_l2_change_threshold
+            and self.rel_l1_change <= self.rel_l1_change_threshold
         ) or self.iteration >= self.max_iteration
 
     def run_optimization(self):
         """Run the optimization.
 
         Returns:
-            TODO_doc
+            np.array: variational parameters
         """
         for _ in self:
             pass
         return self.current_variational_parameters
 
-    def __str__(self, name):
-        """String of optimizer.
-
-        Args:
-            name (str): name of the optimizer.
+    def _get_print_dict(self):
+        """Get print dict.
 
         Returns:
-            str: String version of the optimizer
+            dict: dictionary with data to print
         """
-        name += " stochastic optimizer."
         if self.precoefficient == 1:
             optimization_type = "maximization"
         else:
@@ -340,12 +285,21 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             "Learning_rate": self.learning_rate,
             "Iterations": self.iteration,
             "Max. number of iteration": self.max_iteration,
-            "Rel. L1 change of the parameters": self.rel_L1_change,
-            "Rel. L1 change threshold": self.rel_L1_change_threshold,
-            "Rel. L2 change of the parameters": self.rel_L2_change,
-            "Rel. L2 change threshold": self.rel_L2_change_threshold,
+            "Rel. L1 change of the parameters": self.rel_l1_change,
+            "Rel. L1 change threshold": self.rel_l1_change_threshold,
+            "Rel. L2 change of the parameters": self.rel_l2_change,
+            "Rel. L2 change threshold": self.rel_l2_change_threshold,
         }
-        return get_str_table(name, print_dict)
+        return print_dict
+
+    def __str__(self):
+        """String of optimizer.
+
+        Returns:
+            str: String version of the optimizer
+        """
+        print_dict = self._get_print_dict()
+        return get_str_table(self._name, print_dict)
 
 
 class RMSprop(StochasticOptimizer):
@@ -361,90 +315,47 @@ class RMSprop(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero.
     """
 
+    _name = "RMSprop Stochastic Optimizer"
+
     def __init__(
         self,
         learning_rate,
-        precoefficient,
-        rel_L1_change_threshold,
-        rel_L2_change_threshold,
-        clip_by_L2_norm_threshold,
-        clip_by_value_threshold,
-        max_iteration,
-        beta,
-        v,
-        eps,
+        optimization_type,
+        rel_l1_change_threshold=None,
+        rel_l2_change_threshold=None,
+        clip_by_l2_norm_threshold=1e6,
+        clip_by_value_threshold=1e6,
+        max_iteration=1e6,
+        beta=0.999,
+        eps=1e-8,
     ):
         """Initialize optimizer.
 
         Args:
             learning_rate (float): Learning rate for the optimizer
-            precoefficient (int): is 1 in case of maximization and -1 for minimization
-            rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
+            optimization_type (str): "max" in case of maximization and "min" for minimization
+            rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
                                              this value, this criteria catches.
-            rel_L2_change_threshold (float): If the L2 relative change in parameters falls below
+            rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
                                             this value, this criteria catches.
-            clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
+            clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
             beta (float): :math:`beta` parameter as described in [1]
-            v (ExponentialAveragingObject): Exponential average of the gradient momentum
             eps (float): Nugget term to avoid a division by values close to zero
         """
         super().__init__(
             learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
+            optimization_type=optimization_type,
+            rel_l1_change_threshold=rel_l1_change_threshold,
+            rel_l2_change_threshold=rel_l2_change_threshold,
+            clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
         )
         self.beta = beta
-        self.v = v
+        self.v = ExponentialAveraging(coefficient=beta)  # pylint: disable=invalid-name
         self.eps = eps
-
-    @classmethod
-    def from_config_create_optimizer(cls, config, section_name):
-        """Create an RMSprop object from dict.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section in which optimizer is defined
-
-        Returns:
-            RMSprop object
-        """
-        if section_name is None:
-            config_sec = config
-        else:
-            config_sec = config[section_name]
-
-        (
-            learning_rate,
-            precoefficient,
-            rel_L1_change_threshold,
-            rel_L2_change_threshold,
-            clip_by_L2_norm_threshold,
-            clip_by_value_threshold,
-            max_iteration,
-        ) = StochasticOptimizer.get_base_attributes_from_config(config_sec)
-
-        beta = config_sec.get("beta", 0.999)
-        v = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta})
-        eps = config_sec.get("eps", 1e-8)
-
-        return cls(
-            learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
-            clip_by_value_threshold=clip_by_value_threshold,
-            max_iteration=max_iteration,
-            beta=beta,
-            v=v,
-            eps=eps,
-        )
 
     def scheme_specific_gradient(self, gradient):
         """Rmsprop gradient computation.
@@ -463,15 +374,6 @@ class RMSprop(StochasticOptimizer):
         gradient = gradient / (v_hat**0.5 + self.eps)
         return gradient
 
-    def __str__(self):
-        """String of optimizer.
-
-        Returns:
-            str: String version of the optimizer
-        """
-        name = "RMSprop"
-        return super().__str__(name)
-
 
 class Adam(StochasticOptimizer):
     r"""Adam stochastic optimizer [1].
@@ -487,100 +389,51 @@ class Adam(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero.
     """
 
+    _name = "Adam Stochastic Optimizer"
+
     def __init__(
         self,
         learning_rate,
-        precoefficient,
-        rel_L1_change_threshold,
-        rel_L2_change_threshold,
-        clip_by_L2_norm_threshold,
-        clip_by_value_threshold,
-        max_iteration,
-        beta_1,
-        beta_2,
-        eps,
-        m,
-        v,
+        optimization_type,
+        rel_l1_change_threshold=None,
+        rel_l2_change_threshold=None,
+        clip_by_l2_norm_threshold=1e6,
+        clip_by_value_threshold=1e6,
+        max_iteration=1e6,
+        beta_1=0.9,
+        beta_2=0.999,
+        eps=1e-8,
     ):
         """Initialize optimizer.
 
         Args:
             learning_rate (float): Learning rate for the optimizer
-            precoefficient (int): is 1 in case of maximization and -1 for minimization
-            rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
+            optimization_type (str): "max" in case of maximization and "min" for minimization
+            rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
                                              this value, this criteria catches.
-            rel_L2_change_threshold (float): If the L2 relative change in parameters falls below
+            rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
                                             this value, this criteria catches.
-            clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
+            clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
             beta_1 (float): :math:`beta_1` parameter as described in [1]
             beta_2 (float): :math:`beta_1` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
-            m (ExponentialAveragingObject): Exponential average of the gradient
-            v (ExponentialAveragingObject): Exponential average of the gradient momentum
         """
         super().__init__(
             learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
+            optimization_type=optimization_type,
+            rel_l1_change_threshold=rel_l1_change_threshold,
+            rel_l2_change_threshold=rel_l2_change_threshold,
+            clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.m = m
-        self.v = v
+        self.m = ExponentialAveraging(coefficient=beta_1)  # pylint: disable=invalid-name
+        self.v = ExponentialAveraging(coefficient=beta_2)  # pylint: disable=invalid-name
         self.eps = eps
-
-    @classmethod
-    def from_config_create_optimizer(cls, config, section_name):
-        """Create an Adam object from dict.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section in which optimizer is defined
-
-        Returns:
-            Adam object
-        """
-        if section_name is None:
-            config_sec = config
-        else:
-            config_sec = config[section_name]
-
-        (
-            learning_rate,
-            precoefficient,
-            rel_L1_change_threshold,
-            rel_L2_change_threshold,
-            clip_by_L2_norm_threshold,
-            clip_by_value_threshold,
-            max_iteration,
-        ) = StochasticOptimizer.get_base_attributes_from_config(config_sec)
-
-        beta_1 = config_sec.get("beta_1", 0.9)
-        beta_2 = config_sec.get("beta_2", 0.999)
-        m = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_1})
-        v = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_2})
-        eps = config_sec.get("eps", 1e-8)
-
-        return cls(
-            learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
-            clip_by_value_threshold=clip_by_value_threshold,
-            max_iteration=max_iteration,
-            beta_1=beta_1,
-            beta_2=beta_2,
-            eps=eps,
-            m=m,
-            v=v,
-        )
 
     def scheme_specific_gradient(self, gradient):
         """Adam gradient computation.
@@ -602,15 +455,6 @@ class Adam(StochasticOptimizer):
         gradient = m_hat / (v_hat**0.5 + self.eps)
         return gradient
 
-    def __str__(self):
-        """String of optimizer.
-
-        Returns:
-            str: String version of the optimizer
-        """
-        name = "Adam"
-        return super().__str__(name)
-
 
 class Adamax(StochasticOptimizer):
     r"""Adamax stochastic optimizer [1]. *eps* added to avoid division by zero.
@@ -626,101 +470,51 @@ class Adamax(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero.
     """
 
+    _name = "Adamax Stochastic Optimizer"
+
     def __init__(
         self,
         learning_rate,
-        precoefficient,
-        rel_L1_change_threshold,
-        rel_L2_change_threshold,
-        clip_by_L2_norm_threshold,
-        clip_by_value_threshold,
-        max_iteration,
-        beta_1,
-        beta_2,
-        u,
-        m,
-        eps,
+        optimization_type,
+        rel_l1_change_threshold=None,
+        rel_l2_change_threshold=None,
+        clip_by_l2_norm_threshold=1e6,
+        clip_by_value_threshold=1e6,
+        max_iteration=1e6,
+        beta_1=0.9,
+        beta_2=0.999,
+        eps=1e-8,
     ):
         """Initialize optimizer.
 
         Args:
             learning_rate (float): Learning rate for the optimizer
-            precoefficient (int): is 1 in case of maximization and -1 for minimization
-            rel_L1_change_threshold (float): If the L1 relative change in parameters falls below
+            optimization_type (str): "max" in case of maximization and "min" for minimization
+            rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
                                              this value, this criteria catches.
-            rel_L2_change_threshold (float): If the L2 relative change in parameters falls below
+            rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
                                             this value, this criteria catches.
-            clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
+            clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
             beta_1 (float): :math:`beta_1` parameter as described in [1]
             beta_2 (float): :math:`beta_1` parameter as described in [1]
-            m (ExponentialAveragingObject): Exponential average of the gradient
-            u (np.array): Maximum gradient momentum
             eps (float): Nugget term to avoid a division by values close to zero
         """
         super().__init__(
             learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
+            optimization_type=optimization_type,
+            rel_l1_change_threshold=rel_l1_change_threshold,
+            rel_l2_change_threshold=rel_l2_change_threshold,
+            clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.m = m
-        self.u = u
+        self.m = ExponentialAveraging(coefficient=beta_1)  # pylint: disable=invalid-name
+        self.u = 0  # pylint: disable=invalid-name
         self.eps = eps
-
-    @classmethod
-    def from_config_create_optimizer(cls, config, section_name):
-        """Create an Adamax object from dict.
-
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section in which optimizer is defined
-
-        Returns:
-            Adamax object
-        """
-        if section_name is None:
-            config_sec = config
-        else:
-            config_sec = config[section_name]
-        (
-            learning_rate,
-            precoefficient,
-            rel_L1_change_threshold,
-            rel_L2_change_threshold,
-            clip_by_L2_norm_threshold,
-            clip_by_value_threshold,
-            max_iteration,
-        ) = StochasticOptimizer.get_base_attributes_from_config(config_sec)
-
-        beta_1 = config_sec.get("beta_1", 0.9)
-        beta_2 = config_sec.get("beta_2", 0.999)
-        m = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_1})
-        u = 0
-        eps = config_sec.get("eps", 1e-8)
-
-        current_gradient_value = None
-
-        return cls(
-            learning_rate=learning_rate,
-            precoefficient=precoefficient,
-            rel_L1_change_threshold=rel_L1_change_threshold,
-            rel_L2_change_threshold=rel_L2_change_threshold,
-            clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
-            clip_by_value_threshold=clip_by_value_threshold,
-            max_iteration=max_iteration,
-            beta_1=beta_1,
-            beta_2=beta_2,
-            eps=eps,
-            m=m,
-            u=u,
-        )
 
     def scheme_specific_gradient(self, gradient):
         """Adamax gradient computation.
@@ -742,29 +536,20 @@ class Adamax(StochasticOptimizer):
         gradient = m_hat / (self.u + self.eps)
         return gradient
 
-    def __str__(self):
-        """String of optimizer.
 
-        Returns:
-            str: String version of the optimizer
-        """
-        name = "Adamax"
-        return super().__str__(name)
-
-
-def clip_by_L2_norm(gradient, L2_norm_threshold=1e6):
+def clip_by_l2_norm(gradient, l2_norm_threshold=1e6):
     """Clip gradients by L2-norm.
 
     Args:
-        gradient: TODO_doc
-        L2_norm_threshold: TODO_doc
+        gradient (np.array): Gradient
+        l2_norm_threshold (float): Clipping threshold
     Returns:
         gradient (np.array): Clipped gradients
     """
     gradient = np.nan_to_num(gradient)
-    gradient_L2_norm = L2_norm(gradient)
-    if gradient_L2_norm > L2_norm_threshold:
-        gradient /= gradient_L2_norm / L2_norm_threshold
+    gradient_l2_norm = l2_norm(gradient)
+    if gradient_l2_norm > l2_norm_threshold:
+        gradient /= gradient_l2_norm / l2_norm_threshold
         _logger.warning("Gradient clipped due to large norm!")
     return gradient
 
@@ -775,8 +560,8 @@ def clip_by_value(gradient, threshold=1e6):
     Clips if the absolute value op the component is larger than the threshold.
 
     Args:
-        gradient: TODO_doc
-        threshold: TODO_doc
+        gradient (np.array): Gradient
+        threshold (float): Threshold to clip
     Returns:
         gradient (np.array): Clipped gradients
     """

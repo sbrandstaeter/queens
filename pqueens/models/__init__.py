@@ -20,20 +20,36 @@ VALID_TYPES = {
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood',
         'BMFGaussianModel',
     ],
+    'differentiable_simulation_model_fd': [
+        'pqueens.models.differentiable_simulation_model_fd',
+        'DifferentiableSimulationModelFD',
+    ],
+    'differentiable_simulation_model_adjoint': [
+        'pqueens.models.differentiable_simulation_model_adjoint',
+        'DifferentiableSimulationModelAdjoint',
+    ],
+    'heteroskedastic_gp': [
+        'pqueens.models.surrogate_models.heteroskedastic_GPflow',
+        'HeteroskedasticGPModel',
+    ],
+    'gp_approximation_gpflow': [
+        'pqueens.models.surrogate_models.gp_approximation_gpflow',
+        'GPFlowRegressionModel',
+    ],
+    'gaussian_bayesian_neural_network': [
+        'pqueens.models.surrogate_models.bayesian_neural_network',
+        'GaussianBayesianNeuralNetworkModel',
+    ],
+    'gp_jitted': [
+        'pqueens.models.surrogate_models.gp_approximation_jitted',
+        'GPJittedModel',
+    ],
+    'gp_approximation_gpflow_svgp': [
+        'pqueens.models.surrogate_models.gp_approximation_gpflow_svgp',
+        'GPflowSVGPModel',
+    ],
+    'gaussian_nn': [
+        'pqueens.models.surrogate_models.gaussian_neural_network',
+        'GaussianNeuralNetworkModel',
+    ],
 }
-
-
-def from_config_create_model(model_name, config):
-    """Create model from problem description.
-
-    Args:
-        model_name (string):    Name of model
-        config  (dict):         Dictionary with problem description
-
-    Returns:
-        model: Instance of model class
-    """
-    model_options = config[model_name]
-    model_class = get_module_class(model_options, VALID_TYPES)
-    model = model_class.from_config_create_model(model_name, config)
-    return model

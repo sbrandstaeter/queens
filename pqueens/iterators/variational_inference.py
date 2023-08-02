@@ -7,10 +7,8 @@ import numpy as np
 
 import pqueens.visualization.variational_inference_visualization as qvis
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
 from pqueens.utils.process_outputs import write_results
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
@@ -33,8 +31,6 @@ class VariationalInferenceIterator(Iterator):
 
     Attributes:
         result_description (dict): Settings for storing and visualizing the results.
-        db (obj): QUEENS database object.
-        experiment_name (str): Name of the QUEENS simulation.
         variational_params_initialization_approach (str): Flag to decide how to initialize the
                                                           variational parameters.
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
@@ -64,6 +60,7 @@ class VariationalInferenceIterator(Iterator):
         self,
         model,
         global_settings,
+        parameters,
         result_description,
         variational_distribution,
         variational_params_initialization,
@@ -84,6 +81,7 @@ class VariationalInferenceIterator(Iterator):
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
             global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             variational_params_initialization (str): Flag to decide how to initialize the
@@ -104,7 +102,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             Initialise variational inference iterator
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         self.result_description = result_description
         self.variational_params_initialization_approach = variational_params_initialization
@@ -135,36 +133,6 @@ class VariationalInferenceIterator(Iterator):
         if result_description.get("plotting_options"):
             qvis.from_config_create(result_description['plotting_options'])
 
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: Iterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        if model is None:
-            model_name = method_options.pop('model_name')
-            model = from_config_create_model(model_name, config)
-        global_settings = config['global_settings']
-
-        stochastic_optimizer_name = method_options.pop('stochastic_optimizer_name')
-        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
-
-        return cls(
-            model=model,
-            global_settings=global_settings,
-            stochastic_optimizer=stochastic_optimizer,
-            **method_options,
-        )
-
     def core_run(self):
         """Core run for stochastic variational inference."""
         start = time.time()
@@ -193,7 +161,7 @@ class VariationalInferenceIterator(Iterator):
 
         if self.n_sims > self.max_feval:
             _logger.warning("Maximum probabilistic model calls reached")
-        elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
+        elif np.any(np.isnan(self.stochastic_optimizer.rel_l2_change)):
             _logger.warning("NaN(s) in the relative change of variational parameters")
         else:
             _logger.info("Finished successfully! :-)")
@@ -201,9 +169,8 @@ class VariationalInferenceIterator(Iterator):
 
     def _catch_non_converging_simulations(self, old_parameters):
         """Reset variational parameters in case of failed simulations."""
-        if np.isnan(self.stochastic_optimizer.rel_L2_change):
+        if np.isnan(self.stochastic_optimizer.rel_l2_change):
             self.variational_params = old_parameters
-            self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
     def pre_run(self):
         """Initialize the prior model and variational parameters."""
@@ -235,10 +202,10 @@ class VariationalInferenceIterator(Iterator):
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
-        mean_change = self.stochastic_optimizer.rel_L2_change * 100
+        mean_change = self.stochastic_optimizer.rel_l2_change * 100
         _logger.info("So far %s simulation runs", self.n_sims)
         _logger.info("L2 change of all variational parameters: %.4f %%", mean_change)
-        _logger.info("The elbo is: %.2f}", self.elbo)
+        _logger.info("The elbo is: %.2f", self.elbo)
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
             _logger.info(
@@ -269,12 +236,14 @@ class VariationalInferenceIterator(Iterator):
         """
         if self.variational_params_initialization_approach == "random":
             self.variational_params = (
-                self.variational_distribution_obj.initialize_parameters_randomly()
+                self.variational_distribution_obj.initialize_variational_parameters(random=True)
             )
         elif self.variational_params_initialization_approach == "prior":
             if self.variational_family == "normal":
                 mu, cov = self._initialize_variational_params_from_prior()
-                var_params = self.variational_distribution_obj.construct_variational_params(mu, cov)
+                var_params = self.variational_distribution_obj.construct_variational_parameters(
+                    mu, cov
+                )
                 self.variational_params = var_params
             else:
                 raise ValueError(
@@ -386,7 +355,6 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             elbo gradient as column vector (np.array)
         """
-        pass
 
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
@@ -449,13 +417,12 @@ class VariationalInferenceIterator(Iterator):
         Returns:
              function: Gradient function wrapped with the counter
         """
-        pass
 
         def nan_counter_and_warner(*args, **kwargs):
             """Count iterations with NaNs and write warning."""
             gradient = gradient_function(*args, **kwargs)
             if np.isnan(gradient).any():
-                _logger.warn(
+                _logger.warning(
                     "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
                     " %s)",
                     self.nan_in_gradient_counter,

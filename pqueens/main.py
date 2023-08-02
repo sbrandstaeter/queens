@@ -4,12 +4,10 @@ import sys
 import time
 from pathlib import Path
 
-import pqueens.database.database as DB_module
-import pqueens.parameters.parameters as parameters_module
-from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.iterators import from_config_create_iterator
+from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.ascii_art import print_banner_and_description
 from pqueens.utils.cli_utils import get_cli_options, print_greeting_message
+from pqueens.utils.fcc_utils import from_config_create_iterator
 from pqueens.utils.io_utils import load_input_file
 from pqueens.utils.logger_settings import setup_basic_logging
 
@@ -30,49 +28,41 @@ def run(input_file, output_dir, debug=False):
     config = get_config_dict(input_file, output_dir, debug)
 
     # set up logging
+    log_file_path = Path(config["global_settings"]["output_dir"]) / (
+        f'{config["global_settings"]["experiment_name"]}.log'
+    )
     setup_basic_logging(
-        Path(config["global_settings"]["output_dir"]),
-        config["global_settings"]["experiment_name"],
+        log_file_path=log_file_path,
         debug=debug,
     )
 
     print_banner_and_description()
-    # create database
-    DB_module.from_config_create_database(config)
 
-    with DB_module.database:
+    # create iterator
+    my_iterator = from_config_create_iterator(config)
 
-        # do pre-processing
-        pre_processer = from_config_create_external_geometry(config, 'pre_processing')
-        if pre_processer:
-            pre_processer.main_run()
-            pre_processer.write_random_fields_to_dat()
+    end_time_input = time.time()
 
-        # create parameters
-        parameters_module.from_config_create_parameters(config, pre_processer)
+    _logger.info("")
+    _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
+    _logger.info("")
 
-        # create iterator
-        my_iterator = from_config_create_iterator(config)
+    start_time_calc = time.time()
 
-        end_time_input = time.time()
+    _logger.info("")
+    _logger.info("Starting Analysis...")
+    _logger.info("")
 
-        _logger.info("")
-        _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
-        _logger.info("")
-
-        start_time_calc = time.time()
-
-        _logger.info("")
-        _logger.info("Starting Analysis...")
-        _logger.info("")
-
-        # perform analysis
-        my_iterator.run()
+    # perform analysis
+    my_iterator.run()
 
     end_time_calc = time.time()
     _logger.info("")
     _logger.info("Time for CALCULATION: %s s", end_time_calc - start_time_calc)
     _logger.info("")
+    for shutdown_client in SHUTDOWN_CLIENTS.copy():
+        SHUTDOWN_CLIENTS.remove(shutdown_client)
+        shutdown_client()
 
 
 def get_config_dict(input_file, output_dir, debug=False):

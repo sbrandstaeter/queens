@@ -1,7 +1,4 @@
 experiment_name: xxx
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: monte_carlo
   seed: 44
@@ -13,10 +10,8 @@ method:
     bayesian: false
     estimate_all: false
 bayesian_neural_network:
-  type: datafit_surrogate_model
-  interface_name: approximation_interface
-  subordinate_model_name: truth_model
-  subordinate_iterator_name: truth_model_iterator
+  type: gaussian_bayesian_neural_network
+  training_iterator_name: truth_model_iterator
   eval_fit: null
   error_measures:
     - sum_squared
@@ -25,11 +20,6 @@ bayesian_neural_network:
     - sum_abs
     - mean_abs
     - abs_max
-approximation_interface:
-  type: approximation_interface
-  approximation: bnn_regression
-bnn_regression:
-  type: gaussian_bayesian_neural_network
   num_posterior_samples: null
   num_samples_statistics: 10
   num_epochs: 100
@@ -40,8 +30,10 @@ bnn_regression:
   verbosity_on: true
 truth_model_iterator:
   type: monte_carlo
+  model_name: truth_model
   seed: 42
   num_samples: 100
+  result_description:
 truth_model:
   type: simulation_model
   interface_name: interface

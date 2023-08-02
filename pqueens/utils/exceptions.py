@@ -57,7 +57,3 @@ class SubprocessError(Exception):
         if additional_message:
             message += '\n\n' + additional_message
         return cls(message)
-
-
-class SingularityError(Exception):
-    """Singularity errors."""

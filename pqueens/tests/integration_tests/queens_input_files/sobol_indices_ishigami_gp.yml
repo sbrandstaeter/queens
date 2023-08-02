@@ -1,8 +1,4 @@
 experiment_name: xxx
-database:
-  address: localhost:27017
-  type: mongodb
-  drop_existing: true
 method:
   type: sobol_indices
   seed: 42
@@ -24,20 +20,11 @@ truth_model_iterator:
     write_results: true
     plot_results: false
 gp_surrogate_model:
-  type: datafit_surrogate_model
-  interface_name: approximation_interface
-  subordinate_iterator_name: truth_model_iterator
-  subordinate_model_name: truth_model
-approximation_interface:
-  type: approximation_interface
-  approximation: gpy_regression
-gpy_regression:
-  type: gp_approximation_gpy
-  kernel_type: prod_rbf
-  ard: true
-  length_scale: 1
-  variance: 1
-  seed_optimizer: 42
+  type: gp_approximation_gpflow
+  training_iterator_name: truth_model_iterator
+  number_restarts: 10
+  number_training_iterations: 1000
+  dimension_lengthscales: 3
 truth_model:
   type: simulation_model
   interface_name: interface

@@ -1,18 +1,21 @@
 name: queens
 channels:
-  - defaults
   - conda-forge
+# We want to have a reproducible setup, so we don't want default channels,
+# which may be different for different users. All required channels should
+# be listed explicitly here.
+  - nodefaults
 dependencies:
   - python==3.10
 # to ensure that performance optimized backends are used,
 # the following packages are installed from conda
 # for example BLAS libraries like Intel MKL for numpy
-  - cython==0.29.30
-  - numpy==1.21.5
-  - scipy==1.10.0
-  - numba==0.55.1
-  - scikit-learn==1.1.1
-  - pandas==1.4.3
+  - cython==0.29.35
+  - numba==0.57.0
+  - numpy==1.23.5
+  - pandas==1.5.3
+  - scikit-learn==1.2.2
+  - scipy==1.10.1
 # Only install pip-tools via pip itself since
 # all other pip dependencies should be managed
 # via pip-tools in the requirements.in files

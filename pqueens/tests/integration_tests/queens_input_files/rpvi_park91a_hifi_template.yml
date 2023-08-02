@@ -1,10 +1,7 @@
 experiment_name: inverse_rpvi_park91a_hifi
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: rpvi
-  model_name: model
+  model_name: {{ model }}
   max_feval: 1000
   n_samples_per_iter: 2
   score_function_bool: true
@@ -31,27 +28,36 @@ optimizer:
   type: adam
   optimization_type: max
   learning_rate: 0.025
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
-  max_iter: 500
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
+  max_iteration: 500
 model:
-  type: {{ likelihood_model_type }}
-  external_python_module: {{ external_python_module }}
-  forward_model_name: forward_model
-  output_label: y_obs
-  coordinate_labels: [x3, x4]
+  type: gaussian
+  forward_model_name: {{ forward_model_name }}
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
-  experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {{ experimental_data_path }}
-forward_model:
-  type: simulation_model
+  experimental_data_reader_name: experimental_data_reader
+model_external:
+  type: MyLikelihood
+  external_python_module: {{ external_python_module }}
+  forward_model_name: {{ forward_model_name }}
+  noise_type: MAP_jeffrey_variance
+  nugget_noise_variance: 1.0e-08
+  experimental_data_reader_name: experimental_data_reader
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: '*.csv'
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+  coordinate_labels: [x3, x4]
+fd_model:
+  type: differentiable_simulation_model_fd
   interface_name: interface
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: {{ gradient_method }}
   finite_difference_method: 2-point
   step_size: 1.0e-07
+simulation_model:
+  type: simulation_model
+  interface_name: interface
 interface:
   type: direct_python_interface
   function: {{ my_function }}

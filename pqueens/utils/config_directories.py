@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
+TESTS_BASE_FOLDER_NAME = "tests"
 
 
 def local_base_directory():
@@ -17,16 +18,21 @@ def local_base_directory():
     return base_dir
 
 
-def remote_base_directory(remote_connect):
-    """Hold all queens related data on remote machine."""
-    _, _, remote_home, _ = run_subprocess(
+def remote_home(remote_connect):
+    """Get home of remote user."""
+    _, _, home, _ = run_subprocess(
         "echo ~",
         subprocess_type="remote",
         remote_connect=remote_connect,
         additional_error_message=f"Unable to identify home on remote.\n"
         f"Tried to connect to {remote_connect}.",
     )
-    base_dir = Path(remote_home.rstrip()) / BASE_DATA_DIR
+    return Path(home.rstrip())
+
+
+def remote_base_directory(remote_connect):
+    """Hold all queens related data on remote machine."""
+    base_dir = remote_home(remote_connect) / BASE_DATA_DIR
     create_directory(base_dir, remote_connect=remote_connect)
     return base_dir
 
@@ -89,15 +95,3 @@ def current_job_directory(experiment_dir, job_id):
     """
     job_dir = experiment_dir / str(job_id)
     return job_dir
-
-
-ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
-
-LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
-
-if __name__ == '__main__':
-    # this print statement is intended
-    # calling this file as a standalone Python script from the shell will return
-    # the absolute path to the singularity image as expected during a QUEENS run.
-    # This is needed to make the absolute path to the singularity image available in CI pipelines
-    print(f"{ABS_SINGULARITY_IMAGE_PATH}")

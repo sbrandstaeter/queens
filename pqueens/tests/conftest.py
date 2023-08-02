@@ -6,9 +6,16 @@ from pathlib import Path
 import pytest
 
 from pqueens.utils import config_directories
+from pqueens.utils.logger_settings import reset_logging
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 
 _logger = logging.getLogger(__name__)
+
+
+def pytest_addoption(parser):
+    """Add pytest options."""
+    parser.addoption("--remote-python", action="store", default=None)
+    parser.addoption("--remote-queens-repository", action="store", default="null")
 
 
 def pytest_collection_modifyitems(items):
@@ -35,44 +42,6 @@ def hostname(name_of_host=NAME_OF_HOST):
 
 
 @pytest.fixture(autouse=True)
-def global_mock_abs_singularity_image_path(monkeypatch):
-    """Mock the absolute singularity image path.
-
-    The singularity image path depends on local_base_directory() which
-    is mocked globally and per test. This would however mean that every
-    test that needs singularity has to build the image again. Because
-    one test does not know about the other ones. To prevent this we
-    store the standard image path that is used by the user here and make
-    sure that this path is used in all tests by mocking the respective
-    variable globally. This way the image has to be built only once.
-    """
-    mock_abs_singularity_image_path = config_directories.ABS_SINGULARITY_IMAGE_PATH
-    monkeypatch.setattr(
-        config_directories, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
-    )
-    _logger.debug(
-        "Singularity image for the tests: %s", config_directories.ABS_SINGULARITY_IMAGE_PATH
-    )
-
-
-if NAME_OF_HOST in ["master.service", "login.cluster"]:
-    # Decide if local base directory should be mocked.
-    #
-    # For most tests the local base directory should be mocked to the
-    # standard pytest temp folder. The only exceptions are the cluster
-    # native tests, where the jobs don't have access to that folder. For
-    # this reason, the local base dir is not mocked for the cluster native
-    # tests. Whether the tests are run on the cluster natively is detected
-    # based on the hostname.
-    #
-    _logger.debug("Deactivating mocking of local base dir.")
-    MOCK_LOCAL_BASE_DIR = False
-else:
-    _logger.debug("Activating mocking of local base dir.")
-    MOCK_LOCAL_BASE_DIR = True
-
-
-@pytest.fixture(autouse=MOCK_LOCAL_BASE_DIR)
 def global_mock_local_base_dir(monkeypatch, tmp_path):
     """Mock the local base directory for all tests.
 
@@ -92,7 +61,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
 @pytest.fixture(scope="session")
 def mock_value_experiments_base_folder_name():
     """Value to mock the experiments base folder name."""
-    return "tests"
+    return "pytest"
 
 
 @pytest.fixture(autouse=True)
@@ -104,6 +73,11 @@ def global_mock_experiments_base_folder_name(mock_value_experiments_base_folder_
     """
     monkeypatch.setattr(
         config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
+    )
+    _logger.debug("Mocking of EXPERIMENTS_BASE_FOLDER_NAME was successful.")
+    _logger.debug(
+        "EXPERIMENTS_BASE_FOLDER_NAME is mocked to: %s",
+        config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
     )
 
 
@@ -132,10 +106,9 @@ def config_dir():
 def baci_link_paths(config_dir):
     """Set symbolic links for baci on testing machine."""
     baci = config_dir / 'baci-release'
-    post_drt_monitor = config_dir / 'post_drt_monitor'
-    post_drt_ensight = config_dir / 'post_drt_ensight'
+    post_ensight = config_dir / 'post_ensight'
     post_processor = config_dir / 'post_processor'
-    return baci, post_drt_monitor, post_drt_ensight, post_processor
+    return baci, post_ensight, post_processor
 
 
 @pytest.fixture(scope="session")
@@ -143,10 +116,9 @@ def baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
     home = Path.home()
     src_baci = home / 'workspace/build/baci-release'
-    src_drt_monitor = home / 'workspace/build/post_drt_monitor'
-    src_post_drt_ensight = home / 'workspace/build/post_drt_ensight'
+    src_post_ensight = home / 'workspace/build/post_ensight'
     src_post_processor = home / 'workspace/build/post_processor'
-    return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
+    return src_baci, src_post_ensight, src_post_processor
 
 
 @pytest.fixture(scope='session')
@@ -156,3 +128,23 @@ def example_simulator_fun_dir():
         "tests/integration_tests/example_simulator_functions"
     )
     return input_files_path
+
+
+def pytest_sessionfinish():
+    """Register a hook to suppress logging errors after the session."""
+    logging.raiseExceptions = False
+
+
+@pytest.fixture(name="reset_loggers", autouse=True)
+def fixture_reset_logger():
+    """Reset loggers.
+
+    This fixture is called at every test due to `autouse=True`. It acts
+    as a generator and allows us to close all loggers after each test.
+    This should avoid duplicate logger output.
+    """
+    # Do the test.
+    yield
+
+    # Test is done, now reset the loggers.
+    reset_logging()

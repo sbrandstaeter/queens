@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pqueens.utils import ascii_art
 from pqueens.utils.exceptions import CLIError
-from pqueens.utils.manage_singularity import create_singularity_image
+from pqueens.utils.logger_settings import reset_logging, setup_cli_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
 from pqueens.utils.run_subprocess import run_subprocess
@@ -14,20 +14,25 @@ from pqueens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 
-def build_singularity_cli():
-    """Build singularity image CLI wrapper."""
-    ascii_art.print_crown(75)
-    ascii_art.print_banner("SINBUILD", 75)
-    _logger.info('Singularity image builder for QUEENS runs'.center(75))
+def cli_logging(func):
+    """Decorator to create logger for CLI function.
 
-    _logger.info('\n\nBuilding a singularity image! This might take some time ...')
-    try:
-        create_singularity_image()
-        _logger.info('Done!')
-    except Exception as cli_singularity_error:
-        raise CLIError("Building singularity failed!\n\n") from cli_singularity_error
+    Args:
+        func (function): Function that is to be decorated
+    """
+
+    def decorated_function(*args, **kwargs):
+        setup_cli_logging()
+        results = func(*args, **kwargs)
+        reset_logging()
+
+        # For CLI commands there should be no results, but just in case
+        return results
+
+    return decorated_function
 
 
+@cli_logging
 def print_pickle_data_cli():
     """Print pickle data wrapper."""
     ascii_art.print_crown(60)
@@ -37,7 +42,7 @@ def print_pickle_data_cli():
         _logger.info('No pickle file was provided!')
     else:
         file_path = args[0]
-        print_pickled_data(file_path)
+        print_pickled_data(Path(file_path))
 
 
 def build_html_coverage_report():
@@ -125,6 +130,7 @@ def get_cli_options(args):
     return input_file, output_dir, debug
 
 
+@cli_logging
 def print_greeting_message():
     """Print a greeting message and how to use QUEENS."""
     ascii_art.print_banner_and_description()

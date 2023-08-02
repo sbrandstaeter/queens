@@ -18,13 +18,13 @@ pytestmark = pytest.mark.unit_tests
 @pytest.fixture(name="path_to_queens")
 def fixture_path_to_queens():
     """Path to QUEENS."""
-    return str(Path(__file__).parent).split("pqueens")[0]
+    return str(Path(__file__).parent).split("pqueens", maxsplit=1)[0]
 
 
 @pytest.fixture(name="path_to_pqueens")
 def fixture_path_to_pqueens():
     """Path to pqueens."""
-    return str(Path(__file__).parent).split("tests")[0]
+    return str(Path(__file__).parent).split("tests", maxsplit=1)[0]
 
 
 def test_path_to_pqueens(path_to_pqueens):
@@ -45,9 +45,9 @@ def test_check_if_path_exists():
 
 def test_check_if_path_exists_not_existing():
     """Test if path does not exist."""
-    test_path = Path(__file__).parent / "not_existing"
+    tmp_path = Path(__file__).parent / "not_existing"
     with pytest.raises(FileNotFoundError):
-        check_if_path_exists(test_path)
+        check_if_path_exists(tmp_path)
 
 
 def test_create_folder_if_not_existent(tmp_path):

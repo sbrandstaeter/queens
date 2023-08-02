@@ -68,13 +68,11 @@ def default_raw_data():
 
 
 @pytest.fixture()
-def default_data_processor():
+def default_data_processor(mocker):
     """Default data processor csv class for unit tests."""
     file_name_identifier = 'dummy_prefix*dummyfix'
-    file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
-    data_processor_name = 'data_processor'
     header_row = 0
     use_cols_lst = [0, 2, 3]
     skip_rows = 1
@@ -85,32 +83,39 @@ def default_data_processor():
     filter_tol = 2.0
     filter_format = "numpy"
 
-    pp = pqueens.data_processor.data_processor_csv_data.DataProcessorCsv(
+    file_options_dict = {
+        "header_row": header_row,
+        "use_cols_lst": use_cols_lst,
+        "skip_rows": skip_rows,
+        "index_column": index_column,
+        "returned_filter_format": filter_format,
+        "filter": {
+            "type": filter_type,
+            "rows": use_rows_lst,
+            "range": filter_range,
+            "target_values": filter_target_values,
+            "tolerance": filter_tol,
+        },
+    }
+
+    mocker.patch(
+        'pqueens.data_processor.data_processor_csv_data.DataProcessorCsv.'
+        '_check_valid_filter_options',
+        return_value=None,
+    )
+    pp = DataProcessorCsv(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        data_processor_name,
-        filter_type,
-        header_row,
-        use_cols_lst,
-        skip_rows,
-        index_column,
-        use_rows_lst,
-        filter_range,
-        filter_target_values,
-        filter_tol,
-        filter_format,
     )
     return pp
 
 
-def test_init():
+def test_init(mocker):
     """Test the init method."""
     file_name_identifier = 'dummy_prefix*dummyfix'
-    file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
-    data_processor_name = 'data_processor'
     header_row = 0
     use_cols_lst = [0, 2, 3]
     skip_rows = 1
@@ -121,24 +126,34 @@ def test_init():
     filter_tol = 2.0
     filter_format = "dict"
 
+    file_options_dict = {
+        "header_row": header_row,
+        "use_cols_lst": use_cols_lst,
+        "skip_rows": skip_rows,
+        "index_column": index_column,
+        "returned_filter_format": filter_format,
+        "filter": {
+            "type": filter_type,
+            "rows": use_rows_lst,
+            "range": filter_range,
+            "target_values": filter_target_values,
+            "tolerance": filter_tol,
+        },
+    }
+
+    mp = mocker.patch(
+        'pqueens.data_processor.data_processor_csv_data.DataProcessorCsv.'
+        '_check_valid_filter_options',
+        return_value=None,
+    )
+
     my_data_processor = DataProcessorCsv(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        data_processor_name,
-        filter_type,
-        header_row,
-        use_cols_lst,
-        skip_rows,
-        index_column,
-        use_rows_lst,
-        filter_range,
-        filter_target_values,
-        filter_tol,
-        filter_format,
     )
 
-    assert my_data_processor.data_processor_name == data_processor_name
+    mp.assert_called_once_with(file_options_dict['filter'])
     assert my_data_processor.file_options_dict == file_options_dict
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.filter_range == filter_range
@@ -214,67 +229,6 @@ def test_check_valid_filter_options_by_target_values():
         DataProcessorCsv._check_valid_filter_options(
             {'type': 'by_target_values', 'target_values': [1.0, 2.0, 3.0]}
         )
-
-
-def test_from_config_create_data_processor(mocker):
-    """Test the config method."""
-    mp = mocker.patch(
-        'pqueens.data_processor.data_processor_csv_data.DataProcessorCsv.__init__',
-        return_value=None,
-    )
-
-    file_name_identifier = 'dummy_prefix*dummyfix'
-    files_to_be_deleted_regex_lst = []
-    data_processor_name = 'data_processor'
-    header_row = 0
-    use_cols_lst = [0, 2, 3]
-    skip_rows = 1
-    index_column = 0
-    filter_type = 'by_row_index'
-    use_rows_lst = [1, 3, 4]
-    filter_range = []
-    filter_target_values = []
-    filter_tol = 0.0
-    filter_format = "numpy"
-
-    file_options_dict = {
-        'header_row': header_row,
-        'use_cols_lst': use_cols_lst,
-        'skip_rows': skip_rows,
-        'use_rows_lst': use_rows_lst,
-        'index_column': index_column,
-        'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
-        'filter_format': filter_format,
-        "filter": {"type": filter_type, "rows": use_rows_lst},
-    }
-
-    config = {
-        'data_processor': {
-            'file_name_identifier': file_name_identifier,
-            'file_options_dict': file_options_dict,
-        }
-    }
-
-    DataProcessorCsv.from_config_create_data_processor(
-        config,
-        data_processor_name,
-    )
-    mp.assert_called_once_with(
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
-        data_processor_name,
-        filter_type,
-        header_row,
-        use_cols_lst,
-        skip_rows,
-        index_column,
-        use_rows_lst,
-        filter_range,
-        filter_target_values,
-        filter_tol,
-        filter_format,
-    )
 
 
 def test_get_raw_data_from_file_with_index(

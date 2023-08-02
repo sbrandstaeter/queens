@@ -5,11 +5,12 @@ variables:
   # flags to turn on/ off tests for specific platforms
   UBUNTU_TESTS: "1"
   CLUSTER_TESTS: "1"
-  CLUSTER_NATIVE_TESTS: "1"
   BENCHMARKS: "0"
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
+  LNM_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -47,11 +48,6 @@ workflow:
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - SINGULARITY_IMAGE_PATH="$(python pqueens/utils/config_directories.py)"
-    - echo $SINGULARITY_IMAGE_PATH
-    - SINGULARITY_DIR="$(dirname "$SINGULARITY_IMAGE_PATH")"
-    - mkdir -p $SINGULARITY_DIR
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_IMAGE_PATH
   rules:
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
@@ -69,8 +65,10 @@ workflow:
   rules:
     - !reference [.default_test_conditions, rules]
   stage: codechecks
+  needs:
+    - imcs-build_conda_env
   tags:
-    - codechecks
+    - imcs-codechecks
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
@@ -79,9 +77,9 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - conda update -n base conda
+    - mamba update -n base -y conda
   script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
@@ -104,51 +102,47 @@ imcs-build_conda_env:
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
-.build_conda_env_cluster_native:
+.build_conda_env_cluster:
   stage: build
-  script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+  before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - pip install -e .[develop]
-    - conda env export > pipeline_conda_environment.yml
   rules:
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-  artifacts:
-    name: "conda_env-$CI_PIPELINE_ID.yml"
-    paths:
-      - pipeline_conda_environment.yml
-    when: always
-    expire_in: 4 weeks
-
-bruteforce-native-build_conda_env:
-  extends:
-    - .build_conda_env_cluster_native
-  tags:
-    - bruteforce-native-test
-
-deep-native-build_conda_env:
-  extends:
-    - .build_conda_env_cluster_native
-  tags:
-    - deep-native-test
-#----------------------------------------------------------------------------------------------
-.build_singularity:
-  stage: build
+    - if: $CLUSTER_TESTS == "1"
   script:
-    - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif pqueens/singularity/singularity_recipe.def
-    - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
-  rules:
-    - !reference [.ubuntu_build_conditions, rules]
+    - python pqueens/utils/remote_build.py
+      --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
-lnm-build_singularity:
+#bruteforce-build_conda_env:
+#  extends:
+#    - .build_conda_env_cluster
+#  variables:
+#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+#    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+#  needs:
+#    - lnm-build_conda_env
+#  tags:
+#    - lnm-build
+
+deep-build_conda_env:
   extends:
-    - .build_singularity
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+  needs:
+    - lnm-build_conda_env
   tags:
     - lnm-build
 
-imcs-build_singularity:
+charon-build_conda_env:
   extends:
-    - .build_singularity
+    - .build_conda_env_cluster
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
+  needs:
+    - imcs-build_conda_env
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
@@ -160,10 +154,8 @@ update:
     - conda create -n piptools-env python==3.10 -y
     - conda activate piptools-env
     - pip install pip-tools
-    - pip-compile --upgrade requirements.in --output-file requirements.txt
-    - pip-compile --upgrade dev-requirements.in --output-file dev-requirements.txt
-    # Update singularity image requirements
-    - pip-compile --upgrade pqueens/singularity/requirements.in --output-file pqueens/singularity/requirements.txt
+    - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
+    - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
     - cd $CI_PROJECT_DIR
     - conda deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
@@ -172,7 +164,6 @@ update:
     - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
     # Checkout to a new branch so we push the changes to a new branch
     - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
-    - git add requirements.txt dev-requirements.txt pqueens/singularity/requirements.txt
     - git commit -m "Update requirements based on pip-tools"
     - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
     - >
@@ -214,8 +205,6 @@ code_analysis:
       - track_pydocstyle.txt
     when: on_failure
     expire_in: 4 weeks
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 documentation:
   # build the documentation
@@ -233,8 +222,6 @@ documentation:
       - doc/build/html
     when: on_success
     expire_in: 3 days
-  needs:
-    - lnm-build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
   # check license compliance
@@ -243,8 +230,6 @@ license_check:
   stage: codechecks
   script:
     - liccheck -s lic_strategy.ini  -r requirements.txt
-  needs:
-    - lnm-build_conda_env
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
@@ -271,7 +256,6 @@ lnm-ubuntu_full_test_suite:
     - .ubuntu_full_test_suite
   needs:
     - lnm-build_conda_env
-    - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
@@ -280,7 +264,6 @@ imcs-ubuntu_full_test_suite:
     - .ubuntu_full_test_suite
   needs:
     - imcs-build_conda_env
-    - imcs-build_singularity
   tags:
     - imcs-ubuntu
 #---------------------------------------------------------------------------------------------------
@@ -298,63 +281,35 @@ imcs-ubuntu_full_test_suite:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
+    - pytest pqueens/tests/integration_tests/cluster/
+      -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
+      --remote-python=$REMOTE_PYTHON
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
-#lnm-cluster_tests:
-#  extends:
-#    - .cluster_tests
-#  variables:
-#    CLUSTER_MARKER: 'lnm_cluster'
-#  needs:
-#    - lnm-build_conda_env
-#    - lnm-build_singularity
-#  tags:
-#    - lnm-ubuntu
+lnm-cluster_tests:
+  extends:
+    - .cluster_tests
+  variables:
+    CLUSTER_MARKER: 'lnm_cluster'
+    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+  needs:
+    - lnm-build_conda_env
+    # - bruteforce-build_conda_env
+    - deep-build_conda_env
+  tags:
+    - lnm-ubuntu
 
 imcs-cluster_tests:
   extends:
     - .cluster_tests
   variables:
     CLUSTER_MARKER: "imcs_cluster"
+    REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   needs:
     - imcs-build_conda_env
-    - imcs-build_singularity
+    - charon-build_conda_env
   tags:
     - imcs-ubuntu
-#---------------------------------------------------------------------------------------------------
-# Cluster tests native
-#---------------------------------------------------------------------------------------------------
-.cluster_tests_native_conditions:
-  rules:
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-#---------------------------------------------------------------------------------------------------
-bruteforce-native-cluster_tests:
-  extends:
-    - .cluster_tests_native_conditions
-  stage: tests
-  before_script:
-    - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
-  script:
-    - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_bruteforce_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
-  needs:
-    - bruteforce-native-build_conda_env
-  tags:
-    - bruteforce-native-test
-
-deep-native-cluster_tests:
-  extends:
-    - .cluster_tests_native_conditions
-  stage: tests
-  before_script:
-    - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
-  script:
-    - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_deep_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
-  needs:
-    - deep-native-build_conda_env
-  tags:
-    - deep-native-test
 #---------------------------------------------------------------------------------------------------
 # Benchmarks
 #---------------------------------------------------------------------------------------------------
@@ -368,7 +323,6 @@ benchmarks:
     - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - lnm-build_conda_env
-    - lnm-build_singularity
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: badges
@@ -431,7 +385,7 @@ trigger_benchmarks_badge_fail:
   # needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
   needs: ["imcs-cluster_tests"]
   rules:
-    - if: ($CLUSTER_TESTS == "1") && ($CLUSTER_NATIVE_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: ($CLUSTER_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
@@ -477,57 +431,69 @@ pages:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
 #---------------------------------------------------------------------------------------------------
-# Remove conda env and singularity image on ubuntu runners
-.remove_conda_env_and_singularity_image:
+# Remove conda env on ubuntu runners
+.remove_conda_env:
   stage: cleanup
   script:
     - conda env remove -n queens-$CI_PIPELINE_ID
-    - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
   when: always
   variables:
     GIT_STRATEGY: none
   rules:
     - !reference [.ubuntu_build_conditions, rules]
 
-lnm-remove_conda_env_and_singularity_image:
+lnm-remove_conda_env:
   extends:
-    - .remove_conda_env_and_singularity_image
+    - .remove_conda_env
   dependencies:
     - lnm-build_conda_env
   tags:
     - lnm-build
 
-imcs-remove_conda_env_and_singularity_image:
+imcs-remove_conda_env:
   extends:
-    - .remove_conda_env_and_singularity_image
+    - .remove_conda_env
   dependencies:
     - imcs-build_conda_env
   tags:
     - imcs-build
 #---------------------------------------------------------------------------------------------------
-# Remove conda env and singularity image on cluster native runners
-.remove_conda_env_cluster_native:
+# Remove conda env and repository on cluster
+.remove_conda_env_cluster:
   stage: cleanup
   script:
-    - conda env remove -n queens-$CI_PIPELINE_ID
+    - ssh queens@$REMOTE_ADDRESS "conda env remove -n queens-$CI_PIPELINE_ID;
+      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID; rm -rf /home/queens/queens-simulation-data/tests"
   when: always
-  variables:
-    GIT_STRATEGY: none
   rules:
-    - if: $CLUSTER_NATIVE_TESTS == "1"
+    - if: $CLUSTER_TESTS == "1"
 
-bruteforce-cluster-native-remove_conda_env:
-  extends:
-    - .remove_conda_env_cluster_native
-  dependencies:
-    - bruteforce-native-build_conda_env
-  tags:
-    - bruteforce-native-test
+#bruteforce-cluster-remove_conda_env:
+#  extends:
+#    - .remove_conda_env_cluster
+#  dependencies:
+#    - bruteforce-build_conda_env
+#  variables:
+#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+#  tags:
+#    - lnm-build
 
-deep-cluster-native-remove_conda_env:
+deep-cluster-remove_conda_env:
   extends:
-    - .remove_conda_env_cluster_native
+    - .remove_conda_env_cluster
   dependencies:
-    - deep-native-build_conda_env
+    - deep-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
   tags:
-    - deep-native-test
+    - lnm-build
+
+charon-cluster-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster
+  dependencies:
+    - charon-build_conda_env
+  variables:
+    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+  tags:
+    - imcs-build

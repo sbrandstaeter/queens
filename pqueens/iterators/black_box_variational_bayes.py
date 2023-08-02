@@ -69,8 +69,9 @@ class BBVIIterator(VariationalInferenceIterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        global_settings,
+        parameters,
         result_description,
         variational_distribution,
         n_samples_per_iter,
@@ -93,8 +94,9 @@ class BBVIIterator(VariationalInferenceIterator):
         """Initialize BBVI iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
@@ -136,6 +138,7 @@ class BBVIIterator(VariationalInferenceIterator):
         super().__init__(
             model=model,
             global_settings=global_settings,
+            parameters=parameters,
             result_description=result_description,
             variational_distribution=variational_distribution,
             variational_params_initialization=variational_parameter_initialization,
@@ -191,7 +194,7 @@ class BBVIIterator(VariationalInferenceIterator):
             samples of the current batch
         """
         # The first samples belong to simulation input
-        # get simulation output (run actual forward problem)--> data is saved to DB
+        # get simulation output (run actual forward problem)
         log_likelihood = self.model.evaluate(sample_batch)
 
         return log_likelihood.flatten()

@@ -31,8 +31,7 @@ model:
     stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
     noise_var_lb: 1.0e-07
-    data_scaling:
-      type: standard_scaler
+    data_scaling: standard_scaler
     sigma_0_sq: 1.0
     l_scale_sq: 1.0
     sigma_n_sq: 1.0
@@ -76,9 +75,9 @@ optimizer:
   type: adam
   learning_rate: 0.008
   optimization_type: max
-  max_iterations: 1000
-  rel_L1_change_threshold: 0.0001
-  rel_L2_change_threshold: 0.0001
+  max_iteration: 1000
+  rel_l1_change_threshold: 0.0001
+  rel_l2_change_threshold: 0.0001
 data_processor_experimental_data:
   type: csv
   file_name_identifier: '*.csv'
@@ -134,29 +133,28 @@ resources:
     max_finished_jobs: 10000
 local_scheduler:
   experiment_dir: {experiment_dir}
-  type: standard
-  singularity: false
+  type: local
   num_procs: 1
   num_procs_post: 1
 hf_driver:
   type: mpi
   input_template: {baci_hf_input}
   path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_hf
 lf_driver_1:
   type: mpi
   input_template: {baci_lf_input}
   path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_lf_hf
 lf_driver_2:
   type: mpi
   input_template: {baci_lf_input}
   path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_lf_hf
 data_processor_lf_hf:

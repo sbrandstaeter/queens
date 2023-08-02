@@ -1,7 +1,4 @@
 experiment_name: rpvi_gaussian
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: rpvi
   model_name: model
@@ -31,26 +28,28 @@ optimizer:
   type: adam
   learning_rate: 0.05
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
-  max_iter: 10000000
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
+  max_iteration: 10000000
 model:
   type: gaussian
-  forward_model_name: forward_model
-  output_label: y_obs
-  coordinate_labels: []
+  forward_model_name: {{ forward_model_name }}
   noise_type: fixed_variance
   noise_value: 1
-  experimental_file_name_identifier: "*.csv"
-  experimental_csv_data_base_dir: {{ experimental_data_path }}
-forward_model:
-  type: simulation_model
+  experimental_data_reader_name: experimental_data_reader
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: "*.csv"
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+fd_model:
+  type: differentiable_simulation_model_fd
   interface_name: interface
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: {{ gradient_method }}
   finite_difference_method: 2-point
   step_size: 1.0e-05
+simulation_model:
+  type: simulation_model
+  interface_name: interface
 interface:
   type: direct_python_interface
   function: patch_for_likelihood

@@ -1,7 +1,4 @@
 experiment_name: inverse_bbvi_park91a_hifi
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: bbvi
   model_name: model
@@ -35,21 +32,25 @@ optimizer:
   type: adam
   learning_rate: 0.01
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
-  max_iter: 10000000
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
+  max_iteration: 10000000
 model:
   type: gaussian
   forward_model_name: forward_model
-  experimental_file_name_identifier: "*.csv"
-  output_label: y_obs
-  coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
-  experimental_csv_data_base_dir: {{ experimental_data_path }}
-  noise_var_iterative_averaging:
-    averaging_type: moving_average
-    num_iter_for_avg: 10
+  noise_var_iterative_averaging_name: iterative_averaging
+  experimental_data_reader_name: experimental_data_reader
+iterative_averaging:
+  type: moving_average
+  num_iter_for_avg: 10
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: "*.csv"
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+  coordinate_labels: [ x3, x4 ]
 forward_model:
   type: simulation_model
   interface_name: interface

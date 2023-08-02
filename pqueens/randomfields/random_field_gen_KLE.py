@@ -63,7 +63,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         self.trunc_thres = None
         self.largest_length = None
         self.corr_length = None
-        self.w_n = None
+        self.w_n = np.array([])
         self.lambda_n = None
 
         # call superclass  first

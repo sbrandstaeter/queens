@@ -1,4 +1,4 @@
-"""TODO_doc: This is currently not in the documentation.
+"""Visualization of surrogate models.
 
 A module that provides utilities and a class for visualization of surrogate
 models.
@@ -16,12 +16,10 @@ Attributes:
 import sys
 from pathlib import Path
 
-import GPy
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from GPy.models.gp_regression import GPRegression
 from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
@@ -32,19 +30,18 @@ this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 
 
-def from_config_create(config, model_name=None):
-    """TODO_doc: add a one-line explanation.
+def from_config_create(plotting_options):
+    """Create the SurrogateVisualization object.
 
     Module function that calls the class function *from_config_create* and
     creates instance of the SurrogateVisualization class from the problem
     description.
 
     Args:
-        config (dict): Dictionary containing the problem description
-        model_name (str): Name of model to identify right section in options dict (optional)
+        plotting_options (dict): Dictionary containing the plotting_options
     """
     this.surrogate_visualization_instance = SurrogateVisualization.from_config_create(
-        config, model_name=model_name
+        plotting_options
     )
 
 
@@ -64,7 +61,7 @@ def convert_to_dict(values):
 
 
 class SurrogateVisualization:
-    """TODO_doc: add a one-line explanation.
+    """Visualize a surrogate model.
 
     Visualization class for surrogate models that contains several plotting,
     storing and visualization methods that can be used anywhere in QUEENS.
@@ -76,7 +73,7 @@ class SurrogateVisualization:
                                    should be displayed or not.
        random_variables (dict): Random variables of the problem.
        parameter_names (list): List of parameter names as strings.
-       figures: TODO_doc
+       figures (dict): Dict of visualization figures.
 
     Returns:
         SAVisualization (obj): Instance of the SurrogateVisualization Class
@@ -89,12 +86,12 @@ class SurrogateVisualization:
     plt.rcParams.update({'font.size': 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
-        """TODO_doc.
+        """Initialize the SurrogateVisualization object.
 
         Args:
-            saving_paths: TODO_doc
-            save_plot: TODO_doc
-            display_plot: TODO_doc
+            saving_paths: paths where to save the plots
+            save_plot (dict): true if plots should be saved
+            display_plot (dict): true if plots should be displayed
         """
         self.saving_paths = saving_paths
         self.should_be_saved = save_plot
@@ -104,25 +101,15 @@ class SurrogateVisualization:
         self.figures = {}
 
     @classmethod
-    def from_config_create(cls, config, model_name=None):
-        """TODO_doc: add a one-line explanation.
-
-        Create the SurrogateVisualization object from the problem
-        description.
+    def from_config_create(cls, plotting_options):
+        """Create the SurrogateVisualization object.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            model_name (str): Name of model to identify right section in options dict
-                                 (optional)
+            plotting_options (dict): Dictionary containing the plotting_options
 
         Returns:
             Instance of SurrogateVisualization (obj)
         """
-        if model_name is None:
-            plotting_options = config["model_name"].get("plotting_options", None)
-        else:
-            plotting_options = config[model_name].get("plotting_options", None)
-
         if plotting_options:
             paths = [
                 Path(plotting_options.get("plotting_dir", None), name)
@@ -142,22 +129,23 @@ class SurrogateVisualization:
 
         return cls(saving_paths, save_plot, display_plot)
 
-    def plot(self, interface):
+    def plot(self, parameter_names, surrogate_model):
         """Call plotting methods for surrogate model.
 
         Args:
-            interface (ApproximationInterface object): Approximation interface
+            parameter_names (lst): Parameter names
+            surrogate_model (Model): Surrogate Model
 
         Returns:
             Plots of sensitivity indices
         """
-        self.parameter_names = interface.parameters.names
+        self.parameter_names = parameter_names
 
         if self.should_be_saved['1d'] or self.should_be_displayed['1d']:
-            self.plot_1d(interface.approximation)
+            self.plot_1d(surrogate_model)
 
         if self.should_be_saved['2d'] or self.should_be_displayed['2d']:
-            self.plot_2d(interface.approximation)
+            self.plot_2d(surrogate_model)
 
         # show all result plots in the end
         if any(self.should_be_displayed.values()) is True:
@@ -183,42 +171,9 @@ class SurrogateVisualization:
                                                                training data
         """
         for free_idx, parameter_name in enumerate(self.parameter_names):
-            if isinstance(gp_approximation.model, GPRegression):
-                fig = self.plot_gp_from_gpy(gp_approximation, free_idx)
-                if self.should_be_saved['1d']:
-                    fig.write_image(
-                        self.saving_paths["1d"] + "_" + parameter_name + ".png", scale=2.0
-                    )
-            else:
-                fig = self.plot_gp_from_gpflow(gp_approximation, free_idx)
-                if self.should_be_saved['1d']:
-                    fig.savefig(self.saving_paths["1d"] + "_" + parameter_name + ".png", dpi=200)
-
-    def plot_gp_from_gpy(self, gp_approximation, free_idx):
-        """Plot 1D Gaussian process with GPy library (based on plotly).
-
-        Args:
-            gp_approximation (RegressionApproximation object): Surrogate that holds GP model and
-                                                               training data
-            free_idx (int): Free index for plot
-
-        Returns:
-            TODO_doc
-        """
-        fixed_inputs = self._generate_fixed_inputs(free_idx, len(self.parameter_names))
-
-        # plot GP with GPy library
-        GPy.plotting.change_plotting_library("plotly_offline")
-        figs = gp_approximation.model.plot(plot_density=True, fixed_inputs=fixed_inputs)
-
-        y_min = gp_approximation.y_train.min()
-        y_max = gp_approximation.y_train.max()
-
-        figs[0].layout.yaxis.range = (y_min, y_max)
-        figs[0].layout.xaxis.title = self.parameter_names[free_idx]
-        figs[0].update_layout(font={"family": 'Arial', "size": 18})
-
-        return figs[0]
+            fig = self.plot_gp_from_gpflow(gp_approximation, free_idx)
+            if self.should_be_saved['1d']:
+                fig.savefig(self.saving_paths["1d"] + "_" + parameter_name + ".png", dpi=200)
 
     def plot_gp_from_gpflow(self, gp_approximation, free_idx):
         """Plot 1D Gaussian process from GPFlow.
@@ -229,7 +184,7 @@ class SurrogateVisualization:
             free_idx (int): Free index for plot
 
         Returns:
-            fig: TODO_doc
+            fig: Figure of the Gaussian process
         """
         # training data
         x_train = gp_approximation.x_train
@@ -278,11 +233,8 @@ class SurrogateVisualization:
             x_plot = np.vstack((xx.flatten(), yy.flatten())).T
 
             # predict
-            if isinstance(gp_approximation.model, GPRegression):
-                mean, _ = gp_approximation.model.predict_noiseless(x_plot)
-            else:
-                mean, _ = gp_approximation.model.predict_f(x_plot)
-                mean = mean.numpy()
+            mean, _ = gp_approximation.model.predict_f(x_plot)
+            mean = mean.numpy()
             v_min, v_max = (fun(np.concatenate([y_train, mean])) for fun in (np.min, np.max))
 
             self._plot_2d_view(mean, x_train, y_train, xx, yy, v_min, v_max)
@@ -369,17 +321,3 @@ class SurrogateVisualization:
         ax.set_ylabel(self.parameter_names[1])
 
         fig.savefig(self.saving_paths["2d"] + '_2d_view.png', dpi=200)
-
-    @staticmethod
-    def _generate_fixed_inputs(free_idx, number_of_parameters):
-        """Generate list of fixed inputs for GPy plotting.
-
-        Args:
-            free_idx (int): free index for plot
-            number_of_parameters (int): number of input parameters
-        """
-        fixed_inputs = []
-        for idx in range(0, number_of_parameters):
-            if idx != free_idx:
-                fixed_inputs.append((idx, 0.0))
-        return fixed_inputs

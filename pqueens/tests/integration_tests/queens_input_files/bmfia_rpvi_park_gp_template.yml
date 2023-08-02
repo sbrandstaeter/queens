@@ -1,7 +1,4 @@
 experiment_name: bmfia_rpvi_park
-database:
-  address: localhost:27017
-  type: mongodb
 method:
   max_feval: 100
   model_name: model
@@ -25,30 +22,19 @@ method:
   variational_parameter_initialization: prior
   variational_transformation: null
 optimizer:
-  FIM_dampening: true
-  FIM_dampening_lower_bound: 1.0e-08
-  dampening_coefficient: 0.01
-  decay_start_iteration: 50
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 10000.0
   learning_rate: 0.03
-  max_iter: 10000000
-  natural_gradient: true
+  max_iteration: 10000000
   optimization_type: max
-  rel_L1_change_threshold: -1
-  rel_L2_change_threshold: -1
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
   type: adam
 model:
   type: bmf_gaussian
-  interface_name: bmfia_interface
+  mf_interface_name: bmfia_interface
   mf_approx_name: mf_approx
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
-  output_label: y_obs
-  coordinate_labels: [x3, x4]
   noise_value: 0.0001
-  experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {{ experimental_data_path }}
   plotting_options:
     plot_booleans:
       - false
@@ -60,10 +46,16 @@ model:
     save_bool:
       - false
       - false
+  experimental_data_reader_name: experimental_data_reader
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: '*.csv'
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+  coordinate_labels: [x3, x4]
 mf_approx:
   type: gp_jitted
-  data_scaling:
-    type: standard_scaler
+  data_scaling: standard_scaler
   initial_hyper_params_lst:
     - 0.05
     - 1.0
@@ -71,16 +63,15 @@ mf_approx:
   kernel_type: squared_exponential
   noise_var_lb: 1.0e-06
   mean_function_type: identity_multi_fidelity
-  random_seed: 1
   stochastic_optimizer_name: gp_optimizer
 bmfia_interface:
-  type: bmfia
+  type: bmfia_interface
   num_processors_multi_processing: 4
   probabilistic_mapping_type: per_coordinate
 bmfia_iterator:
   type: bmfia
-  high_fidelity_model_name: hf_model
-  low_fidelity_model_name: lf_model
+  hf_model_name: hf_model
+  lf_model_name: lf_model
   features_config: man_features
   num_features: 1
   X_cols: [0]
@@ -90,11 +81,9 @@ bmfia_iterator:
     type: random
 gp_optimizer:
   learning_rate: 0.008
-  max_iterations: 1000
   optimization_type: max
-  plot_refresh_rate: 10
-  rel_L1_change_threshold: 0.004
-  rel_L2_change_threshold: 0.004
+  rel_l1_change_threshold: 0.004
+  rel_l2_change_threshold: 0.004
   type: adam
 hf_interface:
   function: park91a_hifi_on_grid
@@ -110,9 +99,6 @@ lf_interface:
 lf_model:
   interface_name: lf_interface
   type: simulation_model
-  gradient_handler_name: gradient_handler
-gradient_handler:
-  type: provided
 parameters:
   x1:
     lower_bound: 0.01

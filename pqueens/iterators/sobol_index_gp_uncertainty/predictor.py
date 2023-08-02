@@ -1,15 +1,9 @@
 """Helper classes for Gaussian process prediction for Sobol indices."""
 import logging
-import multiprocessing as mp
 import time
 
 import numpy as np
 import xarray as xr
-
-from pqueens.iterators.sobol_index_gp_uncertainty.utils_prediction import (
-    predict_mean,
-    sample_realizations,
-)
 
 _logger = logging.getLogger(__name__)
 
@@ -24,29 +18,29 @@ class Predictor:
 
     Attributes:
         number_gp_realizations (int): number of Gaussian process realizations
-        gp_interface (ApproximationInterface object): interface to Gaussian process
+        gp_model (Model): Gaussian process model
         seed_posterior_samples (int): seed for posterior samples
     """
 
-    def __init__(self, gp_interface, number_gp_realizations, seed_posterior_samples):
+    def __init__(self, gp_model, number_gp_realizations, seed_posterior_samples):
         """Initialize.
 
         Args:
-            gp_interface (ApproximationInterface object): interface to Gaussian process
+            gp_model (Model): Gaussian process model
             number_gp_realizations (int): number of Gaussian process realizations
             seed_posterior_samples (int): seed for posterior samples
         """
-        self.gp_interface = gp_interface
+        self.gp_model = gp_model
         self.number_gp_realizations = number_gp_realizations
         self.seed_posterior_samples = seed_posterior_samples
 
     @classmethod
-    def from_config_create(cls, method_options, gp_interface):
+    def from_config_create(cls, method_options, gp_model):
         """Create estimator from problem description.
 
         Args:
             method_options (dict): dictionary with method options
-            gp_interface (list): interface to Gaussian process
+            gp_model (Model): Gaussian process model
 
         Returns:
             estimator: SobolIndexEstimator
@@ -58,19 +52,18 @@ class Predictor:
         else:
             _logger.info('Number of realizations = {}'.format(number_gp_realizations))
         return cls(
-            gp_interface=gp_interface,
+            gp_model=gp_model,
             number_gp_realizations=number_gp_realizations,
             seed_posterior_samples=seed_posterior_samples,
         )
 
-    def predict(self, samples, num_procs):
+    def predict(self, samples):
         """Predict output at Monte-Carlo samples.
 
         Sample realizations of Gaussian process or use the posterior mean of the Gaussian process.
 
         Args:
             samples (xr.Array): Monte-Carlo samples
-            num_procs (int): number of processors
 
         Returns:
             prediction (xr.Array): predictions
@@ -78,12 +71,20 @@ class Predictor:
         start_prediction = time.time()
 
         prediction = self._init_prediction(samples)
-        prediction_function, input_list = self._setup_parallelization(samples, prediction)
 
-        # start multiprocessing pool
-        pool = mp.get_context("spawn").Pool(num_procs)
-        raw_prediction = pool.starmap(prediction_function, input_list)
-        pool.close()
+        inputs = np.array(samples).reshape(-1, samples.shape[-1])
+        gp_output = self.gp_model.predict(inputs, support='f')
+
+        if self.number_gp_realizations == 1:
+            raw_prediction = gp_output['mean'].reshape(*samples.shape[:2], 1)
+        else:
+            if self.seed_posterior_samples:
+                np.random.seed(self.seed_posterior_samples)
+            raw_prediction = (
+                gp_output['mean']
+                + np.random.randn(inputs.shape[0], self.number_gp_realizations)
+                * np.sqrt(gp_output['variance'])
+            ).reshape(*samples.shape[:2], self.number_gp_realizations)
 
         prediction.data = np.array(raw_prediction)
 
@@ -120,34 +121,3 @@ class Predictor:
         )
 
         return prediction
-
-    def _setup_parallelization(self, samples, prediction):
-        """Set up parallelization.
-
-        Args:
-            samples (xr.DataArray): Monte-Carlo samples
-            prediction (xr.DataArray): predictions
-
-        Returns:
-            prediction_function (obj): function object for prediction
-            input_list (list): list of input for prediction_function
-        """
-        if self.number_gp_realizations == 1:
-            prediction_function = predict_mean
-            input_list = [
-                (samples.loc[dict(monte_carlo=m)].values, self.gp_interface.approximation)
-                for m in prediction.coords["monte_carlo"]
-            ]
-        else:
-            prediction_function = sample_realizations
-            input_list = [
-                (
-                    samples.loc[dict(monte_carlo=m)].values,
-                    self.gp_interface.approximation,
-                    self.number_gp_realizations,
-                    self.seed_posterior_samples,
-                )
-                for m in prediction.coords["monte_carlo"]
-            ]
-
-        return prediction_function, input_list

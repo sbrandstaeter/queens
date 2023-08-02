@@ -4,28 +4,28 @@ import pytest
 
 from pqueens.utils.iterative_averaging_utils import (
     ExponentialAveraging,
-    L1_norm,
-    L2_norm,
     MovingAveraging,
     PolyakAveraging,
+    l1_norm,
+    l2_norm,
     relative_change,
 )
 
 
-def test_L1_norm():
+def test_l1_norm():
     """Test L1 norm."""
     x = 2 * np.ones(10)
-    norm_L1 = L1_norm(x)
-    norm_L1_avg = L1_norm(x, True)
+    norm_L1 = l1_norm(x)
+    norm_L1_avg = l1_norm(x, True)
     np.testing.assert_almost_equal(norm_L1, 20)
     np.testing.assert_almost_equal(norm_L1_avg, 2)
 
 
-def test_L2_norm():
+def test_l2_norm():
     """Test L2 norm."""
     x = 2 * np.ones(10)
-    norm_L2 = L2_norm(x)
-    norm_L2_avg = L2_norm(x, True)
+    norm_L2 = l2_norm(x)
+    norm_L2_avg = l2_norm(x, True)
     np.testing.assert_almost_equal(norm_L2, 2 * np.sqrt(10))
     np.testing.assert_almost_equal(norm_L2_avg, 2)
 
@@ -34,7 +34,7 @@ def test_relative_change():
     """Test relative change."""
     old = np.ones(10)
     new = np.ones(10) * 2
-    rel_change = relative_change(old, new, L1_norm)
+    rel_change = relative_change(old, new, l1_norm)
     np.testing.assert_almost_equal(rel_change, 1)
 
 

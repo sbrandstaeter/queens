@@ -3,8 +3,7 @@ import numpy as np
 
 from pqueens.distributions.normal import NormalDistribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
-from pqueens.utils.gradient_handler import prepare_downstream_gradient_fun
-from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
+from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
 
 
@@ -34,86 +33,45 @@ class GaussianLikelihood(LikelihoodModel):
 
     def __init__(
         self,
-        model_name,
-        nugget_noise_variance,
         forward_model,
         noise_type,
-        noise_var_iterative_averaging,
-        normal_distribution,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
+        noise_value=None,
+        nugget_noise_variance=0,
+        noise_var_iterative_averaging=None,
+        y_obs=None,
+        experimental_data_reader=None,
     ):
         """Initialize likelihood model.
 
         Args:
-            model_name (str): Model name
             forward_model (obj): Forward model on which the likelihood model is based
-            nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_type (str): String encoding the type of likelihood noise model:
-                                         Fixed or MAP estimate with Jeffreys prior
+                                Fixed or MAP estimate with Jeffreys prior
+            noise_value (array_like): Likelihood (co)variance value
+            nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_var_iterative_averaging (obj): Iterative averaging object
-            normal_distribution (obj): Underlying normal distribution object
-            coords_mat (np.array): Matrix of observation coordinates (new coordinates row-wise)
-            time_vec (np.array): Vector containing time stamps for each observation
-            y_obs (np.array): Matrix with row-wise observation vectors
-            output_label (str): Output label name of the observations
-            coord_labels (list): List of coordinate label names. One name per column in coord_mat
+            y_obs (array_like): Vector with observations
+            experimental_data_reader (obj): Experimental data reader
         """
-        super().__init__(
-            model_name,
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        )
-        self.nugget_noise_variance = nugget_noise_variance
-        self.noise_type = noise_type
-        self.noise_var_iterative_averaging = noise_var_iterative_averaging
-        self.normal_distribution = normal_distribution
+        if y_obs is None:
+            if experimental_data_reader is None:
+                raise InvalidOptionError(
+                    "You must either provide 'y_obs' or an "
+                    "'experimental_data_reader' for GaussianLikelihood."
+                )
+            y_obs = experimental_data_reader.get_experimental_data()[0]
+        if y_obs is not None and experimental_data_reader is not None:
+            Warning(
+                "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
+                "Only provided 'y_obs' is used."
+            )
 
-    @classmethod
-    def from_config_create_model(
-        cls,
-        model_name,
-        config,
-    ):
-        """Create Gaussian likelihood model from problem description.
+        super().__init__(forward_model, y_obs)
 
-        Args:
-            model_name (str): Name of the likelihood model
-            config (dict): Dictionary containing problem description
-
-        Returns:
-            instance of GaussianLikelihood class
-        """
-        (
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        ) = super().get_base_attributes_from_config(model_name, config)
         y_obs_dim = y_obs.size
 
-        # get options
-        model_options = config[model_name]
-
-        # get specifics of gaussian likelihood model
-        noise_type = model_options["noise_type"]
-        noise_value = model_options.get("noise_value")
-        nugget_noise_variance = model_options.get("nugget_noise_variance", 1e-6)
-
-        noise_var_iterative_averaging = model_options.get("noise_var_iterative_averaging", None)
-        if noise_var_iterative_averaging:
-            noise_var_iterative_averaging = from_config_create_iterative_averaging(
-                noise_var_iterative_averaging
-            )
+        if noise_value is None and noise_type.startswith("fixed"):
+            raise InvalidOptionError(f"You have to provide a 'noise_value' for {noise_type}.")
 
         if noise_type == 'fixed_variance':
             covariance = noise_value * np.eye(y_obs_dim)
@@ -130,51 +88,50 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        normal_distribution = NormalDistribution(y_obs, covariance)
-        return cls(
-            model_name=model_name,
-            nugget_noise_variance=nugget_noise_variance,
-            forward_model=forward_model,
-            noise_type=noise_type,
-            noise_var_iterative_averaging=noise_var_iterative_averaging,
-            normal_distribution=normal_distribution,
-            coords_mat=coords_mat,
-            time_vec=time_vec,
-            y_obs=y_obs,
-            output_label=output_label,
-            coord_labels=coord_labels,
-        )
+        normal_distribution = NormalDistribution(self.y_obs, covariance)
+
+        self.nugget_noise_variance = nugget_noise_variance
+        self.noise_type = noise_type
+        self.noise_var_iterative_averaging = noise_var_iterative_averaging
+        self.normal_distribution = normal_distribution
 
     def evaluate(self, samples):
-        """Evaluate likelihood with current set of samples.
+        """Evaluate likelihood with current set of input samples.
 
         Args:
-            samples (np.array): Evaluated samples
+            samples (np.array): Input samples
 
         Returns:
-            log_likelihood (np.array): Vector of log-likelihood values
-                                       per model input.
+            log_likelihood (np.array): log-likelihood values per model input
         """
-        forward_model_output = self.forward_model.evaluate(samples)["mean"]
-        log_likelihood = self.evaluate_from_output(forward_model_output)
-        return log_likelihood
-
-    def evaluate_from_output(self, forward_model_output):
-        """Evaluate likelihood with forward model output given.
-
-        Args:
-            forward_model_output (np.array): Evaluated forward
-                                             model output
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values
-                                       per model output.
-        """
+        self.response = self.forward_model.evaluate(samples)
         if self.noise_type.startswith('MAP'):
-            self.update_covariance(forward_model_output)
-        log_likelihood = self.normal_distribution.logpdf(forward_model_output)
+            self.update_covariance(self.response['mean'])
+        log_likelihood = self.normal_distribution.logpdf(self.response['mean'])
 
         return log_likelihood
+
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
+
+        Args:
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+        """
+        # shape convention: num_samples x jacobian_shape
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['mean'])
+        upstream_gradient = upstream_gradient * log_likelihood_grad
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.
@@ -197,58 +154,3 @@ class GaussianLikelihood(LikelihoodModel):
 
         covariance = add_nugget_to_diagonal(covariance, self.nugget_noise_variance)
         self.normal_distribution.update_covariance(covariance)
-
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate likelihood model and gradient with current set of samples.
-
-        Args:
-            samples (np.array): Current input samples for which likelihood should be evaluated
-            upstream_gradient_fun (function): The gradient of an upstream objective function w.r.t.
-                                              the model output. The expected input arguments for
-                                              this function are 1) the model input samples and 2)
-                                              the model output corresponding to the input samples.
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
-            gradient_objective_fun_samples (np.array): Row-wise gradients of the objective function
-                                                       w.r.t. to the input samples. If the the
-                                                       method argument 'grad_objective_fun' is
-                                                       None, the objective function  is the
-                                                       evaluation function of this model, the
-                                                       likelihood function, itself.
-        """
-        # compose the gradient objective function to update it with own partial derivative
-        downstream_gradient_fun = prepare_downstream_gradient_fun(
-            eval_output_fun=self.evaluate_from_output,
-            partial_grad_evaluate_fun=self.partial_grad_evaluate,
-            upstream_gradient_fun=upstream_gradient_fun,
-        )
-        # call evaluate_and_gradient of sub model with the downstream gradient function
-        # (which is the upstream gradient function from the perspective of the sub model)
-        sub_model_output, gradient_objective_fun_samples = self.forward_model.evaluate_and_gradient(
-            samples, upstream_gradient_fun=downstream_gradient_fun
-        )
-
-        # evaluate log-likelihood reusing the sub model evaluations
-        log_likelihood = self.evaluate_from_output(sub_model_output)
-
-        return log_likelihood, gradient_objective_fun_samples
-
-    def partial_grad_evaluate(self, _forward_model_input, forward_model_output):
-        """Implement the partial derivative of the evaluate method.
-
-        The partial derivative w.r.t. the output of the sub-model is for example
-        required to calculate gradients of the current model w.r.t. to the sample
-        input.
-
-        Args:
-            _forward_model_input (np.array): Sample inputs of the model run (here not required).
-            forward_model_output (np.array): Output of the underlying sub- or forward model
-                                             for the current batch of sample inputs.
-
-        Returns:
-            grad_out (np.array): Evaluated partial derivative of the evaluation function
-                                 w.r.t. the output of the underlying sub-model.
-        """
-        grad_out = self.normal_distribution.grad_logpdf(forward_model_output)
-        return grad_out

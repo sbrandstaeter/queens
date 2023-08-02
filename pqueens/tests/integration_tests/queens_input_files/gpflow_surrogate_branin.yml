@@ -1,7 +1,4 @@
 experiment_name: xxx
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: monte_carlo
   seed: 44
@@ -14,26 +11,22 @@ method:
     num_support_points: 10
     estimate_all: false
 gp_surrogate_model:
-  type: datafit_surrogate_model
-  interface_name: approximation_interface
-  subordinate_model_name: truth_model
-  subordinate_iterator_name: truth_model_iterator
+  type: gp_approximation_gpflow
+  training_iterator_name: truth_model_iterator
+  train_likelihood_variance: false
+  number_restarts: 5
+  number_training_iterations: 1000
+  number_posterior_samples: 3
+  seed_posterior_samples: 42
+  dimension_lengthscales: 2
   plotting_options:
     plot_booleans: [false, false]
     plotting_dir: dummy
     plot_names: [1D, 2D]
     save_bool: [false, false]
-approximation_interface:
-  type: approximation_interface
-  approximation: gp_regression
-gp_regression:
-  type: gp_approximation_gpflow
-  train_likelihood_variance: false
-  number_restarts: 5
-  number_training_iterations: 1000
-  dimension_lengthscales: 2
 truth_model_iterator:
   type: monte_carlo
+  model_name: truth_model
   seed: 42
   num_samples: 20
 truth_model:

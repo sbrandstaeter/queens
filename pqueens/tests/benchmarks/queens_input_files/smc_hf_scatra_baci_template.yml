@@ -63,15 +63,14 @@ resources:
     max_finished_jobs: 10000
 local_scheduler:
   experiment_dir: {experiment_dir}
-  type: standard
-  singularity: false
+  type: local
   num_procs: 1
   num_procs_post: 1
 driver:
   type: mpi
   input_template: {baci_hf_input}
   path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_baci
 data_processor_baci:

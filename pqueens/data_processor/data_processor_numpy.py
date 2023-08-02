@@ -14,10 +14,9 @@ class DataProcessorNumpy(DataProcessor):
 
     def __init__(
         self,
-        file_name_identifier,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
-        data_processor_name,
+        file_name_identifier=None,
+        file_options_dict=None,
+        files_to_be_deleted_regex_lst=None,
     ):
         """Instantiate data processor class for numpy binary data.
 
@@ -28,40 +27,14 @@ class DataProcessorNumpy(DataProcessor):
             file_options_dict (dict): Dictionary with read-in options for the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
 
         Returns:
             Instance of DataProcessorNpy class
         """
         super().__init__(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
-        )
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create the class from the problem description.
-
-        Args:
-            config (dict): Dictionary with problem description
-            data_processor_name (str): Name of the data processor
-
-        Return:
-            Instance of DataProcessorNpy class
-        """
-        (
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, data_processor_name)
-
-        return cls(
-            file_name_identifier,
-            file_options_dict,
-            files_to_be_deleted_regex_lst,
-            data_processor_name,
+            file_name_identifier=file_name_identifier,
+            file_options_dict=file_options_dict,
+            files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
     def _get_raw_data_from_file(self):

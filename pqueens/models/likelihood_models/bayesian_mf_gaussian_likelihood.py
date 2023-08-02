@@ -6,11 +6,9 @@ import numpy as np
 
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.distributions.mean_field_normal import MeanFieldNormalDistribution
-from pqueens.interfaces import from_config_create_interface
-from pqueens.iterators import from_config_create_iterator
+from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.ascii_art import print_bmfia_acceleration
-from pqueens.utils.gradient_handler import prepare_downstream_gradient_fun
 
 _logger = logging.getLogger(__name__)
 
@@ -22,8 +20,12 @@ class BMFGaussianModel(LikelihoodModel):
     analysis scheme [1, 2].
 
     Attributes:
+        coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+        time_vec (np.array): Vector of observation times
+        output_label (str): Name of the experimental outputs (column label in csv-file)
+        coord_labels (lst): List with coordinate labels for (column labels in csv-file)
         mf_interface (obj): QUEENS multi-fidelity interface
-        bmfia_subiterator (obj): Subiterator to select the training data of the
+        mf_subiterator (obj): Subiterator to select the training data of the
                                 probabilistic regression model
         normal_distribution (obj): Mean field normal distribution object
         noise_var (np.array): Noise variance of the observations
@@ -51,100 +53,50 @@ class BMFGaussianModel(LikelihoodModel):
 
     def __init__(
         self,
-        model_name,
         forward_model,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
         mf_interface,
-        bmfia_subiterator,
-        mean_field_normal,
-        noise_var,
-        num_refinement_samples,
-        likelihood_evals_for_refinement,
+        mf_subiterator,
+        experimental_data_reader,
+        mf_approx,
+        noise_value=None,
+        num_refinement_samples=None,
+        likelihood_evals_for_refinement=None,
+        plotting_options=None,
     ):
         """Instantiate the multi-fidelity likelihood class.
 
         Args:
-            model_name (str): Name of the likelihood model in the config file
             forward_model (obj): Forward model to iterate; here: the low fidelity model
-            coords_mat (np.array): Matrix with coordinate values for observations
-            time_vec (np.array): Vector with time-stamps of observations
-            y_obs (np.array): Matrix / vector of observations
-            output_label (str): Label / name of the output / QoI in the experimental data file
-            coord_labels (str): Labels / names of the coordinates in the experimental data file
             mf_interface (obj): QUEENS multi-fidelity interface
-            bmfia_subiterator (obj): Subiterator to select the training data of the
-                                    probabilistic regression model
-            mean_field_normal (obj): Mean field normal distribution object
-            noise_var (np.array): Noise variance of the observations
+            mf_subiterator (obj): Subiterator to select the training data of the probabilistic
+                                  regression model
+            experimental_data_reader (obj): Experimental data reader object
+            mf_approx (Model): Probabilistic mapping
+            noise_value (array_like): Noise variance of the observations
             num_refinement_samples (int): Number of additional samples to train the multi-fidelity
                                           dependency in refinement step
             likelihood_evals_for_refinement (lst): List with necessary number of likelihood
                                                    evaluations before the refinement step is
                                                    conducted
-        """
-        super().__init__(
-            model_name,
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-        )
-
-        self.mf_interface = mf_interface
-        self.bmfia_subiterator = bmfia_subiterator
-        self.min_log_lik_mf = None
-        self.normal_distribution = mean_field_normal
-        self.noise_var = noise_var
-        self.likelihood_counter = 1
-        self.num_refinement_samples = num_refinement_samples
-        self.likelihood_evals_for_refinement = likelihood_evals_for_refinement
-
-    @classmethod
-    def from_config_create_model(
-        cls,
-        model_name,
-        config,
-    ):
-        """Configure multi-fidelity likelihood class from problem description.
-
-        Returns:
-            BMFGaussianModel (obj): A BMFGaussianModel object
+            plotting_options (dict): Options for plotting
         """
         (
-            forward_model,
-            coords_mat,
-            time_vec,
             y_obs,
-            output_label,
-            coord_labels,
-        ) = super().get_base_attributes_from_config(model_name, config)
+            self.coords_mat,
+            self.time_vec,
+            _,
+            _,
+            self.coord_labels,
+            self.output_label,
+        ) = experimental_data_reader.get_experimental_data()
+        super().__init__(forward_model, y_obs)
 
-        # get model options
-        model_options = config[model_name]
-
-        # ---------- create multi-fidelity interface --------------------------------------------
-        bmfia_interface_name = model_options.get("interface_name")
-        if config[bmfia_interface_name]["type"] != "bmfia":
-            raise ValueError("The interface type must be 'bmfia' for BMFGaussianModel!")
-        bmfia_interface = from_config_create_interface(bmfia_interface_name, config)
-
-        # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options["mf_subiterator_name"]
-        approx_name = model_options["mf_approx_name"]
-        bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
+        if not isinstance(mf_interface, BmfiaInterface):
+            raise ValueError("The interface type must be 'bmfia_interface' for BMFGaussianModel!")
 
         # ----------------------- initialize the mean field normal distribution ------------------
-        noise_variance = np.array(model_options.get("noise_value"))
+        noise_variance = np.array(noise_value)
         dimension = y_obs.size
-
-        num_refinement_samples = model_options.get("num_refinement_samples")
-        likelihood_evals_for_refinement = model_options.get("likelihood_evals_for_refinement")
 
         # build distribution with dummy values; parameters might change during runtime
         mean_field_normal = MeanFieldNormalDistribution(
@@ -152,36 +104,28 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ---------------------- initialize some model settings/train surrogates -----------------
-        BMFGaussianModel.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, bmfia_subiterator)
-        BMFGaussianModel._build_approximation(
-            bmfia_subiterator,
-            bmfia_interface,
-            config,
-            approx_name,
-            coord_labels,
-            time_vec,
-            coords_mat,
+        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, y_obs, mf_subiterator)
+        self._build_approximation(
+            mf_subiterator,
+            mf_interface,
+            mf_approx,
+            self.coord_labels,
+            self.time_vec,
+            self.coords_mat,
         )
 
         # ----------------------- create visualization object(s) ---------------------------------
-        plotting_options = config[model_name].get("plotting_options", {})
-        qvis.from_config_create(plotting_options)
+        if plotting_options:
+            qvis.from_config_create(plotting_options)
 
-        return cls(
-            model_name,
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs,
-            output_label,
-            coord_labels,
-            bmfia_interface,
-            bmfia_subiterator,
-            mean_field_normal,
-            noise_variance,
-            num_refinement_samples,
-            likelihood_evals_for_refinement,
-        )
+        self.mf_interface = mf_interface
+        self.mf_subiterator = mf_subiterator
+        self.min_log_lik_mf = None
+        self.normal_distribution = mean_field_normal
+        self.noise_var = noise_variance
+        self.likelihood_counter = 1
+        self.num_refinement_samples = num_refinement_samples
+        self.likelihood_evals_for_refinement = likelihood_evals_for_refinement
 
     def evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
@@ -206,8 +150,33 @@ class BMFGaussianModel(LikelihoodModel):
         )[:num_samples, :]
 
         mf_log_likelihood = self.evaluate_from_output(samples, forward_model_output)
+        self.response = {
+            'forward_model_output': forward_model_output,
+            'mf_log_likelihood': mf_log_likelihood,
+        }
 
         return mf_log_likelihood
+
+    def grad(self, samples, upstream_gradient):
+        r"""Evaluate gradient of model w.r.t. current set of input samples.
+
+        Consider current model f(x) with input samples x, and upstream function g(f). The provided
+        upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
+        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`.
+
+        Args:
+            samples (np.array): Input samples
+            upstream_gradient (np.array): Upstream gradient function evaluated at input samples
+                                          :math:`\frac{\partial g}{\partial f}`
+
+        Returns:
+            gradient (np.array): Gradient w.r.t. current set of input samples
+                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+        """
+        partial_grad = self.partial_grad_evaluate(samples, self.response['forward_model_output'])
+        upstream_gradient = upstream_gradient * partial_grad
+        gradient = self.forward_model.grad(samples, upstream_gradient)
+        return gradient
 
     def evaluate_from_output(self, samples, forward_model_output):
         """Evaluate multi-fidelity likelihood from forward model output.
@@ -227,37 +196,6 @@ class BMFGaussianModel(LikelihoodModel):
         self.likelihood_counter += 1
         return mf_log_likelihood
 
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate model and its gradient with current set of samples.
-
-        Args:
-            samples (np.ndarray): Samples to evaluate
-            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
-                                         model output.
-
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
-            grad_objective_samples (np.array): Row-wise gradients of the objective function w.r.t.
-                                               to the input samples. If the method argument
-                                               'grad_objective_fun' is None, the objective function
-                                               is the evaluation function of this model, the
-                                               likelihood function, itself.
-        """
-        # compose the gradient objective function to update it with own partial derivative
-        upstream_gradient_fun = prepare_downstream_gradient_fun(
-            eval_output_fun=self.evaluate_from_output,
-            partial_grad_evaluate_fun=self.partial_grad_evaluate,
-            upstream_gradient_fun=upstream_gradient_fun,
-        )
-        # call evaluate_and_gradient of sub model
-        sub_model_output, grad_objective_samples = self.forward_model.evaluate_and_gradient(
-            samples, upstream_gradient_fun=upstream_gradient_fun
-        )
-        # evaluate log-likelihood reusing the sub model evaluations
-        log_likelihood = self.evaluate_from_output(samples, sub_model_output)
-
-        return log_likelihood, grad_objective_samples
-
     def partial_grad_evaluate(self, forward_model_input, forward_model_output):
         """Implement the partial derivative of the evaluate method.
 
@@ -275,7 +213,7 @@ class BMFGaussianModel(LikelihoodModel):
                                  w.r.t. the output of the underlying sub-model.
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator.set_feature_strategy(
+        z_mat = self.mf_subiterator.set_feature_strategy(
             forward_model_output,
             forward_model_input,
             self.coords_mat[: forward_model_output.shape[0]],
@@ -334,7 +272,7 @@ class BMFGaussianModel(LikelihoodModel):
             additional_y_lf_train (np.array, optional): New output training points.
                                                         Defaults to None.
         """
-        z_train, y_hf_train = self.bmfia_subiterator.expand_training_data(
+        z_train, y_hf_train = self.mf_subiterator.expand_training_data(
             additional_x_train, additional_y_lf_train=additional_y_lf_train
         )
         _logger.info('Start updating the probabilistic model...')
@@ -366,7 +304,7 @@ class BMFGaussianModel(LikelihoodModel):
                 Propagation in Complex Physical Simulations", arXiv:2001.02892
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator.set_feature_strategy(
+        z_mat = self.mf_subiterator.set_feature_strategy(
             y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
         )
         # Get the response matrices of the multi-fidelity mapping
@@ -439,8 +377,7 @@ class BMFGaussianModel(LikelihoodModel):
     def _build_approximation(
         bmfia_subiterator,
         bmfia_interface,
-        config,
-        approx_name,
+        approx,
         coord_labels,
         time_vec,
         coords_mat,
@@ -454,8 +391,7 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
             bmfia_interface (bmfia_interface): BMFIA interface object.
-            config (dict): Configuration dictionary.
-            approx_name (str): Name of the approximation for probabilistic mapping.
+            approx (Model): Approximation for probabilistic mapping.
             coord_labels (list): List of coordinate labels.
             time_vec (np.array): Time vector of the experimental data.
             coords_mat (np.array): (Spatial) Coordinates of the experimental data.
@@ -464,7 +400,7 @@ class BMFGaussianModel(LikelihoodModel):
         z_train, y_hf_train = bmfia_subiterator.core_run()
         # ----- train regression model on the data ----------------------------------------
         bmfia_interface.build_approximation(
-            z_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+            z_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
         )
         _logger.info("---------------------------------------------------------------------")
         _logger.info('Probabilistic model was built successfully!')

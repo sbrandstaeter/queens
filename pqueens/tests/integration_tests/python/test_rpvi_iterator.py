@@ -29,10 +29,10 @@ def test_rpvi_iterator_park91a_hifi(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_differences",
+        "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
-        "likelihood_model_type": "gaussian",
-        "external_python_module": "",
+        "model": "model",
+        "external_python_module": module_path,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -75,9 +75,9 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_differences",
+        "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
-        "likelihood_model_type": "MyLikelihood",
+        "model": "model_external",
         "external_python_module": module_path,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
@@ -115,10 +115,10 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "provided",
+        "forward_model_name": "simulation_model",
         "my_function": "park91a_hifi_on_grid_with_gradients",
-        "likelihood_model_type": "gaussian",
-        "external_python_module": "",
+        "model": "model",
+        "external_python_module": module_path,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -156,20 +156,20 @@ def target_density(self, samples):
     return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(scope="module", params=['provided', 'finite_differences'])
-def gradient_method(request):
+@pytest.fixture(scope="module", params=['simulation_model', 'fd_model'])
+def forward_model(request):
     """Gradient method."""
     return request.param
 
 
-def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
+def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, forward_model):
     """Test RPVI with univariate Gaussian."""
     template = inputdir / "rpvi_gaussian_template.yml"
 
     dir_dict = {
         "plot_dir": tmp_path,
         "experimental_data_path": tmp_path,
-        "gradient_method": gradient_method,
+        "forward_model_name": forward_model,
     }
     input_file = tmp_path / "rpvi_gaussian.yml"
     injector.inject(dir_dict, template, input_file)
@@ -184,7 +184,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
         results = pickle.load(handle)
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
-    posterior_mean = np.array([-20 / 11, 20 / 11])
+    posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)
 
     # Actual tests
     np.testing.assert_almost_equal(
