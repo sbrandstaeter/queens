@@ -8,7 +8,6 @@ from scipy.linalg import cho_solve
 import pqueens.models.surrogate_models.utils.kernel_utils_jitted as utils_jitted
 from pqueens.models.surrogate_models.surrogate_model import SurrogateModel
 from pqueens.utils.random_process_scaler import VALID_SCALER
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -130,24 +129,6 @@ class GPJittedModel(SurrogateModel):
         self.noise_variance_lower_bound = noise_var_lb
         self.plot_refresh_rate = plot_refresh_rate
         self.kernel_type = kernel_type
-
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create simulation model from problem description.
-
-        Args:
-            model_name (string): Name of model
-            config (dict):       Dictionary containing problem description
-
-        Returns:
-            simulation_model: Instance of GPJittedModel
-        """
-        model_options = config[model_name].copy()
-        model_options.pop('type')
-        stochastic_optimizer_name = model_options.pop("stochastic_optimizer_name")
-        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
-
-        return cls(stochastic_optimizer=stochastic_optimizer, **model_options)
 
     def log_evidence(self):
         """Log evidence/log marginal likelihood of the GP.

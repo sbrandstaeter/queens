@@ -4,8 +4,6 @@ from typing import final
 
 import numpy as np
 
-import pqueens.parameters.parameters as parameters_module
-
 
 class Model(metaclass=abc.ABCMeta):
     """Base Model class.
@@ -19,7 +17,6 @@ class Model(metaclass=abc.ABCMeta):
         Two, it acts as a factory for the instantiation of model objects.
 
     Attributes:
-        parameters (obj): Parameters object.
         response (dict): Response corresponding to parameters.
     """
 
@@ -27,7 +24,6 @@ class Model(metaclass=abc.ABCMeta):
 
     def __init__(self):
         """Init model object."""
-        self.parameters = parameters_module.parameters
         self.response = None
 
     @abc.abstractmethod

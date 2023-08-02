@@ -27,16 +27,24 @@ class DirectPythonInterface(Interface):
         verbose (boolean):      Verbosity of evaluations.
     """
 
-    def __init__(self, function, num_workers=1, external_python_module_function=None, verbose=True):
+    def __init__(
+        self,
+        parameters,
+        function,
+        num_workers=1,
+        external_python_module_function=None,
+        verbose=True,
+    ):
         """Create interface.
 
         Args:
+            parameters (obj): Parameters object
             function (str): Name of function to evaluate
             external_python_module_function (pathos pool): Path to external module with function
             num_workers (int): Number of workers
             verbose (boolean): verbosity of evaluations
         """
-        super().__init__()
+        super().__init__(parameters)
         if external_python_module_function is None:
             # Try to load existing simulator functions
             my_function = example_simulator_function_by_name(function)
@@ -50,25 +58,6 @@ class DirectPythonInterface(Interface):
         self.function = self.function_wrapper(my_function)
         self.pool = pool
         self.verbose = verbose
-
-    @classmethod
-    def from_config_create_interface(cls, interface_name, config):
-        """Create interface from config dictionary.
-
-        Args:
-            interface_name (str):   Name of interface
-            config(dict):           Dictionary containing problem description
-
-        Returns:
-            interface: Instance of DirectPythonInterface
-        """
-        interface_options = config[interface_name].copy()
-        interface_options.pop('type')
-
-        if interface_options.get('function') is None:
-            raise ValueError(f"Keyword 'function' is missing in interface '{interface_name}'")
-
-        return cls(**interface_options)
 
     def evaluate(self, samples):
         """Orchestrate call to simulator function.

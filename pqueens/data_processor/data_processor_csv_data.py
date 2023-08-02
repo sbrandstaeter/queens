@@ -48,7 +48,6 @@ class DataProcessorCsv(DataProcessor):
 
     def __init__(
         self,
-        data_processor_name,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
@@ -56,7 +55,6 @@ class DataProcessorCsv(DataProcessor):
         """Instantiate data processor class for csv data.
 
         Args:
-            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier of file name
                                              The file prefix can contain regex expression
                                              and subdirectories.
@@ -89,7 +87,6 @@ class DataProcessorCsv(DataProcessor):
             Instance of DataProcessorCsv class
         """
         super().__init__(
-            data_processor_name=data_processor_name,
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,

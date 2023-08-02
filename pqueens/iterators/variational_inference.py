@@ -7,10 +7,8 @@ import numpy as np
 
 import pqueens.visualization.variational_inference_visualization as qvis
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
 from pqueens.utils.process_outputs import write_results
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
@@ -62,6 +60,7 @@ class VariationalInferenceIterator(Iterator):
         self,
         model,
         global_settings,
+        parameters,
         result_description,
         variational_distribution,
         variational_params_initialization,
@@ -82,6 +81,7 @@ class VariationalInferenceIterator(Iterator):
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
             global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             variational_params_initialization (str): Flag to decide how to initialize the
@@ -102,7 +102,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             Initialise variational inference iterator
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         self.result_description = result_description
         self.variational_params_initialization_approach = variational_params_initialization
@@ -132,36 +132,6 @@ class VariationalInferenceIterator(Iterator):
 
         if result_description.get("plotting_options"):
             qvis.from_config_create(result_description['plotting_options'])
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: Iterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        if model is None:
-            model_name = method_options.pop('model_name')
-            model = from_config_create_model(model_name, config)
-        global_settings = config['global_settings']
-
-        stochastic_optimizer_name = method_options.pop('stochastic_optimizer_name')
-        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
-
-        return cls(
-            model=model,
-            global_settings=global_settings,
-            stochastic_optimizer=stochastic_optimizer,
-            **method_options,
-        )
 
     def core_run(self):
         """Core run for stochastic variational inference."""
