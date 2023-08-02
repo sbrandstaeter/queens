@@ -135,7 +135,7 @@ class OptimizationIterator(Iterator):
         if constraints:
             for value in constraints.values():
                 # evaluate string of lambda function into real lambda function
-                value['fun'] = eval(value['fun'])
+                value['fun'] = eval(value['fun'])  # pylint: disable=eval-used
                 constraints_list.append(value)
 
         algorithm = algorithm.upper()
