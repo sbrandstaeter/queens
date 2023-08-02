@@ -305,12 +305,14 @@ class SequentialMonteCarloIterator(Iterator):
         try:
             root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method='toms748')
             gamma_new = root_result.root
-        except Exception:
-            _logger.info(
-                "Could not find suitable gamma within %s: setting gamma=1.0", search_interval
-            )
-            gamma_new = 1.0
-
+        except ValueError as value_error:
+            if "a, b must bracket a root" in str(value_error):
+                _logger.info(
+                    "Could not find suitable gamma within %s: setting gamma=1.0", search_interval
+                )
+                gamma_new = 1.0
+            else:
+                raise value_error
         return gamma_new
 
     def update_ess(self, resampled=False):
