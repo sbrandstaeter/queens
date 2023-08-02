@@ -13,28 +13,13 @@ from pqueens.utils.iterative_averaging_utils import (
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.valid_options_utils import get_option
 
+VALID_TYPES = {
+    "adam": ['pqueens.utils.stochastic_optimizer', 'Adam'],
+    "rms_prop": ['pqueens.utils.stochastic_optimizer', 'RMSprop'],
+    "adamax": ['pqueens.utils.stochastic_optimizer', 'Adamax'],
+}
+
 _logger = logging.getLogger(__name__)
-
-
-def from_config_create_optimizer(config, optimizer_name=None):
-    """Create an optimizer object from dict.
-
-    Args:
-        config (dict): Configuration dict
-        optimizer_name (str): Name of the stochastic optimizer
-
-    Returns:
-        StochasticOptimizer object
-    """
-    valid_types = {"adam": Adam, "rms_prop": RMSprop, "adamax": Adamax}
-    optimizer_type = config.get(optimizer_name)["type"]
-    optimizer_class = get_option(
-        valid_types, optimizer_type, error_message="Unknown stochastic optimizer."
-    )
-    optimizer_options = config[optimizer_name].copy()
-    optimizer_options.pop('type')
-    optimizer = optimizer_class(**optimizer_options)
-    return optimizer
 
 
 class StochasticOptimizer(metaclass=abc.ABCMeta):

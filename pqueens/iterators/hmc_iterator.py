@@ -34,8 +34,9 @@ class HMCIterator(PyMCIterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        global_settings,
+        parameters,
         num_samples,
         seed,
         num_burn_in=100,
@@ -59,8 +60,9 @@ class HMCIterator(PyMCIterator):
         """Initialize HMC iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             seed (int): Seed for rng
             num_burn_in (int, opt): Number of burn-in steps
@@ -87,19 +89,20 @@ class HMCIterator(PyMCIterator):
         _logger.info("HMC Iterator for experiment: %s", global_settings.get('experiment_name'))
 
         super().__init__(
-            global_settings,
-            model,
-            num_burn_in,
-            num_chains,
-            num_samples,
-            discard_tuned_samples,
-            result_description,
-            summary,
-            pymc_sampler_stats,
-            as_inference_dict,
-            seed,
-            use_queens_prior,
-            progressbar,
+            model=model,
+            global_settings=global_settings,
+            parameters=parameters,
+            num_burn_in=num_burn_in,
+            num_chains=num_chains,
+            num_samples=num_samples,
+            discard_tuned_samples=discard_tuned_samples,
+            result_description=result_description,
+            summary=summary,
+            pymc_sampler_stats=pymc_sampler_stats,
+            as_inference_dict=as_inference_dict,
+            seed=seed,
+            use_queens_prior=use_queens_prior,
+            progressbar=progressbar,
         )
         self.max_steps = max_steps
         self.target_accept = target_accept

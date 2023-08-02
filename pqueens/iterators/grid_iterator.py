@@ -25,19 +25,21 @@ class GridIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         result_description,
         grid_design,
-        global_settings,
     ):
         """Initialize grid iterator.
 
         Args:
             model (model): Model to be evaluated by iterator
+            global_settings (dict, optional): Settings for the QUEENS run.
+            parameters (obj): Parameters object
             result_description (dict):  Description of desired results
             grid_design (dict): Dictionary containing grid information
-            global_settings (dict, optional): Settings for the QUEENS run.
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
         self.grid_dict = grid_design
         self.result_description = result_description
         self.samples = None

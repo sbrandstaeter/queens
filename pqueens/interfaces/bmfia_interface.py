@@ -491,17 +491,20 @@ class BmfiaInterface(Interface):
 
     def __init__(
         self,
+        parameters,
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_coordinate",
     ):
         """Instantiate a BMFIA interface.
 
         Args:
+            parameters (obj): Parameters object
             num_processors_multi_processing (int): Number of processors that should be used in the
                                                    multi-processing pool.
             probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
                                               mapping objects
         """
+        super().__init__(parameters)
         # instantiate probabilistic mapping objects
         (
             instantiate_probabilistic_mappings,
@@ -521,22 +524,6 @@ class BmfiaInterface(Interface):
         self.coord_labels = None
         self.time_vec = None
         self.coords_mat = None
-
-    @classmethod
-    def from_config_create_interface(cls, interface_name, config):
-        """Create BMFIA interface from config file.
-
-        Args:
-            interface_name (str): Name of the interface
-            config (dict): Dictionary with problem description (input file).
-
-        Returns:
-            BmfiaInterface (obj): Instance of the BmfiaInterface
-        """
-        # get settings from config file
-        interface_options = config[interface_name].copy()
-        interface_options.pop('type')
-        return cls(**interface_options)
 
     def evaluate(self, samples, support='y'):
         r"""Map the lf-features to a probabilistic response for the hf model.

@@ -1,8 +1,6 @@
 """Interface class to map input variables to simulation outputs."""
 import abc
 
-import pqueens.parameters.parameters as parameters_module
-
 
 class Interface(metaclass=abc.ABCMeta):
     """Interface class to map input variables to simulation outputs.
@@ -18,9 +16,13 @@ class Interface(metaclass=abc.ABCMeta):
         latest_job_id (int):    Latest job ID.
     """
 
-    def __init__(self):
-        """Initialize interface object."""
-        self.parameters = parameters_module.parameters
+    def __init__(self, parameters):
+        """Initialize interface object.
+
+        Args:
+            parameters (obj): Parameters object
+        """
+        self.parameters = parameters
         self.latest_job_id = 0
 
     @abc.abstractmethod

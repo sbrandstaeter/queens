@@ -47,8 +47,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        global_settings,
+        parameters,
         result_description,
         num_particles,
         max_feval,
@@ -62,8 +63,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
         """Initialize the SMC iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            global_settings (dict): Global settings of the QUEENS simulations
+            parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             num_particles (int): Number of particles
             max_feval (int): Maximum number of model calls
@@ -74,7 +76,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
             waste_free (bool): if True, all intermediate Markov steps are kept
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
         self.result_description = result_description
         self.seed = seed
         self.num_particles = num_particles

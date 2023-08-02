@@ -49,22 +49,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name):
-        """Create standard scheduler object from config.
-
-        Args:
-            config (dict): QUEENS input dictionary
-            scheduler_name (str): Name of the scheduler
-
-        Returns:
-            Instance of  LocalScheduler class
-        """
-        scheduler_options = config[scheduler_name].copy()
-        scheduler_options.pop('type')
-        global_settings = config['global_settings']
-        return cls(global_settings=global_settings, **scheduler_options)
-
     def evaluate(self, samples_list, driver):
         """Submit jobs to driver.
 

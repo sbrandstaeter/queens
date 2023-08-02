@@ -29,7 +29,6 @@ def default_data_processor(mocker):
         "problem_dimension": '5d',
     }
     file_to_be_deleted_regex_lst = []
-    data_processor_name = 'data_processor'
 
     mocker.patch(
         'pqueens.data_processor.data_processor_ensight_interface.'
@@ -37,7 +36,6 @@ def default_data_processor(mocker):
         return_value='None',
     )
     pp = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
-        data_processor_name,
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
@@ -117,7 +115,6 @@ def test_init(mocker):
     time_tol = 1e-03
     visualization_bool = False
     files_to_be_deleted_regex_lst = []
-    data_processor_name = 'data_processor'
     problem_dim = '5d'
 
     file_name_identifier = 'dummy_prefix*dummyfix'
@@ -134,8 +131,7 @@ def test_init(mocker):
         'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value='dummy_data',
     )
-    my_data_processor = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
-        data_processor_name,
+    my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -149,7 +145,6 @@ def test_init(mocker):
 
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.file_options_dict == file_options_dict
-    assert my_data_processor.data_processor_name == data_processor_name
     assert my_data_processor.file_name_identifier == file_name_identifier
     assert my_data_processor.file_path is None
     np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
@@ -170,7 +165,6 @@ def test_from_config_create_data_processor(mocker):
         'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value=experimental_ref_data,
     )
-    data_processor_name = 'data_processor'
     file_name_identifier = 'dummyprefix*dummy.case'
     time_tol = 1e-03
     visualization_bool = False
@@ -189,20 +183,12 @@ def test_from_config_create_data_processor(mocker):
         'path_to_ref_data': path_to_ref_data,
     }
 
-    config = {
-        'data_processor': {
-            'file_name_identifier': file_name_identifier,
-            'file_options_dict': file_options_dict,
-            'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
-        }
-    }
-
-    DataProcessorEnsightInterfaceDiscrepancy.from_config_create_data_processor(
-        config,
-        data_processor_name,
+    DataProcessorEnsightInterfaceDiscrepancy(
+        file_name_identifier=file_name_identifier,
+        file_options_dict=file_options_dict,
+        files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
     )
     mp.assert_called_once_with(
-        data_processor_name=data_processor_name,
         file_name_identifier=file_name_identifier,
         file_options_dict=file_options_dict,
         files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,

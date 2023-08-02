@@ -14,10 +14,8 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.normal import NormalDistribution
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, smc_utils
 from pqueens.utils.process_outputs import process_outputs, write_results
 
@@ -63,11 +61,12 @@ class MetropolisHastingsIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
+        parameters,
         result_description,
         proposal_distribution,
         num_samples,
         seed,
-        global_settings,
         tune=False,
         tune_interval=100,
         scale_covariance=1.0,
@@ -80,11 +79,12 @@ class MetropolisHastingsIterator(Iterator):
 
         Args:
             model (obj, optional): Model to be evaluated by iterator.
+            global_settings (dict): Settings for the QUEENS run.
+            parameters (obj): Parameters object
             result_description (dict): Description of desired results.
             proposal_distribution (obj): Proposal distribution.
             num_samples (int): Number of samples per chain.
             seed (int): Seed for random number generator.
-            global_settings (dict, optional): Settings for the QUEENS run.
             tune (bool): Tune the scale of covariance.
             tune_interval (int): Tune the scale of the covariance every *tune_interval*-th step.
             scale_covariance: scale_covariance (float): Scale of covariance matrix of gaussian
@@ -96,7 +96,7 @@ class MetropolisHastingsIterator(Iterator):
                                              iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
         _logger.info(
             "Metropolis-Hastings Iterator for experiment: %s",
             self.global_settings['experiment_name'],
@@ -143,34 +143,6 @@ class MetropolisHastingsIterator(Iterator):
 
         self.accepted = np.zeros((self.num_chains, 1))
         self.accepted_interval = np.zeros((self.num_chains, 1))
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: Iterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        if model is None:
-            model_name = method_options.pop('model_name')
-            model = from_config_create_model(model_name, config)
-        proposal_distribution_name = method_options.pop('proposal_distribution_name')
-        proposal_distribution = from_config_create_distribution(config[proposal_distribution_name])
-        global_settings = config['global_settings']
-        return cls(
-            model=model,
-            global_settings=global_settings,
-            proposal_distribution=proposal_distribution,
-            **method_options,
-        )
 
     def eval_log_prior(self, samples):
         """Evaluate natural logarithm of prior at samples of chains.
@@ -269,8 +241,7 @@ class MetropolisHastingsIterator(Iterator):
         else:
             # create random walk normal proposal
             mean = np.zeros(cov_mat.shape[0])
-            dist_opts = {'type': 'normal', 'mean': mean, 'covariance': cov_mat}
-            self.proposal_distribution = from_config_create_distribution(dist_opts)
+            self.proposal_distribution = NormalDistribution(mean=mean, covariance=cov_mat)
 
         self.gamma = gamma
 

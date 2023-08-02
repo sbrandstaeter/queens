@@ -7,8 +7,6 @@ import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 from pqueens.data_processor.data_processor import DataProcessor
-from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.utils.experimental_data_reader import ExperimentalDataReader
 
 _logger = logging.getLogger(__name__)
 
@@ -38,17 +36,15 @@ class DataProcessorEnsight(DataProcessor):
 
     def __init__(
         self,
-        data_processor_name,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
-        external_geometry_obj=None,
+        external_geometry=None,
         experimental_data_reader=None,
     ):
         """Init method for ensight data processor object.
 
         Args:
-            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
@@ -69,14 +65,13 @@ class DataProcessorEnsight(DataProcessor):
 
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            external_geometry_obj (obj): QUEENS external geometry object
+            external_geometry (obj): QUEENS external geometry object
             experimental_data_reader (obj): Experimental data reader object
 
         Returns:
             Instance of DataProcessorEnsight class (obj)
         """
         super().__init__(
-            data_processor_name=data_processor_name,
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
@@ -133,7 +128,7 @@ class DataProcessorEnsight(DataProcessor):
         self.geometric_set_data = None
 
         if geometric_target[0] == "geometric_set":
-            self.geometric_set_data = self.read_geometry_coordinates(external_geometry_obj)
+            self.geometric_set_data = self.read_geometry_coordinates(external_geometry)
 
         if experimental_data_reader is not None:
             (
@@ -149,47 +144,13 @@ class DataProcessorEnsight(DataProcessor):
             self.time_label_experimental = None
             self.coordinates_label_experimental = None
 
-        self.external_geometry_obj = external_geometry_obj
+        self.external_geometry = external_geometry
         self.target_time_lst = target_time_lst
         self.time_tol = time_tol
         self.vtk_field_label = vtk_field_label
         self.vtk_field_components = vtk_field_components
         self.vtk_array_type = vtk_array_type
         self.geometric_target = geometric_target
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create ensight data processor from the problem description.
-
-         Args:
-             config (dict): Dictionary with problem description
-             data_processor_name (str): Name of the data processor
-
-        Returns:
-             DataProcessorEnsight: Instance of DataProcessorEnsight
-        """
-        data_processor_options = config[data_processor_name].copy()
-        data_processor_options.pop('type')
-
-        # get experimental data to search for corresponding vtk data
-        experimental_data_reader_name = data_processor_options.get("experimental_data_reader_name")
-        experimental_data_reader = None
-        if experimental_data_reader_name:
-            experimental_data_reader = (
-                ExperimentalDataReader.from_config_create_experimental_data_reader(
-                    config, experimental_data_reader_name
-                )
-            )
-
-        # generate the external geometry module
-        external_geometry_obj = from_config_create_external_geometry(config, 'external_geometry')
-
-        return cls(
-            data_processor_name=data_processor_name,
-            experimental_data_reader=experimental_data_reader,
-            external_geometry_obj=external_geometry_obj,
-            **data_processor_options,
-        )
 
     @staticmethod
     def _check_field_specification_dict(file_options_dict):
@@ -491,7 +452,7 @@ class DataProcessorEnsight(DataProcessor):
         return vtk_solution_field
 
     @staticmethod
-    def read_geometry_coordinates(external_geometry_obj):
+    def read_geometry_coordinates(external_geometry):
         """Read geometry of interest.
 
         This method uses the QUEENS external geometry module.
@@ -503,16 +464,16 @@ class DataProcessorEnsight(DataProcessor):
             dict: set with BACI topology
         """
         # read in the external geometry
-        external_geometry_obj.main_run()
+        external_geometry.main_run()
 
         geometric_set_data = {
-            "node_topology": external_geometry_obj.node_topology,
-            "line_topology": external_geometry_obj.line_topology,
-            "surface_topology": external_geometry_obj.surface_topology,
-            "volume_topology": external_geometry_obj.volume_topology,
-            "node_coordinates": external_geometry_obj.node_coordinates,
-            "element_centers": external_geometry_obj.element_centers,
-            "element_topology": external_geometry_obj.element_topology,
+            "node_topology": external_geometry.node_topology,
+            "line_topology": external_geometry.line_topology,
+            "surface_topology": external_geometry.surface_topology,
+            "volume_topology": external_geometry.volume_topology,
+            "node_coordinates": external_geometry.node_coordinates,
+            "element_centers": external_geometry.element_centers,
+            "element_topology": external_geometry.element_topology,
         }
 
         return geometric_set_data

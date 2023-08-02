@@ -4,8 +4,9 @@ import logging
 import numpy as np
 from scipy.special import logsumexp
 
-from pqueens.distributions import from_config_create_distribution as fcc
+from pqueens.distributions import VALID_TYPES
 from pqueens.distributions.distributions import ContinuousDistribution
+from pqueens.utils.import_utils import get_module_class
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +60,8 @@ class MixtureDistribution(ContinuousDistribution):
         component_distributions = []
         for key in component_keys:
             component_options = distribution_options_copy.pop(key)
-            component_distributions.append(fcc(component_options))
+            parameter_class = get_module_class(component_options, VALID_TYPES)
+            component_distributions.append(parameter_class(**component_options))
         distribution_options_copy["component_distributions"] = component_distributions
         return cls(**distribution_options_copy)
 

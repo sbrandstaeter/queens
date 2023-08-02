@@ -30,9 +30,10 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         "plot_dir": plot_dir,
         "input_file": third_party_input_file,
         "executable": executable,
+        "adjoint_executable": "_",
         "experiment_dir": tmp_path,
         "forward_model_name": "simulation_model",
-        "gradient_data_processor": "gradient_data_processor",
+        "driver": "driver_with_gradient",
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -77,10 +78,11 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
         "input_file": third_party_input_file,
+        "adjoint_executable": "_",
         "executable": executable,
         "experiment_dir": tmp_path,
         "forward_model_name": "fd_model",
-        "gradient_data_processor": "",
+        "driver": "driver",
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -135,7 +137,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         "experiment_dir": tmp_path,
         "forward_model_name": "adjoint_model",
         "adjoint_executable": adjoint_executable,
-        "gradient_data_processor": "",
+        "driver": "driver",
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)

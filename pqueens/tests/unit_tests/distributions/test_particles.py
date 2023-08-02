@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.particles import ParticleDiscreteDistribution
 
 
@@ -47,12 +46,9 @@ def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_probabilities, _, reference_sample_space, _, _ = reference_data
 
-    distribution = from_config_create_distribution(
-        {
-            "type": "particles",
-            "probabilities": reference_probabilities,
-            "sample_space": reference_sample_space,
-        }
+    distribution = ParticleDiscreteDistribution(
+        probabilities=reference_probabilities,
+        sample_space=reference_sample_space,
     )
     return distribution
 
