@@ -3,6 +3,7 @@ import atexit
 import logging
 import socket
 import time
+from datetime import datetime, timedelta
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
@@ -63,7 +64,7 @@ class ClusterScheduler(Scheduler):
             cluster_address (str): address of cluster
             cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
-            walltime (str): Walltime for each worker job.
+            walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
             num_procs (int, opt): number of cores per job
@@ -104,6 +105,11 @@ class ClusterScheduler(Scheduler):
         _logger.debug(
             "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
         )
+        walltime_delta = datetime.strptime(walltime, "%H:%M:%S") - datetime.strptime("0", "%S")
+        # Increase jobqueue walltime by 5 minutes to kill dask workers in time
+        walltime = str(walltime_delta + timedelta(minutes=5))
+        # dask worker lifetime = walltime - 3m +/- 2m
+        worker_lifetime = str((walltime_delta + timedelta(minutes=2)).seconds) + "s"
 
         remote_port = connection.run_function(self.get_port)
         scheduler_options = {"port": remote_port}
@@ -119,6 +125,7 @@ class ClusterScheduler(Scheduler):
             "log_directory": str(experiment_dir),
             "job_directives_skip": job_directives_skip,
             "job_extra_directives": [job_extra_directives],
+            "worker_extra_args": ["--lifetime", worker_lifetime, "--lifetime-stagger", "2m"],
         }
         dask_cluster_adapt_kwargs = {
             "minimum_jobs": min_jobs,
