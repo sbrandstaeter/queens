@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.multinomial import MultinomialDistribution
 
 
@@ -27,12 +26,8 @@ def fixture_distribution(reference_data):
 def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_n_trials, reference_probabilities, _, _ = reference_data
-    return from_config_create_distribution(
-        {
-            "type": "multinomial",
-            "probabilities": reference_probabilities,
-            "n_trials": reference_n_trials,
-        }
+    return MultinomialDistribution(
+        probabilities=reference_probabilities, n_trials=reference_n_trials
     )
 
 

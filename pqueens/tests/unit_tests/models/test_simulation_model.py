@@ -23,15 +23,12 @@ def test_init():
     assert model_obj.interface == interface
 
 
-def test_fcc(dummy_config, mocker):
+def test_fcc(dummy_config):
     """Test the fcc method."""
-    model_name = "my_model"
+    interface = "dummy_interface"
 
-    mocker.patch(
-        "pqueens.models.simulation_model.from_config_create_interface", return_value="my_interface"
-    )
-    model_obj = SimulationModel.from_config_create_model(model_name, dummy_config)
-    assert model_obj.interface == "my_interface"
+    model_obj = SimulationModel(interface)
+    assert model_obj.interface == interface
     assert model_obj.__class__.__name__ == "SimulationModel"
 
 

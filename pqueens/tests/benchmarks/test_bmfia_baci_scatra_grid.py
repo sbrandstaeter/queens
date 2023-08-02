@@ -1,7 +1,6 @@
 """Benchmark test for BMFIA using a grid iterator."""
 
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pytest

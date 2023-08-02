@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.model_selection import KFold
 
 import pqueens.visualization.surrogate_visualization as qvis
-from pqueens.iterators import from_config_create_iterator
 from pqueens.models.model import Model
 
 _logger = logging.getLogger(__name__)
@@ -58,33 +57,6 @@ class SurrogateModel(Model):
         self.is_trained = False
         self.x_train = None
         self.y_train = None
-
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create simulation model from problem description.
-
-        Args:
-            model_name (string): Name of model
-            config (dict): Dictionary containing problem description
-
-        Returns:
-            Instance of SurrogateModel
-        """
-        model_options = config[model_name].copy()
-        model_options.pop('type')
-
-        training_iterator_name = model_options.pop('training_iterator_name', None)
-        training_iterator = None
-        if training_iterator_name:
-            training_iterator = from_config_create_iterator(config, training_iterator_name)
-
-        testing_iterator_name = model_options.pop('testing_iterator_name', None)
-        testing_iterator = None
-        if testing_iterator_name:
-            training_iterator = from_config_create_iterator(config, training_iterator_name)
-        return cls(
-            training_iterator=training_iterator, testing_iterator=testing_iterator, **model_options
-        )
 
     def evaluate(self, samples):
         """Evaluate model with current set of input samples.

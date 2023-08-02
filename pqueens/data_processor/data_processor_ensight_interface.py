@@ -27,7 +27,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
     def __init__(
         self,
-        data_processor_name,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
@@ -49,7 +48,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                                                  The paths can contain regex expressions.
         """
         super().__init__(
-            data_processor_name=data_processor_name,
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
@@ -59,7 +57,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if not path_ref_data_str:
             raise ValueError(
                 "You must provide the option 'path_to_ref_data' within the 'file_options_dict' "
-                f"in '{data_processor_name}'. Abort ..."
+                f"in '{self.__class__.__name__}'. Abort ..."
             )
         path_ref_data = Path(path_ref_data_str)
         experimental_reference_data = self.read_monitorfile(path_ref_data)
@@ -68,7 +66,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if not time_tol:
             raise ValueError(
                 "You must provide the option 'time_tol' within the 'file_options_dict' "
-                f"in '{data_processor_name}'. Abort ..."
+                f"in '{self.__class__.__name__}'. Abort ..."
             )
 
         visualization_bool = file_options_dict.get('visualization', False)

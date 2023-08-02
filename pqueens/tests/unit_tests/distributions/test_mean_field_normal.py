@@ -42,11 +42,12 @@ def test_from_config_create_distribution(mocker):
 
     # mock the get_check_array_dimension_and_reshape function
     mp1 = mocker.patch(
-        "pqueens.distributions.mean_field_normal.MeanFieldNormalDistribution.get_check_array_dimension_and_reshape",
+        "pqueens.distributions.mean_field_normal.MeanFieldNormalDistribution"
+        ".get_check_array_dimension_and_reshape",
         return_value=distribution_options["mean"],
     )
 
-    distribution = MeanFieldNormalDistribution.from_config_create_distribution(distribution_options)
+    distribution = MeanFieldNormalDistribution(**distribution_options)
     np.testing.assert_array_equal(
         distribution.mean, np.ones(distribution_options["dimension"]) * distribution_options["mean"]
     )

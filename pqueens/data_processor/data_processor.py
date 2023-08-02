@@ -20,7 +20,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                              comes your regex>* .
         file_options_dict (dict): Dictionary with read-in options for
                                   the file.
-        data_processor_name (str): Name of the data processor.
         file_name_identifier (str): Identifier for files.
                                     The file prefix can contain BASIC regex expression
                                     and subdirectories. Examples are wildcards `*` or
@@ -32,7 +31,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        data_processor_name,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
@@ -40,7 +38,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Init data processor class.
 
         Args:
-            data_processor_name (str): Name of the data processor.
             file_name_identifier (str): Identifier for files.
                                              The file prefix can contain regex expression and
                                             subdirectories.
@@ -52,7 +49,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """
         if not file_name_identifier:
             raise IOError(
-                f"No option 'file_name_identifier' was provided in '{data_processor_name}'! "
+                f"No option 'file_name_identifier' was provided in '{self.__class__.__name__}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(file_name_identifier, str):
@@ -63,7 +60,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
         if file_options_dict is None:
             raise IOError(
-                f"No option 'file_options_dict' was provided in '{data_processor_name}'! "
+                f"No option 'file_options_dict' was provided in '{self.__class__.__name__}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(file_options_dict, dict):
@@ -82,26 +79,10 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
-        self.data_processor_name = data_processor_name
         self.file_name_identifier = file_name_identifier
         self.file_path = None
         self.processed_data = np.empty(shape=0)
         self.raw_file_data = None
-
-    @classmethod
-    def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create data processor from the problem description.
-
-         Args:
-             config (dict): Dictionary with problem description
-             data_processor_name (str): Name of the data processor
-
-        Returns:
-             DataProcessor: Instance of DataProcessor
-        """
-        data_processor_options = config[data_processor_name].copy()
-        data_processor_options.pop('type', None)
-        return cls(data_processor_name=data_processor_name, **data_processor_options)
 
     def get_data_from_file(self, base_dir_file):
         """Get data of interest from file.

@@ -1,9 +1,7 @@
 """Simulation model class."""
 import numpy as np
 
-from pqueens.interfaces import from_config_create_interface
-
-from .model import Model
+from pqueens.models.model import Model
 
 
 class SimulationModel(Model):
@@ -13,7 +11,7 @@ class SimulationModel(Model):
         interface (interface): Interface to simulations/functions.
     """
 
-    def __init__(self, interface, **kwargs):
+    def __init__(self, interface):
         """Initialize simulation model.
 
         Args:
@@ -21,24 +19,6 @@ class SimulationModel(Model):
         """
         super().__init__()
         self.interface = interface
-
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create simulation model from problem description.
-
-        Args:
-            model_name (string): Name of model
-            config (dict):       Dictionary containing problem description
-
-        Returns:
-            simulation_model: Instance of SimulationModel
-        """
-        model_options = config[model_name].copy()
-        interface_name = model_options.pop('interface_name')
-        interface = from_config_create_interface(interface_name, config)
-        model_options.pop('type')
-
-        return cls(interface=interface, **model_options)
 
     def evaluate(self, samples):
         """Evaluate model with current set of input samples.

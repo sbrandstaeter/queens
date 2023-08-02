@@ -53,19 +53,3 @@ VALID_TYPES = {
         'GaussianNeuralNetworkModel',
     ],
 }
-
-
-def from_config_create_model(model_name, config):
-    """Create model from problem description.
-
-    Args:
-        model_name (string):    Name of model
-        config  (dict):         Dictionary with problem description
-
-    Returns:
-        model: Instance of model class
-    """
-    model_options = config[model_name]
-    model_class = get_module_class(model_options, VALID_TYPES)
-    model = model_class.from_config_create_model(model_name, config)
-    return model

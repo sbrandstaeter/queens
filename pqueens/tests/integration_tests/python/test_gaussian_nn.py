@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from pqueens.models import from_config_create_model
+from pqueens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
     gradient_sinus_test_fun,
@@ -12,33 +12,29 @@ from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
 
 
 @pytest.fixture()
-def my_config():
+def my_model():
     """Configuration for gaussian nn model."""
-    config = {
-        "my_regression_model": {
-            "type": "gaussian_nn",
-            "activation_per_hidden_layer_lst": ["elu", "elu", "elu", "elu"],
-            "nodes_per_hidden_layer_lst": [20, 20, 20, 20],
-            "adams_training_rate": 0.001,
-            "batch_size": 50,
-            "num_epochs": 3000,
-            "optimizer_seed": 42,
-            "data_scaling": "standard_scaler",
-            "nugget_std": 1.0e-02,
-            "verbosity_on": False,
-        },
-    }
-    return config
+    model = GaussianNeuralNetworkModel(
+        activation_per_hidden_layer_lst=["elu", "elu", "elu", "elu"],
+        nodes_per_hidden_layer_lst=[20, 20, 20, 20],
+        adams_training_rate=0.001,
+        batch_size=50,
+        num_epochs=3000,
+        optimizer_seed=42,
+        data_scaling="standard_scaler",
+        nugget_std=1.0e-02,
+        verbosity_on=False,
+    )
+    return model
 
 
-def test_gaussian_nn_one_dim(my_config):
+def test_gaussian_nn_one_dim(my_model):
     """Test one dimensional gaussian nn."""
     approx_name = 'my_regression_model'
     n_train = 25
     x_train = np.linspace(-5, 5, n_train).reshape(-1, 1)
     y_train = sinus_test_fun(x_train)
 
-    my_model = from_config_create_model(approx_name, my_config)
     my_model.setup(x_train, y_train)
     my_model.train()
 
@@ -70,7 +66,7 @@ def test_gaussian_nn_one_dim(my_config):
     np.testing.assert_array_almost_equal(gradient_variance, gradient_variance_ref, decimal=2)
 
 
-def test_gaussian_nn_two_dim(my_config):
+def test_gaussian_nn_two_dim(my_model):
     """Test two dimensional gaussian nn."""
     approx_name = 'my_regression_model'
     n_train = 7
@@ -83,7 +79,6 @@ def test_gaussian_nn_two_dim(my_config):
     # evaluate the testing/benchmark function at training inputs, train model
     y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
     y_train = y_train.reshape(-1, 1)
-    my_model = from_config_create_model(approx_name, my_config)
     my_model.setup(x_train, y_train)
     my_model.train()
 

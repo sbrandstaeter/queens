@@ -13,18 +13,6 @@ _logger = logging.getLogger(__name__)
 class Distribution(abc.ABC):
     """Base class for probability distributions."""
 
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: Distribution object
-        """
-        return cls(**distribution_options)
-
     @abstractmethod
     def draw(self, num_draws=1):
         """Draw samples.
