@@ -118,17 +118,17 @@ class InstanceMock:
     """TODO_doc."""
 
     @staticmethod
-    def plot_pdfs(Mock, *args, **kwargs):
+    def plot_pdfs(*args, **kwargs):
         """TODO_doc."""
         return 1
 
     @staticmethod
-    def plot_manifold(Mock, *args, **kwargs):
+    def plot_manifold(*args, **kwargs):
         """TODO_doc."""
         return 1
 
     @staticmethod
-    def plot_feature_ranking(Mock, *args, **kwargs):
+    def plot_feature_ranking(*args, **kwargs):
         """TODO_doc."""
         return 1
 

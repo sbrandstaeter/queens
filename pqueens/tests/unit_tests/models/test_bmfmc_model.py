@@ -158,7 +158,7 @@ class InstanceMock:
     """InstanceMock class."""
 
     @staticmethod
-    def plot_feature_ranking(Mock, *args, **kwargs):
+    def plot_feature_ranking(*args, **kwargs):
         """Plot feature ranking."""
         return 1
 

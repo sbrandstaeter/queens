@@ -255,7 +255,7 @@ class InstanceMock:
     """TODO_doc."""
 
     @staticmethod
-    def plot_QoI_grid(Mock, *args, **kwargs):
+    def plot_QoI_grid(*args, **kwargs):
         """TODO_doc."""
         return 1
 
