@@ -22,19 +22,3 @@ VALID_TYPES = {
     ],
     'bmfia_interface': ['pqueens.interfaces.bmfia_interface', 'BmfiaInterface'],
 }
-
-
-def from_config_create_interface(interface_name, config):
-    """Create Interface from config dictionary.
-
-    Args:
-        interface_name (str):   Name of the interface
-        config (dict):          Dictionary with problem description
-
-    Returns:
-        interface: Instance of one of the derived interface classes
-    """
-    interface_options = config[interface_name]
-    interface_class = get_module_class(interface_options, VALID_TYPES)
-    interface = interface_class.from_config_create_interface(interface_name, config)
-    return interface

@@ -7,7 +7,6 @@ import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
-from pqueens.models import from_config_create_model
 
 _logger = logging.getLogger(__name__)
 
@@ -45,6 +44,7 @@ class BMFIAIterator(Iterator):
     def __init__(
         self,
         global_settings,
+        parameters,
         features_config,
         hf_model,
         lf_model,
@@ -57,6 +57,7 @@ class BMFIAIterator(Iterator):
 
         Args:
             global_settings (dict): Dictionary containing global settings for the QUEENS run.
+            parameters (obj): Parameters object
             features_config (str): Type of feature selection method.
             hf_model (obj): High-fidelity model object.
             lf_model (obj): Low-fidelity model object.
@@ -65,10 +66,10 @@ class BMFIAIterator(Iterator):
             num_features (int, opt): Number of features to be selected.
             coord_cols (list, opt): List of columns for coordinates taken from input variables.
         """
-        super().__init__(None, global_settings)  # Input prescribed by iterator.py
+        super().__init__(None, global_settings, parameters)  # Input prescribed by iterator.py
 
         # ---------- calculate the initial training samples via classmethods ----------
-        x_train = self._calculate_initial_x_train(initial_design, lf_model)
+        x_train = self._calculate_initial_x_train(initial_design, lf_model, parameters)
 
         self.X_train = x_train
         self.Y_LF_train = None
@@ -85,36 +86,7 @@ class BMFIAIterator(Iterator):
         self.coord_cols = coord_cols
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Build a BMFIAIterator object from the problem description.
-
-        Args:
-            config (dict): Configuration/input file for QUEENS as dictionary
-            iterator_name (str): Name of the Iterator (here not used)
-            model (model, opt): Model to use
-
-        Returns:
-            iterator (obj): BMFIAIterator object
-        """
-        # Get appropriate sections in the config file
-        global_settings = config.get('global_settings', None)
-        bmfia_iterator_dict = config[iterator_name]
-        bmfia_iterator_dict.pop("type")
-
-        hf_model_name = bmfia_iterator_dict.pop("hf_model_name")
-        lf_model_name = bmfia_iterator_dict.pop("lf_model_name")
-        hf_model = from_config_create_model(hf_model_name, config)
-        lf_model = from_config_create_model(lf_model_name, config)
-
-        return cls(
-            global_settings=global_settings,
-            hf_model=hf_model,
-            lf_model=lf_model,
-            **bmfia_iterator_dict,
-        )
-
-    @classmethod
-    def _calculate_initial_x_train(cls, initial_design_dict, model):
+    def _calculate_initial_x_train(cls, initial_design_dict, model, parameters):
         """Optimal training data set for probabilistic model.
 
         Based on the selected design method, determine the optimal set of
@@ -125,12 +97,13 @@ class BMFIAIterator(Iterator):
             initial_design_dict (dict): Dictionary with description of initial design.
             model (obj): A model object on which the calculation is performed (only needed for
                          interfaces here. The model is not evaluated here)
+            parameters (obj): Parameters object
 
         Returns:
             x_train (np.array): Optimal training input samples
         """
         run_design_method = cls._get_design_method(initial_design_dict)
-        x_train = run_design_method(initial_design_dict, model)
+        x_train = run_design_method(initial_design_dict, model, parameters)
         return x_train
 
     @classmethod
@@ -170,7 +143,7 @@ class BMFIAIterator(Iterator):
         return run_design_method
 
     @staticmethod
-    def _random_design(initial_design_dict, model):
+    def _random_design(initial_design_dict, model, parameters):
         """Generate a uniformly random design strategy.
 
         Get a random initial design using the Monte-Carlo sampler with a uniform distribution.
@@ -179,6 +152,7 @@ class BMFIAIterator(Iterator):
             initial_design_dict (dict): Dictionary with description of initial design.
             model (obj): A model object on which the calculation is performed (only needed for
                          interfaces here. The model is not evaluated here)
+            parameters (obj): Parameters object
 
         Returns:
             x_train (np.array): Optimal training input samples
@@ -194,19 +168,21 @@ class BMFIAIterator(Iterator):
             num_samples=initial_design_dict['num_HF_eval'],
             result_description=dummy_result_description,
             global_settings=dummy_global_settings,
+            parameters=parameters,
         )
         mc_iterator.pre_run()
         x_train = mc_iterator.samples
         return x_train
 
     @staticmethod
-    def _sobol_design(initial_design_dict, model):
+    def _sobol_design(initial_design_dict, model, parameters):
         """Generate  quasi random design using the Sobol sequence.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
             model (obj): A model object on which the calculation is performed (only needed for
                          interfaces here. The model is not evaluated here)
+            parameters (obj): Parameters object
 
         Returns:
             x_train (np.array): Training input samples from Sobol sequence
@@ -222,6 +198,7 @@ class BMFIAIterator(Iterator):
             number_of_samples=initial_design_dict['num_HF_eval'],
             result_description=dummy_result_description,
             global_settings=dummy_global_settings,
+            parameters=parameters,
         )
         sobol_iterator.pre_run()
         x_train = sobol_iterator.samples

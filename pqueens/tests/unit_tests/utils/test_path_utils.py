@@ -45,9 +45,9 @@ def test_check_if_path_exists():
 
 def test_check_if_path_exists_not_existing():
     """Test if path does not exist."""
-    test_path = Path(__file__).parent / "not_existing"
+    tmp_path = Path(__file__).parent / "not_existing"
     with pytest.raises(FileNotFoundError):
-        check_if_path_exists(test_path)
+        check_if_path_exists(tmp_path)
 
 
 def test_create_folder_if_not_existent(tmp_path):

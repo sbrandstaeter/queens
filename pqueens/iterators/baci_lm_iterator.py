@@ -42,6 +42,7 @@ class BaciLMIterator(Iterator):
         self,
         model,
         global_settings,
+        parameters,
         result_description,
         initial_guess=None,
         bounds=None,
@@ -58,6 +59,7 @@ class BaciLMIterator(Iterator):
         Args:
             model: TODO_doc
             global_settings: TODO_doc
+            parameters (obj): Parameters object
             result_description: TODO_doc
             initial_guess: TODO_doc
             bounds: TODO_doc
@@ -69,7 +71,7 @@ class BaciLMIterator(Iterator):
             max_feval: TODO_doc
             verbose_output: TODO_doc
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         _logger.info("Baci LM Iterator for experiment: %s", self.global_settings['experiment_name'])
 

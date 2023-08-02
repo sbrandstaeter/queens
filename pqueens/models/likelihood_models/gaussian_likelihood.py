@@ -2,11 +2,8 @@
 import numpy as np
 
 from pqueens.distributions.normal import NormalDistribution
-from pqueens.models import from_config_create_model
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.exceptions import InvalidOptionError
-from pqueens.utils.experimental_data_reader import ExperimentalDataReader
-from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
 
 
@@ -97,47 +94,6 @@ class GaussianLikelihood(LikelihoodModel):
         self.noise_type = noise_type
         self.noise_var_iterative_averaging = noise_var_iterative_averaging
         self.normal_distribution = normal_distribution
-
-    @classmethod
-    def from_config_create_model(cls, model_name, config):
-        """Create Gaussian likelihood model from problem description.
-
-        Args:
-            model_name (str): Name of the likelihood model
-            config (dict): Dictionary containing problem description
-
-        Returns:
-            instance of GaussianLikelihood class
-        """
-        model_options = config[model_name].copy()
-        model_options.pop('type')
-        forward_model_name = model_options.pop("forward_model_name")
-        forward_model = from_config_create_model(forward_model_name, config)
-
-        experimental_data_reader_name = model_options.pop("experimental_data_reader_name", None)
-        experimental_data_reader = None
-        if experimental_data_reader_name:
-            experimental_data_reader = (
-                ExperimentalDataReader.from_config_create_experimental_data_reader(
-                    config, experimental_data_reader_name
-                )
-            )
-
-        noise_var_iterative_averaging_name = model_options.pop(
-            "noise_var_iterative_averaging_name", None
-        )
-        noise_var_iterative_averaging = None
-        if noise_var_iterative_averaging_name:
-            noise_var_iterative_averaging = from_config_create_iterative_averaging(
-                config, noise_var_iterative_averaging_name
-            )
-
-        return cls(
-            forward_model=forward_model,
-            experimental_data_reader=experimental_data_reader,
-            noise_var_iterative_averaging=noise_var_iterative_averaging,
-            **model_options,
-        )
 
     def evaluate(self, samples):
         """Evaluate likelihood with current set of input samples.

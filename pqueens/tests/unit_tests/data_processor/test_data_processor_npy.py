@@ -50,10 +50,8 @@ def default_data_processor_npy(data_path):
     file_name_identifier = "dummy"
     file_options_dict = {}
     files_to_be_deleted_regex_lst = []
-    data_processor_name = 'npy_data_processor'
 
     data_processor = DataProcessorNumpy(
-        data_processor_name,
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -69,10 +67,8 @@ def test_init():
     file_name_identifier = 'dummy'
     file_options_dict = {"dummy": "dummy"}
     files_to_be_deleted_regex_lst = ['abc']
-    data_processor_name = 'npy_data_processor'
 
     data_processor = DataProcessorNumpy(
-        data_processor_name,
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -80,7 +76,6 @@ def test_init():
 
     assert data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert data_processor.file_options_dict == file_options_dict
-    assert data_processor.data_processor_name == data_processor_name
     assert data_processor.file_name_identifier == file_name_identifier
     assert data_processor.file_path is None
     np.testing.assert_array_equal(data_processor.processed_data, np.empty(shape=0))

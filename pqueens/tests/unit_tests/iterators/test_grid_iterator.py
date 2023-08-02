@@ -1,12 +1,14 @@
 """TODO_doc."""
+from copy import deepcopy
 
 import numpy as np
 import pytest
 from mock import Mock
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.grid_iterator import GridIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.parameters import Parameters
 
 
 # general input fixtures
@@ -42,50 +44,24 @@ def grid_dict_three():
 
 
 @pytest.fixture()
-def grid_dict_four():
-    """TODO_doc."""
-    axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
-    grid_dict_dummy = {
-        "x1": axis_description,
-        "x2": axis_description,
-        "x3": axis_description,
-        "x4": axis_description,
-    }
-    return grid_dict_dummy
-
-
 def parameters_one():
     """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
+    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=rv)
 
 
 @pytest.fixture()
 def parameters_two():
     """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
-
-
-def parameters_three():
-    """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv, "x3": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
+    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=rv, x2=deepcopy(rv))
 
 
 @pytest.fixture()
-def parameters_four():
+def parameters_three():
     """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv, "x3": rv, "x4": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
+    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
 
 
 @pytest.fixture()
@@ -140,6 +116,7 @@ def default_grid_iterator(
     # create iterator object
     my_grid_iterator = GridIterator(
         model=default_model,
+        parameters=parameters_two,
         result_description=result_description,
         global_settings=global_settings,
         grid_design=grid_dict_two,
@@ -160,13 +137,14 @@ def test_init(
 
     my_grid_iterator = GridIterator(
         model=default_model,
+        parameters=parameters_two,
         result_description=result_description,
         grid_design=grid_dict_two,
         global_settings=global_settings,
     )
 
     # tests / asserts
-    mp.assert_called_once_with(default_model, global_settings)
+    mp.assert_called_once_with(default_model, global_settings, parameters_two)
     assert my_grid_iterator.grid_dict == grid_dict_two
     assert my_grid_iterator.result_description == result_description
     assert my_grid_iterator.samples is None
@@ -185,15 +163,16 @@ def test_model_evaluate(default_grid_iterator, mocker):
 
 def test_pre_run_one(
     grid_dict_one,
+    parameters_one,
     expected_samples_one,
     result_description,
     default_model,
     global_settings,
 ):
     """TODO_doc."""
-    parameters_one()
     grid_iterator = GridIterator(
         model=default_model,
+        parameters=parameters_one,
         result_description=result_description,
         global_settings=global_settings,
         grid_design=grid_dict_one,
@@ -213,6 +192,7 @@ def test_pre_run_two(
     """TODO_doc."""
     grid_iterator = GridIterator(
         model=default_model,
+        parameters=parameters_two,
         result_description={},
         global_settings=global_settings,
         grid_design=grid_dict_two,
@@ -223,16 +203,16 @@ def test_pre_run_two(
 
 def test_pre_run_three(
     grid_dict_three,
+    parameters_three,
     expected_samples_three,
     result_description,
     default_model,
     global_settings,
 ):
     """TODO_doc."""
-    num_params = 3
-    parameters_three()
     grid_iterator = GridIterator(
         model=default_model,
+        parameters=parameters_three,
         result_description=result_description,
         global_settings=global_settings,
         grid_design=grid_dict_three,

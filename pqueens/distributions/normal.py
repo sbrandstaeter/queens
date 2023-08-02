@@ -20,8 +20,8 @@ class NormalDistribution(ContinuousDistribution):
         """Initialize normal distribution.
 
         Args:
-            mean (np.ndarray): mean of the distribution
-            covariance (np.ndarray): covariance of the distribution
+            mean (array_like): mean of the distribution
+            covariance (array_like): covariance of the distribution
         """
         mean = np.array(mean).reshape(-1)
         covariance = numpy_utils.at_least_2d(np.array(covariance))

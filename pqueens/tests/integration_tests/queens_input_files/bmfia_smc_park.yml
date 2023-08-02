@@ -51,12 +51,6 @@ optimizer:
   max_iteration: 1000
   rel_l1_change_threshold: 0.004
   rel_l2_change_threshold: 0.004
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 50
-  num_samples: 2
-  proposal_distribution: proposal_distribution
 bmfia_iterator:
   type: bmfia
   features_config: man_features

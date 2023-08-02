@@ -29,10 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from pqueens.models import from_config_create_model
 from pqueens.utils import smc_utils
 from pqueens.utils.process_outputs import process_outputs, write_results
 
@@ -74,8 +72,9 @@ class SequentialMonteCarloIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        global_settings,
+        parameters,
         num_particles,
         result_description,
         seed,
@@ -87,8 +86,9 @@ class SequentialMonteCarloIterator(Iterator):
         """TODO_doc.
 
         Args:
-            global_settings: TODO_doc
             model: TODO_doc
+            global_settings: TODO_doc
+            parameters (obj): Parameters object
             num_particles: TODO_doc
             result_description: TODO_doc
             seed: TODO_doc
@@ -97,7 +97,7 @@ class SequentialMonteCarloIterator(Iterator):
             num_rejuvenation_steps: TODO_doc
             plot_trace_every: TODO_doc
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, global_settings, parameters)
 
         _logger.info(
             "Sequential Monte Carlo Iterator for experiment: %s",
@@ -106,11 +106,12 @@ class SequentialMonteCarloIterator(Iterator):
 
         self.mcmc_kernel = MetropolisHastingsIterator(
             model=model,
+            global_settings=global_settings,
+            parameters=parameters,
             result_description=None,
             proposal_distribution=mcmc_proposal_distribution,
             num_samples=num_rejuvenation_steps,
             seed=seed,
-            global_settings=global_settings,
             tune=False,
             tune_interval=100,
             scale_covariance=1.0,
@@ -159,36 +160,6 @@ class SequentialMonteCarloIterator(Iterator):
         # values of a an b are taken from [3] p.1706
         self.a = 1.0 / 9.0
         self.b = 8.0 / 9.0
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: Iterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        if model is None:
-            model_name = method_options.pop('model_name')
-            model = from_config_create_model(model_name, config)
-        mcmc_proposal_distribution_name = method_options.pop('mcmc_proposal_distribution_name')
-        mcmc_proposal_distribution = from_config_create_distribution(
-            config[mcmc_proposal_distribution_name]
-        )
-        global_settings = config['global_settings']
-        return cls(
-            model=model,
-            global_settings=global_settings,
-            mcmc_proposal_distribution=mcmc_proposal_distribution,
-            **method_options,
-        )
 
     def eval_log_prior(self, sample_batch):
         """Evaluate natural logarithm of prior at sample.

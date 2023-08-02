@@ -1,12 +1,14 @@
 """Unit test for Sobol index iterator."""
 import unittest
+from copy import deepcopy
 
 import numpy as np
 
-import pqueens.parameters.parameters as parameters_module
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.parameters.parameters import Parameters
 
 
 class TestSobolIndices(unittest.TestCase):
@@ -14,29 +16,20 @@ class TestSobolIndices(unittest.TestCase):
 
     def setUp(self):
         """Set up the iterator."""
-        uncertain_parameter = {
-            "type": "uniform",
-            "lower_bound": -3.14159265359,
-            "upper_bound": 3.14159265359,
-        }
-
-        random_variables = {
-            'x1': uncertain_parameter,
-            'x2': uncertain_parameter,
-            'x3': uncertain_parameter,
-        }
-
-        parameters_module.from_config_create_parameters({"parameters": random_variables})
-
+        rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+        parameters = Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
         some_settings = {"experiment_name": "test"}
 
-        self.interface = DirectPythonInterface(function="ishigami90", num_workers=1)
+        self.interface = DirectPythonInterface(
+            parameters=parameters, function="ishigami90", num_workers=1
+        )
 
         # create mock model
         self.model = SimulationModel(self.interface)
 
         self.my_iterator = SobolIndexIterator(
             self.model,
+            parameters=parameters,
             seed=42,
             num_samples=2,
             calc_second_order=True,

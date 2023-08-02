@@ -20,10 +20,10 @@ def fixture_input_dict():
 
 
 @pytest.fixture(name="input_file", params=["json", "yml", "yaml"])
-def fixture_input_file(request, input_dict, test_path):
+def fixture_input_file(request, input_dict, tmp_path):
     """Input files for testing."""
     file_type = request.param
-    input_file_path = test_path / f"input_file.{file_type}"
+    input_file_path = tmp_path / f"input_file.{file_type}"
     if file_type == "json":
         dumper = json.dump
     elif file_type in ("yml", "yaml"):
@@ -40,10 +40,10 @@ def test_load_input_file_nonexisting_file():
         load_input_file(input_path)
 
 
-def test_load_input_file_wrong_file_type(test_path):
-    """Test if exception is raised for wrong file type."""
-    input_path = test_path / "input.file"
-    open(input_path, "a+", encoding='utf-8')
+def test_load_input_file_wrong_file_type(tmp_path):
+    """Test if an exception is raised for the wrong file type."""
+    input_path = tmp_path / "input.file"
+    input_path.touch(mode=438)
     with pytest.raises(FileTypeError):
         load_input_file(input_path)
 
