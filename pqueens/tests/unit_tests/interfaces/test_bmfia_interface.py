@@ -294,7 +294,7 @@ def test_instantiate_per_coordinate(
     )
 
     # --- asserts / tests
-    for (probabilistic_mapping_obj, default_probabilistic_obj) in zip(
+    for probabilistic_mapping_obj, default_probabilistic_obj in zip(
         probabilistic_mapping_obj_lst, default_probabilistic_obj_lst
     ):
         assert isinstance(probabilistic_mapping_obj, DummyRegression)
