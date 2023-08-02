@@ -272,7 +272,6 @@ def test_instantiate_per_coordinate(
     """Test the instantiation of the probabilistic mappings."""
     z_lf_train = np.zeros((1, 2))
     y_hf_train = np.zeros((1, 2, 3))
-    y_hf_train.shape[2]
     default_bmfia_interface.probabilistic_mapping_obj_lst = []
     time_vec = None
     coords_mat = np.array([[0, 1], [0, 1]])
