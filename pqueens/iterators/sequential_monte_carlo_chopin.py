@@ -48,7 +48,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         num_particles,
@@ -64,7 +63,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             num_particles (int): Number of particles
@@ -76,7 +74,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
             waste_free (bool): if True, all intermediate Markov steps are kept
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
         self.result_description = result_description
         self.seed = seed
         self.num_particles = num_particles
@@ -226,9 +224,5 @@ class SequentialMonteCarloChopinIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
             _logger.info("Post run data exported!")

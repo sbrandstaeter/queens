@@ -3,6 +3,7 @@ import logging
 
 from dask.distributed import Client, LocalCluster
 
+import pqueens.global_settings
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.config_directories import experiment_directory
 
@@ -14,7 +15,6 @@ class LocalScheduler(Scheduler):
 
     def __init__(
         self,
-        global_settings,
         max_concurrent=1,
         num_procs=1,
         num_procs_post=1,
@@ -22,12 +22,11 @@ class LocalScheduler(Scheduler):
         """Initialize local scheduler.
 
         Args:
-            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             max_concurrent (int, opt): Number of concurrent jobs
             num_procs (int, opt): number of cores per job
             num_procs_post (int, opt): number of cores per job for post-processing
         """
-        experiment_name = global_settings['experiment_name']
+        experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
         threads_per_worker = max(num_procs, num_procs_post)

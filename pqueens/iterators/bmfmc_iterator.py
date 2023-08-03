@@ -74,7 +74,6 @@ class BMFMCIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         initial_design,
@@ -84,7 +83,6 @@ class BMFMCIterator(Iterator):
 
         Args:
             model (obj): Instance of the BMFMCModel
-            global_settings (dict): Settings for the QUEENS run.
             parameters (obj): Parameters object
             result_description (dict): Dictionary containing settings for plotting and saving data/
                                        results
@@ -92,7 +90,7 @@ class BMFMCIterator(Iterator):
                                    design of training points for the probabilistic mapping
             plotting_options (dict): Plotting options
         """
-        super().__init__(model, global_settings, parameters)  # Input prescribed by iterator.py
+        super().__init__(model, parameters)  # Input prescribed by iterator.py
         self.result_description = result_description
         self.X_train = None
         self.Y_LFs_train = None
@@ -270,6 +268,4 @@ class BMFMCIterator(Iterator):
 
         if self.result_description['write_results'] is True:
             results = process_outputs(self.output, self.result_description)
-            write_results(
-                results, self.global_settings["output_dir"], self.global_settings["experiment_name"]
-            )
+            write_results(results, self.output_dir, self.experiment_name)

@@ -3,56 +3,20 @@
 import numpy as np
 import pytest
 
-from pqueens.distributions.lognormal import LogNormalDistribution
-from pqueens.distributions.normal import NormalDistribution
-from pqueens.distributions.uniform import UniformDistribution
-from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
-from pqueens.models.simulation_model import SimulationModel
-from pqueens.parameters.parameters import Parameters
 
 
 @pytest.fixture()
-def global_settings():
+def default_qmc_iterator(dummy_global_settings, default_simulation_model, default_parameters_mixed):
     """TODO_doc."""
-    global_settings = {"experiment_name": "test"}
-    return global_settings
-
-
-@pytest.fixture()
-def default_parameters():
-    """Default parameters."""
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = NormalDistribution(mean=0, covariance=4)
-    x3 = LogNormalDistribution(normal_mean=0.3, normal_covariance=1)
-    return Parameters(x1=x1, x2=x2, x3=x3)
-
-
-@pytest.fixture()
-def default_model(default_parameters):
-    """TODO_doc."""
-    # create interface
-    interface = DirectPythonInterface(
-        parameters=default_parameters, function="ishigami90", num_workers=1
-    )
-
-    # create mock model
-    model = SimulationModel(interface)
-
-    return model
-
-
-@pytest.fixture()
-def default_qmc_iterator(default_model, global_settings, default_parameters):
-    """TODO_doc."""
+    default_simulation_model.interface.parameters = default_parameters_mixed
     my_iterator = SobolSequenceIterator(
-        default_model,
-        parameters=default_parameters,
+        model=default_simulation_model,
+        parameters=default_parameters_mixed,
         seed=42,
         number_of_samples=100,
         randomize=True,
-        result_description=None,
-        global_settings=global_settings,
+        result_description={},
     )
     return my_iterator
 

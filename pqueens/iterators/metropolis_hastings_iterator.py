@@ -61,7 +61,6 @@ class MetropolisHastingsIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         proposal_distribution,
@@ -79,7 +78,6 @@ class MetropolisHastingsIterator(Iterator):
 
         Args:
             model (obj, optional): Model to be evaluated by iterator.
-            global_settings (dict): Settings for the QUEENS run.
             parameters (obj): Parameters object
             result_description (dict): Description of desired results.
             proposal_distribution (obj): Proposal distribution.
@@ -96,11 +94,8 @@ class MetropolisHastingsIterator(Iterator):
                                              iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
-        super().__init__(model, global_settings, parameters)
-        _logger.info(
-            "Metropolis-Hastings Iterator for experiment: %s",
-            self.global_settings['experiment_name'],
-        )
+        super().__init__(model, parameters)
+        _logger.info("Metropolis-Hastings Iterator for experiment: %s", self.experiment_name)
 
         self.num_chains = num_chains
         self.num_samples = num_samples
@@ -310,11 +305,7 @@ class MetropolisHastingsIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
 
             _logger.info("Size of outputs %s", chain_core.shape)
             for i in range(self.num_chains):
@@ -350,9 +341,7 @@ class MetropolisHastingsIterator(Iterator):
             ess = az.ess(inference_data, relative=True)
             _logger.info(ess)
             az.plot_trace(inference_data)
-            filebasename = (
-                f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
-            )
+            filebasename = f"{self.output_dir}/{self.experiment_name}"
             plt.savefig(filebasename + "_trace.png")
 
             az.plot_autocorr(inference_data)

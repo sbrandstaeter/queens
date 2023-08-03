@@ -21,13 +21,6 @@ def result_description():
 
 
 @pytest.fixture()
-def global_settings():
-    """Fixture for dummy global settings."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
-@pytest.fixture()
 def dummy_model():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
@@ -55,7 +48,7 @@ def default_interface():
 
 
 @pytest.fixture()
-def default_bmfia_iterator(global_settings):
+def default_bmfia_iterator(dummy_global_settings):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
@@ -73,7 +66,6 @@ def default_bmfia_iterator(global_settings):
 
     with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
-            global_settings=global_settings,
             parameters="dummy_parameters",
             features_config=features_config,
             hf_model=hf_model,

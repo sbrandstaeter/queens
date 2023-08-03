@@ -40,7 +40,6 @@ class SobolIndexIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         seed,
         num_samples,
@@ -53,7 +52,6 @@ class SobolIndexIterator(Iterator):
 
         Args:
             model (model): Model to be evaluated by iterator
-            global_settings (dict): Dictionary with global settings for the analysis
             parameters (obj): Parameters object
             seed (int): Seed for random number generation
             num_samples (int): Number of desired (random) samples
@@ -62,7 +60,7 @@ class SobolIndexIterator(Iterator):
             confidence_level (float): The confidence interval level
             result_description (dict): Dictionary with desired result description
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
 
         self.seed = seed
         self.num_samples = num_samples
@@ -152,11 +150,7 @@ class SobolIndexIterator(Iterator):
         results = self.process_results()
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
             self.print_results(results)
             if self.result_description["plot_results"] is True:
                 self.plot_results(results)
@@ -237,11 +231,11 @@ class SobolIndexIterator(Iterator):
         Args:
             results (dict): Dictionary with Sobol indices and confidence intervals
         """
-        experiment_name = self.global_settings["experiment_name"]
+        experiment_name = self.experiment_name
 
         # Plot first-order indices also called main effect
         chart_name = experiment_name + '_S1.html'
-        chart_path = self.global_settings["output_dir"] / chart_name
+        chart_path = self.output_dir / chart_name
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
@@ -264,7 +258,7 @@ class SobolIndexIterator(Iterator):
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
-        chart_path = self.global_settings["output_dir"] / chart_name
+        chart_path = self.output_dir / chart_name
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
@@ -300,7 +294,7 @@ class SobolIndexIterator(Iterator):
                     names.append(f"S{i}{j}")
 
             chart_name = experiment_name + '_S2.html'
-            chart_path = self.global_settings["output_dir"] / chart_name
+            chart_path = self.output_dir / chart_name
             bars = go.Bar(
                 x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
             )

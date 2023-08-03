@@ -53,7 +53,6 @@ class RPVIIterator(VariationalInferenceIterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         variational_distribution,
@@ -74,7 +73,6 @@ class RPVIIterator(VariationalInferenceIterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
@@ -103,7 +101,6 @@ class RPVIIterator(VariationalInferenceIterator):
 
         super().__init__(
             model=model,
-            global_settings=global_settings,
             parameters=parameters,
             result_description=result_description,
             variational_distribution=variational_distribution,

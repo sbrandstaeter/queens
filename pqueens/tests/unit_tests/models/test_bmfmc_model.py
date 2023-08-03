@@ -29,13 +29,6 @@ def dummy_high_fidelity_model(parameters):
     return hf_model
 
 
-@pytest.fixture()
-def global_settings():
-    """Create global settings."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
 class PreProcessor:
     """TODO_doc."""
 
@@ -99,7 +92,9 @@ def settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture()
-def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
+def default_bmfmc_model(
+    dummy_global_settings, parameters, settings_probab_mapping, default_interface
+):
     """Create default BMFMC model."""
     model = BMFMCModel(
         parameters=parameters,
@@ -128,10 +123,10 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
 
 
 @pytest.fixture()
-def default_data_iterator(result_description, global_settings):
+def default_data_iterator(result_description, dummy_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
-    data_iterator = DataIterator(path_to_data, result_description, global_settings)
+    data_iterator = DataIterator(path_to_data, result_description)
     return data_iterator
 
 
@@ -167,7 +162,7 @@ def mock_visualization():
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, settings_probab_mapping, parameters):
+def test_init(dummy_global_settings, mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 

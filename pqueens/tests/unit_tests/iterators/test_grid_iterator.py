@@ -11,14 +11,6 @@ from pqueens.models.simulation_model import SimulationModel
 from pqueens.parameters.parameters import Parameters
 
 
-# general input fixtures
-@pytest.fixture()
-def global_settings():
-    """TODO_doc."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
 @pytest.fixture()
 def grid_dict_one():
     """TODO_doc."""
@@ -110,7 +102,7 @@ def default_model(parameters_two):
 
 @pytest.fixture()
 def default_grid_iterator(
-    global_settings, grid_dict_two, parameters_two, default_model, result_description
+    dummy_global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
     """TODO_doc."""
     # create iterator object
@@ -118,7 +110,6 @@ def default_grid_iterator(
         model=default_model,
         parameters=parameters_two,
         result_description=result_description,
-        global_settings=global_settings,
         grid_design=grid_dict_two,
     )
     return my_grid_iterator
@@ -126,7 +117,7 @@ def default_grid_iterator(
 
 # -------------- actual unit_tests --------------------------------------------------
 def test_init(
-    mocker, global_settings, grid_dict_two, parameters_two, default_model, result_description
+    mocker, dummy_global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
     """TODO_doc."""
     # some default input for testing
@@ -140,11 +131,10 @@ def test_init(
         parameters=parameters_two,
         result_description=result_description,
         grid_design=grid_dict_two,
-        global_settings=global_settings,
     )
 
     # tests / asserts
-    mp.assert_called_once_with(default_model, global_settings, parameters_two)
+    mp.assert_called_once_with(default_model, parameters_two)
     assert my_grid_iterator.grid_dict == grid_dict_two
     assert my_grid_iterator.result_description == result_description
     assert my_grid_iterator.samples is None
@@ -167,14 +157,13 @@ def test_pre_run_one(
     expected_samples_one,
     result_description,
     default_model,
-    global_settings,
+    dummy_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_one,
         result_description=result_description,
-        global_settings=global_settings,
         grid_design=grid_dict_one,
     )
     grid_iterator.pre_run()
@@ -187,14 +176,13 @@ def test_pre_run_two(
     result_description,
     expected_samples_two,
     default_model,
-    global_settings,
+    dummy_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_two,
         result_description={},
-        global_settings=global_settings,
         grid_design=grid_dict_two,
     )
     grid_iterator.pre_run()
@@ -207,14 +195,13 @@ def test_pre_run_three(
     expected_samples_three,
     result_description,
     default_model,
-    global_settings,
+    dummy_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_three,
         result_description=result_description,
-        global_settings=global_settings,
         grid_design=grid_dict_three,
     )
     grid_iterator.pre_run()
