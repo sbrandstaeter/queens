@@ -1,7 +1,8 @@
 """Test valid options utils."""
 import pytest
 
-from pqueens.utils.valid_options_utils import InvalidOptionError, check_if_valid_options, get_option
+from pqueens.utils.exceptions import InvalidOptionError
+from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
 
 
 def test_check_if_valid_options_valid(requested_options_valid, valid_options):
@@ -20,7 +21,7 @@ def test_check_if_valid_options_error_message(valid_options):
     requested_option = "not_a_valid_option"
     try:
         check_if_valid_options(valid_options, requested_option, "Error estimating valid options")
-    except Exception as invalid_option_exception:
+    except InvalidOptionError as invalid_option_exception:
         error_message = str(invalid_option_exception)
         assert "Error estimating valid options" in error_message
         assert "Invalid option(s) 'not_a_valid_option'. Valid options are:" in error_message
