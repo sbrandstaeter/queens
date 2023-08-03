@@ -230,7 +230,7 @@ def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     assert default_grid_iterator.output == 2
 
 
-def test_post_run(mocker, default_grid_iterator, mock_visualization):
+def test_post_run(mocker, default_grid_iterator):
     """TODO_doc."""
     # test if save results is called
     mp1 = mocker.patch('pqueens.iterators.grid_iterator.write_results', return_value=None)
