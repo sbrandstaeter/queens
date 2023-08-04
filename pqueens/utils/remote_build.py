@@ -5,7 +5,6 @@ import sys
 import time
 from pathlib import Path
 
-from pqueens.utils.exceptions import CLIError
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -66,23 +65,21 @@ def build_remote_environment(remote_address, remote_user, remote_queens_reposito
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Build queens environment on remote machine.")
-    parser.add_argument('--remote-address', type=str, default=None, help='address of remote host')
-    parser.add_argument('--remote-user', type=str, default=None, help='remote username')
+    parser.add_argument(
+        '--remote-address', type=str, required=True, help='hostname or ip address of remote host'
+    )
+    parser.add_argument('--remote-user', type=str, required=True, help='remote username')
     parser.add_argument(
         '--remote-queens-repository',
         type=str,
-        default=None,
+        required=True,
         help='path to queens repository on remote host',
     )
     parser.add_argument(
-        '--remote-python', type=str, default=None, help='path to python environment on remote host'
+        '--remote-python', type=str, required=True, help='path to python environment on remote host'
     )
 
     args = parser.parse_args(sys.argv[1:])
-
-    for arg in vars(args).values():
-        if arg is None:
-            raise CLIError(f"Missing option --{arg}.")
 
     sync_remote_repository(args.remote_address, args.remote_user, args.remote_queens_repository)
     build_remote_environment(
