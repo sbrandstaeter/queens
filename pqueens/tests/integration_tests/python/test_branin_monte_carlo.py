@@ -5,7 +5,7 @@ import pickle
 
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_branin_monte_carlo(inputdir, tmp_path):

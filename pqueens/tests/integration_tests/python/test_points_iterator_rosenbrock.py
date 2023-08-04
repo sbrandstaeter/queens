@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 from pqueens.tests.integration_tests.example_simulator_functions.rosenbrock60 import rosenbrock60
 from pqueens.utils.injector import inject
 

@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_branin_data_iterator(inputdir, tmp_path, mocker):

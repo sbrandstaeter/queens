@@ -7,7 +7,7 @@ import pytest
 from scipy.stats import entropy
 
 import pqueens.utils.pdf_estimation as est
-from pqueens import run
+from pqueens.main import run
 from pqueens.tests.integration_tests.example_simulator_functions.currin88 import (
     currin88_hifi,
     currin88_lofi,

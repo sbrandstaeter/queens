@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from pqueens import run
+from pqueens.main import run
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
     gaussian_2d_logpdf,

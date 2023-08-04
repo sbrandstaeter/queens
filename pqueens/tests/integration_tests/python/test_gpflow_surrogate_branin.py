@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_gpflow_surrogate_branin(

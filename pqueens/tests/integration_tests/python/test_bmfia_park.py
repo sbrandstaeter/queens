@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 from pqueens.utils import injector
 
 

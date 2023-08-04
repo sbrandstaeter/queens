@@ -5,7 +5,7 @@ import pickle
 
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 _logger = logging.getLogger(__name__)
 

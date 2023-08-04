@@ -8,9 +8,9 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from pqueens import run
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from pqueens.main import run
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_mixture_logpdf import (
     gaussian_component_1,
     gaussian_mixture_4d_logpdf,

@@ -7,10 +7,9 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from pqueens import run
-
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from pqueens.main import run
 
 # fmt: off
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (

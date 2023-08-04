@@ -7,9 +7,9 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
-from pqueens import run
 from pqueens.global_settings import GlobalSettings
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+from pqueens.main import run
 from pqueens.utils import injector
 from pqueens.utils.stochastic_optimizer import Adam
 

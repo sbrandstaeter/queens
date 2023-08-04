@@ -8,8 +8,8 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from pqueens import run
 from pqueens.distributions.normal import NormalDistribution
+from pqueens.main import run
 from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from pqueens.utils import injector
 

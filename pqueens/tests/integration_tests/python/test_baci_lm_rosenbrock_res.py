@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_baci_lm_rosenbrock_res(inputdir, tmp_path):

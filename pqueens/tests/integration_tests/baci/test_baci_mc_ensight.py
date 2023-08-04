@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 
-from pqueens import run
+from pqueens.main import run
 from pqueens.utils import injector
 
 

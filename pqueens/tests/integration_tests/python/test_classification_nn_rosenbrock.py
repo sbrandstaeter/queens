@@ -1,7 +1,7 @@
 """Integration test for the classification iterator."""
 import numpy as np
 
-from pqueens import run
+from pqueens.main import run
 from pqueens.utils.injector import inject
 from pqueens.utils.pickle_utils import load_pickle
 
