@@ -11,6 +11,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 DEFAULT_PACKAGE_MANAGER = "mamba"
+SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, "conda"]
 
 
 def sync_remote_repository(remote_address, remote_user, remote_queens_repository):
@@ -57,6 +58,11 @@ def build_remote_environment(
         package_manager(str, optional): Package manager used for the creation of the environment:
                                         "mamba" or "conda"
     """
+    if package_manager not in SUPPORTED_PACKAGE_MANAGERS:
+        raise ValueError(
+            f"The package manager '{package_manager}' is not supported.\n"
+            f"Supported package managers are: {SUPPORTED_PACKAGE_MANAGERS}"
+        )
     _logger.info("Build remote QUEENS environment...")
     environment_name = Path(remote_python).parents[1].name
     command_string = (
@@ -92,7 +98,7 @@ if __name__ == '__main__':
         '--package-manager',
         type=str,
         default=DEFAULT_PACKAGE_MANAGER,
-        choices=[DEFAULT_PACKAGE_MANAGER, "conda"],
+        choices=SUPPORTED_PACKAGE_MANAGERS,
         help='package manager used for the creation of the remote environment',
     )
 
