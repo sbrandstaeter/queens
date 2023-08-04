@@ -10,6 +10,8 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
+DEFAULT_PACKAGE_MANAGER = "mamba"
+
 
 def sync_remote_repository(remote_address, remote_user, remote_queens_repository):
     """Synchronize local and remote QUEENS source files.
@@ -38,7 +40,13 @@ def sync_remote_repository(remote_address, remote_user, remote_queens_repository
     _logger.info("It took: %s s.\n", time.time() - start_time)
 
 
-def build_remote_environment(remote_address, remote_user, remote_queens_repository, remote_python):
+def build_remote_environment(
+    remote_address,
+    remote_user,
+    remote_queens_repository,
+    remote_python,
+    package_manager=DEFAULT_PACKAGE_MANAGER,
+):
     """Build remote QUEENS environment.
 
     Args:
@@ -46,14 +54,16 @@ def build_remote_environment(remote_address, remote_user, remote_queens_reposito
         remote_user (str): remote username
         remote_queens_repository (str): Path to queens repository on remote host
         remote_python (str): Path to Python environment on remote host
+        package_manager(str, optional): Package manager used for the creation of the environment:
+                                        "mamba" or "conda"
     """
     _logger.info("Build remote QUEENS environment...")
     environment_name = Path(remote_python).parents[1].name
     command_string = (
         f'ssh {remote_user}@{remote_address} "'
         f'cd {remote_queens_repository}; '
-        f'mamba env create -f environment.yml --name {environment_name} --force; '
-        f'mamba activate {environment_name};'
+        f'{package_manager} env create -f environment.yml --name {environment_name} --force; '
+        f'{package_manager} activate {environment_name};'
         f'pip install -e ."'
     )
     start_time = time.time()
@@ -78,11 +88,22 @@ if __name__ == '__main__':
     parser.add_argument(
         '--remote-python', type=str, required=True, help='path to python environment on remote host'
     )
+    parser.add_argument(
+        '--package-manager',
+        type=str,
+        default=DEFAULT_PACKAGE_MANAGER,
+        choices=[DEFAULT_PACKAGE_MANAGER, "conda"],
+        help='package manager used for the creation of the remote environment',
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
     sync_remote_repository(args.remote_address, args.remote_user, args.remote_queens_repository)
     build_remote_environment(
-        args.remote_address, args.remote_user, args.remote_queens_repository, args.remote_python
+        args.remote_address,
+        args.remote_user,
+        args.remote_queens_repository,
+        args.remote_python,
+        args.package_manager,
     )
     sys.exit()
