@@ -106,11 +106,13 @@ imcs-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster:
   stage: build
-  before_script:
-    - conda activate queens-$CI_PIPELINE_ID
   rules:
     - if: $CLUSTER_TESTS == "1"
   script:
+    - ENV_PREFIX=queens-$CI_PIPELINE_ID
+    - mamba create -y --prefix ./$ENV_PREFIX python=3.10
+    - mamba activate ./$ENV_PREFIX
+    - pip install -e . --no-dependencies
     - python pqueens/utils/remote_build.py
       --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
@@ -122,8 +124,6 @@ imcs-build_conda_env:
 #  variables:
 #    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
 #    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-#  needs:
-#    - lnm-build_conda_env
 #  tags:
 #    - lnm-build
 
@@ -133,8 +133,6 @@ thought-build_conda_env:
   variables:
     REMOTE_ADDRESS: 'thought'
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-  needs:
-    - lnm-build_conda_env
   tags:
     - lnm-build
 
@@ -144,8 +142,6 @@ charon-build_conda_env:
   variables:
     REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
-  needs:
-    - imcs-build_conda_env
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
