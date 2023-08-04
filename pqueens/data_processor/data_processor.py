@@ -168,8 +168,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
             base_dir_file (Path): Path of the base directory that
                                     contains the file of interest.
         """
-        current_file = None
         for regex in self.files_to_be_deleted_regex_lst:
             for file in sorted(base_dir_file.glob(regex)):
-                current_file = file
                 file.unlink(missing_ok=True)
