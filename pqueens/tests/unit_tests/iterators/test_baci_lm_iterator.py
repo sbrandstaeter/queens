@@ -135,7 +135,7 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
 
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
@@ -155,7 +155,7 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[
             np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]),

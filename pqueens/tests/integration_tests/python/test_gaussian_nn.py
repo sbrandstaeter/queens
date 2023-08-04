@@ -30,7 +30,6 @@ def my_model():
 
 def test_gaussian_nn_one_dim(my_model):
     """Test one dimensional gaussian nn."""
-    approx_name = 'my_regression_model'
     n_train = 25
     x_train = np.linspace(-5, 5, n_train).reshape(-1, 1)
     y_train = sinus_test_fun(x_train)
@@ -68,7 +67,6 @@ def test_gaussian_nn_one_dim(my_model):
 
 def test_gaussian_nn_two_dim(my_model):
     """Test two dimensional gaussian nn."""
-    approx_name = 'my_regression_model'
     n_train = 7
     x_3, x_4 = 0.5, 0.5
     x_1 = np.linspace(0.001, 0.999, n_train)
