@@ -40,11 +40,15 @@ def inject_template_cli():
     ascii_art.print_crown(80)
     ascii_art.print_banner("Injector", 80)
     parser = argparse.ArgumentParser(
-        description="QUEENS injection CLI for Jinja2 templates. The parameters '--name <value>'"
+        description="QUEENS injection CLI for Jinja2 templates. The parameters to be injected can "
+        "be supplied by adding additional '--<name> <value>' arguments. All occurrences of <name> "
+        "will be replaced with <value> in the template. Below, only two examples are shown, but an "
+        "arbitrary number of parameters (name-value pairs) can be added."
     )
     parser.add_argument(
         '--template',
         type=str,
+        required=True,
         help="Jinja2 template to be injected.",
     )
     parser.add_argument(
@@ -56,19 +60,21 @@ def inject_template_cli():
 
     # These two are dummy arguments to indicate how to use this CLI
     parser.add_argument(
-        '--paramter_1',
+        '--name_1',
         type=str,
         default=None,
-        help='Parameter 1 and value to be inject into the template.',
+        metavar="value_1",
+        help="Example name-value pair: inject a parameter called <name_1> with the value <value_1>",
     )
     parser.add_argument(
-        '--paramter_2',
+        '--name_2',
         type=str,
         default=None,
-        help='Parameter 2 and value to be inject into the template.',
+        metavar="value_2",
+        help="Example name-value pair: inject a parameter called <name_2> with the value <value_2>",
     )
 
-    path_arguments, injection_dict = parser.parse_known_args()
+    path_arguments, parameter_arguments = parser.parse_known_args()
 
     template_path = Path(path_arguments.template)
     if path_arguments.output_path is None:
@@ -86,12 +92,12 @@ def inject_template_cli():
     injection_parser = argparse.ArgumentParser()
 
     # Add input parameters to inject
-    for arg in injection_dict:
+    for arg in parameter_arguments:
         if arg.find("--") > -1:
             injection_parser.add_argument(arg)
 
     # Create the dictionary
-    injection_dict = vars(injection_parser.parse_args(injection_dict))
+    injection_dict = vars(injection_parser.parse_args(parameter_arguments))
     _logger.info(get_str_table("Injection parameters", injection_dict))
     inject(injection_dict, template_path, output_path)
 
