@@ -47,7 +47,6 @@ class ElementaryEffectsIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         num_trajectories,
         local_optimization,
@@ -62,7 +61,6 @@ class ElementaryEffectsIterator(Iterator):
 
         Args:
             model (model): QUEENS model to evaluate
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             num_trajectories (int): number of trajectories to generate
             local_optimization (bool): flag whether to use local optimization according to Ruano
@@ -78,7 +76,7 @@ class ElementaryEffectsIterator(Iterator):
                                          intervals for sensitivity measures
             result_description (dict): dictionary with desired result description
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories
@@ -141,11 +139,7 @@ class ElementaryEffectsIterator(Iterator):
             self.print_results(results)
 
             if self.result_description["write_results"] is True:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
 
             if qvis.sa_visualization_instance:
                 qvis.sa_visualization_instance.plot(results)

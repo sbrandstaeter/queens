@@ -32,7 +32,6 @@ class LHSIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         seed,
         num_samples,
@@ -44,7 +43,6 @@ class LHSIterator(Iterator):
 
         Args:
             model (obj, optional): Model to be evaluated by iterator.
-            global_settings (dict): Settings for the QUEENS run.
             parameters (obj): Parameters object
             seed (int): Seed for numpy random number generator
             num_samples (int):    Number of samples to compute
@@ -53,7 +51,7 @@ class LHSIterator(Iterator):
             criterion (str): Allowable values are "center" or "c", "maximin" or "m",
                              "centermaximin" or "cm", and "correlation" or "corr"
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations
@@ -89,11 +87,7 @@ class LHSIterator(Iterator):
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
 
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)

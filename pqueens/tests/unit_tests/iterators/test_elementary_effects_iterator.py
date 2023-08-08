@@ -1,85 +1,73 @@
 """Unit tests for the elementary effects iterator."""
-import unittest
-from copy import deepcopy
 
 import numpy as np
+import pytest
 
-from pqueens.distributions.uniform import UniformDistribution
-from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
-from pqueens.models.simulation_model import SimulationModel
-from pqueens.parameters.parameters import Parameters
 
 
-class TestElementaryEffectsIshigami(unittest.TestCase):
-    """TODO.doc."""
+@pytest.fixture
+def default_elementary_effects_iterator(
+    dummy_global_settings, default_simulation_model, default_parameters_uniform_3d
+):
+    """Default elementary effects iterator."""
+    default_simulation_model.interface.parameters = default_parameters_uniform_3d
 
-    def setUp(self):
-        """TODO.doc."""
-        rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-        parameters = Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
-        some_settings = {"experiment_name": "test"}
+    my_iterator = ElementaryEffectsIterator(
+        model=default_simulation_model,
+        parameters=default_parameters_uniform_3d,
+        num_trajectories=20,
+        local_optimization=True,
+        num_optimal_trajectories=4,
+        number_of_levels=4,
+        seed=42,
+        confidence_level=0.95,
+        num_bootstrap_samples=1000,
+        result_description={},
+    )
+    return my_iterator
 
-        self.interface = DirectPythonInterface(
-            parameters=parameters, function="ishigami90", num_workers=1
-        )
 
-        # create mock model
-        self.model = SimulationModel(self.interface)
+def test_correct_sampling(default_elementary_effects_iterator):
+    """Test if sampling works correctly."""
+    default_elementary_effects_iterator.pre_run()
 
-        self.my_iterator = ElementaryEffectsIterator(
-            model=self.model,
-            parameters=parameters,
-            num_trajectories=20,
-            local_optimization=True,
-            num_optimal_trajectories=4,
-            number_of_levels=4,
-            seed=42,
-            confidence_level=0.95,
-            num_bootstrap_samples=1000,
-            result_description={},
-            global_settings=some_settings,
-        )
+    ref_vals = np.array(
+        [
+            [-1.04719755, 3.14159265, 3.14159265],
+            [3.14159265, 3.14159265, 3.14159265],
+            [3.14159265, 3.14159265, -1.04719755],
+            [3.14159265, -1.04719755, -1.04719755],
+            [-3.14159265, -1.04719755, -3.14159265],
+            [-3.14159265, 3.14159265, -3.14159265],
+            [-3.14159265, 3.14159265, 1.04719755],
+            [1.04719755, 3.14159265, 1.04719755],
+            [-3.14159265, -3.14159265, 1.04719755],
+            [-3.14159265, -3.14159265, -3.14159265],
+            [-3.14159265, 1.04719755, -3.14159265],
+            [1.04719755, 1.04719755, -3.14159265],
+            [3.14159265, 1.04719755, 3.14159265],
+            [3.14159265, -3.14159265, 3.14159265],
+            [-1.04719755, -3.14159265, 3.14159265],
+            [-1.04719755, -3.14159265, -1.04719755],
+        ]
+    )
 
-    def test_correct_sampling(self):
-        """Test if sampling works correctly."""
-        self.my_iterator.pre_run()
+    np.testing.assert_allclose(default_elementary_effects_iterator.samples, ref_vals, 1e-07, 1e-07)
 
-        ref_vals = np.array(
-            [
-                [-1.04719755, 3.14159265, 3.14159265],
-                [3.14159265, 3.14159265, 3.14159265],
-                [3.14159265, 3.14159265, -1.04719755],
-                [3.14159265, -1.04719755, -1.04719755],
-                [-3.14159265, -1.04719755, -3.14159265],
-                [-3.14159265, 3.14159265, -3.14159265],
-                [-3.14159265, 3.14159265, 1.04719755],
-                [1.04719755, 3.14159265, 1.04719755],
-                [-3.14159265, -3.14159265, 1.04719755],
-                [-3.14159265, -3.14159265, -3.14159265],
-                [-3.14159265, 1.04719755, -3.14159265],
-                [1.04719755, 1.04719755, -3.14159265],
-                [3.14159265, 1.04719755, 3.14159265],
-                [3.14159265, -3.14159265, 3.14159265],
-                [-1.04719755, -3.14159265, 3.14159265],
-                [-1.04719755, -3.14159265, -1.04719755],
-            ]
-        )
 
-        np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
+def test_correct_sensitivity_indices(default_elementary_effects_iterator):
+    """Test correct results."""
+    default_elementary_effects_iterator.pre_run()
+    default_elementary_effects_iterator.core_run()
+    si = default_elementary_effects_iterator.si
 
-    def test_correct_sensitivity_indices(self):
-        """Test correct results."""
-        self.my_iterator.pre_run()
-        self.my_iterator.core_run()
-        si = self.my_iterator.si
+    ref_mu = np.array([10.82845216, 0.0, -3.12439805])
+    ref_mu_star = np.array([10.82845216, 7.87500000, 3.12439805])
+    ref_mu_star_conf = np.array([5.49677290, 0.0, 5.26474752])
+    ref_sigma = np.array([6.24879610, 9.09326673, 6.24879610])
 
-        ref_mu = np.array([10.82845216, 0.0, -3.12439805])
-        ref_mu_star = np.array([10.82845216, 7.87500000, 3.12439805])
-        ref_mu_star_conf = np.array([5.49677290, 0.0, 5.26474752])
-        ref_sigma = np.array([6.24879610, 9.09326673, 6.24879610])
-
-        np.testing.assert_allclose(si['mu'], ref_mu, 1e-07, 1e-07)
-        np.testing.assert_allclose(si['mu_star'], ref_mu_star, 1e-07, 1e-07)
-        np.testing.assert_allclose(si['mu_star_conf'], ref_mu_star_conf, 1e-07, 1e-07)
-        np.testing.assert_allclose(si['sigma'], ref_sigma, 1e-07, 1e-07)
+    np.testing.assert_allclose(si['mu'], ref_mu, 1e-07, 1e-07)
+    np.testing.assert_allclose(si['mu_star'], ref_mu_star, 1e-07, 1e-07)
+    np.testing.assert_allclose(si['mu_star_conf'], ref_mu_star_conf, 1e-07, 1e-07)
+    np.testing.assert_allclose(si['sigma'], ref_sigma, 1e-07, 1e-07)
