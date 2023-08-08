@@ -7,6 +7,7 @@ import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.utils.process_outputs import process_outputs, write_results
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class MonteCarloIterator(Iterator):
         output (np.array):          Array with all model outputs.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

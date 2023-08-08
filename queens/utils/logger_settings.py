@@ -1,5 +1,6 @@
 """Logging in QUEENS."""
 
+import inspect
 import io
 import logging
 import re
@@ -352,3 +353,38 @@ def reset_logging():
                 finally:
                     handler.release()
                 logger.removeHandler(handler)
+
+
+def log_init_args(logger):
+    """Log arguments of __init__ method.
+
+    Args:
+        logger (obj): Logger object
+    Returns:
+        decorator (func): Decorated __init__ method
+    """
+
+    def decorator(method):
+        def wrapper(*args, **kwargs):
+            signature = inspect.signature(method)
+            default_kwargs = {
+                k: v.default
+                for k, v in signature.parameters.items()
+                if v.default is not inspect.Parameter.empty
+            }
+
+            all_keys = list(signature.parameters.keys())
+            args_as_kwargs = {all_keys[i]: args[i] for i in range(len(args))}
+            all_kwargs = dict(default_kwargs, **args_as_kwargs, **kwargs)
+            all_kwargs = dict(sorted(all_kwargs.items(), key=lambda pair: all_keys.index(pair[0])))
+
+            logger.info('Initializing ' + args[0].__class__.__name__ + '(')
+            indentation = '    '
+            for key, value in all_kwargs.items():
+                logger.info(indentation + str(key) + '=' + str(value) + ',')
+            logger.info(')')
+            method(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

@@ -1,7 +1,12 @@
 """Simulation model class."""
+import logging
+
 import numpy as np
 
 from queens.models.model import Model
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class SimulationModel(Model):
@@ -11,6 +16,7 @@ class SimulationModel(Model):
         interface (interface): Interface to simulations/functions.
     """
 
+    @log_init_args(_logger)
     def __init__(self, interface):
         """Initialize simulation model.
 
