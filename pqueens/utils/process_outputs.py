@@ -28,8 +28,8 @@ def process_outputs(output_data, output_description, input_data=None):
     processed_results = {}
     try:
         processed_results = do_processing(output_data, output_description)
-    except KeyError as key_error:
-        _logger.warn("Error occurred during result processing: %s", str(key_error))
+    except (TypeError, KeyError) as error:
+        _logger.warning("Error occurred during result processing: %s", str(error))
 
     # add the actual raw input and output data
     processed_results["raw_output_data"] = output_data
