@@ -1,5 +1,5 @@
 """Test vtk utils."""
-
+# pylint:disable=no-name-in-module
 import numpy as np
 import pytest
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
