@@ -124,11 +124,11 @@ imcs-build_conda_env:
 #  tags:
 #    - lnm-build
 
-deep-build_conda_env:
+thought-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_ADDRESS: 'thought'
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
@@ -295,7 +295,7 @@ lnm-cluster_tests:
   needs:
     - lnm-build_conda_env
     # - bruteforce-build_conda_env
-    - deep-build_conda_env
+    - thought-build_conda_env
   tags:
     - lnm-ubuntu
 
@@ -478,13 +478,13 @@ imcs-remove_conda_env:
 #  tags:
 #    - lnm-build
 
-deep-cluster-remove_conda_env:
+thought-cluster-remove_conda_env:
   extends:
     - .remove_conda_env_cluster
   dependencies:
-    - deep-build_conda_env
+    - thought-build_conda_env
   variables:
-    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_ADDRESS: 'thought'
   tags:
     - lnm-build
 

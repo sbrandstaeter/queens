@@ -14,11 +14,11 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-DEEP_CLUSTER_TYPE = "deep"
+THOUGHT_CLUSTER_TYPE = "thought"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
 CHARON_CLUSTER_TYPE = "charon"
 
-VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
+VALID_PBS_CLUSTER_TYPES = (THOUGHT_CLUSTER_TYPE,)
 VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
 
 VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
@@ -53,15 +53,15 @@ class ClusterConfig:
     dict = asdict
 
 
-DEEP_CONFIG = ClusterConfig(
-    name="deep",
-    cluster_address="deep.lnm.ed.tum.de",
-    workload_manager="pbs",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+THOUGHT_CONFIG = ClusterConfig(
+    name="thought",
+    cluster_address="thought",
+    workload_manager="slurm",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
     cluster_internal_address="null",
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
-    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
 )
 
 
@@ -89,7 +89,7 @@ CHARON_CONFIG = ClusterConfig(
 )
 
 CLUSTER_CONFIGS = {
-    DEEP_CLUSTER_TYPE: DEEP_CONFIG,
+    THOUGHT_CLUSTER_TYPE: THOUGHT_CONFIG,
     BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
     CHARON_CLUSTER_TYPE: CHARON_CONFIG,
 }

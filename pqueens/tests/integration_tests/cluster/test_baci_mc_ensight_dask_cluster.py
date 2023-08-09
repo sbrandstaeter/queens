@@ -8,7 +8,7 @@ import pytest
 from pqueens.main import run
 from pqueens.tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
-    DEEP_CLUSTER_TYPE,
+    THOUGHT_CLUSTER_TYPE,
 )
 from pqueens.utils import config_directories, injector, io_utils
 
@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(THOUGHT_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         # pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
