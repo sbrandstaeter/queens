@@ -3,10 +3,12 @@ import atexit
 import logging
 import socket
 import time
+from datetime import datetime, timedelta
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
+import pqueens.global_settings
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.remote_build import build_remote_environment, sync_remote_repository
@@ -39,7 +41,6 @@ class ClusterScheduler(Scheduler):
 
     def __init__(
         self,
-        global_settings,
         workload_manager,
         cluster_address,
         cluster_user,
@@ -54,16 +55,16 @@ class ClusterScheduler(Scheduler):
         cluster_internal_address=None,
         cluster_queens_repository=None,
         cluster_build_environment=False,
+        progressbar=True,
     ):
         """Init method for the cluster scheduler.
 
         Args:
-            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
             cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
-            walltime (str): Walltime for each worker job.
+            walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
             num_procs (int, opt): number of cores per job
@@ -74,12 +75,14 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
             cluster_build_environment (bool, opt): Flag to decide if queens environment should be
                                                    build on cluster
+            progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
+                                     schedulers are used, the progressbar must be disabled.
         """
         if cluster_queens_repository is None:
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
         _logger.debug("cluster queens repository: %s", cluster_queens_repository)
 
-        experiment_name = global_settings['experiment_name']
+        experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
 
         sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
 
@@ -104,9 +107,15 @@ class ClusterScheduler(Scheduler):
         _logger.debug(
             "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
         )
+        walltime_delta = datetime.strptime(walltime, "%H:%M:%S") - datetime.strptime("0", "%S")
+        # Increase jobqueue walltime by 5 minutes to kill dask workers in time
+        walltime = str(walltime_delta + timedelta(minutes=5))
+        # dask worker lifetime = walltime - 3m +/- 2m
+        worker_lifetime = str((walltime_delta + timedelta(minutes=2)).seconds) + "s"
 
         remote_port = connection.run_function(self.get_port)
-        scheduler_options = {"port": remote_port}
+        remote_port_dashboard = connection.run_function(self.get_port)
+        scheduler_options = {"port": remote_port, "dashboard_address": remote_port_dashboard}
         if cluster_internal_address:
             scheduler_options["contact_address"] = f"{cluster_internal_address}:{remote_port}"
         dask_cluster_kwargs = {
@@ -119,6 +128,7 @@ class ClusterScheduler(Scheduler):
             "log_directory": str(experiment_dir),
             "job_directives_skip": job_directives_skip,
             "job_extra_directives": [job_extra_directives],
+            "worker_extra_args": ["--lifetime", worker_lifetime, "--lifetime-stagger", "2m"],
         }
         dask_cluster_adapt_kwargs = {
             "minimum_jobs": min_jobs,
@@ -133,8 +143,10 @@ class ClusterScheduler(Scheduler):
         )
 
         local_port = self.get_port()
+        local_port_dashboard = self.get_port()
 
-        connection.open_port_forwarding(local_port=local_port, remote_port=remote_port)
+        connection.open_port_forwarding(local_port, remote_port)
+        connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
             try:
@@ -150,8 +162,20 @@ class ClusterScheduler(Scheduler):
         _logger.debug("Submitting dummy job to check basic functionality of client.")
         client.submit(lambda: "Dummy job").result(timeout=180)
         _logger.debug("Dummy job was successful.")
+        _logger.info(
+            'To view the Dask dashboard open this link in your browser: '
+            'http://localhost:%i/status',
+            local_port_dashboard,
+        )
 
-        super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
+        super().__init__(
+            experiment_name=experiment_name,
+            experiment_dir=experiment_dir,
+            client=client,
+            num_procs=num_procs,
+            num_procs_post=num_procs_post,
+            progressbar=progressbar,
+        )
 
     @staticmethod
     def get_port():

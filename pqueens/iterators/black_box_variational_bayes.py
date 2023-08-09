@@ -70,7 +70,6 @@ class BBVIIterator(VariationalInferenceIterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         variational_distribution,
@@ -95,7 +94,6 @@ class BBVIIterator(VariationalInferenceIterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
@@ -137,7 +135,6 @@ class BBVIIterator(VariationalInferenceIterator):
 
         super().__init__(
             model=model,
-            global_settings=global_settings,
             parameters=parameters,
             result_description=result_description,
             variational_distribution=variational_distribution,
@@ -180,14 +177,14 @@ class BBVIIterator(VariationalInferenceIterator):
         _logger.info('Starting black box Bayesian variational inference...')
         super().core_run()
 
-    def eval_log_likelihood(self, sample_batch):
+    def eval_log_likelihood(self, samples):
         """Calculate the log-likelihood of the observation data.
 
         Evaluation of the likelihood model for all inputs of the sample batch will trigger
         the actual forward simulation.
 
         Args:
-            sample_batch (np.array): Sample-batch with samples row-wise
+            samples (np.array): Samples (n_samples x n_dimension)
 
         Returns:
             log_likelihood (np.array): Vector of the log-likelihood function for all input
@@ -195,39 +192,38 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)
-        log_likelihood = self.model.evaluate(sample_batch)
+        log_likelihood = self.model.evaluate(samples)
 
         return log_likelihood.flatten()
 
-    def get_log_prior(self, sample_batch):
+    def get_log_prior(self, samples):
         """Evaluate the log prior of the model for a sample batch.
 
         The samples are transformed according to the selected
         transformation.
 
         Args:
-            sample_batch (np.array): Sample batch for which the model should be evaluated
+            samples (np.array): Samples (n_samples x n_dimension)
 
         Returns:
             log_prior (np.array): log-prior vector evaluated for current sample batch
         """
-        log_prior_vec = self.parameters.joint_logpdf(sample_batch)
-        return log_prior_vec
+        return self.parameters.joint_logpdf(samples)
 
-    def get_log_posterior_unnormalized(self, sample_batch):
+    def get_log_posterior_unnormalized(self, samples):
         """Calculate the unnormalized log posterior for a sample batch.
 
         Args:
-            sample_batch (np.array): Sample batch for which the model should be evaluated
+            samples (np.array): Samples (n_samples x n_dimension)
 
         Returns:
             unnormalized_log_posterior (np.array): Values of unnormalized log posterior
             distribution at positions of sample batch
         """
         # Transform the samples
-        sample_batch = self._transform_samples(sample_batch)
-        log_prior = self.get_log_prior(sample_batch)
-        log_likelihood = self.eval_log_likelihood(sample_batch)
+        samples = self._transform_samples(samples)
+        log_prior = self.get_log_prior(samples)
+        log_likelihood = self.eval_log_likelihood(samples)
         log_posterior_unnormalized = log_likelihood + log_prior
         return log_posterior_unnormalized.flatten()
 
@@ -273,12 +269,12 @@ class BBVIIterator(VariationalInferenceIterator):
         components of the control variate.
 
         Args:
-            f_mat (np.array): Column-wise MC gradient samples
-            h_mat (np.array): Column-wise control variate samples
-            weights_is (np.array): importance sampling weights
+            f_mat (np.array): MC gradient samples (n_variational_parameters x n_samples)
+            h_mat (np.array): Control variate samples (n_variational_parameters x n_samples)
+            weights_is (np.array): importance sampling weights (1 x n_samples)
 
         Returns:
-            cv_scaling (np.array): Columnvector with control variate scalings
+            cv_scaling (np.array): Control variate scalings (n_variational_parameters x 1)
         """
         dim = len(h_mat)
         cov_sum = 0
@@ -297,15 +293,16 @@ class BBVIIterator(VariationalInferenceIterator):
         I.e., every component of the control variate separately is computed separately.
 
         Args:
-            f_mat (np.array): Column-wise MC gradient samples
-            h_mat (np.array): Column-wise control variate samples
-            weights_is (np.array): importance sampling weights
+            f_mat (np.array): MC gradient samples (n_variational_parameters x n_samples)
+            h_mat (np.array): Control variate samples (n_variational_parameters x n_samples)
+            weights_is (np.array): importance sampling weights (1 x n_samples)
+
         Returns:
-            cv_scaling (np.array): Column vector with control variate scalings
+            cv_scaling (np.array): Control variate scalings (n_variational_parameters x 1)
         """
-        dim = len(h_mat)
-        cv_scaling = np.ones((dim, 1))
-        for i in range(dim):
+        n_parameters = len(h_mat)
+        cv_scaling = np.ones((n_parameters, 1))
+        for i in range(n_parameters):
             cv_scaling[i] = np.cov(f_mat[i], h_mat[i])[0, 1] / float(
                 np.cov(h_mat[i], aweights=weights_is)
             )
@@ -323,11 +320,12 @@ class BBVIIterator(VariationalInferenceIterator):
 
         Args:
             cv_obj (control variate function): A control variate scaling function
-            f_mat (np.array): Column-wise MC gradient samples
-            h_mat (np.array): Column-wise control variate samples
+            f_mat (np.array): MC gradient samples (n_variational_parameters x n_samples)
+            h_mat (np.array): Control variate samples (n_variational_parameters x n_samples)
+            weights_is (np.array): importance sampling weights (1 x n_samples)
 
         Returns:
-            cv_scaling (np.array): Colum-wise control variate scalings for the different samples
+            cv_scaling (np.array): Control variate scalings (n_variational_parameters x n_samples)
         """
         cv_scaling = []
         for i in range(f_mat.shape[1]):
@@ -340,11 +338,13 @@ class BBVIIterator(VariationalInferenceIterator):
         """Calculate the control variate scalings.
 
         Args:
-            f_mat (np.array): Column-wise MC gradient samples
-            h_mat (np.array): Column-wise control variate samples
-            weights_is (np.ndarray): Importance sampling weights
+            f_mat (np.array): MC gradient samples (n_variational_parameters x n_samples)
+            h_mat (np.array): Control variate samples (n_variational_parameters x n_samples)
+            weights_is (np.array): importance sampling weights (1 x n_samples)
+
         Returns:
-            cv_scaling (np.array): Scaling for the control variate
+            cv_scaling (np.array): for loo CV: (n_variational_parameters x n_samples)
+                                         else: (n_variational_parameters x 1)
         """
         if self.control_variates_scaling_type == "componentwise":
             cv_scaling_obj = self._componentwise_control_variates_scalings
@@ -374,14 +374,14 @@ class BBVIIterator(VariationalInferenceIterator):
             variational_parameters (np.array): Variational parameters
 
         Returns:
-            elbo gradient as column vector (np.array)
+            grad_elbo (np.array): ELBO gradient (n_variational_parameters x 1)
         """
         self.variational_params = variational_parameters.flatten()
 
         # Check if evaluating the probabilistic model is necessary
         self._check_if_sampling_necessary()
         if self.sampling_bool:
-            self._sample_gradient_from_probabilistic_model()
+            self._sample_probabilistic_model()
 
         # Use IS sampling (if enabled)
         selfnormalized_weights_is, normalizing_constant_is = self._prepare_importance_sampling()
@@ -403,6 +403,7 @@ class BBVIIterator(VariationalInferenceIterator):
         )
 
         # Compute the control variate at the given samples
+        # We assume the expectation of the control variate is zero
         h_mat = self.grad_params_log_variational_mat
 
         if isinstance(selfnormalized_weights_is, (float, int)):
@@ -436,7 +437,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         return grad_elbo
 
-    def _sample_gradient_from_probabilistic_model(self):
+    def _sample_probabilistic_model(self):
         """Evaluate probabilistic model."""
         # Increase model call counter
         n_samples = self.n_samples_per_iter
@@ -488,10 +489,10 @@ class BBVIIterator(VariationalInferenceIterator):
     def _check_if_sampling_necessary(self):
         """Check if resampling is necessary.
 
-        Resampling is necessary if on of the following condition is True:
+        Sampling is necessary if one of the following condition is met:
             1. No memory is used
             2. Not enough samples in memory
-            3. ESS number is too low
+            3. ESS number is too small
             4. Every model_eval_iteration_period
         """
         max_ess = self.n_samples_per_iter * (self.memory)
@@ -530,9 +531,9 @@ class BBVIIterator(VariationalInferenceIterator):
         :math:`\int_x h(x) p(x) dx = a \int_x h(x) \frac{1}{a}p(x) dx`
 
         Returns:
-            selfnormalized_weights (np.array): Row-vector with selfnormalized weights
+            selfnormalized_weights (np.array): (1 x n_samples)
             normalizing_constant (int): Normalizing constant
-            samples (np.array): Eventually extended row-wise samples
+            samples (np.array): Samples (n_samples x n_dimension)
         """
         # Values if no IS is used or for the first iteration
         selfnormalized_weights = 1
@@ -594,11 +595,11 @@ class BBVIIterator(VariationalInferenceIterator):
         Args:
             variational_params_list (list): Variational parameters list of the current and the
                                             desired previous iterations
-            samples (np.array): Row-wise samples for the MC gradient estimation
+            samples (np.array): Samples (n_samples x n_dimension)
 
         Returns:
             weights (np.array): (Unnormalized) weights for the ISMC evaluated for the
-            given samples
+            given samples (1 x n_samples)
         """
         inv_weights = 0
         n_mixture = len(variational_params_list)
@@ -617,7 +618,7 @@ class BBVIIterator(VariationalInferenceIterator):
         """Evaluate logpdf and score function of the variational distribution.
 
         Args:
-            samples (np.array): Row-wise samples
+            samples (np.array): Samples (n_samples x n_dimension)
         """
         self.log_variational_mat = self.variational_distribution_obj.logpdf(
             self.variational_params, samples

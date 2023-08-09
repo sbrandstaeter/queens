@@ -4,19 +4,8 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from pqueens.distributions.uniform import UniformDistribution
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
-from pqueens.parameters.parameters import Parameters
-
-
-# ------ general input fixture ---------------------------------------
-@pytest.fixture()
-def default_parameters():
-    """TODO_doc."""
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=x1, x2=x2)
 
 
 @pytest.fixture()
@@ -47,20 +36,13 @@ def config():
 
 
 @pytest.fixture()
-def default_bmfmc_model(default_interface, default_parameters):
+def default_bmfmc_model(default_interface):
     """TODO_doc."""
     np.random.seed(1)
     model = Mock()
     model.X_mc = np.random.random((20, 2))
     model.Y_LFs_mc = np.random.random((20, 2))
     return model
-
-
-@pytest.fixture()
-def global_settings():
-    """TODO_doc."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
 
 
 @pytest.fixture()
@@ -96,8 +78,8 @@ def BMFMC_reference():
 
 @pytest.fixture()
 def default_bmfmc_iterator(
-    global_settings,
-    default_parameters,
+    dummy_global_settings,
+    default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
     initial_design,
@@ -107,46 +89,17 @@ def default_bmfmc_iterator(
     """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
-        global_settings=global_settings,
-        parameters=default_parameters,
+        parameters=default_parameters_uniform_2d,
         result_description=result_description,
         initial_design=initial_design,
     )
     return my_bmfmc_iterator
 
 
-# custom class to mock the visualization module
-class InstanceMock:
-    """TODO_doc."""
-
-    @staticmethod
-    def plot_pdfs(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_manifold(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_feature_ranking(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-
-@pytest.fixture
-def mock_visualization():
-    """TODO_doc."""
-    my_mock = InstanceMock()
-    return my_mock
-
-
 # ------ actual unit_tests --------------------------------------------
 def test_init(
     mocker,
-    global_settings,
-    default_parameters,
+    default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
     initial_design,
@@ -155,13 +108,12 @@ def test_init(
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
-        global_settings=global_settings,
-        parameters=default_parameters,
+        parameters=default_parameters_uniform_2d,
         result_description=result_description,
         initial_design=initial_design,
     )
     # tests / asserts
-    mp.assert_called_once_with(default_bmfmc_model, global_settings, default_parameters)
+    mp.assert_called_once_with(default_bmfmc_model, default_parameters_uniform_2d)
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None
@@ -188,10 +140,7 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     """TODO_doc."""
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance'
@@ -284,10 +233,7 @@ def test_model_evaluate(default_bmfmc_iterator):
 
 def test_post_run(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mp1 = mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs'
