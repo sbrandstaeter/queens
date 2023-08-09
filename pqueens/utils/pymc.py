@@ -32,7 +32,7 @@ class PymcDistributionWrapper(pt.Op):
         self.logpdf_grad = PymcGradientWrapper(self.logpdf_gradients)
 
     # pylint: disable-next=unused-argument
-    def perform(self, _node, inputs, outputs):
+    def perform(self, _node, inputs, outputs, params=None):
         """Call outside pdf function."""
         (sample,) = inputs
 
@@ -66,7 +66,7 @@ class PymcGradientWrapper(pt.Op):
         self.gradient_func = gradient_func
 
     # pylint: disable-next=unused-argument
-    def perform(self, _node, inputs, outputs):
+    def perform(self, _node, inputs, outputs, params=None):
         """Evaluate the gradient."""
         (sample,) = inputs
         if self.gradient_func is not None:
