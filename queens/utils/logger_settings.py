@@ -7,6 +7,8 @@ import re
 import sys
 import time
 
+from queens.utils.print_utils import get_str_table
+
 LIBRARY_LOGGER_NAME = "queens"
 
 
@@ -378,11 +380,7 @@ def log_init_args(logger):
             all_kwargs = dict(default_kwargs, **args_as_kwargs, **kwargs)
             all_kwargs = dict(sorted(all_kwargs.items(), key=lambda pair: all_keys.index(pair[0])))
 
-            logger.info('Initializing ' + args[0].__class__.__name__ + '(')
-            indentation = '    '
-            for key, value in all_kwargs.items():
-                logger.info(indentation + str(key) + '=' + str(value) + ',')
-            logger.info(')')
+            logger.info(get_str_table(args[0].__class__.__name__, all_kwargs))
             method(*args, **kwargs)
 
         return wrapper

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from queens.iterators.iterator import Iterator
-from queens.utils.process_outputs import process_outputs, write_results
 from queens.utils.logger_settings import log_init_args
+from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
