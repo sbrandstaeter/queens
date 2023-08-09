@@ -472,7 +472,7 @@ class BMFMCModel(Model):
         self.calculate_p_yhf_mean()
 
         if self.predictive_var_bool:
-            self._calculate_p_yhf_var()
+            self.calculate_p_yhf_var()
         else:
             self.p_yhf_var = None
 
@@ -483,7 +483,7 @@ class BMFMCModel(Model):
         pyhf_mean_vec = np.sum(pdf_mat, axis=0)
         self.p_yhf_mean = 1 / self.m_f_mc.size * pyhf_mean_vec
 
-    def _calculate_p_yhf_var(self):
+    def calculate_p_yhf_var(self):
         """Calculate the posterior variance of the HF density prediction."""
         # calculate full posterior covariance matrix for testing points
         _, k_post = self.interface.evaluate(self.Z_mc.T)
@@ -566,8 +566,8 @@ class BMFMCModel(Model):
         r"""Set feature strategy.
 
         Depending on the method specified in the input file, set the
-        strategy that will be used to calculate the low-fidelity features
-        :math:`Z_{\text{LF}}`.
+        strategy that will be used to calculate the low-fidelity
+        features :math:`Z_{\text{LF}}`.
         """
         if self.features_config == "man_features":
             idx_vec = self.X_cols
@@ -592,13 +592,13 @@ class BMFMCModel(Model):
     def calculate_extended_gammas(self):
         r"""Calculate extended input features.
 
-        Given the low-fidelity sampling data, calculate the extended input features
-        :math:`\boldsymbol{\gamma_{\text{LF,ext}}}`. The informative input
-        features :math:`\boldsymbol{\gamma}` are calculated so that
-        they would maximize the Pearson correlation coefficient between
-        :math:`\boldsymbol{\gamma_i^*}` and
-        :math:`Y_{\text{LF}}^*`. Afterwards :math:`z_{\text{LF}}` is composed by
-        :math:`y_{\text{LF}}` and
+        Given the low-fidelity sampling data, calculate the extended
+        input features :math:`\boldsymbol{\gamma_{\text{LF,ext}}}`. The
+        informative input features :math:`\boldsymbol{\gamma}` are
+        calculated so that they would maximize the Pearson correlation
+        coefficient between :math:`\boldsymbol{\gamma_i^*}` and
+        :math:`Y_{\text{LF}}^*`. Afterwards :math:`z_{\text{LF}}` is
+        composed by :math:`y_{\text{LF}}` and
         :math:`\boldsymbol{\gamma_{LF}}`.
         """
         x_red = self.input_dim_red()  # this is also standardized
@@ -632,7 +632,7 @@ class BMFMCModel(Model):
 
             # Scale features linearly to LF output data so that probabilistic model
             # can be fit easier
-            features_test = _linear_scale_a_to_b(test_iter, self.Y_LFs_mc)
+            features_test = linear_scale_a_to_b(test_iter, self.Y_LFs_mc)
 
             # Assemble feature vectors and informative features
             self.gammas_ext_mc = np.hstack((self.gammas_ext_mc, features_test))
@@ -640,12 +640,13 @@ class BMFMCModel(Model):
     def update_probabilistic_mapping_with_features(self):
         r"""Update probabilistic mapping.
 
-        Given the number of additional informative features of the input and the
-        extended feature matrix :math:`\Gamma_{LF,ext}`, assemble first the LF feature matrix
-        :math:`Z_{LF}`. In a next step, update the probabilistic mapping with the LF-features.
-        The former steps includes a training and prediction step. The determination of optimal
-        training points is outsourced to the BMFMC iterator and the results get only called at
-        this place.
+        Given the number of additional informative features of the input
+        and the extended feature matrix :math:`\Gamma_{LF,ext}`,
+        assemble first the LF feature matrix :math:`Z_{LF}`. In a next
+        step, update the probabilistic mapping with the LF-features. The
+        former steps includes a training and prediction step. The
+        determination of optimal training points is outsourced to the
+        BMFMC iterator and the results get only called at this place.
         """
         # Select demanded number of features
         gamma_mc = self.gammas_ext_mc[:, 0 : self.num_features]
@@ -683,13 +684,11 @@ class BMFMCModel(Model):
             explained_var=95
         )
         if truncated_basis_dict is not None:
-            coefs_mat = _project_samples_on_truncated_basis(
-                truncated_basis_dict, self.X_mc.shape[0]
-            )
+            coefs_mat = project_samples_on_truncated_basis(truncated_basis_dict, self.X_mc.shape[0])
         else:
             coefs_mat = None
 
-        X_red_test_stdizd = _assemble_x_red_stdizd(x_uncorr, coefs_mat)
+        X_red_test_stdizd = assemble_x_red_stdizd(x_uncorr, coefs_mat)
         return X_red_test_stdizd
 
     def get_random_fields_and_truncated_basis(self, explained_var=95.0):
@@ -762,7 +761,7 @@ class BMFMCModel(Model):
 
 
 # --------------------------- functions ------------------------------------------------------
-def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
+def project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
     """Project samples on truncated basis.
 
     Project the high-dimensional samples of the random field on the
@@ -787,7 +786,7 @@ def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
 
 
 # ---------------- Some private helper functions ------------------------------------------------
-def _linear_scale_a_to_b(data_a, data_b):
+def linear_scale_a_to_b(data_a, data_b):
     """Scale linearly.
 
     Scale a data vector 'data_a' linearly to the range of data vector
@@ -808,7 +807,7 @@ def _linear_scale_a_to_b(data_a, data_b):
     return scaled_a
 
 
-def _assemble_x_red_stdizd(x_uncorr, coef_mat):
+def assemble_x_red_stdizd(x_uncorr, coef_mat):
     """Assemble and standardize the dimension-reduced input x_red.
 
     Args:

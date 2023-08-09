@@ -105,7 +105,7 @@ class BMFGaussianModel(LikelihoodModel):
 
         # ---------------------- initialize some model settings/train surrogates -----------------
         self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, y_obs, mf_subiterator)
-        self._build_approximation(
+        self.build_approximation(
             mf_subiterator,
             mf_interface,
             mf_approx,
@@ -192,7 +192,7 @@ class BMFGaussianModel(LikelihoodModel):
             raise NotImplementedError("Adaptivity is not yet implemented for BMFGaussianModel!")
 
         # evaluate the modified multi-fidelity likelihood expression with LF model response
-        mf_log_likelihood = self._evaluate_mf_likelihood(samples, forward_model_output)
+        mf_log_likelihood = self.evaluate_mf_likelihood(samples, forward_model_output)
         self.likelihood_counter += 1
         return mf_log_likelihood
 
@@ -281,7 +281,7 @@ class BMFGaussianModel(LikelihoodModel):
         _logger.info('Probabilistic model was updated successfully!')
         _logger.info("---------------------------------------------------------------------")
 
-    def _evaluate_mf_likelihood(self, x_batch, y_lf_mat):
+    def evaluate_mf_likelihood(self, x_batch, y_lf_mat):
         """Evaluate the Bayesian multi-fidelity likelihood as described in [1].
 
         Args:
@@ -374,7 +374,7 @@ class BMFGaussianModel(LikelihoodModel):
         bmfia_subiterator.y_obs = y_obs
 
     @staticmethod
-    def _build_approximation(
+    def build_approximation(
         bmfia_subiterator,
         bmfia_interface,
         approx,

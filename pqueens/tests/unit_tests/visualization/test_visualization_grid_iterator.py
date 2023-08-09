@@ -66,22 +66,22 @@ class TestVisualizationGridIterator:
     def test_get_plotter_one(self):
         """TODO_doc."""
         num_params = 1
-        plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
+        plotter = qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         expected_str = re.split("[\\s\\.]", str(plotter))[3]
-        assert "_plot_one_d" == expected_str
+        assert "plot_one_d" == expected_str
 
     def test_get_plotter_two(self):
         """TODO_doc."""
         num_params = 2
-        plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
+        plotter = qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         expected_str = re.split("[\\s\\.]", str(plotter))[3]
-        assert "_plot_two_d" == expected_str
+        assert "plot_two_d" == expected_str
 
     def test_higher_d(self):
         """TODO_doc."""
         num_params = 3
         with pytest.raises(NotImplementedError) as not_implemented_error:
-            qvis.grid_iterator_visualization_instance._get_plotter(num_params)
+            qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         assert str(not_implemented_error.value) == 'Grid plot only possible up to 2 parameters'
 
     def test_plot_one_d(self):
@@ -89,11 +89,11 @@ class TestVisualizationGridIterator:
         output = {'mean': np.array([0.0, 1.0])}
         samples = np.array([0.0, 1.0])
         dummy = 1.0
-        qvis.grid_iterator_visualization_instance._plot_one_d(output, samples, dummy)
+        qvis.grid_iterator_visualization_instance.plot_one_d(output, samples, dummy)
 
     def test_plot_two_d(self):
         """TODO_doc."""
         samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
         output = {'mean': np.array([0.0, 1.0, 0.0, 1.0])}
         n_grid_p = [2, 2]
-        qvis.grid_iterator_visualization_instance._plot_two_d(output, samples, n_grid_p)
+        qvis.grid_iterator_visualization_instance.plot_two_d(output, samples, n_grid_p)
