@@ -9,7 +9,7 @@ variables:
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
-  LNM_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
   IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
 #---------------------------------------------------------------------------------------------------
 # Define stages
