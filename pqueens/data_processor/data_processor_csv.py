@@ -215,15 +215,21 @@ class DataProcessorCsv(DataProcessor):
         else:
             raise TypeError("You provided an invalid 'filter_type'!")
 
-    def _get_raw_data_from_file(self):
+    def _get_raw_data_from_file(self, file_path):
         """Get the raw data from the files of interest.
 
         This method loads the desired parts of the csv file as a pandas
         dataframe.
+
+        Args:
+            file_path (str): Actual path to the file of interest.
+
+        Returns:
+            raw_data (DataFrame): Raw data from file.
         """
         try:
-            self.raw_file_data = pd.read_csv(
-                self.file_path,
+            raw_data = pd.read_csv(
+                file_path,
                 sep=r',|\s+',
                 usecols=self.use_cols_lst,
                 skiprows=self.skip_rows,
@@ -231,15 +237,23 @@ class DataProcessorCsv(DataProcessor):
                 engine='python',
                 index_col=self.index_column,
             )
-            _logger.info("Successfully read-in data from %s.", self.file_path)
+            _logger.info("Successfully read-in data from %s.", file_path)
+            return raw_data
         except IOError as error:
             _logger.warning(
-                "Could not read file %s. The IOError was: %s. Skip...", self.file_path, error
+                "Could not read file %s. The IOError was: %s. Skip...", file_path, error
             )
-            self.raw_file_data = None
+            return None
 
-    def _filter_and_manipulate_raw_data(self):
-        """Filter the pandas data-frame based on filter type."""
+    def _filter_and_manipulate_raw_data(self, raw_data):
+        """Filter the pandas data-frame based on filter type.
+
+        Args:
+            raw_data (DataFrame): Raw data from file.
+
+        Returns:
+            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
+        """
         valid_filter_types = {
             'entire_file': self._filter_entire_file,
             'by_range': self._filter_by_range,
@@ -251,64 +265,60 @@ class DataProcessorCsv(DataProcessor):
         filter_method = get_option(
             valid_filter_types, self.filter_type, error_message=error_message
         )
-        filter_method()
+        processed_data = filter_method(raw_data)
         filter_formats_dict = {
-            "numpy": self.processed_data.to_numpy(),
-            "dict": self.processed_data.to_dict('list'),
+            "numpy": processed_data.to_numpy(),
+            "dict": processed_data.to_dict('list'),
         }
 
-        self.processed_data = get_option(
+        processed_data = get_option(
             filter_formats_dict,
             self.returned_filter_format,
             error_message="The returned filter format you provided is not a current option.",
         )
 
-        if not np.any(self.processed_data):
+        if not np.any(processed_data):
             raise RuntimeError(
                 "The filtered data was empty! Adjust your filter tolerance or filter range!"
             )
+        return processed_data
 
-    def _filter_entire_file(self):
+    def _filter_entire_file(self, raw_data):
         """Keep entire csv file data."""
-        self.processed_data = self.raw_file_data
+        return raw_data
 
-    def _filter_by_row_index(self):
+    def _filter_by_row_index(self, raw_data):
         """Filter the csv file based on given data rows."""
-        if any(self.raw_file_data):
+        if any(raw_data):
             try:
-                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst]
+                return raw_data.iloc[self.use_rows_lst]
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
                 ) from exception
+        return None
 
-    def _filter_by_target_values(self):
+    def _filter_by_target_values(self, raw_data):
         """Filter the pandas data frame based on target values."""
-        if any(self.raw_file_data):
+        if any(raw_data):
             target_indices = []
             for target_value in self.filter_target_values:
                 target_indices.append(
-                    int(
-                        np.where(
-                            np.abs(self.raw_file_data.index - target_value) <= self.filter_tol
-                        )[0]
-                    )
+                    int(np.where(np.abs(raw_data.index - target_value) <= self.filter_tol)[0])
                 )
 
-            self.processed_data = self.raw_file_data.iloc[target_indices]
+            return raw_data.iloc[target_indices]
+        return None
 
-    def _filter_by_range(self):
+    def _filter_by_range(self, raw_data):
         """Filter the pandas data frame based on values in a data column."""
-        if any(self.raw_file_data):
+        if any(raw_data):
             range_start = int(
-                np.where(
-                    np.abs(self.raw_file_data.index - self.filter_range[0]) <= self.filter_tol
-                )[0]
+                np.where(np.abs(raw_data.index - self.filter_range[0]) <= self.filter_tol)[0]
             )
             range_end = int(
-                np.where(
-                    np.abs(self.raw_file_data.index - self.filter_range[-1]) <= self.filter_tol
-                )[-1]
+                np.where(np.abs(raw_data.index - self.filter_range[-1]) <= self.filter_tol)[-1]
             )
 
-            self.processed_data = self.raw_file_data.iloc[range_start : range_end + 1]
+            return raw_data.iloc[range_start : range_end + 1]
+        return None

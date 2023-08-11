@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pqueens.data_processor.data_processor_csv_data import DataProcessorCsv
+from pqueens.data_processor.data_processor_csv import DataProcessorCsv
 
 VALID_TYPES = {
     "experimental_data_reader": ['pqueens.utils.experimental_data_reader', 'ExperimentalDataReader']

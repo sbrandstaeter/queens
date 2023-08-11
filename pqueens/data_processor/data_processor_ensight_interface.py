@@ -173,19 +173,30 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                         k += 1
         return monfile_data
 
-    def _get_raw_data_from_file(self):
-        """Read-in EnSight file using vtkGenericEnSightReader."""
-        self.raw_file_data = vtk.vtkGenericEnSightReader()
-        self.raw_file_data.SetCaseFileName(self.file_path)
-        self.raw_file_data.ReadAllVariablesOn()
-        self.raw_file_data.Update()
+    def _get_raw_data_from_file(self, file_path):
+        """Read-in EnSight file using vtkGenericEnSightReader.
 
-    def _filter_and_manipulate_raw_data(self):
+        Args:
+            file_path (str): Actual path to the file of interest.
+
+        Returns:
+            raw_data (obj): Raw data from file.
+        """
+        raw_data = vtk.vtkGenericEnSightReader()
+        raw_data.SetCaseFileName(file_path)
+        raw_data.ReadAllVariablesOn()
+        raw_data.Update()
+        return raw_data
+
+    def _filter_and_manipulate_raw_data(self, raw_data):
         """Get deformed boundary from vtk.
 
         Create vtk representation of deformed external_geometry_obj and
         evaluate surface distance measurement for every given time step from the
         experiment.
+
+        Args:
+            raw_data (obj): Raw data from file.
 
         Returns:
             residual (list): Full residual from this data_processor class
@@ -195,7 +206,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         vertices = vtk.vtkCellArray()
 
         for current_step_experimental_data in self.experimental_ref_data_lst:
-            grid = self.deformed_grid(current_step_experimental_data[0])
+            grid = self.deformed_grid(raw_data, current_step_experimental_data[0])
             geo = vtk.vtkGeometryFilter()
             geo.SetInputData(grid)
             geo.Update()
@@ -218,7 +229,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
             self._visualize_final_discrepancy_measure(outline_out, points, vertices)
 
-        self.processed_data = residual_distance_lst
+        return residual_distance_lst
 
     def _get_intersection_points(self, outline_data, outline_out, point_vector):
         """Get intersection points."""
@@ -408,7 +419,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         return distance
 
-    def deformed_grid(self, time):
+    def deformed_grid(self, raw_data, time):
         """Read deformed grid from Ensight file at specified time.
 
         Initially, the undeformed grid is read from the Ensight file
@@ -421,7 +432,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         Returns:
             deformed_grid (vtkUnstructuredGrid): Deformed grid for given time
         """
-        time_steps_in_ensight = self.raw_file_data.GetTimeSets()
+        time_steps_in_ensight = raw_data.GetTimeSets()
 
         times_iter = time_steps_in_ensight.NewIterator()
         times_iter.GoToFirstItem()
@@ -446,10 +457,10 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                 'point in time from *.monitor file used with time_tol not existing in results'
             )
 
-        self.raw_file_data.SetTimeValue(ensight_time)
-        self.raw_file_data.Update()
+        raw_data.SetTimeValue(ensight_time)
+        raw_data.Update()
 
-        output = self.raw_file_data.GetOutput()
+        output = raw_data.GetOutput()
         number_of_blocks = output.GetNumberOfBlocks()
         if number_of_blocks != 1:
             raise ValueError(
