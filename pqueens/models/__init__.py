@@ -4,7 +4,6 @@ The model package contains several types of models to be used in the
 context of UQ. Within QUEENS, the model class of object holds and stores
 the input and output data, and can evaluate itself to produce data.
 """
-from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
     'simulation_model': ['pqueens.models.simulation_model', 'SimulationModel'],
