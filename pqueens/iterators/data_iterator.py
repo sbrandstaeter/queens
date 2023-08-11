@@ -20,16 +20,15 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results.
     """
 
-    def __init__(self, path_to_data, result_description, global_settings, parameters=None):
+    def __init__(self, path_to_data, result_description, parameters=None):
         """Initialise data iterator.
 
         Args:
             path_to_data (string):      Path to pickle file containing data
             result_description (dict):  Description of desired results
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj, optional): Parameters
         """
-        super().__init__(None, global_settings, parameters)
+        super().__init__(None, parameters)
         self.samples = None
         self.output = None
         self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
@@ -51,11 +50,7 @@ class DataIterator(Iterator):
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
         # else:
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.info("Inputs %s", self.samples)

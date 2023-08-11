@@ -1,5 +1,5 @@
 """BACI geometry handling."""
-
+# pylint: disable=too-many-lines
 import copy
 import fileinput
 import os

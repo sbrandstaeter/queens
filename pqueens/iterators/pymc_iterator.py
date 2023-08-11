@@ -24,14 +24,12 @@ class PyMCIterator(Iterator):
         Science. 2016.
 
     Attributes:
-        global_settings (dict): Global settings of the QUEENS simulations
         model (obj): Underlying simulation model on which the inverse analysis is conducted
         result_description (dict): Settings for storing and visualizing the results
         discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
         num_chains (int): Number of chains to sample
         num_burn_in (int):  Number of burn-in steps
         num_samples (int): Number of samples to generate per chain, excluding burn-in period
-        num_parameters (int): Actual number of model input parameters that should be calibrated
         chains (np.array): Array with all samples
         seed (int): Seed for the random number generators
         pymc_model (obj): PyMC Model as inference environment
@@ -56,7 +54,6 @@ class PyMCIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         num_burn_in,
         num_chains,
@@ -74,7 +71,6 @@ class PyMCIterator(Iterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
@@ -89,7 +85,7 @@ class PyMCIterator(Iterator):
                                         functions
             progressbar (boolean): Setting for printing progress bar while sampling
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
         self.result_description = result_description
         self.summary = summary
         self.pymc_sampler_stats = pymc_sampler_stats
@@ -320,15 +316,9 @@ class PyMCIterator(Iterator):
             self.result_description,
         )
         if self.result_description["write_results"]:
-            write_results(
-                results,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )
+            write_results(results, self.output_dir, self.experiment_name)
 
-        filebasename = (
-            f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
-        )
+        filebasename = f"{self.output_dir}/{self.experiment_name}"
 
         self.results_dict = results_dict
         if self.summary:

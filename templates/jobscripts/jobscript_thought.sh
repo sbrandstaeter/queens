@@ -1,4 +1,4 @@
-#!/bin/bash:q
+#!/bin/bash
 ##########################################
 #                                        #
 #  Specify your paths                    #
@@ -43,6 +43,7 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+MPI_RUN=/opt/openmpi/4.1.5/gcc/bin/mpirun
 DoChecks
 StageIn
 RunProgram

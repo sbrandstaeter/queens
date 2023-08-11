@@ -4,6 +4,7 @@ import copy
 import logging
 
 import numpy as np
+from dask.distributed import progress
 
 from pqueens.utils.injector import read_file
 
@@ -21,6 +22,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         client (Client): Dask client that connects to and submits computation to a Dask cluster
         num_procs (int): number of cores per job
         num_procs_post (int): number of cores per job for post-processing
+        progressbar (bool): If true, print progressbar. WARNING: If multiple dask schedulers are
+                            used, the progressbar must be disabled.
     """
 
     def __init__(
@@ -30,6 +33,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         client,
         num_procs,
         num_procs_post,
+        progressbar,
     ):
         """Initialize scheduler.
 
@@ -39,13 +43,15 @@ class Scheduler(metaclass=abc.ABCMeta):
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             num_procs (int): number of cores per job
             num_procs_post (int): number of cores per job for post-processing
+            progressbar (bool): If true, print progressbar. WARNING: If multiple dask schedulers are
+                                used, the progressbar must be disabled.
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_procs = num_procs
         self.num_procs_post = num_procs_post
         self.client = client
-        _logger.info(client.dashboard_link)
+        self.progressbar = progressbar
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
@@ -69,6 +75,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )
+        if self.progressbar:
+            progress(futures)
         results = self.client.gather(futures)
 
         result_dict = {'mean': [], 'gradient': []}

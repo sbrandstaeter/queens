@@ -14,7 +14,6 @@ from pqueens.models import VALID_TYPES as VALID_MODEL_TYPES
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.parameters.parameters import from_config_create_parameters
 from pqueens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
-from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.experimental_data_reader import (
     VALID_TYPES as VALID_EXPERIMENTAL_DATA_READER_TYPES,
@@ -66,7 +65,6 @@ def from_config_create_iterator(config):
         rf_preprocessor.write_random_fields_to_dat()
 
     parameters = from_config_create_parameters(config.pop('parameters', {}), rf_preprocessor)
-    global_settings = config.pop('global_settings')
     obj_key = None
     for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
         deadlock = True
@@ -85,7 +83,7 @@ def from_config_create_iterator(config):
 
         try:
             obj_description = config.pop(obj_key)
-            new_obj = from_config_create_object(obj_description, global_settings, parameters)
+            new_obj = from_config_create_object(obj_description, parameters)
         except (TypeError, InvalidOptionError) as err:
             raise InvalidOptionError(f"Object '{obj_key}' can not be initialized.") from err
 
@@ -103,20 +101,17 @@ def from_config_create_iterator(config):
     )
 
 
-def from_config_create_object(obj_description, global_settings=None, parameters=None):
+def from_config_create_object(obj_description, parameters=None):
     """Create object from description.
 
     Args:
         obj_description (dict): Description of the object
-        global_settings (dict, optional): Global settings for the QUEENS run.
         parameters (obj, optional): Parameters object
 
     Returns:
         obj: Initialized object
     """
     object_class = get_module_class(obj_description, VALID_TYPES)
-    if issubclass(object_class, (Iterator, Scheduler)):
-        obj_description['global_settings'] = global_settings
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description['parameters'] = parameters
     return object_class(**obj_description)

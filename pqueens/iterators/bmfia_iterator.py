@@ -43,7 +43,6 @@ class BMFIAIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
         parameters,
         features_config,
         hf_model,
@@ -56,7 +55,6 @@ class BMFIAIterator(Iterator):
         """Instantiate the BMFIAIterator object.
 
         Args:
-            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             parameters (obj): Parameters object
             features_config (str): Type of feature selection method.
             hf_model (obj): High-fidelity model object.
@@ -66,7 +64,7 @@ class BMFIAIterator(Iterator):
             num_features (int, opt): Number of features to be selected.
             coord_cols (list, opt): List of columns for coordinates taken from input variables.
         """
-        super().__init__(None, global_settings, parameters)  # Input prescribed by iterator.py
+        super().__init__(None, parameters)  # Input prescribed by iterator.py
 
         # ---------- calculate the initial training samples via classmethods ----------
         x_train = self._calculate_initial_x_train(initial_design, lf_model, parameters)
@@ -160,14 +158,12 @@ class BMFIAIterator(Iterator):
         # Some dummy arguments that are necessary for class initialization but not needed
         dummy_model = model
         dummy_result_description = {}
-        dummy_global_settings = {}
 
         mc_iterator = MonteCarloIterator(
             model=dummy_model,
             seed=initial_design_dict['seed'],
             num_samples=initial_design_dict['num_HF_eval'],
             result_description=dummy_result_description,
-            global_settings=dummy_global_settings,
             parameters=parameters,
         )
         mc_iterator.pre_run()
@@ -190,14 +186,12 @@ class BMFIAIterator(Iterator):
         # Some dummy arguments that are necessary for class initialization but not needed
         dummy_model = model
         dummy_result_description = {}
-        dummy_global_settings = {}
 
         sobol_iterator = SobolSequenceIterator(
             model=dummy_model,
             seed=initial_design_dict['seed'],
             number_of_samples=initial_design_dict['num_HF_eval'],
             result_description=dummy_result_description,
-            global_settings=dummy_global_settings,
             parameters=parameters,
         )
         sobol_iterator.pre_run()

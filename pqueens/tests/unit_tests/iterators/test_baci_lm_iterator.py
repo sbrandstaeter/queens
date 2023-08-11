@@ -1,7 +1,6 @@
 """Test for baci LM iterator."""
 
 import logging
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -41,14 +40,25 @@ def fix_tolerance(request):
 
 
 @pytest.fixture()
-def default_baci_lm_iterator():
+def output_csv(dummy_global_settings):
+    """Absolute path to output csv file."""
+    return dummy_global_settings.output_dir / (dummy_global_settings.experiment_name + '.csv')
+
+
+@pytest.fixture()
+def output_html(dummy_global_settings):
+    """Absolute path to output html file."""
+    return dummy_global_settings.output_dir / (dummy_global_settings.experiment_name + '.html')
+
+
+@pytest.fixture()
+def default_baci_lm_iterator(dummy_global_settings):
     """TODO_doc."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     model = SimulationModel(interface="interface")
 
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
-        global_settings={'output_dir': 'dummy_output', 'experiment_name': 'OptimizeLM'},
         parameters=parameters,
         result_description={'write_results': True, 'plot_results': True},
         initial_guess=[0.1, 0.2],
@@ -82,9 +92,8 @@ def fix_plotly_fig():
     return fig
 
 
-def test_init():
+def test_init(dummy_global_settings):
     """TODO_doc."""
-    global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     initial_guess = np.array([1, 2.2])
     bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
     jac_rel_step = 1e-3
@@ -99,7 +108,6 @@ def test_init():
 
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
-        global_settings=global_settings,
         parameters="dummy_parameters",
         result_description=result_description,
         initial_guess=initial_guess,
@@ -116,7 +124,6 @@ def test_init():
     np.testing.assert_equal(my_baci_lm_iterator.initial_guess, initial_guess)
     np.testing.assert_equal(my_baci_lm_iterator.param_current, initial_guess)
     assert my_baci_lm_iterator.model == model
-    assert my_baci_lm_iterator.global_settings == global_settings
     assert my_baci_lm_iterator.jac_rel_step == jac_rel_step
     assert my_baci_lm_iterator.max_feval == max_feval
     assert my_baci_lm_iterator.result_description == result_description
@@ -135,7 +142,7 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
 
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
@@ -155,7 +162,7 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
-    m1 = mocker.patch(
+    mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[
             np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]),
@@ -189,7 +196,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
             default_baci_lm_iterator.jacobian_and_residual(np.array([0.1]))
 
 
-def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
+def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator, output_csv):
     """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
@@ -197,7 +204,7 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     default_baci_lm_iterator.pre_run()
     if fix_true_false_param:
         mock_pandas_dataframe_to_csv.assert_called_once_with(
-            Path('dummy_output', 'OptimizeLM' + '.csv'), mode='w', sep='\t', index=None
+            output_csv, mode='w', sep='\t', index=None
         )
     else:
         assert not mock_pandas_dataframe_to_csv.called
@@ -236,7 +243,9 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
             )
 
 
-def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator, fix_plotly_fig):
+def test_post_run_2param(
+    mocker, fix_true_false_param, default_baci_lm_iterator, fix_plotly_fig, output_csv, output_html
+):
     """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -253,7 +262,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
     default_baci_lm_iterator.post_run()
 
     if fix_true_false_param:
-        m1.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.csv'), sep='\t')
+        m1.assert_called_once_with(output_csv, sep='\t')
         callargs = m2.call_args
         pd.testing.assert_frame_equal(callargs[0][0], checkdata)
         assert callargs[1]['x'] == 'x1'
@@ -268,7 +277,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
             'x1',
             'x2',
         ]
-        m4.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.html'))
+        m4.assert_called_once_with(output_html)
         m2.assert_called_once()
 
     else:
@@ -280,7 +289,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
         m4.assert_not_called()
 
 
-def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
+def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig, output_html):
     """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -306,7 +315,7 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
         'mu',
         'x1',
     ]
-    m4.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.html'))
+    m4.assert_called_once_with(output_html)
     m6.assert_called_once()
 
 
@@ -363,7 +372,7 @@ def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
     np.testing.assert_almost_equal(delta_posb, np.array([[0.001011], [-0.001025]]), 8)
 
 
-def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
+def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param, output_csv):
     """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
@@ -371,7 +380,7 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
     if fix_true_false_param:
         mock_pandas_dataframe_to_csv.assert_called_once_with(
-            Path('dummy_output/OptimizeLM.csv'),
+            output_csv,
             header=None,
             float_format="%.8f",
             mode='a',
