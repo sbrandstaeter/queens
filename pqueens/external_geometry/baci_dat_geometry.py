@@ -1,5 +1,5 @@
 """BACI geometry handling."""
-
+# pylint: disable=too-many-lines
 import copy
 import fileinput
 import os
@@ -96,45 +96,28 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     def __init__(
         self,
-        path_to_dat_file,
-        list_geometric_sets,
-        list_associated_material_numbers,
-        element_topology,
-        node_topology,
-        line_topology,
-        surface_topology,
-        volume_topology,
-        node_coordinates,
-        path_to_preprocessed_dat_file,
-        random_fields,
+        input_template,
+        input_template_preprocessed=None,
+        list_geometric_sets=None,
+        associated_material_numbers_geometric_set=None,
+        random_fields=None,
     ):
         """Initialise BACI external geometry.
 
         Args:
-            path_to_dat_file (str): Path to dat file from which the external_geometry_obj should be
-                                    extracted
-            path_to_preprocessed_dat_file (str): Path to preprocessed dat file with added
-                                                 placeholders
+            input_template (str): Path to dat file from which the external_geometry_obj should be
+                                  extracted
+            input_template_preprocessed (str): Path to preprocessed dat file with added
+                                               placeholders
             list_geometric_sets (list): List of geometric sets that should be extracted
-            list_associated_material_numbers (lst): List of associated material numbers wrt to the
-                                                    geometric sets of interest
-            element_topology (lst): List of topology of finite element types for each geometric set
-            node_topology (lst): List with topology dicts of edges/nodes (here: mesh nodes not FEM
-                                 nodes) for each geometric set of this category
-            line_topology (lst): List with topology dicts of line components for each geometric set
-                                 of this category
-            surface_topology (lst): List of topology dicts of surfaces for each geometric set of
-                                    this category
-            volume_topology (lst): List of topology of volumes for each geometric set of this
-                                   category
-            node_coordinates (lst): List of dictionaries per random field of coordinates of mesh
-                                    nodes
+            associated_material_numbers_geometric_set (lst): List of associated material numbers wrt
+                                                             to the geometric sets of interest
             random_fields (lst): List of random field descriptions
         """
         super().__init__()
         # settings / inputs
-        self.path_to_dat_file = path_to_dat_file
-        self.path_to_preprocessed_dat_file = path_to_preprocessed_dat_file
+        self.path_to_dat_file = input_template
+        self.path_to_preprocessed_dat_file = input_template_preprocessed
         self.coords_dict = {}
         self.list_geometric_sets = list_geometric_sets
         self.current_dat_section = None
@@ -144,17 +127,17 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         # topology
         self.design_description = {}
-        self.node_topology = node_topology
-        self.line_topology = line_topology
-        self.surface_topology = surface_topology
-        self.volume_topology = volume_topology
-        self.node_coordinates = node_coordinates
+        self.node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
+        self.line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
+        self.surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
+        self.volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
+        self.node_coordinates = {"node_mesh": [], "coordinates": []}
 
         # material specific attributes
         self.element_centers = []
-        self.element_topology = element_topology
+        self.element_topology = [{"element_number": [], "nodes": [], "material": []}]
         self.original_materials_in_dat = []
-        self.list_associated_material_numbers = list_associated_material_numbers
+        self.list_associated_material_numbers = associated_material_numbers_geometric_set
         self.new_material_numbers = []
 
         # some flags to memorize which sections have been written / manipulated
@@ -163,50 +146,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.random_neumann_flag = False
         self.nodes_written = False
         self.random_fields = random_fields
-
-    @classmethod
-    def from_config_create_external_geometry(cls, config, name):
-        """Create BaciDatExternalGeometry object from problem description.
-
-        Args:
-            config (dict): Problem description
-            name: TODO_doc
-
-        Returns:
-            geometric_obj (obj): Instance of BaciDatExternalGeometry
-        """
-        path_to_dat_file = config[name]["input_template"]
-        path_to_preprocessed_dat_file = config[name].get('input_template_preprocessed')
-
-        list_geometric_sets = config[name].get('list_geometric_sets')
-        list_associated_material_numbers = config[name].get(
-            'associated_material_numbers_geometric_set'
-        )
-
-        element_topology = [{"element_number": [], "nodes": [], "material": []}]
-
-        # geometric topology
-        node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
-        line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
-        surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
-        volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
-        node_coordinates = {"node_mesh": [], "coordinates": []}
-
-        random_fields = config[name].get("random_fields")
-
-        return cls(
-            path_to_dat_file,
-            list_geometric_sets,
-            list_associated_material_numbers,
-            element_topology,
-            node_topology,
-            line_topology,
-            surface_topology,
-            volume_topology,
-            node_coordinates,
-            path_to_preprocessed_dat_file,
-            random_fields,
-        )
 
     # --------------- child methods that must be implemented --------------------------------------
     def read_external_data(self):

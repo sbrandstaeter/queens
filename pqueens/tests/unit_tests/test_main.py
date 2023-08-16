@@ -7,7 +7,9 @@ from pathlib import Path
 import pytest
 from mock import patch
 
-from pqueens.main import get_config_dict, main
+from pqueens.global_settings import GlobalSettings
+from pqueens.main import main, run
+from pqueens.utils.io_utils import load_input_file
 
 pytestmark = pytest.mark.unit_tests
 
@@ -31,24 +33,22 @@ def fixture_debug_flag(request):
 def test_get_config_dict_output_dir_fail():
     """Test if config fails for non-existing output directory."""
     with pytest.raises(FileNotFoundError, match="Output directory"):
-        get_config_dict(None, Path("path/that/doesnt/esxits"))
+        GlobalSettings(None, Path("path/that/doesnt/esxits"))
 
 
 def test_get_config_dict_input_fail(tmp_path):
     """Test if config fails for non-existing input file."""
     input_file = Path("this/does/not/exist")
     with pytest.raises(FileNotFoundError, match="Input file"):
-        get_config_dict(input_file, tmp_path)
+        run(input_file, tmp_path)
 
 
 def test_get_config_dict_input(input_file, tmp_path, debug_flag):
     """Test if config dict is created properly."""
     input_path = input_file
-    config = get_config_dict(input_path, tmp_path, debug_flag)
+    config = load_input_file(input_path)
     true_config = {
-        "debug": debug_flag,
-        "input_file": input_path,
-        "global_settings": {"output_dir": tmp_path, "experiment_name": "test_experiment_name"},
+        "experiment_name": "test_experiment_name",
         "Iterator": "A",
     }
     assert config == true_config

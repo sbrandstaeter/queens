@@ -73,7 +73,6 @@ class SequentialMonteCarloIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         num_particles,
         result_description,
@@ -87,7 +86,6 @@ class SequentialMonteCarloIterator(Iterator):
 
         Args:
             model: TODO_doc
-            global_settings: TODO_doc
             parameters (obj): Parameters object
             num_particles: TODO_doc
             result_description: TODO_doc
@@ -97,16 +95,15 @@ class SequentialMonteCarloIterator(Iterator):
             num_rejuvenation_steps: TODO_doc
             plot_trace_every: TODO_doc
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
 
         _logger.info(
             "Sequential Monte Carlo Iterator for experiment: %s",
-            self.global_settings['experiment_name'],
+            self.experiment_name,
         )
 
         self.mcmc_kernel = MetropolisHastingsIterator(
             model=model,
-            global_settings=global_settings,
             parameters=parameters,
             result_description=None,
             proposal_distribution=mcmc_proposal_distribution,
@@ -435,11 +432,7 @@ class SequentialMonteCarloIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
 
             if self.result_description["plot_results"]:
                 self.draw_trace('final')
@@ -475,8 +468,5 @@ class SequentialMonteCarloIterator(Iterator):
         }
         inference_data = az.convert_to_inference_data(data_dict)
         az.plot_trace(inference_data)
-        plt.savefig(
-            f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
-            + f"_trace_{step}.png"
-        )
+        plt.savefig(f"{self.output_dir}/{self.experiment_name}" + f"_trace_{step}.png")
         plt.close("all")
