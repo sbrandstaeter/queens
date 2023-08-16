@@ -15,8 +15,8 @@ from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
 from pqueens.utils.stochastic_optimizer import Adam
 
 
-@pytest.fixture()
-def gp_model():
+@pytest.fixture(name="gp_model")
+def gp_model_fixture():
     """Configuration for jitted GP model."""
     optimizer = Adam(
         learning_rate=0.01,

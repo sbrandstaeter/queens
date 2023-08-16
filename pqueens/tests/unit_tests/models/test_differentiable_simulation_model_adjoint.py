@@ -12,8 +12,8 @@ from pqueens.models.differentiable_simulation_model_adjoint import (
 
 
 # ------------------ some fixtures ------------------------------- #
-@pytest.fixture()
-def default_adjoint_model():
+@pytest.fixture(name="default_adjoint_model")
+def default_adjoint_model_fixture():
     """A default adjoint model."""
     model_obj = DifferentiableSimulationModelAdjoint(
         interface=Mock(),

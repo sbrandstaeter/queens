@@ -5,26 +5,26 @@ import pytest
 from pqueens.utils.numpy_utils import at_least_2d, at_least_3d
 
 
-@pytest.fixture(scope='module')
-def arr_0d():
+@pytest.fixture(name="arr_0d", scope='module')
+def arr_0d_fixture():
     """Return possible number of weights."""
     return np.random.rand(1).squeeze()
 
 
-@pytest.fixture(scope='module')
-def arr_1d():
+@pytest.fixture(name="arr_1d", scope='module')
+def arr_1d_fixture():
     """Return 1D array."""
     return np.random.rand(3)
 
 
-@pytest.fixture(scope='module')
-def arr_2d():
+@pytest.fixture(name="arr_2d", scope='module')
+def arr_2d_fixture():
     """Return 2D array."""
     return np.random.rand(4, 2)
 
 
-@pytest.fixture(scope='module')
-def arr_3d():
+@pytest.fixture(name="arr_3d", scope='module')
+def arr_3d_fixture():
     """Return 3D array."""
     return np.random.rand(3, 2, 5)
 

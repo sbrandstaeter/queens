@@ -13,15 +13,15 @@ from pqueens.parameters.parameters import Parameters
 
 
 # ------------ fixtures --------------------------
-@pytest.fixture()
-def result_description():
+@pytest.fixture(name="result_description")
+def result_description_fixture():
     """Create result description."""
     description = {"write_results": True}
     return description
 
 
-@pytest.fixture()
-def dummy_high_fidelity_model(parameters):
+@pytest.fixture(name="dummy_high_fidelity_model")
+def dummy_high_fidelity_model_fixture(parameters):
     """Create dummy high-fidelity model."""
     interface = 'my_dummy_interface'
     hf_model = SimulationModel(interface)
@@ -39,8 +39,8 @@ class PreProcessor:
         }
 
 
-@pytest.fixture()
-def parameters():
+@pytest.fixture(name="parameters")
+def parameters_fixture():
     """Create parameters."""
     x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
@@ -56,8 +56,8 @@ def parameters():
     return Parameters(x1=x1, x2=x2, random_inflow=rf)
 
 
-@pytest.fixture()
-def config():
+@pytest.fixture(name="config")
+def config_fixture():
     """Fixture for dummy configuration."""
     config = {
         "joint_density_approx": {
@@ -70,29 +70,29 @@ def config():
     return config
 
 
-@pytest.fixture()
-def approximation_name():
+@pytest.fixture(name="approximation_name")
+def approximation_name_fixture():
     """Create approximation name."""
     name = 'joint_density_approx'
     return name
 
 
-@pytest.fixture()
-def default_interface(config, approximation_name):
+@pytest.fixture(name="default_interface")
+def default_interface_fixture(config, approximation_name):
     """Create default interface."""
     interface = Mock()
     return interface
 
 
-@pytest.fixture()
-def settings_probab_mapping(config, approximation_name):
+@pytest.fixture(name="settings_probab_mapping")
+def settings_probab_mapping_fixture(config, approximation_name):
     """Create settings for probability mapping."""
     settings = config[approximation_name]
     return settings
 
 
-@pytest.fixture()
-def default_bmfmc_model(
+@pytest.fixture(name="default_bmfmc_model")
+def default_bmfmc_model_fixture(
     dummy_global_settings, parameters, settings_probab_mapping, default_interface
 ):
     """Create default BMFMC model."""
@@ -122,16 +122,16 @@ def default_bmfmc_model(
     return model
 
 
-@pytest.fixture()
-def default_data_iterator(result_description, dummy_global_settings):
+@pytest.fixture(name="default_data_iterator")
+def default_data_iterator_fixture(result_description, dummy_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
     data_iterator = DataIterator(path_to_data, result_description)
     return data_iterator
 
 
-@pytest.fixture()
-def dummy_MC_data(parameters):
+@pytest.fixture(name="dummy_MC_data")
+def dummy_MC_data_fixture(parameters):
     """Create Monte-Carlo data."""
     data_dict = {
         "uncertain_parameters": parameters,

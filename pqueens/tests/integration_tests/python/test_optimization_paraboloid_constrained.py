@@ -9,8 +9,8 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-@pytest.fixture(params=['COBYLA', 'SLSQP'])
-def algorithm(request):
+@pytest.fixture(name="algorithm", params=['COBYLA', 'SLSQP'])
+def algorithm_fixture(request):
     """TODO_doc."""
     return request.param
 

@@ -8,8 +8,8 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 
 
 # general input fixtures
-@pytest.fixture()
-def default_geo_obj(tmp_path):
+@pytest.fixture(name="default_geo_obj")
+def default_geo_obj_fixture(tmp_path):
     """TODO_doc."""
     path_to_dat_file = tmp_path / 'myfile.dat'
     list_geometric_sets = ["DSURFACE 9"]
@@ -36,8 +36,8 @@ def write_to_file(data, filepath):
         fp.write(data)
 
 
-@pytest.fixture()
-def dat_dummy_comment():
+@pytest.fixture(name="dat_dummy_comment")
+def dat_dummy_comment_fixture():
     """TODO_doc."""
     data = [
         '// this is a comment\n',
@@ -48,8 +48,8 @@ def dat_dummy_comment():
     return data
 
 
-@pytest.fixture()
-def dat_dummy_get_fun():
+@pytest.fixture(name="dat_dummy_get_fun")
+def dat_dummy_get_fun_fixture():
     """TODO_doc."""
     data = [
         'NODE    3419 DSURFACE 10\n',
@@ -62,6 +62,7 @@ def dat_dummy_get_fun():
 
 
 @pytest.fixture(
+    name="dat_section_true",
     params=[
         '------------------------------------------------DESIGN DESCRIPTION    ',
         '------------------------------------------------DNODE-NODE TOPOLOGY   ',
@@ -69,14 +70,15 @@ def dat_dummy_get_fun():
         '------------------------------------------------DSURF-NODE TOPOLOGY   ',
         '------------------------------------------------DVOL-NODE TOPOLOGY    ',
         '------------------------------------------------NODE COORDS//         ',
-    ]
+    ],
 )
-def dat_section_true(request):
+def dat_section_true_fixture(request):
     """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(
+    name="dat_section_false",
     params=[
         '//------------------------------------------------DESIGN DESCRIPTION    ',
         ' // ------------------------------------------------DNODE-NODE TOPOLOGY   ',
@@ -84,28 +86,29 @@ def dat_section_true(request):
         '------------------------------------------------DSRF-NDE TOOGY   ',
         '------------------------------------------------VOL-NODE TOPOLOGY    ',
         '------------------------------------------------NODECOORDS//           ',
-    ]
+    ],
 )
-def dat_section_false(request):
+def dat_section_false_fixture(request):
     """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(
+    name="current_dat_sections",
     params=[
         'DNODE-NODE TOPOLOGY',
         'DLINE-NODE TOPOLOGY',
         'DSURF-NODE TOPOLOGY',
         'DVOL-NODE TOPOLOGY',
-    ]
+    ],
 )
-def current_dat_sections(request):
+def current_dat_sections_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture()
-def desired_sections():
+@pytest.fixture(name="desired_sections")
+def desired_sections_fixture():
     """TODO_doc."""
     sections = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
@@ -116,8 +119,8 @@ def desired_sections():
     return sections
 
 
-@pytest.fixture()
-def default_coords():
+@pytest.fixture(name="default_coords")
+def default_coords_fixture():
     """TODO_doc."""
     coords = [
         'NODE 1 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 0.0000000000000000e+00',
@@ -128,8 +131,8 @@ def default_coords():
     return coords
 
 
-@pytest.fixture()
-def default_topology_node():
+@pytest.fixture(name="default_topology_node")
+def default_topology_node_fixture():
     """TODO_doc."""
     data = [
         'NODE    1 DNODE 1',
@@ -141,8 +144,8 @@ def default_topology_node():
     return data
 
 
-@pytest.fixture()
-def default_topology_line():
+@pytest.fixture(name="default_topology_line")
+def default_topology_line_fixture():
     """TODO_doc."""
     data = [
         'NODE    1 DLINE 1',
@@ -154,8 +157,8 @@ def default_topology_line():
     return data
 
 
-@pytest.fixture()
-def default_topology_surf():
+@pytest.fixture(name="default_topology_surf")
+def default_topology_surf_fixture():
     """TODO_doc."""
     data = [
         'NODE    1 DSURFACE 1',
@@ -167,8 +170,8 @@ def default_topology_surf():
     return data
 
 
-@pytest.fixture()
-def default_topology_vol():
+@pytest.fixture(name="default_topology_vol")
+def default_topology_vol_fixture():
     """TODO_doc."""
     data = [
         'NODE    1 DVOL 1',

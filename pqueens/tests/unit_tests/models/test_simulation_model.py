@@ -7,8 +7,8 @@ from pqueens.models.simulation_model import SimulationModel
 
 
 # ------------------ some fixtures ------------------------------- #
-@pytest.fixture()
-def dummy_config():
+@pytest.fixture(name="dummy_config")
+def dummy_config_fixture():
     """A dummy config dictionary."""
     config = {"my_model": {"type": "simulation_model", "interface_name": "my_interface"}}
     return config

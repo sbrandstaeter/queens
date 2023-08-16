@@ -32,7 +32,7 @@ def test_rpvi_iterator_park91a_hifi(
         "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
         "model": "model",
-        "external_python_module": module_path,
+        "external_python_module": module_path_fixture,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -118,7 +118,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "forward_model_name": "simulation_model",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "model": "model",
-        "external_python_module": module_path,
+        "external_python_module": module_path_fixture,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -156,8 +156,8 @@ def target_density(self, samples):
     return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(scope="module", params=['simulation_model', 'fd_model'])
-def forward_model(request):
+@pytest.fixture(name="forward_model", scope="module", params=['simulation_model', 'fd_model'])
+def forward_model_fixture(request):
     """Gradient method."""
     return request.param
 
@@ -195,8 +195,8 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, forward_model):
     )
 
 
-@pytest.fixture()
-def dummy_data(tmp_path):
+@pytest.fixture(name="dummy_data")
+def dummy_data_fixture(tmp_path):
     """Fixture for dummy data."""
     data_dict = {'y_obs': np.zeros(1)}
     experimental_data_path = tmp_path / 'experimental_data.csv'
@@ -204,15 +204,15 @@ def dummy_data(tmp_path):
     df.to_csv(experimental_data_path, index=False)
 
 
-@pytest.fixture()
-def module_path(tmp_path):
+@pytest.fixture(name="module_path")
+def module_path_fixture(tmp_path):
     """Generate path for new likelihood module."""
     my_module_path = tmp_path / "my_likelihood_module.py"
     return str(my_module_path)
 
 
-@pytest.fixture()
-def write_custom_likelihood_model(module_path):
+@pytest.fixture(name="write_custom_likelihood_model")
+def write_custom_likelihood_model_fixture(module_path):
     """Write custom likelihood class to file."""
     custom_class_lst = [
         "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",

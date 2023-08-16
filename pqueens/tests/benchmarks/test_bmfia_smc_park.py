@@ -50,8 +50,8 @@ def test_bmfia_park_hf_smc(
     np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
 
 
-@pytest.fixture
-def create_experimental_data_park91a_hifi_on_grid(tmp_path):
+@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+def create_experimental_data_park91a_hifi_on_grid_fixture(tmp_path):
     """Fixture to write dummy observation data."""
     # Fix random seed
     np.random.seed(seed=1)
@@ -89,8 +89,8 @@ def create_experimental_data_park91a_hifi_on_grid(tmp_path):
     df.to_csv(experimental_data_path, index=False)
 
 
-@pytest.fixture
-def expected_weights():
+@pytest.fixture(name="expected_weights")
+def expected_weights_fixture():
     """Expected weights."""
     weights = np.array(
         [
@@ -199,8 +199,8 @@ def expected_weights():
     return weights
 
 
-@pytest.fixture
-def expected_samples():
+@pytest.fixture(name="expected_samples")
+def expected_samples_fixture():
     """Expected samples."""
     samples = np.array(
         [

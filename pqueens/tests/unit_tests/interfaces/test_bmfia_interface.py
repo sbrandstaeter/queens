@@ -10,8 +10,8 @@ from pqueens.utils.exceptions import InvalidOptionError
 
 
 # ---- Fixtures and helper methods / classes ---------
-@pytest.fixture
-def default_bmfia_interface():
+@pytest.fixture(name="default_bmfia_interface")
+def default_bmfia_interface_fixture():
     """Fixture for a dummy bmfia interface."""
     default_interface = BmfiaInterface(
         parameters="dummy_parameters",
@@ -48,22 +48,22 @@ class DummyRegression:
         return {'test': 'test'}
 
 
-@pytest.fixture
-def dummy_reg_obj():
+@pytest.fixture(name="dummy_reg_obj")
+def dummy_reg_obj_fixture():
     """Fixture for a dummy regression object."""
     obj = DummyRegression()
     return obj
 
 
-@pytest.fixture
-def default_probabilistic_obj_lst(dummy_reg_obj):
+@pytest.fixture(name="default_probabilistic_obj_lst")
+def default_probabilistic_obj_lst_fixture(dummy_reg_obj):
     """Fixture for probabilistic mapping objects."""
     dummy_lst = [dummy_reg_obj] * 3
     return dummy_lst
 
 
-@pytest.fixture
-def my_state_lst():
+@pytest.fixture(name="my_state_lst")
+def my_state_lst_fixture():
     """Fixture for a dummy state list."""
     return [1, 2, 3]
 
@@ -100,8 +100,8 @@ class MyContext:
         self.dummy = 0
 
 
-@pytest.fixture()
-def dummy_plot_instance():
+@pytest.fixture(name="dummy_plot_instance")
+def dummy_plot_instance_fixture():
     """Quick fake plotting object."""
 
     class my_plot:
@@ -232,7 +232,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     )
     mocker.patch(
         'pqueens.visualization.bmfia_visualization.bmfia_visualization_instance',
-        return_value=dummy_plot_instance,
+        return_value=dummy_plot_instance_fixture,
     )
 
     default_bmfia_interface.num_processors_multi_processing = 3
@@ -544,7 +544,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
     )
 
     mean, variance = BmfiaInterface.evaluate_per_time_step(
-        z_lf, support, default_probabilistic_obj_lst, time_vec, coords_mat
+        z_lf, support, default_probabilistic_obj_lst_fixture, time_vec, coords_mat
     )
 
     mp1.assert_called_once()
@@ -555,7 +555,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
 
     mp3.assert_called_once()
     mp3.assert_called_with(
-        z_lf_array, support, num_coords, default_probabilistic_obj_lst, gradient_bool=False
+        z_lf_array, support, num_coords, default_probabilistic_obj_lst_fixture, gradient_bool=False
     )
 
     np.testing.assert_array_equal(mean, default_mean)
@@ -875,7 +875,7 @@ def test_update_mappings_per_time_step(mocker):
     )
 
     mapping = mocker.MagicMock()
-    mapping.update_training_data.return_value = dummy_reg_obj
+    mapping.update_training_data.return_value = dummy_reg_obj_fixture
     probabilistic_mapping_obj_lst = [mapping] * t_size
 
     (

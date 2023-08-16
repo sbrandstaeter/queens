@@ -53,8 +53,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture()
-def dummy_data(tmp_path):
+@pytest.fixture(name="dummy_data")
+def dummy_data_fixture(tmp_path):
     """Fixture for dummy data."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()

@@ -16,8 +16,8 @@ from pqueens.utils.fcc_utils import (
 )
 
 
-@pytest.fixture
-def config_1():
+@pytest.fixture(name="config_1")
+def config_1_fixture():
     """Dummy config 1."""
     config = {
         "a": "b",
@@ -32,8 +32,8 @@ def config_1():
     return config
 
 
-@pytest.fixture
-def config_2():
+@pytest.fixture(name="config_2")
+def config_2_fixture():
     """Dummy config 2."""
     config = {
         "a": "b",
@@ -43,20 +43,20 @@ def config_2():
     return config
 
 
-@pytest.fixture
-def parameters():
+@pytest.fixture(name="parameters")
+def parameters_fixture():
     """Dummy parameters."""
     return Mock()
 
 
-@pytest.fixture
-def dummy_obj():
+@pytest.fixture(name="dummy_obj")
+def dummy_obj_fixture():
     """Dummy object."""
     return Mock()
 
 
-@pytest.fixture
-def inserted_config_2(dummy_obj):
+@pytest.fixture(name="inserted_config_2")
+def inserted_config_2_fixture(dummy_obj):
     """Dummy config_2 with inserted object."""
     config = {
         "a": "b",
@@ -109,7 +109,7 @@ def test_from_config_create_object_model(mocker, config_1):
     mp2 = mocker.patch(
         "pqueens.models.simulation_model.SimulationModel.__init__", return_value=None
     )
-    from_config_create_object(config_1, parameters)
+    from_config_create_object(config_1, parameters_fixture)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == config_1

@@ -8,8 +8,8 @@ import pytest
 from pqueens.utils import smc_utils
 
 
-@pytest.fixture(scope='module', params=[1, 10])
-def num_particles(request):
+@pytest.fixture(name="num_particles", scope='module', params=[1, 10])
+def num_particles_fixture(request):
     """Return possible number of weights."""
     return request.param
 
@@ -30,12 +30,12 @@ def test_calc_ess_equal_weights(num_particles):
 def test_calc_ess():
     """Test ESS=0.5*N.
 
-    The ess is a measure for the amount of potent particles.
-    The higher the weight of a particle, the more potent it is.
-    For particles with weights (close to) zero give to contribution to ess
-    (**TODO_doc:** Please check this sentence).
-    In case X percent of the particles have zero weight, the ess is N*(100%-X).
-    E.g. half of the particles -> ESS = N/2.
+    The ess is a measure for the amount of potent particles. The higher
+    the weight of a particle, the more potent it is. For particles with
+    weights (close to) zero give to contribution to ess (**TODO_doc:**
+    Please check this sentence). In case X percent of the particles have
+    zero weight, the ess is N*(100%-X). E.g. half of the particles ->
+    ESS = N/2.
     """
     num_particles = 10
     half_num_particles = int(0.5 * num_particles)

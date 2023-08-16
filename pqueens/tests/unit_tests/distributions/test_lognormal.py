@@ -16,26 +16,26 @@ def sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def mean_1d():
+@pytest.fixture(name="mean_1d", scope='module')
+def mean_1d_fixture():
     """A possible scalar mean value."""
     return 1.0
 
 
-@pytest.fixture(scope='module')
-def covariance_1d():
+@pytest.fixture(name="covariance_1d", scope='module')
+def covariance_1d_fixture():
     """A possible scalar variance value."""
     return 2.0
 
 
-@pytest.fixture(scope='module')
-def lognormal_1d(mean_1d, covariance_1d):
+@pytest.fixture(name="lognormal_1d", scope='module')
+def lognormal_1d_fixture(mean_1d, covariance_1d):
     """A 1d lognormal distribution."""
     return LogNormalDistribution(normal_mean=mean_1d, normal_covariance=covariance_1d)
 
 
-@pytest.fixture(scope='module')
-def uncorrelated_vector_1d(num_draws):
+@pytest.fixture(name="uncorrelated_vector_1d", scope='module')
+def uncorrelated_vector_1d_fixture(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0]]
     return np.tile(vec, num_draws)
@@ -50,32 +50,32 @@ def sample_pos_2d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def mean_2d():
+@pytest.fixture(name="mean_2d", scope='module')
+def mean_2d_fixture():
     """A possible mean vector."""
     return np.array([1.0, -2.0])
 
 
-@pytest.fixture(scope='module')
-def covariance_2d():
+@pytest.fixture(name="covariance_2d", scope='module')
+def covariance_2d_fixture():
     """Recompose matrix based on given Cholesky decomposition."""
     return np.array([[1.0, 0.0], [0.0, 2.0]])
 
 
-@pytest.fixture(scope='module')
-def lognormal_2d(mean_2d, covariance_2d):
+@pytest.fixture(name="lognormal_2d", scope='module')
+def lognormal_2d_fixture(mean_2d, covariance_2d):
     """A multivariate lognormal distribution."""
     return LogNormalDistribution(normal_mean=mean_2d, normal_covariance=covariance_2d)
 
 
-@pytest.fixture(scope='module', params=[1, 4])
-def num_draws(request):
+@pytest.fixture(name="num_draws", scope='module', params=[1, 4])
+def num_draws_fixture(request):
     """Number of samples to draw from distribution."""
     return request.param
 
 
-@pytest.fixture(scope='module')
-def uncorrelated_vector_2d(num_draws):
+@pytest.fixture(name="uncorrelated_vector_2d", scope='module')
+def uncorrelated_vector_2d_fixture(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0], [-2.0]]
     return np.tile(vec, num_draws)
@@ -84,6 +84,7 @@ def uncorrelated_vector_2d(num_draws):
 # -----------------------------------------------------------------------
 # ---------------------------- TESTS ------------------------------------
 # -----------------------------------------------------------------------
+
 
 # ------------- univariate --------------
 def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):

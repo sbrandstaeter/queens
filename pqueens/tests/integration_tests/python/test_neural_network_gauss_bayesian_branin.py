@@ -2,7 +2,6 @@
 
 import pickle
 
-
 import numpy as np
 import pytest
 
@@ -25,8 +24,8 @@ def test_neural_network_gauss_bayesian_branin(inputdir, tmp_path, expected_mean,
     )
 
 
-@pytest.fixture()
-def expected_mean():
+@pytest.fixture(name="expected_mean")
+def expected_mean_fixture():
     """TODO_doc."""
     mean = np.array(
         [
@@ -47,8 +46,8 @@ def expected_mean():
     return mean.T
 
 
-@pytest.fixture()
-def expected_var():
+@pytest.fixture(name="expected_var")
+def expected_var_fixture():
     """TODO_doc."""
     var = np.array(
         [

@@ -16,70 +16,72 @@ def sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def mean_1d():
+@pytest.fixture(name="mean_1d", scope='module')
+def mean_1d_fixture():
     """A possible scalar mean value."""
     return 1.0
 
 
-@pytest.fixture(scope='module')
-def covariance_1d():
+@pytest.fixture(name="covariance_1d", scope='module')
+def covariance_1d_fixture():
     """A possible scalar variance value."""
     return 2.0
 
 
-@pytest.fixture(scope='module')
-def normal_1d(mean_1d, covariance_1d):
+@pytest.fixture(name="normal_1d", scope='module')
+def normal_1d_fixture(mean_1d, covariance_1d):
     """A 1d normal distribution."""
     return NormalDistribution(mean=mean_1d, covariance=covariance_1d)
 
 
-@pytest.fixture(scope='module')
-def uncorrelated_vector_1d(num_draws):
+@pytest.fixture(name="uncorrelated_vector_1d", scope='module')
+def uncorrelated_vector_1d_fixture(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0]]
     return np.tile(vec, num_draws)
 
 
 # ------------- multivariate --------------
-@pytest.fixture(params=[[-2.0, -1.0, 0.0], [[-1.0, -3.0, 1.0], [-1.0, -1.0, -1.0]]])
-def sample_pos_3d(request):
+@pytest.fixture(
+    name="sample_pos_3d", params=[[-2.0, -1.0, 0.0], [[-1.0, -3.0, 1.0], [-1.0, -1.0, -1.0]]]
+)
+def sample_pos_3d_fixture(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def mean_3d():
+@pytest.fixture(name="mean_3d", scope='module')
+def mean_3d_fixture():
     """A possible mean vector."""
     return np.array([0.0, -1.0, 2.0])
 
 
-@pytest.fixture(scope='module')
-def low_chol_3d():
+@pytest.fixture(name="low_chol_3d", scope='module')
+def low_chol_3d_fixture():
     """Lower triangular matrix of a Cholesky decomposition."""
     return np.array([[1.0, 0.0, 0.0], [0.1, 2.0, 0.0], [1.0, 0.8, 3.0]])
 
 
-@pytest.fixture(scope='module')
-def covariance_3d(low_chol_3d):
+@pytest.fixture(name="covariance_3d", scope='module')
+def covariance_3d_fixture(low_chol_3d):
     """Recompose matrix based on given Cholesky decomposition."""
     return np.dot(low_chol_3d, low_chol_3d.T)
 
 
-@pytest.fixture(scope='module')
-def normal_3d(mean_3d, covariance_3d):
+@pytest.fixture(name="normal_3d", scope='module')
+def normal_3d_fixture(mean_3d, covariance_3d):
     """A multivariate normal distribution."""
     return NormalDistribution(mean=mean_3d, covariance=covariance_3d)
 
 
-@pytest.fixture(scope='module', params=[1, 4])
-def num_draws(request):
+@pytest.fixture(name="num_draws", scope='module', params=[1, 4])
+def num_draws_fixture(request):
     """Number of samples to draw from distribution."""
     return request.param
 
 
-@pytest.fixture(scope='module')
-def uncorrelated_vector_3d(num_draws):
+@pytest.fixture(name="uncorrelated_vector_3d", scope='module')
+def uncorrelated_vector_3d_fixture(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0], [-2.0], [3.0]]
     return np.tile(vec, num_draws)
@@ -88,6 +90,7 @@ def uncorrelated_vector_3d(num_draws):
 # -----------------------------------------------------------------------
 # ---------------------------- TESTS ------------------------------------
 # -----------------------------------------------------------------------
+
 
 # ------------- univariate --------------
 def test_init_normal_1d(normal_1d, mean_1d, covariance_1d):
@@ -230,7 +233,7 @@ def test_init_normal_not_symmetric():
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
-        NormalDistribution(mean=mean_3d, covariance=covariance)
+        NormalDistribution(mean=mean_3d_fixture, covariance=covariance)
 
 
 def logpdf(x, logpdf_const, mean, precision):

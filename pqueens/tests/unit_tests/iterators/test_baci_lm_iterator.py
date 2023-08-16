@@ -15,44 +15,44 @@ from pqueens.parameters.parameters import Parameters
 _logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='module', params=['method'])
-def iterator_name_cases(request):
+@pytest.fixture(name="iterator_name_cases", scope='module', params=['method'])
+def iterator_name_cases_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(scope='module', params=[None, 'dummy_model'])
-def model_cases(request):
+@pytest.fixture(name="model_cases", scope='module', params=[None, 'dummy_model'])
+def model_cases_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(scope='module', params=['grad', 'res', 'not_valid'])
-def fix_update_reg(request):
+@pytest.fixture(name="fix_update_reg", scope='module', params=['grad', 'res', 'not_valid'])
+def fix_update_reg_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(scope='module', params=[1e-6, 1e0])
-def fix_tolerance(request):
+@pytest.fixture(name="fix_tolerance", scope='module', params=[1e-6, 1e0])
+def fix_tolerance_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture()
-def output_csv(dummy_global_settings):
+@pytest.fixture(name="output_csv")
+def output_csv_fixture(dummy_global_settings):
     """Absolute path to output csv file."""
     return dummy_global_settings.output_dir / (dummy_global_settings.experiment_name + '.csv')
 
 
-@pytest.fixture()
-def output_html(dummy_global_settings):
+@pytest.fixture(name="output_html")
+def output_html_fixture(dummy_global_settings):
     """Absolute path to output html file."""
     return dummy_global_settings.output_dir / (dummy_global_settings.experiment_name + '.html')
 
 
-@pytest.fixture()
-def default_baci_lm_iterator(dummy_global_settings):
+@pytest.fixture(name="default_baci_lm_iterator")
+def default_baci_lm_iterator_fixture(dummy_global_settings):
     """TODO_doc."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     model = SimulationModel(interface="interface")
@@ -73,14 +73,14 @@ def default_baci_lm_iterator(dummy_global_settings):
     return my_baci_lm_iterator
 
 
-@pytest.fixture(scope='module', params=[True, False])
-def fix_true_false_param(request):
+@pytest.fixture(name="fix_true_false_param", scope='module', params=[True, False])
+def fix_true_false_param_fixture(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(scope='module')
-def fix_plotly_fig():
+@pytest.fixture(name="fix_plotly_fig", scope='module')
+def fix_plotly_fig_fixture():
     """TODO_doc."""
     data = pd.DataFrame({'x': [1.0, 2.0], 'y': [1.1, 2.1], 'z': [1.2, 2.2]})
     fig = px.line_3d(

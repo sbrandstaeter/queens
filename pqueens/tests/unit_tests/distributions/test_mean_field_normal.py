@@ -12,8 +12,8 @@ from jax import numpy as jnp
 from pqueens.distributions.mean_field_normal import MeanFieldNormalDistribution
 
 
-@pytest.fixture()
-def mean_field_normal():
+@pytest.fixture(name="mean_field_normal")
+def mean_field_normal_fixture():
     """Create dummy mean-field normal distribution."""
     mean = np.zeros(5).reshape(-1)
     variance = np.ones(5).reshape(-1)
@@ -22,8 +22,8 @@ def mean_field_normal():
     return distribution
 
 
-@pytest.fixture()
-def samples():
+@pytest.fixture(name="samples")
+def samples_fixture():
     """Create two 5 dimensional samples."""
     np.random.seed(0)
     samples = np.random.normal(2, 3, 10).reshape(2, 5)
@@ -61,7 +61,7 @@ def test_from_config_create_distribution(mocker):
 
 
 def test_get_check_array_dimension_and_reshape():
-    """test get_check_array_dimension_and_reshape function."""
+    """Test get_check_array_dimension_and_reshape function."""
     # test instantiation with 1d array and  5 dimension
     test_array = np.array([1])
     dimension = 5

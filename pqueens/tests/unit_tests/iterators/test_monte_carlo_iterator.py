@@ -5,8 +5,10 @@ import pytest
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 
 
-@pytest.fixture
-def default_mc_iterator(dummy_global_settings, default_simulation_model, default_parameters_mixed):
+@pytest.fixture(name="default_mc_iterator")
+def default_mc_iterator_fixture(
+    dummy_global_settings, default_simulation_model, default_parameters_mixed
+):
     """Default monte carlo iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed
 

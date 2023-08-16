@@ -13,23 +13,23 @@ from pqueens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures and params ---------------
-@pytest.fixture()
-def result_description():
+@pytest.fixture(name="result_description")
+def result_description_fixture():
     """Fixture for a dummy result description."""
     description = {"write_results": True}
     return description
 
 
-@pytest.fixture()
-def dummy_model():
+@pytest.fixture(name="dummy_model")
+def dummy_model_fixture():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
     model = SimulationModel(interface)
     return model
 
 
-@pytest.fixture()
-def default_interface():
+@pytest.fixture(name="default_interface")
+def default_interface_fixture():
     """Dummy BMFIA interface for testing."""
     num_processors_multi_processing = 2
     coord_labels = ["x1", "x2"]
@@ -47,8 +47,8 @@ def default_interface():
     return interface
 
 
-@pytest.fixture()
-def default_bmfia_iterator(dummy_global_settings):
+@pytest.fixture(name="default_bmfia_iterator")
+def default_bmfia_iterator_fixture(dummy_global_settings):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
@@ -85,8 +85,8 @@ def default_bmfia_iterator(dummy_global_settings):
     return iterator
 
 
-@pytest.fixture()
-def default_mf_likelihood(
+@pytest.fixture(name="default_mf_likelihood")
+def default_mf_likelihood_fixture(
     mocker,
     dummy_model,
     default_interface,
@@ -152,8 +152,8 @@ class InstanceMock:
         return 1
 
 
-@pytest.fixture
-def mock_visualization():
+@pytest.fixture(name="mock_visualization")
+def mock_visualization_fixture():
     """Mock visualization."""
     my_mock = InstanceMock()
     return my_mock
@@ -171,8 +171,8 @@ class InstanceMockModel:
         return {"mean": 1}
 
 
-@pytest.fixture
-def mock_model():
+@pytest.fixture(name="mock_model")
+def mock_model_fixture():
     """Mock model fixture."""
     my_mock = InstanceMockModel()
     return my_mock

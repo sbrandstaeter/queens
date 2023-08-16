@@ -8,23 +8,23 @@ from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
 
 
-@pytest.fixture()
-def approx_name():
+@pytest.fixture(name="approx_name")
+def approx_name_fixture():
     """TODO_doc."""
     name = 'gp_approximation_gpflow'
     return name
 
 
-@pytest.fixture()
-def default_interface():
+@pytest.fixture(name="default_interface")
+def default_interface_fixture():
     """TODO_doc."""
     approx = "dummy_approx"
     interface = BmfmcInterface(approx)
     return interface
 
 
-@pytest.fixture()
-def config():
+@pytest.fixture(name="config")
+def config_fixture():
     """TODO_doc."""
     config = {
         "type": "gp_approximation_gpflow",
@@ -35,8 +35,8 @@ def config():
     return config
 
 
-@pytest.fixture()
-def default_bmfmc_model(default_interface):
+@pytest.fixture(name="default_bmfmc_model")
+def default_bmfmc_model_fixture(default_interface):
     """TODO_doc."""
     np.random.seed(1)
     model = Mock()
@@ -45,39 +45,39 @@ def default_bmfmc_model(default_interface):
     return model
 
 
-@pytest.fixture()
-def result_description():
+@pytest.fixture(name="result_description")
+def result_description_fixture():
     """TODO_doc."""
     description = {"write_results": True}
     return description
 
 
-@pytest.fixture()
-def experiment_dir():
+@pytest.fixture(name="experiment_dir")
+def experiment_dir_fixture():
     """TODO_doc."""
     return 'my_dummy_dir'
 
 
-@pytest.fixture()
-def initial_design():
+@pytest.fixture(name="initial_design")
+def initial_design_fixture():
     """TODO_doc."""
     return {"num_HF_eval": 5, "num_bins": 5, "method": "diverse_subset"}
 
 
-@pytest.fixture()
-def predictive_var():
+@pytest.fixture(name="predictive_var")
+def predictive_var_fixture():
     """TODO_doc."""
     return False
 
 
-@pytest.fixture()
-def BMFMC_reference():
+@pytest.fixture(name="BMFMC_reference")
+def BMFMC_reference_fixture():
     """TODO_doc."""
     return "dummy_reference"
 
 
-@pytest.fixture()
-def default_bmfmc_iterator(
+@pytest.fixture(name="default_bmfmc_iterator")
+def default_bmfmc_iterator_fixture(
     dummy_global_settings,
     default_parameters_uniform_2d,
     default_bmfmc_model,

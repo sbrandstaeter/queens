@@ -69,7 +69,11 @@ def test_exponential_averaging(type_of_averaging_quantity):
     np.testing.assert_equal(exponential_avg.current_average, type_of_averaging_quantity * ref)
 
 
-@pytest.fixture(scope="module", params=[1, np.arange(5), np.arange(5).reshape(-1, 1)])
-def type_of_averaging_quantity(request):
+@pytest.fixture(
+    name="type_of_averaging_quantity",
+    scope="module",
+    params=[1, np.arange(5), np.arange(5).reshape(-1, 1)],
+)
+def type_of_averaging_quantity_fixture(request):
     """Fixture to test averaging on different types of obj."""
     return request.param

@@ -24,8 +24,8 @@ def test_branin_gpflow_svgp(inputdir, tmp_path, expected_mean, expected_var):
     )
 
 
-@pytest.fixture()
-def expected_mean():
+@pytest.fixture(name="expected_mean")
+def expected_mean_fixture():
     """TODO_doc."""
     mean = np.array(
         [
@@ -44,8 +44,8 @@ def expected_mean():
     return mean
 
 
-@pytest.fixture()
-def expected_var():
+@pytest.fixture(name="expected_var")
+def expected_var_fixture():
     """TODO_doc."""
     var = np.array(
         [

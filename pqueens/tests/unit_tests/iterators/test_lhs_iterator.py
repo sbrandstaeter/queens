@@ -6,8 +6,10 @@ import pytest
 from pqueens.iterators.lhs_iterator import LHSIterator
 
 
-@pytest.fixture
-def default_lhs_iterator(dummy_global_settings, default_simulation_model, default_parameters_mixed):
+@pytest.fixture(name="default_lhs_iterator")
+def default_lhs_iterator_fixture(
+    dummy_global_settings, default_simulation_model, default_parameters_mixed
+):
     """Default latin hypercube sampling iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed
 

@@ -41,8 +41,8 @@ def test_Adam(adam_optimizer):
     assert np.mean(result - 0.5) < 0.005
 
 
-@pytest.fixture()
-def adam_optimizer():
+@pytest.fixture(name="adam_optimizer")
+def adam_optimizer_fixture():
     """Adam optimizer."""
     optimizer = Adam(
         learning_rate=1e-2,
@@ -54,8 +54,8 @@ def adam_optimizer():
     return optimizer
 
 
-@pytest.fixture()
-def adamax_optimizer():
+@pytest.fixture(name="adamax_optimizer")
+def adamax_optimizer_fixture():
     """Adamax optimizer."""
     optimizer = Adamax(
         learning_rate=1e-2,
@@ -67,8 +67,8 @@ def adamax_optimizer():
     return optimizer
 
 
-@pytest.fixture()
-def rmsprop_optimizer():
+@pytest.fixture(name="rmsprop_optimizer")
+def rmsprop_optimizer_fixture():
     """Rmsprop optimzer."""
     optimizer = RMSprop(
         learning_rate=5e-2,

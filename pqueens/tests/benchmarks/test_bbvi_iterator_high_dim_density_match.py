@@ -71,8 +71,8 @@ def test_bbvi_density_match_high_dimensional(
     assert np.abs(elbo) < 1e-5
 
 
-@pytest.fixture()
-def dummy_bbvi_instance(tmp_path, rv_dimension, my_variational_distribution_obj):
+@pytest.fixture(name="dummy_bbvi_instance")
+def dummy_bbvi_instance_fixture(tmp_path, rv_dimension, my_variational_distribution_obj):
     """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 30
@@ -162,15 +162,15 @@ def target_density(self, target_distribution_obj, x=None, pdf=False):
     return output_array
 
 
-@pytest.fixture()
-def rv_dimension():
+@pytest.fixture(name="rv_dimension")
+def rv_dimension_fixture():
     """Dimension of target distribution."""
     rv_dimension = 100
     return rv_dimension
 
 
-@pytest.fixture()
-def target_distribution_obj(rv_dimension):
+@pytest.fixture(name="target_distribution_obj")
+def target_distribution_obj_fixture(rv_dimension):
     """Target probabilistic model."""
     # Initializing the target distribution
     mean = np.random.rand(rv_dimension)
@@ -181,8 +181,8 @@ def target_distribution_obj(rv_dimension):
     return target_distribution_object
 
 
-@pytest.fixture()
-def my_variational_distribution_obj(rv_dimension):
+@pytest.fixture(name="my_variational_distribution_obj")
+def my_variational_distribution_obj_fixture(rv_dimension):
     """Variational distribution object."""
     # Initializing the variational distribution
     distribution_options = {

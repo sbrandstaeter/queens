@@ -13,7 +13,7 @@ from pqueens.parameters.parameters import Parameters
 
 
 @pytest.fixture(name="default_simulation_model")
-def default_simulation_model():
+def default_simulation_model_fixture():
     """Default simulation model."""
     interface = DirectPythonInterface(parameters=Mock(), function="ishigami90", num_workers=1)
     model = SimulationModel(interface)
@@ -21,7 +21,7 @@ def default_simulation_model():
 
 
 @pytest.fixture(name="default_parameters_uniform_2d")
-def default_parameters_uniform_2d():
+def default_parameters_uniform_2d_fixture():
     """Parameters with 2 uniform distributions."""
     x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
     x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
@@ -29,14 +29,14 @@ def default_parameters_uniform_2d():
 
 
 @pytest.fixture(name="default_parameters_uniform_3d")
-def default_parameters_uniform_3d():
+def default_parameters_uniform_3d_fixture():
     """Parameters with 3 uniform distributions."""
     rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
 
 
 @pytest.fixture(name="default_parameters_mixed")
-def default_parameters_mixed():
+def default_parameters_mixed_fixture():
     """Parameters with different distributions."""
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     x2 = NormalDistribution(mean=0, covariance=4)

@@ -10,23 +10,23 @@ from pqueens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures and params -----------------------------------
-@pytest.fixture()
-def result_description():
+@pytest.fixture(name="result_description")
+def result_description_fixture():
     """Fixture for a dummy result description."""
     description = {"write_results": True}
     return description
 
 
-@pytest.fixture()
-def dummy_model():
+@pytest.fixture(name="dummy_model")
+def dummy_model_fixture():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
     model = SimulationModel(interface)
     return model
 
 
-@pytest.fixture()
-def default_bmfia_iterator(
+@pytest.fixture(name="default_bmfia_iterator")
+def default_bmfia_iterator_fixture(
     result_description, dummy_model, dummy_global_settings, default_parameters_uniform_2d
 ):
     """Dummy iterator for testing."""
@@ -60,22 +60,22 @@ def default_bmfia_iterator(
     return iterator
 
 
-@pytest.fixture()
-def settings_probab_mapping(config, approximation_name):
+@pytest.fixture(name="settings_probab_mapping")
+def settings_probab_mapping_fixture(config, approximation_name):
     """Dummy settings for the probabilistic mapping for testing."""
     settings = config[approximation_name]
     return settings
 
 
-@pytest.fixture()
-def approximation_name():
+@pytest.fixture(name="approximation_name")
+def approximation_name_fixture():
     """Dummy approximation name for testing."""
     name = 'joint_density_approx'
     return name
 
 
-@pytest.fixture()
-def config():
+@pytest.fixture(name="config")
+def config_fixture():
     """Fixture for dummy configuration."""
     config = {
         "joint_density_approx": {

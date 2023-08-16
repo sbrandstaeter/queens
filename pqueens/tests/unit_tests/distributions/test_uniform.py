@@ -14,20 +14,20 @@ def sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def lower_bound_1d():
+@pytest.fixture(name="lower_bound_1d", scope='module')
+def lower_bound_1d_fixture():
     """A possible left bound of interval."""
     return -1.0
 
 
-@pytest.fixture(scope='module')
-def upper_bound_1d():
+@pytest.fixture(name="upper_bound_1d", scope='module')
+def upper_bound_1d_fixture():
     """A possible right bound of interval."""
     return 1.0
 
 
-@pytest.fixture(scope='module')
-def uniform_1d(lower_bound_1d, upper_bound_1d):
+@pytest.fixture(name="uniform_1d", scope='module')
+def uniform_1d_fixture(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
 
@@ -44,20 +44,20 @@ def sample_pos_2d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def lower_bound_2d():
+@pytest.fixture(name="lower_bound_2d", scope='module')
+def lower_bound_2d_fixture():
     """A possible left bound of interval."""
     return np.array([-1.0, -3.0])
 
 
-@pytest.fixture(scope='module')
-def upper_bound_2d():
+@pytest.fixture(name="upper_bound_2d", scope='module')
+def upper_bound_2d_fixture():
     """A possible right bound of interval."""
     return np.array([1.0, 2.0])
 
 
-@pytest.fixture(scope='module')
-def uniform_2d(lower_bound_2d, upper_bound_2d):
+@pytest.fixture(name="uniform_2d", scope='module')
+def uniform_2d_fixture(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
 
@@ -65,6 +65,7 @@ def uniform_2d(lower_bound_2d, upper_bound_2d):
 # -----------------------------------------------------------------------
 # ---------------------------- TESTS ------------------------------------
 # -----------------------------------------------------------------------
+
 
 # ------------- univariate --------------
 def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
