@@ -44,7 +44,7 @@ def test_write_random_material_to_dat(
 
 
 @pytest.fixture(name="expected_mean")
-def fixture_expected_mean():
+def expected_mean_fixture():
     """Reference samples mean."""
     result = np.array(
         [
