@@ -13,17 +13,10 @@ from pqueens.utils.exceptions import InvalidOptionError
 @pytest.fixture
 def default_bmfia_interface():
     """Fixture for a dummy bmfia interface."""
-    num_processors_multi_processing = 2
-    instantiate_probabilistic_mappings = BmfiaInterface._instantiate_per_coordinate
-    evaluate_method = BmfiaInterface._evaluate_per_coordinate
-    evaluate_and_gradient_method = BmfiaInterface._evaluate_and_gradient_per_coordinate
-    update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
     default_interface = BmfiaInterface(
-        instantiate_probabilistic_mappings,
-        num_processors_multi_processing,
-        evaluate_method,
-        evaluate_and_gradient_method,
-        update_mappings_method,
+        parameters="dummy_parameters",
+        probabilistic_mapping_type="per_coordinate",
+        num_processors_multi_processing=2,
     )
     return default_interface
 
@@ -122,25 +115,24 @@ def dummy_plot_instance():
 
 
 # ---- Actual unit_tests ------------------------------
-def test_fcc():
+def test_init():
     """Test from config create method."""
-    interface_name = "bmfia_interface"
+    parameters = "dummy_parameters"
 
     # test configuration with settings per_coordinate
-    dummy_config = {
-        "bmfia_interface": {
-            "num_processors_multi_processing": 2,
-            "regression_strategy": "per_coordinate",
-        }
-    }
-    bmfia_interface = BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+    bmfia_interface = BmfiaInterface(
+        parameters=parameters,
+        num_processors_multi_processing=2,
+        probabilistic_mapping_type="per_coordinate",
+    )
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
         is BmfiaInterface._instantiate_per_coordinate
     )
     assert bmfia_interface.num_processors_multi_processing == 2
-    assert bmfia_interface.probabilistic_mapping_obj_lst == []
+    assert not bmfia_interface.probabilistic_mapping_obj_lst
+    assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
     assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_coordinate
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
@@ -155,15 +147,19 @@ def test_fcc():
     assert bmfia_interface.coords_mat is None
 
     # test configuration with settings per_time_step
-    dummy_config["bmfia_interface"]["probabilistic_mapping_type"] = "per_time_step"
-    bmfia_interface = BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+    bmfia_interface = BmfiaInterface(
+        parameters=parameters,
+        num_processors_multi_processing=2,
+        probabilistic_mapping_type="per_time_step",
+    )
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
         is BmfiaInterface._instantiate_per_time_step
     )
     assert bmfia_interface.num_processors_multi_processing == 2
-    assert bmfia_interface.probabilistic_mapping_obj_lst == []
+    assert not bmfia_interface.probabilistic_mapping_obj_lst
+    assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
     assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_time_step
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
@@ -178,9 +174,12 @@ def test_fcc():
     assert bmfia_interface.coords_mat is None
 
     # test wrong configuration
-    dummy_config["bmfia_interface"]["probabilistic_mapping_type"] = "blabla"
     with pytest.raises(InvalidOptionError):
-        BmfiaInterface.from_config_create_interface(interface_name, dummy_config)
+        BmfiaInterface(
+            parameters=parameters,
+            num_processors_multi_processing=2,
+            probabilistic_mapping_type="blabla",
+        )
 
 
 def test__init__():
@@ -192,19 +191,21 @@ def test__init__():
     update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
 
     interface = BmfiaInterface(
-        instantiate_probabilistic_mappings,
-        num_processors_multi_processing,
-        evaluate_method,
-        evaluate_and_gradient_method,
-        update_mappings_method,
+        parameters="dummy_parameters",
+        num_processors_multi_processing=num_processors_multi_processing,
+        probabilistic_mapping_type="per_coordinate",
     )
 
-    assert interface.instantiate_probabilistic_mappings == instantiate_probabilistic_mappings
+    assert (
+        interface.instantiate_probabilistic_mappings.__name__
+        == instantiate_probabilistic_mappings.__name__
+    )
     assert interface.num_processors_multi_processing == num_processors_multi_processing
-    assert interface.probabilistic_mapping_obj_lst == []
-    assert interface.evaluate_method == evaluate_method
-    assert interface.evaluate_and_gradient_method == evaluate_and_gradient_method
-    assert interface.update_mappings_method == update_mappings_method
+    assert not interface.probabilistic_mapping_obj_lst
+    assert isinstance(interface.probabilistic_mapping_obj_lst, list)
+    assert interface.evaluate_method.__name__ == evaluate_method.__name__
+    assert interface.evaluate_and_gradient_method.__name__ == evaluate_and_gradient_method.__name__
+    assert interface.update_mappings_method.__name__ == update_mappings_method.__name__
     assert interface.coord_labels is None
     assert interface.time_vec is None
     assert interface.coords_mat is None
@@ -215,11 +216,10 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     z_lf_train = np.zeros((2, 30))
     y_hf_train = np.zeros((2, 25))
     dummy_lst = [1, 2, 3]
-    config = {"dummy": "dummy"}
     coord_labels = ["x1", "x2"]
     time_vec = None
     coords_mat = np.array([[0, 1], [0, 1]])
-    approx_name = "bmfia"
+    approx = "dummy_approx"
 
     mock_train_parallel = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.'
@@ -240,14 +240,14 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     # Test with wrong input dimensions (2D Tensor) --> ValueError
     with pytest.raises(IndexError):
         default_bmfia_interface.build_approximation(
-            z_lf_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+            z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
         )
 
     # Test with wrong input dimensions --> AssertionError
     z_lf_train = np.zeros((1, 2, 30))
     with pytest.raises(IndexError):
         default_bmfia_interface.build_approximation(
-            z_lf_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+            z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
         )
 
     # Test with correct input dimensions for Z_LF_train and Y_HF_train
@@ -258,7 +258,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
 
     num_coords = z_lf_train.T.shape[2]
     default_bmfia_interface.build_approximation(
-        z_lf_train, y_hf_train, config, approx_name, coord_labels, time_vec, coords_mat
+        z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
     )
 
     # -- Actual assert / tests ---
@@ -273,47 +273,38 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
 
 
 def test_instantiate_per_coordinate(
-    default_bmfia_interface, mocker, dummy_reg_obj, default_probabilistic_obj_lst
+    default_bmfia_interface, dummy_reg_obj, default_probabilistic_obj_lst
 ):
     """Test the instantiation of the probabilistic mappings."""
     z_lf_train = np.zeros((1, 2))
     y_hf_train = np.zeros((1, 2, 3))
-    num_reg = y_hf_train.shape[2]
     default_bmfia_interface.probabilistic_mapping_obj_lst = []
     time_vec = None
     coords_mat = np.array([[0, 1], [0, 1]])
-    approx_name = "bmfia"
-    config = {"dummy": "dummy"}
+    approx = dummy_reg_obj
 
     # test wrong z_lf_train input dimensions
     with pytest.raises(IndexError):
         default_bmfia_interface._instantiate_per_coordinate(
-            z_lf_train, y_hf_train, time_vec, coords_mat, config, approx_name
+            z_lf_train, y_hf_train, time_vec, coords_mat, approx
         )
 
     # test correct z_lf_train input dimensions
     z_lf_train = np.zeros((1, 2, 3))
-    mp_1 = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.from_config_create_model',
-        return_value=dummy_reg_obj,
-    )
     (
         z_lf_array_out,
         y_hf_array_out,
         probabilistic_mapping_obj_lst,
     ) = default_bmfia_interface._instantiate_per_coordinate(
-        z_lf_train, y_hf_train, time_vec, coords_mat, config, approx_name
+        z_lf_train, y_hf_train, time_vec, coords_mat, approx
     )
 
     # --- asserts / tests
-    for (probabilistic_mapping_obj, default_probabilistic_obj) in zip(
+    for probabilistic_mapping_obj, default_probabilistic_obj in zip(
         probabilistic_mapping_obj_lst, default_probabilistic_obj_lst
     ):
         assert isinstance(probabilistic_mapping_obj, DummyRegression)
         assert probabilistic_mapping_obj.state == default_probabilistic_obj.state
-    assert mp_1.call_count == 1
-    assert mp_1.call_args[0][0] == approx_name
-    assert mp_1.call_args[0][1] == config
     np.testing.assert_array_equal(z_lf_array_out, z_lf_train)
     np.testing.assert_array_equal(y_hf_array_out, y_hf_train)
 
@@ -327,8 +318,7 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     t_size = 2
     time_vec = np.array([0, 1])
     coords_mat = np.array([[0, 1], [0, 1]])
-    config = {"dummy": "dummy"}
-    approx_name = "bmfia"
+    approx = dummy_reg_obj
 
     mp_1 = mocker.patch(
         "pqueens.interfaces.bmfia_interface.BmfiaInterface._check_coordinates_return_dimensions",
@@ -338,17 +328,13 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
         "pqueens.interfaces.bmfia_interface.BmfiaInterface._prepare_z_lf_for_time_steps",
         return_value=z_lf_array_out,
     )
-    mp_3 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.from_config_create_model",
-        return_value=dummy_reg_obj,
-    )
 
     (
         z_lf_array,
         y_hf_array,
         probabilistic_mapping_obj_lst,
     ) = BmfiaInterface._instantiate_per_time_step(
-        z_lf_train, y_hf_train, time_vec, coords_mat, config, approx_name
+        z_lf_train, y_hf_train, time_vec, coords_mat, approx
     )
 
     # --- asserts / tests
@@ -358,7 +344,6 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     mp_2.assert_called_once()
     mp_2.assert_called_with(z_lf_train, t_size, coords_mat)
 
-    assert mp_3.call_count == 1
     np.testing.assert_array_equal(z_lf_array, z_lf_array_out)
     np.testing.assert_array_equal(y_hf_array, np.zeros((2, 4, 1)))
     for probabilistic_mapping_obj in probabilistic_mapping_obj_lst:
@@ -423,10 +408,6 @@ def test_set_optimized_state_of_probabilistic_mappings(
     default_bmfia_interface, my_state_lst, mocker, default_probabilistic_obj_lst
 ):
     """Test the state update of the mappings."""
-    mocker.patch(
-        'pqueens.interfaces.bmfia_interface.from_config_create_model',
-        DummyRegression,
-    )
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
     default_bmfia_interface._set_optimized_state_of_probabilistic_mappings(my_state_lst)
     for obj in default_bmfia_interface.probabilistic_mapping_obj_lst:

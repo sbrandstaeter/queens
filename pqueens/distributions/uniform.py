@@ -21,8 +21,8 @@ class UniformDistribution(ContinuousDistribution):
         """Initialize uniform distribution.
 
         Args:
-            lower_bound (np.ndarray): Lower bound(s) of the distribution
-            upper_bound (np.ndarray): Upper bound(s) of the distribution
+            lower_bound (array_like): Lower bound(s) of the distribution
+            upper_bound (array_like): Upper bound(s) of the distribution
         """
         lower_bound = np.array(lower_bound).reshape(-1)
         upper_bound = np.array(upper_bound).reshape(-1)

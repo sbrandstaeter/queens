@@ -1,12 +1,14 @@
-"""Fixtures needed across all unit_tests."""
-import logging
+"""Fixtures needed across unit_tests."""
 
 import pytest
 
-_logger = logging.getLogger(__name__)
+from pqueens.global_settings import GlobalSettings
 
 
-@pytest.fixture(name="test_path")
-def fixture_test_path(tmp_path):
-    """Convert *tmp_path* to *pathlib* object."""
-    return tmp_path
+@pytest.fixture(name="dummy_global_settings")
+def dummy_global_settings(tmp_path):
+    """Dummy GlobalSettings object."""
+    # Setup global settings
+    global_settings = GlobalSettings(experiment_name="dummy_experiment_name", output_dir=tmp_path)
+    with global_settings:
+        yield global_settings

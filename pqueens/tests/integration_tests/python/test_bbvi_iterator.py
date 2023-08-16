@@ -7,11 +7,11 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens import run
+from pqueens.global_settings import GlobalSettings
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import injector
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
+from pqueens.utils.stochastic_optimizer import Adam
 
 
 def test_bbvi_density_match(
@@ -128,50 +128,47 @@ def dummy_bbvi_instance(tmp_path, my_variational_distribution):
             "save_bool": False,
         },
     }
-    optimizer_config = {
-        "type": "adam",
-        "learning_rate": 0.01,
-        "optimization_type": "max",
-        "rel_l1_change_threshold": -1,
-        "rel_l2_change_threshold": -1,
-        "max_iteration": 10000000,
-    }
-    stochastic_optimizer = from_config_create_optimizer(
-        {"optimizer": optimizer_config}, "optimizer"
+    stochastic_optimizer = Adam(
+        learning_rate=0.01,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
     )
 
     # ------ other params ----------------------------------------------------------
     model = namedtuple("model", "normal_distribution")(
         normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0)
     )
-    global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
+    global_settings = GlobalSettings(experiment_name, output_dir=tmp_path)
     random_seed = 1
 
-    parameters_module.parameters = Mock()
-    parameters_module.parameters.num_parameters = num_variables
+    with global_settings:
+        parameters = Mock()
+        parameters.num_parameters = num_variables
 
-    bbvi_instance = BBVIIterator(
-        global_settings=global_settings,
-        model=model,
-        result_description=result_description,
-        variational_parameter_initialization=variational_params_initialization_approach,
-        n_samples_per_iter=n_samples_per_iter,
-        variational_transformation=variational_transformation,
-        random_seed=random_seed,
-        max_feval=max_feval,
-        memory=memory,
-        natural_gradient=natural_gradient_bool,
-        FIM_dampening=fim_dampening_bool,
-        decay_start_iteration=fim_decay_start_iter,
-        dampening_coefficient=fim_dampening_coefficient,
-        FIM_dampening_lower_bound=fim_dampening_lower_bound,
-        control_variates_scaling_type=control_variates_scaling_type,
-        loo_control_variates_scaling=loo_cv_bool,
-        variational_distribution=my_variational_distribution,
-        stochastic_optimizer=stochastic_optimizer,
-        model_eval_iteration_period=1,
-        resample=True,
-    )
+        bbvi_instance = BBVIIterator(
+            model=model,
+            parameters=parameters,
+            result_description=result_description,
+            variational_parameter_initialization=variational_params_initialization_approach,
+            n_samples_per_iter=n_samples_per_iter,
+            variational_transformation=variational_transformation,
+            random_seed=random_seed,
+            max_feval=max_feval,
+            memory=memory,
+            natural_gradient=natural_gradient_bool,
+            FIM_dampening=fim_dampening_bool,
+            decay_start_iteration=fim_decay_start_iter,
+            dampening_coefficient=fim_dampening_coefficient,
+            FIM_dampening_lower_bound=fim_dampening_lower_bound,
+            control_variates_scaling_type=control_variates_scaling_type,
+            loo_control_variates_scaling=loo_cv_bool,
+            variational_distribution=my_variational_distribution,
+            stochastic_optimizer=stochastic_optimizer,
+            model_eval_iteration_period=1,
+            resample=True,
+        )
     return bbvi_instance
 
 

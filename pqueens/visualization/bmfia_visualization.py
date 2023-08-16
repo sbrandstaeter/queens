@@ -134,7 +134,7 @@ class BMFIAVisualization:
                 )
 
             sns.set_theme(style='whitegrid')
-            f, ax = plt.subplots(figsize=(6, 6))
+            _, ax = plt.subplots(figsize=(6, 6))
             sns.scatterplot(x=samples[:, 0], y=samples[:, 1], s=5)
             sns.kdeplot(x=samples[:, 0], y=samples[:, 1], weights=weights)
 

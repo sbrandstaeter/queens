@@ -22,16 +22,16 @@ class PointsIterator(Iterator):
         points_array (np.ndarray): Array with all samples
     """
 
-    def __init__(self, model, global_settings, points, result_description):
+    def __init__(self, model, parameters, points, result_description):
         """Initialise Iterator.
 
         Args:
             model (obj, optional): Model to be evaluated by iterator
-            global_settings (dict, optional): Settings for the QUEENS run
+            parameters (obj): Parameters object
             points (dict): Dictionary with name and samples
             result_description (dict): Settings for storing
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, parameters)
         self.points = points
         self.result_description = result_description
         self.output = None
@@ -78,8 +78,4 @@ class PointsIterator(Iterator):
                     "output": self.output,
                 }
 
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)

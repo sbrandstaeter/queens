@@ -10,7 +10,6 @@ import pymc as pm
 import pytensor.tensor as pt
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_outputs, write_results
 from pqueens.utils.pymc import PymcDistributionWrapper, from_config_create_pymc_distribution_dict
 
@@ -25,14 +24,12 @@ class PyMCIterator(Iterator):
         Science. 2016.
 
     Attributes:
-        global_settings (dict): Global settings of the QUEENS simulations
         model (obj): Underlying simulation model on which the inverse analysis is conducted
         result_description (dict): Settings for storing and visualizing the results
         discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
         num_chains (int): Number of chains to sample
         num_burn_in (int):  Number of burn-in steps
         num_samples (int): Number of samples to generate per chain, excluding burn-in period
-        num_parameters (int): Actual number of model input parameters that should be calibrated
         chains (np.array): Array with all samples
         seed (int): Seed for the random number generators
         pymc_model (obj): PyMC Model as inference environment
@@ -56,8 +53,8 @@ class PyMCIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        parameters,
         num_burn_in,
         num_chains,
         num_samples,
@@ -73,8 +70,8 @@ class PyMCIterator(Iterator):
         """Initialize PyMC iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            parameters (obj): Parameters object
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
@@ -88,7 +85,7 @@ class PyMCIterator(Iterator):
                                         functions
             progressbar (boolean): Setting for printing progress bar while sampling
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, parameters)
         self.result_description = result_description
         self.summary = summary
         self.pymc_sampler_stats = pymc_sampler_stats
@@ -140,55 +137,6 @@ class PyMCIterator(Iterator):
         self.buffered_samples = None
         self.buffered_gradients = None
         self.buffered_likelihoods = None
-
-    @staticmethod
-    def get_base_attributes_from_config(config, iterator_name, model=None):
-        """Create PyMC iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator:PyMC Iterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        num_chains = method_options.get('num_chains', 1)
-
-        num_burn_in = method_options.get('num_burn_in', 100)
-
-        discard_tuned_samples = method_options.get('discard_tuned_samples', True)
-
-        use_queens_prior = method_options.get('use_queens_prior', False)
-
-        progressbar = method_options.get('progressbar', False)
-        summary = method_options.get('summary', True)
-        pymc_sampler_stats = method_options.get('pymc_sampler_stats', False)
-        as_inference_dict = method_options.get('as_inference_dict', False)
-
-        return (
-            global_settings,
-            model,
-            num_burn_in,
-            num_chains,
-            method_options['num_samples'],
-            discard_tuned_samples,
-            result_description,
-            summary,
-            pymc_sampler_stats,
-            as_inference_dict,
-            method_options['seed'],
-            use_queens_prior,
-            progressbar,
-        )
 
     def eval_log_prior(self, samples):
         """Evaluate natural logarithm of prior at samples of chains.
@@ -368,15 +316,9 @@ class PyMCIterator(Iterator):
             self.result_description,
         )
         if self.result_description["write_results"]:
-            write_results(
-                results,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )
+            write_results(results, self.output_dir, self.experiment_name)
 
-        filebasename = (
-            f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
-        )
+        filebasename = f"{self.output_dir}/{self.experiment_name}"
 
         self.results_dict = results_dict
         if self.summary:

@@ -26,8 +26,14 @@ OUTPUT_PREFIX={{ OUTPUTPREFIX }}
 #  Postprocessing                        #
 #                                        #
 ##########################################
+DoPostprocess={{ POSTPROCESS }}
+if [ $DoPostprocess = true ]
+then
+  RUN_ENSIGHT_FILTER="ON"
+else
+  RUN_ENSIGHT_FILTER="OFF"
+fi
 
-RUN_ENSIGHT_FILTER="ON"
 ENSIGHT_OUTPUT_DIR={{ DESTDIR }}
 ENSIGHT_OPTIONS={{ POSTOPTIONS }}
 

@@ -9,7 +9,7 @@ variables:
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
-  LNM_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
   IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
 #---------------------------------------------------------------------------------------------------
 # Define stages
@@ -113,22 +113,22 @@ imcs-build_conda_env:
       --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 
-bruteforce-build_conda_env:
-  extends:
-    - .build_conda_env_cluster
-  variables:
-    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
-    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-  needs:
-    - lnm-build_conda_env
-  tags:
-    - lnm-build
+#bruteforce-build_conda_env:
+#  extends:
+#    - .build_conda_env_cluster
+#  variables:
+#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+#    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
+#  needs:
+#    - lnm-build_conda_env
+#  tags:
+#    - lnm-build
 
-deep-build_conda_env:
+thought-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_ADDRESS: 'thought'
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
@@ -294,8 +294,8 @@ lnm-cluster_tests:
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
-    - bruteforce-build_conda_env
-    - deep-build_conda_env
+    # - bruteforce-build_conda_env
+    - thought-build_conda_env
   tags:
     - lnm-ubuntu
 
@@ -468,23 +468,23 @@ imcs-remove_conda_env:
   rules:
     - if: $CLUSTER_TESTS == "1"
 
-bruteforce-cluster-remove_conda_env:
-  extends:
-    - .remove_conda_env_cluster
-  dependencies:
-    - bruteforce-build_conda_env
-  variables:
-    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
-  tags:
-    - lnm-build
+#bruteforce-cluster-remove_conda_env:
+#  extends:
+#    - .remove_conda_env_cluster
+#  dependencies:
+#    - bruteforce-build_conda_env
+#  variables:
+#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
+#  tags:
+#    - lnm-build
 
-deep-cluster-remove_conda_env:
+thought-cluster-remove_conda_env:
   extends:
     - .remove_conda_env_cluster
   dependencies:
-    - deep-build_conda_env
+    - thought-build_conda_env
   variables:
-    REMOTE_ADDRESS: 'deep.lnm.ed.tum.de'
+    REMOTE_ADDRESS: 'thought'
   tags:
     - lnm-build
 

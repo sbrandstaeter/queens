@@ -27,7 +27,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
     def __init__(
         self,
-        data_processor_name,
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
@@ -49,7 +48,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                                                  The paths can contain regex expressions.
         """
         super().__init__(
-            data_processor_name=data_processor_name,
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
@@ -59,7 +57,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if not path_ref_data_str:
             raise ValueError(
                 "You must provide the option 'path_to_ref_data' within the 'file_options_dict' "
-                f"in '{data_processor_name}'. Abort ..."
+                f"in '{self.__class__.__name__}'. Abort ..."
             )
         path_ref_data = Path(path_ref_data_str)
         experimental_reference_data = self.read_monitorfile(path_ref_data)
@@ -68,7 +66,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if not time_tol:
             raise ValueError(
                 "You must provide the option 'time_tol' within the 'file_options_dict' "
-                f"in '{data_processor_name}'. Abort ..."
+                f"in '{self.__class__.__name__}'. Abort ..."
             )
 
         visualization_bool = file_options_dict.get('visualization', False)
@@ -197,10 +195,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         vertices = vtk.vtkCellArray()
 
         for current_step_experimental_data in self.experimental_ref_data_lst:
-
-            grid = self.create_UnstructuredGridFromEnsight_per_time_step(
-                current_step_experimental_data[0]
-            )
+            grid = self.deformed_grid(current_step_experimental_data[0])
             geo = vtk.vtkGeometryFilter()
             geo.SetInputData(grid)
             geo.Update()
@@ -326,35 +321,35 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if self.visualization_bool:
             colors = vtk.vtkNamedColors()
             renderer = vtk.vtkRenderer()
-            renWin = vtk.vtkRenderWindow()
-            renWin.AddRenderer(renderer)
+            ren_win = vtk.vtkRenderWindow()
+            ren_win.AddRenderer(renderer)
             iren = vtk.vtkRenderWindowInteractor()
-            iren.SetRenderWindow(renWin)
+            iren.SetRenderWindow(ren_win)
 
             pointdata = vtk.vtkPolyData()
 
             pointdata.SetPoints(points)
             pointdata.SetVerts(vertices)
 
-            ugridMapper = vtk.vtkDataSetMapper()
-            ugridMapper.SetInputData(outlineout)
+            ugrid_mapper = vtk.vtkDataSetMapper()
+            ugrid_mapper.SetInputData(outlineout)
 
-            pointMapper = vtk.vtkPolyDataMapper()
+            point_mapper = vtk.vtkPolyDataMapper()
 
-            pointMapper.SetInputData(pointdata)
-            pointActor = vtk.vtkActor()
-            pointActor.SetMapper(pointMapper)
-            pointActor.GetProperty().SetColor([0.0, 0.0, 1.0])
-            pointActor.GetProperty().SetPointSize(10)
-            pointActor.GetProperty().SetRenderPointsAsSpheres(True)
+            point_mapper.SetInputData(pointdata)
+            point_actor = vtk.vtkActor()
+            point_actor.SetMapper(point_mapper)
+            point_actor.GetProperty().SetColor([0.0, 0.0, 1.0])
+            point_actor.GetProperty().SetPointSize(10)
+            point_actor.GetProperty().SetRenderPointsAsSpheres(True)
 
-            ugridActor = vtk.vtkActor()
-            ugridActor.SetMapper(ugridMapper)
-            ugridActor.GetProperty().SetColor(colors.GetColor3d("Peacock"))
-            ugridActor.GetProperty().EdgeVisibilityOn()
+            ugrid_actor = vtk.vtkActor()
+            ugrid_actor.SetMapper(ugrid_mapper)
+            ugrid_actor.GetProperty().SetColor(colors.GetColor3d("Peacock"))
+            ugrid_actor.GetProperty().EdgeVisibilityOn()
 
-            renderer.AddActor(ugridActor)
-            renderer.AddActor(pointActor)
+            renderer.AddActor(ugrid_actor)
+            renderer.AddActor(point_actor)
             renderer.SetBackground(colors.GetColor3d("Beige"))
 
             renderer.ResetCamera()
@@ -362,10 +357,10 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             renderer.GetActiveCamera().Azimuth(0.01)
             renderer.GetActiveCamera().Dolly(0)
 
-            renWin.SetSize(640, 480)
+            ren_win.SetSize(640, 480)
 
             # Generate viewer
-            renWin.Render()
+            ren_win.Render()
             iren.Start()
 
     def _stretch_vector(self, vec1, vec2, scalar):
@@ -413,29 +408,30 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         return distance
 
-    def create_UnstructuredGridFromEnsight_per_time_step(self, time):
-        """Read ensight file.
+    def deformed_grid(self, time):
+        """Read deformed grid from Ensight file at specified time.
 
-        Afterwards, *warpbyvector* by displacement of *structure*
-        result in case files.
+        Initially, the undeformed grid is read from the Ensight file
+        Afterward, *warpbyvector* applies the displacement of *structure* field at time *time*
+        such that the final result is the deformed grid at the specified time.
 
         Args:
-            time (float): Time value for data processing - executed once for every time value
+            time (float): Time value for data processing
 
         Returns:
-            grid (vtkUnstructuredGrid): Deformed discretization for given time
+            deformed_grid (vtkUnstructuredGrid): Deformed grid for given time
         """
-        timestepsinensight = self.raw_file_data.GetTimeSets()
+        time_steps_in_ensight = self.raw_file_data.GetTimeSets()
 
-        timesiter = timestepsinensight.NewIterator()
-        timesiter.GoToFirstItem()
+        times_iter = time_steps_in_ensight.NewIterator()
+        times_iter.GoToFirstItem()
 
         steps = np.array([])
 
-        while not timesiter.IsDoneWithTraversal():
-            curr = timesiter.GetCurrentObject()
+        while not times_iter.IsDoneWithTraversal():
+            curr = times_iter.GetCurrentObject()
             steps = np.append(steps, vtk_to_numpy(curr))
-            timesiter.GoToNextItem()
+            times_iter.GoToNextItem()
 
         steps = np.unique(steps)
         idx = np.where(abs(steps - time) < self.time_tol)
@@ -453,14 +449,14 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         self.raw_file_data.SetTimeValue(ensight_time)
         self.raw_file_data.Update()
 
-        readout = self.raw_file_data.GetOutput()
-        number_of_blocks = readout.GetNumberOfBlocks()
+        output = self.raw_file_data.GetOutput()
+        number_of_blocks = output.GetNumberOfBlocks()
         if number_of_blocks != 1:
             raise ValueError(
                 'ensight reader output has more or less than one block. This is not expected.'
                 'Investigate your data!'
             )
-        block = readout.GetBlock(0)
+        block = output.GetBlock(0)
 
         block.GetPointData().SetActiveVectors(self.displacement_fields[0])
 
@@ -471,14 +467,14 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if len(self.displacement_fields) > 1:
             for i, field in enumerate(self.displacement_fields):
                 if i > 0:
-                    secondblock = vtk_warp_vector.GetOutput()
-                    secondblock.GetPointData().SetActiveVectors(field)
+                    second_block = vtk_warp_vector.GetOutput()
+                    second_block.GetPointData().SetActiveVectors(field)
                     wvb = vtk.vtkWarpVector()
                     wvb.SetScaleFactor(1.0)
-                    wvb.SetInputData(secondblock)
+                    wvb.SetInputData(second_block)
                     wvb.Update()
                     vtk_warp_vector = wvb
 
-        grid = vtk_warp_vector.GetUnstructuredGridOutput()
+        deformed_grid = vtk_warp_vector.GetUnstructuredGridOutput()
 
-        return grid
+        return deformed_grid

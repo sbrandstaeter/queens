@@ -4,7 +4,6 @@ from pathlib import Path
 
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject_in_template, read_file
-from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class JobscriptDriver(Driver):
             "EXE": path_to_executable,
             "BUILDDIR": Path(path_to_executable).parent,
             "OUTPUTPREFIX": post_file_prefix,
-            "POSTPROCESS": bool(post_processor),
+            "POSTPROCESS": str(bool(post_processor)).lower(),
             "POSTEXE": str(post_processor),
             "POSTOPTIONS": post_process_options,
             "CLUSTERSCRIPT": cluster_script_path,
@@ -80,7 +79,7 @@ class JobscriptDriver(Driver):
             Result and potentially the gradient
         """
         job_id = sample_dict.pop('job_id')
-        job_dir, output_dir, _, input_file, _, _ = self._manage_paths(
+        job_dir, output_dir, _, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
@@ -96,11 +95,6 @@ class JobscriptDriver(Driver):
         inject_in_template(final_jobscript_options, self.jobscript_template, str(jobscript_file))
 
         execute_cmd = 'bash ' + str(jobscript_file)
-
-        run_subprocess(
-            execute_cmd,
-            subprocess_type='simple',
-            raise_error_on_subprocess_failure=False,
-        )
+        self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
 
         return self._get_results(output_dir)

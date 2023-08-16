@@ -40,10 +40,11 @@ model:
   forward_model_name: forward_model
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
-  noise_var_iterative_averaging:
-    averaging_type: moving_average
-    num_iter_for_avg: 10
+  noise_var_iterative_averaging_name: iterative_averaging
   experimental_data_reader_name: experimental_data_reader
+iterative_averaging:
+  type: moving_average
+  num_iter_for_avg: 10
 experimental_data_reader:
   type: experimental_data_reader
   file_name_identifier: "*.csv"

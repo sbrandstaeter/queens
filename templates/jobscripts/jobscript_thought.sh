@@ -1,10 +1,10 @@
-#!/bin/bash:q
+#!/bin/bash
 ##########################################
 #                                        #
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKSUBDIR={{ JOB_ID }}
+JOB_ID={{ JOB_ID }}
 DESTDIR={{ DESTDIR }}  # output directory for run
 EXE={{ EXE }} # CAE executable
 INPUT={{ INPUT }}  # input file
@@ -21,7 +21,7 @@ RESTART_FROM_PREFIX=xxx                  #
 #                                        #
 #     POSTPROCESSING SPECIFICATION       #
 #                                        #
-DoPostprocess=true          #
+DoPostprocess={{ POSTPROCESS }}          #
 # Note: supported post processor is the  #
 #       post_processor.                  #
 POSTEXE={{ POSTEXE }}                    #
@@ -43,6 +43,7 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+MPI_RUN=/opt/openmpi/4.1.5/gcc/bin/mpirun
 DoChecks
 StageIn
 RunProgram

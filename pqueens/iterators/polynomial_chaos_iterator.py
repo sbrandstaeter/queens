@@ -39,10 +39,10 @@ class PolynomialChaosIterator(Iterator):
     def __init__(
         self,
         model,
+        parameters,
         num_collocation_points,
         polynomial_order,
         approach,
-        global_settings,
         result_description,
         sparse=None,
         sampling_rule=None,
@@ -52,16 +52,16 @@ class PolynomialChaosIterator(Iterator):
 
         Args:
             model (model): Model to be evaluated by iterator
+            parameters (obj): Parameters object
             num_collocation_points (int): Number of samples to compute
             polynomial_order (int): Order of polynomial expansion
             approach (str): Approach for the polynomial chaos approach
-            global_settings (dict): Settings for the QUEENS run.
             result_description (dict): Description of desired results
             sparse (bool, opt): For pseudo project, if *True* uses sparse collocation points
             sampling_rule (dict, opt): Rule according to which samples are drawn
             seed (int, opt): Seed for random number generation
         """
-        super().__init__(model, global_settings)
+        super().__init__(model, parameters)
         valid_approaches = ["pseudo_spectral", "collocation"]
         if approach not in valid_approaches:
             raise ValueError(
@@ -190,11 +190,7 @@ class PolynomialChaosIterator(Iterator):
         """Analyze the results."""
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
-                write_results(
-                    self.result_dict,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(self.result_dict, self.output_dir, self.experiment_name)
 
 
 def create_chaospy_joint_distribution(parameters):

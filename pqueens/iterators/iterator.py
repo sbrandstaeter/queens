@@ -2,8 +2,7 @@
 
 import abc
 
-import pqueens.parameters.parameters as parameters_module
-from pqueens.models import from_config_create_model
+import pqueens.global_settings
 
 
 class Iterator(metaclass=abc.ABCMeta):
@@ -14,43 +13,23 @@ class Iterator(metaclass=abc.ABCMeta):
     coordinate and execute simulations/function evaluations.
 
     Attributes:
-        model (obj, optional): Model to be evaluated by iterator.
-        global_settings (dict, optional): Settings for the QUEENS run.
+        model (obj): Model to be evaluated by iterator.
+        experiment_name (str): Experiment name
+        output_dir (Path): Output directory
         parameters: Parameters object
     """
 
-    def __init__(self, model=None, global_settings=None):
+    def __init__(self, model, parameters):
         """Initialize iterator object.
 
         Args:
-            model (obj, optional): Model to be evaluated by iterator.
-            global_settings (dict, optional): Settings for the QUEENS run.
+            model (obj): Model to be evaluated by iterator.
+            parameters (obj): Parameters object
         """
         self.model = model
-        self.global_settings = global_settings
-        self.parameters = parameters_module.parameters
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: Iterator object
-        """
-        method_options = config[iterator_name].copy()
-        method_options.pop('type')
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-        method_options.pop('model_name', None)
-        global_settings = config['global_settings']
-        return cls(model=model, global_settings=global_settings, **method_options)
+        self.experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
+        self.output_dir = pqueens.global_settings.GLOBAL_SETTINGS.output_dir
+        self.parameters = parameters
 
     def pre_run(self):
         """Optional pre-run portion of run."""

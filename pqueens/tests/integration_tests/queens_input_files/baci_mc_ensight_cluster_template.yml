@@ -16,6 +16,7 @@ model:
   interface_name: interface
 data_processor_baci:
   type: ensight
+  external_geometry_name: external_geometry
   file_name_identifier: "{{ experiment_name }}*.case"
   file_options_dict:
     delete_field_data: false
@@ -48,6 +49,7 @@ scheduler:
   num_procs_post: 1
   num_nodes: 2
   workload_manager: {{ workload_manager }}
+  queue: {{ queue }}
   cluster_address: {{ cluster_address }}
   cluster_internal_address: {{ cluster_internal_address }}
   cluster_user: {{ cluster_user }}

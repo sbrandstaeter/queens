@@ -16,8 +16,6 @@ from pqueens.models.differentiable_simulation_model_adjoint import (
 def default_adjoint_model():
     """A default adjoint model."""
     model_obj = DifferentiableSimulationModelAdjoint(
-        model_name="my_model_name",
-        global_settings={"experiment_name": "my_experiment"},
         interface=Mock(),
         gradient_interface=Mock(),
         adjoint_file="my_adjoint_file",
@@ -28,22 +26,16 @@ def default_adjoint_model():
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the adjoint model."""
-    model_name = "my_model_name"
-    global_settings = {"experiment_name": "my_experiment"}
     interface = "my_interface"
     gradient_interface = "my_gradient_interface"
     adjoint_file = "my_adjoint_file"
 
     # Test without grad handler
     model_obj = DifferentiableSimulationModelAdjoint(
-        model_name=model_name,
-        global_settings=global_settings,
         interface=interface,
         gradient_interface=gradient_interface,
         adjoint_file=adjoint_file,
     )
-    assert model_obj.name == model_name
-    assert model_obj.experiment_name == global_settings["experiment_name"]
     assert model_obj.interface == interface
     assert model_obj.gradient_interface == gradient_interface
     assert model_obj.adjoint_file == adjoint_file

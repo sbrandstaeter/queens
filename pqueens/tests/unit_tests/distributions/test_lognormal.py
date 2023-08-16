@@ -6,7 +6,7 @@ import pytest
 import scipy.stats
 from jax import grad
 
-from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.lognormal import LogNormalDistribution
 
 
 # ------------- univariate --------------
@@ -31,12 +31,7 @@ def covariance_1d():
 @pytest.fixture(scope='module')
 def lognormal_1d(mean_1d, covariance_1d):
     """A 1d lognormal distribution."""
-    distribution_options = {
-        'type': 'lognormal',
-        'normal_mean': mean_1d,
-        'normal_covariance': covariance_1d,
-    }
-    return from_config_create_distribution(distribution_options)
+    return LogNormalDistribution(normal_mean=mean_1d, normal_covariance=covariance_1d)
 
 
 @pytest.fixture(scope='module')
@@ -70,12 +65,7 @@ def covariance_2d():
 @pytest.fixture(scope='module')
 def lognormal_2d(mean_2d, covariance_2d):
     """A multivariate lognormal distribution."""
-    distribution_options = {
-        'type': 'lognormal',
-        'normal_mean': mean_2d,
-        'normal_covariance': covariance_2d,
-    }
-    return from_config_create_distribution(distribution_options)
+    return LogNormalDistribution(normal_mean=mean_2d, normal_covariance=covariance_2d)
 
 
 @pytest.fixture(scope='module', params=[1, 4])
@@ -114,12 +104,7 @@ def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
 def test_init_lognormal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of LogNormal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
-        distribution_options = {
-            'type': 'lognormal',
-            'normal_mean': mean_1d,
-            'normal_covariance': -covariance_1d,
-        }
-        from_config_create_distribution(distribution_options)
+        LogNormalDistribution(normal_mean=mean_1d, normal_covariance=-covariance_1d)
 
 
 def test_cdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
@@ -272,48 +257,28 @@ def test_init_lognormal_wrong_dimension(mean_2d):
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
     with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
-        distribution_options = {
-            'type': 'lognormal',
-            'normal_mean': np.zeros(3),
-            'normal_covariance': covariance,
-        }
-        from_config_create_distribution(distribution_options)
+        LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def test_init_lognormal_not_quadratic():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
-        distribution_options = {
-            'type': 'lognormal',
-            'normal_mean': np.zeros(3),
-            'normal_covariance': covariance,
-        }
-        from_config_create_distribution(distribution_options)
+        LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
-        distribution_options = {
-            'type': 'lognormal',
-            'normal_mean': np.zeros(3),
-            'normal_covariance': covariance,
-        }
-        from_config_create_distribution(distribution_options)
+        LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
     with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
-        distribution_options = {
-            'type': 'lognormal',
-            'normal_mean': np.zeros(3),
-            'normal_covariance': covariance,
-        }
-        from_config_create_distribution(distribution_options)
+        LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def logpdf(x, logpdf_const, normal_mean, precision):

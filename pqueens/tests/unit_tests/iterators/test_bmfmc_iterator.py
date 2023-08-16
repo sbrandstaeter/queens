@@ -2,21 +2,10 @@
 
 import numpy as np
 import pytest
+from mock import Mock
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
-from pqueens.models.bmfmc_model import BMFMCModel
-
-
-# ------ general input fixture ---------------------------------------
-@pytest.fixture()
-def default_parameters():
-    """TODO_doc."""
-    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
-    params = {"x1": rv, "x2": rv}
-    parameters_module.from_config_create_parameters({"parameters": params})
-    return params
 
 
 @pytest.fixture()
@@ -27,9 +16,10 @@ def approx_name():
 
 
 @pytest.fixture()
-def default_interface(config):
+def default_interface():
     """TODO_doc."""
-    interface = BmfmcInterface(config, approx_name)
+    approx = "dummy_approx"
+    interface = BmfmcInterface(approx)
     return interface
 
 
@@ -46,38 +36,13 @@ def config():
 
 
 @pytest.fixture()
-def default_bmfmc_model(default_interface, default_parameters):
+def default_bmfmc_model(default_interface):
     """TODO_doc."""
-    settings_probab_mapping = {
-        "type": "gp_approximation_gpflow",
-        "features_config": "opt_features",
-        "num_features": 1,
-    }
-    y_pdf_support = np.linspace(-1, 1, 10)
-    uncertain_parameters = None
-
-    model = BMFMCModel(
-        settings_probab_mapping,
-        False,
-        y_pdf_support,
-        default_interface,
-        hf_model=None,
-        no_features_comparison_bool=False,
-        lf_data_iterators=None,
-        hf_data_iterator=None,
-    )
     np.random.seed(1)
+    model = Mock()
     model.X_mc = np.random.random((20, 2))
     model.Y_LFs_mc = np.random.random((20, 2))
-
     return model
-
-
-@pytest.fixture()
-def global_settings():
-    """TODO_doc."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
 
 
 @pytest.fixture()
@@ -113,7 +78,8 @@ def BMFMC_reference():
 
 @pytest.fixture()
 def default_bmfmc_iterator(
-    global_settings,
+    dummy_global_settings,
+    default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
     initial_design,
@@ -122,100 +88,59 @@ def default_bmfmc_iterator(
 ):
     """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
-        default_bmfmc_model,
-        result_description,
-        initial_design,
-        predictive_var,
-        BMFMC_reference,
-        global_settings,
+        model=default_bmfmc_model,
+        parameters=default_parameters_uniform_2d,
+        result_description=result_description,
+        initial_design=initial_design,
     )
     return my_bmfmc_iterator
-
-
-# custom class to mock the visualization module
-class InstanceMock:
-    """TODO_doc."""
-
-    @staticmethod
-    def plot_pdfs(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_manifold(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-    @staticmethod
-    def plot_feature_ranking(self, *args, **kwargs):
-        """TODO_doc."""
-        return 1
-
-
-@pytest.fixture
-def mock_visualization():
-    """TODO_doc."""
-    my_mock = InstanceMock()
-    return my_mock
 
 
 # ------ actual unit_tests --------------------------------------------
 def test_init(
     mocker,
-    global_settings,
+    default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
     initial_design,
-    predictive_var,
-    BMFMC_reference,
 ):
     """TODO_doc."""
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
     my_bmfmc_iterator = BMFMCIterator(
-        default_bmfmc_model,
-        result_description,
-        initial_design,
-        predictive_var,
-        BMFMC_reference,
-        global_settings,
+        model=default_bmfmc_model,
+        parameters=default_parameters_uniform_2d,
+        result_description=result_description,
+        initial_design=initial_design,
     )
     # tests / asserts
-    mp.assert_called_once_with(None, global_settings)
-    assert my_bmfmc_iterator.model == default_bmfmc_model
+    mp.assert_called_once_with(default_bmfmc_model, default_parameters_uniform_2d)
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None
     assert my_bmfmc_iterator.output is None
     assert my_bmfmc_iterator.initial_design == initial_design
-    assert my_bmfmc_iterator.predictive_var == predictive_var
-    assert my_bmfmc_iterator.BMFMC_reference == BMFMC_reference
 
 
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     """TODO_doc."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.load_sampling_data')
-    mp2 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
-    mp3 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
+    mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
 
     default_bmfmc_iterator.core_run()
 
     # -------- Load MC data from model -----------------------
-    mp1.assert_called_once()
+    default_bmfmc_model.load_sampling_data.assert_called_once()
 
     # ---- determine optimal input points for which HF should be simulated -------
-    mp2.assert_called_once()
+    mp1.assert_called_once()
 
     # ----- build model on training points and evaluate it -----------------------
-    mp3.assert_called_once()
+    default_bmfmc_model.evaluate.assert_called_once()
 
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     """TODO_doc."""
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance'
@@ -300,19 +225,15 @@ def test_random_design(mocker, default_bmfmc_iterator):
     np.testing.assert_array_almost_equal(Y_LFs_train, expected_Y_LFs_train, decimal=6)
 
 
-def test_model_evaluate(mocker, default_bmfmc_iterator):
+def test_model_evaluate(default_bmfmc_iterator):
     """TODO_doc."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
     default_bmfmc_iterator.model.evaluate(None)
-    mp1.assert_called_once()
+    default_bmfmc_iterator.model.evaluate.assert_called_once()
 
 
 def test_post_run(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch(
-        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
-        return_value=mock_visualization,
-    )
+    mocker.patch('pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
 
     mp1 = mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs'

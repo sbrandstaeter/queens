@@ -4,6 +4,7 @@ import getpass
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pytest
@@ -14,11 +15,11 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-DEEP_CLUSTER_TYPE = "deep"
+THOUGHT_CLUSTER_TYPE = "thought"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
 CHARON_CLUSTER_TYPE = "charon"
 
-VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
+VALID_PBS_CLUSTER_TYPES = (THOUGHT_CLUSTER_TYPE,)
 VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
 
 VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
@@ -31,7 +32,7 @@ class ClusterConfig:
     Attributes:
         name (str):                         name of cluster
         cluster_address (str):              hostname or address to reach cluster from network
-        workload_manager (str):          type of work load scheduling software (PBS or SLURM)
+        workload_manager (str):             type of work load scheduling software (PBS or SLURM)
         jobscript_template (Path):          absolute path to jobscript template file
         cluster_internal_address (str)      ip address of login node in cluster internal network
         default_python_path (str):          path indicating the default remote python location
@@ -39,6 +40,7 @@ class ClusterConfig:
                                             needed for the jobscript
         dask_jobscript_template (Path):     path to the shell script template that runs a
                                             forward solver call (e.g., BACI plus post-processor)
+        queue (str, opt):                   Destination queue for each worker job
     """
 
     name: str
@@ -49,19 +51,21 @@ class ClusterConfig:
     default_python_path: str
     cluster_script_path: Path
     dask_jobscript_template: Path
+    queue: Optional[str] = 'null'
 
     dict = asdict
 
 
-DEEP_CONFIG = ClusterConfig(
-    name="deep",
-    cluster_address="deep.lnm.ed.tum.de",
-    workload_manager="pbs",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+THOUGHT_CONFIG = ClusterConfig(
+    name="thought",
+    cluster_address="129.187.58.22",
+    workload_manager="slurm",
+    queue="normal",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
     cluster_internal_address="null",
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
-    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
 )
 
 
@@ -89,7 +93,7 @@ CHARON_CONFIG = ClusterConfig(
 )
 
 CLUSTER_CONFIGS = {
-    DEEP_CLUSTER_TYPE: DEEP_CONFIG,
+    THOUGHT_CLUSTER_TYPE: THOUGHT_CONFIG,
     BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
     CHARON_CLUSTER_TYPE: CHARON_CONFIG,
 }
