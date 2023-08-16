@@ -300,7 +300,7 @@ def test_instantiate_per_coordinate(
     )
 
     # --- asserts / tests
-    for (probabilistic_mapping_obj, default_probabilistic_obj) in zip(
+    for probabilistic_mapping_obj, default_probabilistic_obj in zip(
         probabilistic_mapping_obj_lst, default_probabilistic_obj_lst
     ):
         assert isinstance(probabilistic_mapping_obj, DummyRegression)
@@ -318,7 +318,6 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     t_size = 2
     time_vec = np.array([0, 1])
     coords_mat = np.array([[0, 1], [0, 1]])
-    config = {"dummy": "dummy"}
     approx = dummy_reg_obj
 
     mp_1 = mocker.patch(

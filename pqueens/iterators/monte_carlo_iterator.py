@@ -25,7 +25,6 @@ class MonteCarloIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         seed,
         num_samples,
@@ -35,13 +34,12 @@ class MonteCarloIterator(Iterator):
 
         Args:
             model (model):              Model to be evaluated by iterator
-            global_settings (dict): Settings for the QUEENS run.
             parameters (obj): Parameters object
             seed  (int):                Seed for random number generation
             num_samples (int):          Number of samples to compute
             result_description (dict, opt):  Description of desired results
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
         self.seed = seed
         self.num_samples = num_samples
         self.result_description = result_description
@@ -62,18 +60,14 @@ class MonteCarloIterator(Iterator):
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
-                write_results(
-                    results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(results, self.output_dir, self.experiment_name)
 
                 # ----------------------------- WIP PLOT OPTIONS ----------------------------
                 if self.result_description['plot_results'] is True:
                     # Check for dimensionality of the results
                     plt.rcParams["mathtext.fontset"] = "cm"
                     plt.rcParams.update({'font.size': 23})
-                    fig, ax = plt.subplots()
+                    _, ax = plt.subplots()
 
                     if results['raw_output_data']['mean'][0].shape[0] > 1:
                         for ele in results['raw_output_data']['mean']:

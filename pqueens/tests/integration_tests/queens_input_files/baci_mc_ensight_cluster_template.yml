@@ -49,6 +49,7 @@ scheduler:
   num_procs_post: 1
   num_nodes: 2
   workload_manager: {{ workload_manager }}
+  queue: {{ queue }}
   cluster_address: {{ cluster_address }}
   cluster_internal_address: {{ cluster_internal_address }}
   cluster_user: {{ cluster_user }}
