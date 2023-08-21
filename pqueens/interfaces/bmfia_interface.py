@@ -73,7 +73,7 @@ class BmfiaInterface(Interface):
             raise IndexError("z_lf_train must be a 3d tensor!")
 
         probabilistic_mapping_obj_lst = []
-        for (z_lf, y_hf) in zip(z_lf_train.T, y_hf_train.T, strict=True):
+        for z_lf, y_hf in zip(z_lf_train.T, y_hf_train.T, strict=True):
             probabilistic_mapping_obj_lst.append(copy.deepcopy(approx))
             probabilistic_mapping_obj_lst[-1].setup(np.atleast_2d(z_lf), np.atleast_2d(y_hf).T)
 
@@ -116,7 +116,7 @@ class BmfiaInterface(Interface):
 
         # loop over all time steps and instantiate the probabilistic mapping
         probabilistic_mapping_obj_lst = []
-        for (z_lf, y_hf) in zip(z_lf_array, y_hf_array, strict=True):
+        for z_lf, y_hf in zip(z_lf_array, y_hf_array, strict=True):
             probabilistic_mapping_obj_lst.append(copy.deepcopy(approx))
             probabilistic_mapping_obj_lst[-1].setup(z_lf, y_hf)
 
@@ -504,7 +504,7 @@ class BmfiaInterface(Interface):
             probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
                                               mapping objects
         """
-        super().__init__(parameters)
+        super().__init__(parameters=None)
         # instantiate probabilistic mapping objects
         (
             instantiate_probabilistic_mappings,
