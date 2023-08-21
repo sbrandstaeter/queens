@@ -5,11 +5,17 @@ from pathlib import Path
 import numpy as np
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
 
-from pqueens.utils.valid_options_utils import get_option
+VALID_CLASSIFIER_LEARNING_TYPES = {
+    "passive_learning": ["pqueens.utils.classifier", "Classifier"],
+    "active_learning": ["pqueens.utils.classifier", "ActiveLearningClassifier"],
+}
+
+VALID_CLASSIFIER_TYPES = {
+    "nn": ["sklearn.neural_network", "MLPClassifier"],
+    "gp": ["sklearn.gaussian_process", "GaussianProcessClassifier"],
+    "svc": ["sklearn.svm", "SVC"],
+}
 
 
 class Classifier:
@@ -65,7 +71,7 @@ class Classifier:
             pickle.dump(self.classifier_obj, file)
 
     def load(self, path, file_name):
-        """Load pickled the classifier.
+        """Load pickled classifier.
 
         Args:
             path (str): Path to export the classifier
@@ -94,10 +100,10 @@ class ActiveLearningClassifier(Classifier):
             n_params (int): number of parameters of the solver
             classifier_obj (obj): classifier, e.g. sklearn.svm.SVR
             active_sampler_obj (obj): query strategy from skactiveml.pool, e.g. UncertaintySampling
-            batch_size (int): Batch size to query the the next samples.
+            batch_size (int): Batch size to query the next samples.
         """
         super().__init__(n_params, SklearnClassifier(classifier_obj, classes=range(2)))
-        if active_sampler_obj:
+        if active_sampler_obj is not None:
             self.active_sampler_obj = active_sampler_obj
         else:
             self.active_sampler_obj = UncertaintySampling(method='entropy', random_state=0)
@@ -118,35 +124,3 @@ class ActiveLearningClassifier(Classifier):
             X=x_train, y=y_train, clf=self.classifier_obj, batch_size=self.batch_size
         )
         return query_idx
-
-
-def from_config_create_classifier(config, classifier_name, n_params):
-    """Create classifier from config.
-
-    Args:
-        config (dict): queens run configuration
-        classifier_name (str): name of classifier
-        n_params (int): number of parameters
-
-    Returns:
-        obj: classifier object
-    """
-    classifier_options = config[classifier_name]
-    classifier_type = classifier_options.pop("type")
-
-    batch_size = None
-    if "batch_size" in classifier_options:
-        batch_size = classifier_options.pop("batch_size")
-
-    available_options = {
-        "svc": SVC,
-        "nn": MLPClassifier,
-        "gp": GaussianProcessClassifier,
-    }
-
-    classifier_obj = get_option(available_options, classifier_type)(**classifier_options)
-
-    if batch_size:
-        return ActiveLearningClassifier(n_params, classifier_obj, batch_size)
-
-    return Classifier(n_params, classifier_obj)

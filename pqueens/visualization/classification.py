@@ -1,7 +1,7 @@
 """Classification visualization."""
 import itertools
 import math
-import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,9 +13,10 @@ class ClassificationVisualization:
     """Visualization class for ClassificationIterator.
 
     Attributes:
-        saving_path (str): Path to save the plots
+        saving_path (Path): Path to save the plots
+        plot_basename (str): Common basename for all plots
         save_bool (bool): Boolean to save plots
-        plot_boolean (bool): Boolean for determining whether individual plots should be plotted
+        plot_bool (bool): Boolean for determining whether individual plots should be plotted
 
     Returns:
         Instance of the visualization class
@@ -24,36 +25,37 @@ class ClassificationVisualization:
     # some overall class states
     plt.rcParams["mathtext.fontset"] = "cm"
 
-    def __init__(self, saving_path, save_bool, plot_bool):
+    def __init__(self, plotting_dir, plot_name, save_bool, plot_bool=False):
         """Initialise iterator.
 
         Args:
-            saving_path (str): Path to save the plots.
+            plotting_dir (Path,str): Path to save the plots.
+            plot_name (str): Common basename for all plots
             save_bool (bool): Boolean to save plots.
             plot_bool (bool): Boolean for determining whether individual plots should be plotted
         """
-        self.saving_path = saving_path
+        self.saving_path = Path(plotting_dir)
+        self.plot_basename = plot_name
         self.save_bool = save_bool
         self.plot_bool = plot_bool
 
     @classmethod
-    def from_config_create(cls, config, iterator_name):
+    def from_config_create(cls, plotting_options):
         """Create the visualization object from the problem description.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            iterator_name (str): Name of iterator to identify right section in options dict
+            plotting_options (dict): Dictionary containing the options for plotting
 
         Returns:
             Instance of ClassificationVisualization
         """
-        method_options = config[iterator_name].get("method_options")
-
-        plotting_options = method_options["result_description"].get("plotting_options")
-        path = os.path.join(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
+        path = Path(plotting_options.get("plotting_dir"))
+        plot_basename = plotting_options["plot_name"]
         save_bool = plotting_options.get("save_bool")
         plot_bool = plotting_options.get("plot_bool", False)
-        return cls(saving_path=path, save_bool=save_bool, plot_bool=plot_bool)
+        return cls(
+            plotting_dir=path, plot_name=plot_basename, save_bool=save_bool, plot_bool=plot_bool
+        )
 
     def plot_decision_boundary(
         self, output, samples, classifier, parameter_names, iteration_index="final"
@@ -63,7 +65,7 @@ class ClassificationVisualization:
         If num_params>2, each combination of 2 parameters is plotted in a separate subplot.
 
         Args:
-            output (dict): Classification results obtained from simulation
+            output (np.array): Classification results obtained from simulation
             samples (np.array): Array with sample points, size: (num_sample_points, num_params)
             classifier (obj): Classifier object from Queens
             parameter_names (list): List of parameters names
@@ -73,9 +75,9 @@ class ClassificationVisualization:
         all_ind = set(np.arange(num_params))
         if self.plot_bool or self.save_bool:
             num_combinations, idx = self._get_axes(num_params)
-            fig, ax = plt.subplots(figsize=(10 * num_combinations, 10), ncols=num_combinations)
+            fig, axes = plt.subplots(figsize=(10 * num_combinations, 10), ncols=num_combinations)
             for i, params in enumerate(idx):
-                axis = ax[i] if num_params > 2 else ax
+                axis = axes[i] if num_params > 2 else axes
                 not_params = list(all_ind - set(params))
                 ConditionalDecisionBoundaryDisplay.from_estimator(
                     classifier.classifier_obj,
@@ -85,7 +87,7 @@ class ClassificationVisualization:
                     conditial_values=[
                         (ii, 0) for ii in not_params
                     ],  # currently all conditional values are set to 0
-                    ax=axis,
+                    axes=axis,
                     cmap=cm.coolwarm,
                     alpha=0.8,
                     xlabel=parameter_names[params[0]],
@@ -103,7 +105,7 @@ class ClassificationVisualization:
                 title = f'Classification with model calls {len(samples)}'
                 # Plot the samples of the last batch
                 if classifier.is_active:
-                    axis.scatter(
+                    axes.scatter(
                         samples[-classifier.batch_size :, params[0]],
                         samples[-classifier.batch_size :, params[1]],
                         c="g",
@@ -112,14 +114,16 @@ class ClassificationVisualization:
                         label="Last batch",
                     )
                     title += f", active learning iteration {iteration_index}"
-                    axis.legend()
+                    axes.legend()
             fig.suptitle(title)
-            self._save_plot(self.save_bool, self.saving_path + f"_{iteration_index}.jpg")
+            if self.save_bool:
+                self._save_plot(plot_name=f"_{iteration_index}.jpg")
             plt.close(fig)
         if self.plot_bool:
             plt.show()
 
-    def _get_axes(self, num_params):
+    @staticmethod
+    def _get_axes(num_params):
         """Get all parameter combinations for conditional plots.
 
         Args:
@@ -132,24 +136,24 @@ class ClassificationVisualization:
         idx = itertools.combinations(range(num_params), 2)
         return num_combinations, idx
 
-    def _save_plot(self, save_bool, path):
+    def _save_plot(self, plot_name):
         """Save the plot to specified path.
 
         Args:
             save_bool (bool): Flag to decide whether saving option is triggered.
-            path (str): Path where to save the plot.
+            plot_name (str): name of the plot (specifying the basename)
 
         Returns:
             Saved plot.
         """
-        if save_bool:
-            plt.savefig(path, dpi=300)
+        path = self.saving_path / (self.plot_basename + plot_name)
+        plt.savefig(path, dpi=300)
 
 
 def conditional_prediction_decorator(prediction_method, conditial_values):
     """Decorator for the estimators.
 
-    Currently the DecisionBoundary only creates grids in a 2d setting. Hence the conditional fixed
+    Currently, the DecisionBoundary only creates grids in a 2d setting. Hence, the conditional fixed
     values need to be added.
 
     Example:
@@ -227,7 +231,7 @@ class ConditionalDecisionBoundaryDisplay(DecisionBoundaryDisplay):
         plot_method="contourf",
         xlabel=None,
         ylabel=None,
-        ax=None,
+        axes=None,
         **kwargs,
     ):
         """Create boundary from classifier.
@@ -254,7 +258,7 @@ class ConditionalDecisionBoundaryDisplay(DecisionBoundaryDisplay):
             plot_method (str, optional):  matplotlib plot methods. Defaults to "contourf".
             xlabel (str, optional): Label for the x-axis. Defaults to None.
             ylabel (str, optional): Label for the y-axis. Defaults to None.
-            ax (Matplotlib axes, optional): Axes object to plot on. If `None`, a new figure and
+            axes (Matplotlib axes, optional): Axes object to plot on. If `None`, a new figure and
                                             axes is created. Defaults to None.
 
         Returns:
@@ -281,6 +285,6 @@ class ConditionalDecisionBoundaryDisplay(DecisionBoundaryDisplay):
             response_method=conditial_values,
             xlabel=xlabel,
             ylabel=ylabel,
-            ax=ax,
+            ax=axes,
             **kwargs,
         )

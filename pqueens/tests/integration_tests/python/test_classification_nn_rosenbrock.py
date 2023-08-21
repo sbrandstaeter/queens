@@ -1,33 +1,36 @@
 """Integration test for the classification iterator."""
-import os
-import pickle
-from pathlib import Path
-
 import numpy as np
 
 from pqueens import run
 from pqueens.utils.injector import inject
+from pqueens.utils.pickle_utils import load_pickle
 
 
-def test_classification_iterator(inputdir, tmpdir):
-    """Integration test for the classfication iterator."""
-    input_template = Path(inputdir).joinpath('classification_nn_rosenbrock_template.yaml')
-    plotting_dir = str(tmpdir)
-    classification_funcation_path = Path(tmpdir).joinpath("classification_function.py")
+def test_classification_iterator(inputdir, tmp_path):
+    """Integration test for the classification iterator."""
+    input_template = inputdir / "classification_nn_rosenbrock_template.yaml"
+    classification_function_path = tmp_path / "classification_function.py"
 
-    # create classification function
-    with classification_funcation_path.open("w", encoding="utf-8") as f:
-        f.write("classify = lambda x: x>80")
-
-    inject(
-        {"plotting_dir": plotting_dir, "external_module_path": str(classification_funcation_path)},
-        str(input_template),
-        input_path := str(tmpdir.join("classification_nn_rosenbrock.yaml")),
+    # create classification function called classify
+    classification_function_name = "classify"
+    classification_function_path.write_text(
+        f"{classification_function_name} = lambda x: x>80", encoding="utf-8"
     )
-    run(Path(input_path), Path(tmpdir))
-    result_file = os.path.join(tmpdir, 'classification_nn_rosenbrock.pickle')
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    experiment_name = "classification_nn_rosenbrock"
+    input_path = tmp_path / f"{experiment_name}.yaml"
+    inject(
+        params={
+            "experiment_name": experiment_name,
+            "plotting_dir": str(tmp_path),
+            "classification_function_name": classification_function_name,
+            "external_module_path": str(classification_function_path),
+        },
+        file_template=input_template,
+        output_file=input_path,
+    )
+    run(input_path, tmp_path)
+    result_file = tmp_path / f"{experiment_name}.pickle"
+    results = load_pickle(result_file)
 
     expected_results_classified = np.ones((12, 1))
     expected_results_classified[-2:] = 0
