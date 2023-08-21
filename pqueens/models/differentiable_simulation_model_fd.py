@@ -71,7 +71,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
         Returns:
             self.response (np.array): Response of the underlying model at input samples
         """
-        if not self._evaluate_and_gradient_bool:
+        if not self.evaluate_and_gradient_bool:
             self.response = self.interface.evaluate(samples)
         else:
             self.response = self.evaluate_finite_differences(samples)

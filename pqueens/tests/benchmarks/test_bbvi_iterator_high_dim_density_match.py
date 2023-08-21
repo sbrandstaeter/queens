@@ -38,7 +38,6 @@ def test_bbvi_density_match_high_dimensional(
 
     # actual main call of bbvi with patched density for posterior
     with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', td):
-
         # set some instance attributes that we need for out density matching test
         var_params = (
             dummy_bbvi_instance.variational_distribution_obj.initialize_parameters_randomly()
@@ -46,7 +45,7 @@ def test_bbvi_density_match_high_dimensional(
         var_params = np.zeros(var_params.shape)
         dummy_bbvi_instance.variational_params = var_params
         dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
-            dummy_bbvi_instance._get_gradient_function()
+            dummy_bbvi_instance.get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
             var_params.reshape(-1, 1)  # actual run of the algorithm

@@ -47,7 +47,7 @@ class BmfiaInterface(Interface):
     """
 
     @staticmethod
-    def _instantiate_per_coordinate(
+    def instantiate_per_coordinate(
         z_lf_train,
         y_hf_train,
         _time_vec,
@@ -80,7 +80,7 @@ class BmfiaInterface(Interface):
         return z_lf_train, y_hf_train, probabilistic_mapping_obj_lst
 
     @staticmethod
-    def _instantiate_per_time_step(z_lf_train, y_hf_train, time_vec, coords_mat, approx):
+    def instantiate_per_time_step(z_lf_train, y_hf_train, time_vec, coords_mat, approx):
         """Instantiate probabilistic mappings per time step.
 
         This means that one probabilistic mapping is build for all space locations
@@ -99,12 +99,12 @@ class BmfiaInterface(Interface):
             z_lf_array (np.array): Input matrix in correct ordering
         """
         # determine the number of time steps and check coordinate compliance
-        _, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        _, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf_train, time_vec, coords_mat
         )
 
         # prepare LF and HF training array
-        z_lf_array = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf_train, t_size, coords_mat)
+        z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf_train, t_size, coords_mat)
 
         y_hf_lst = np.array_split(y_hf_train.T, t_size)
         y_hf_array = np.array([y_hf.T.reshape(-1, 1) for y_hf in y_hf_lst])
@@ -123,7 +123,7 @@ class BmfiaInterface(Interface):
         return z_lf_array, y_hf_array, probabilistic_mapping_obj_lst
 
     @staticmethod
-    def _evaluate_per_coordinate(
+    def evaluate_per_coordinate(
         z_lf, support, probabilistic_mapping_obj_lst, _time_vec, _coords_mat
     ):
         r"""Map the lf features to a probabilistic response for the hf model.
@@ -186,7 +186,7 @@ class BmfiaInterface(Interface):
         return mean, variance
 
     @staticmethod
-    def _evaluate_per_time_step(z_lf, support, probabilistic_mapping_obj_lst, time_vec, coords_mat):
+    def evaluate_per_time_step(z_lf, support, probabilistic_mapping_obj_lst, time_vec, coords_mat):
         r"""Map the LF features to a probabilistic response for the hf model.
 
         Here a probabilistic mapping per time-step but for all locations combined
@@ -231,19 +231,19 @@ class BmfiaInterface(Interface):
                                  :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         # determine the number of time steps and check coordinate compliance
-        num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf, time_vec, coords_mat
         )
-        z_lf_array = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
+        z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
 
-        (mean, variance, _, _,) = BmfiaInterface._iterate_over_time_steps(
+        (mean, variance, _, _,) = BmfiaInterface.iterate_over_time_steps(
             z_lf_array, support, num_coords, probabilistic_mapping_obj_lst, gradient_bool=False
         )
 
         return mean, variance
 
     @staticmethod
-    def _evaluate_and_gradient_per_coordinate(
+    def evaluate_and_gradient_per_coordinate(
         z_lf, support, probabilistic_mapping_obj_lst, _time_vec, _coords_mat
     ):
         r"""Evaluate probabilistic mapping and gradient for space point.
@@ -335,7 +335,7 @@ class BmfiaInterface(Interface):
         return mean, variance, grad_mean, grad_variance
 
     @staticmethod
-    def _evaluate_and_gradient_per_time_step(
+    def evaluate_and_gradient_per_time_step(
         z_lf, support, probabilistic_mapping_obj_lst, time_vec, coords_mat
     ):
         r"""Evaluate probabilistic mapping and gradient for time step.
@@ -384,13 +384,13 @@ class BmfiaInterface(Interface):
                                      vector entries per column
         """
         # determine the number of time steps and check coordinate compliance
-        num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf, time_vec, coords_mat
         )
 
-        z_lf_array = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
+        z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
 
-        (mean, variance, grad_mean, grad_variance,) = BmfiaInterface._iterate_over_time_steps(
+        (mean, variance, grad_mean, grad_variance,) = BmfiaInterface.iterate_over_time_steps(
             z_lf_array, support, num_coords, probabilistic_mapping_obj_lst, gradient_bool=True
         )
 
@@ -401,7 +401,7 @@ class BmfiaInterface(Interface):
         return mean, variance, grad_mean, grad_variance
 
     @staticmethod
-    def _update_mappings_per_coordinate(
+    def update_mappings_per_coordinate(
         probabilistic_mapping_obj_lst, z_lf_train, y_hf_train, _time_vec, _coords_mat
     ):
         """Update the probabilistic mappings per coordinate.
@@ -429,7 +429,7 @@ class BmfiaInterface(Interface):
         return z_lf_train, y_hf_train, probabilistic_mapping_obj_lst
 
     @staticmethod
-    def _update_mappings_per_time_step(
+    def update_mappings_per_time_step(
         probabilistic_mapping_obj_lst, z_lf_array, y_hf_array, time_vec, coords_mat
     ):
         """Update the probabilistic mappings per time step.
@@ -447,12 +447,12 @@ class BmfiaInterface(Interface):
             probabilistic_mapping_obj_lst (list): List of probabilistic mapping objects
         """
         # determine the number of time steps and check coordinate compliance
-        _, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        _, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf_array, time_vec, coords_mat
         )
 
         # prepare LF and HF training array
-        z_lf_array = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf_array, t_size, coords_mat)
+        z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf_array, t_size, coords_mat)
 
         if y_hf_array.T.shape[0] != t_size:
             raise IndexError(
@@ -476,16 +476,16 @@ class BmfiaInterface(Interface):
 
     valid_probabilistic_mappings_configurations = {
         "per_coordinate": (
-            _instantiate_per_coordinate,
-            _evaluate_per_coordinate,
-            _evaluate_and_gradient_per_coordinate,
-            _update_mappings_per_coordinate,
+            instantiate_per_coordinate,
+            evaluate_per_coordinate,
+            evaluate_and_gradient_per_coordinate,
+            update_mappings_per_coordinate,
         ),
         "per_time_step": (
-            _instantiate_per_time_step,
-            _evaluate_per_time_step,
-            _evaluate_and_gradient_per_time_step,
-            _update_mappings_per_time_step,
+            instantiate_per_time_step,
+            evaluate_per_time_step,
+            evaluate_and_gradient_per_time_step,
+            update_mappings_per_time_step,
         ),
     }
 
@@ -664,11 +664,11 @@ class BmfiaInterface(Interface):
         if self.num_processors_multi_processing > 1:
             # Conduct training of probabilistic mappings in parallel
             num_coords = z_lf_train.T.shape[2]
-            optimized_mapping_states_lst = BmfiaInterface._train_probabilistic_mappings_in_parallel(
+            optimized_mapping_states_lst = BmfiaInterface.train_probabilistic_mappings_in_parallel(
                 num_coords, self.num_processors_multi_processing, self.probabilistic_mapping_obj_lst
             )
             # Set the optimized hyper-parameters for probabilistic regression model
-            self._set_optimized_state_of_probabilistic_mappings(optimized_mapping_states_lst)
+            self.set_optimized_state_of_probabilistic_mappings(optimized_mapping_states_lst)
         else:
             # conduct serial training of probabilistic mapping
             self._train_probabilistic_mappings_serial()
@@ -692,7 +692,7 @@ class BmfiaInterface(Interface):
         _logger.info("Total time for training of all probabilistic mappings: %d s", t_total)
 
     @staticmethod
-    def _train_probabilistic_mappings_in_parallel(
+    def train_probabilistic_mappings_in_parallel(
         num_coords, num_processors_multi_processing, probabilistic_mapping_obj_lst
     ):
         """Train the probabilistic regression models in parallel.
@@ -745,14 +745,14 @@ class BmfiaInterface(Interface):
             # Actual parallel training of the models
             optimized_mapping_states_lst = list(
                 tqdm.tqdm(
-                    pool.imap(BmfiaInterface._optimize_hyper_params, probabilistic_mapping_obj_lst),
+                    pool.imap(BmfiaInterface.optimize_hyper_params, probabilistic_mapping_obj_lst),
                     total=len(probabilistic_mapping_obj_lst),
                 )
             )
 
         return optimized_mapping_states_lst
 
-    def _set_optimized_state_of_probabilistic_mappings(self, optimized_mapping_states_lst):
+    def set_optimized_state_of_probabilistic_mappings(self, optimized_mapping_states_lst):
         """Set the new states of the trained probabilistic mappings.
 
         Args:
@@ -765,7 +765,7 @@ class BmfiaInterface(Interface):
             mapping.set_state(optimized_state_dict)
 
     @staticmethod
-    def _optimize_hyper_params(probabilistic_mapping):
+    def optimize_hyper_params(probabilistic_mapping):
         """Train one probabilistic surrogate model.
 
         Args:
@@ -780,7 +780,7 @@ class BmfiaInterface(Interface):
         return optimized_mapping_state_dict
 
     @staticmethod
-    def _check_coordinates_return_dimensions(z_lf, time_vec, coords_mat):
+    def check_coordinates_return_dimensions(z_lf, time_vec, coords_mat):
         """Check the compliance of Z_LF with the coordinates and time vector.
 
         Args:
@@ -810,7 +810,7 @@ class BmfiaInterface(Interface):
         return num_coords, t_size
 
     @staticmethod
-    def _prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat):
+    def prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat):
         """Prepare the low fidelity coordinates for the time steps.
 
         Args:
@@ -842,7 +842,7 @@ class BmfiaInterface(Interface):
         return z_lf_out
 
     @staticmethod
-    def _iterate_over_time_steps(
+    def iterate_over_time_steps(
         z_lf_array, support, num_coords, probabilistic_mapping_obj_lst, gradient_bool=None
     ):
         """Iterate and arrange data over different time steps.

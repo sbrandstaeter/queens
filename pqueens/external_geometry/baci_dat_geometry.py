@@ -150,11 +150,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
     # --------------- child methods that must be implemented --------------------------------------
     def read_external_data(self):
         """Read the external input file with geometric data."""
-        self._read_geometry_from_dat_file()
+        self.read_geometry_from_dat_file()
 
     def organize_sections(self):
         """Organize the sections of the external *external_geometry_obj*."""
-        self._get_desired_dat_sections()
+        self.get_desired_dat_sections()
 
     def finish_and_clean(self):
         """Finish the analysis for the *external_geometry_obj* extraction."""
@@ -162,14 +162,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self._get_element_centers()
 
     # -------------- helper methods ---------------------------------------------------------------
-    def _read_geometry_from_dat_file(self):
+    def read_geometry_from_dat_file(self):
         """Read the dat-file line by line to be memory efficient."""
         with open(self.path_to_dat_file, encoding='utf-8') as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 line = line.strip()
 
-                match_bool = self._get_current_dat_section(line)
+                match_bool = self.get_current_dat_section(line)
                 # skip comments outside of section definition
                 if (
                     line[0:2] == '//'
@@ -180,11 +180,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 ):
                     pass
                 else:
-                    self._get_design_description(line)
-                    self._get_only_desired_topology(line)
-                    self._get_only_desired_coordinates(line)
-                    self._get_materials(line)
-                    self._get_elements_belonging_to_desired_material(line)
+                    self.get_design_description(line)
+                    self.get_only_desired_topology(line)
+                    self.get_only_desired_coordinates(line)
+                    self.get_materials(line)
+                    self.get_elements_belonging_to_desired_material(line)
 
     def _get_element_centers(self):
         """Calculate the geometric center of each finite element."""
@@ -201,7 +201,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             element_centers.append(element_center / float(len(element_node_lst)))
         self.element_centers = np.array(element_centers)
 
-    def _get_current_dat_section(self, line):
+    def get_current_dat_section(self, line):
         """Check if the current line starts a new section in the dat-file.
 
         Update self.current_dat_section if new section was found. If the
@@ -232,7 +232,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             return True
         return False
 
-    def _check_if_in_desired_dat_section(self):
+    def check_if_in_desired_dat_section(self):
         """Check if the dat-section contains the desired geometric set.
 
         Returns:
@@ -240,7 +240,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """
         return self.current_dat_section in self.desired_dat_sections
 
-    def _get_desired_dat_sections(self):
+    def get_desired_dat_sections(self):
         """Get the dat-sections that contain the desired geometric sets."""
         # initialize keys with empty lists
         for geo_set in self.list_geometric_sets:
@@ -261,7 +261,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     geo_set
                 )
 
-    def _get_elements_belonging_to_desired_material(self, line):
+    def get_elements_belonging_to_desired_material(self, line):
         """Get finite element_topology that belongs to the material definition.
 
         Note that we assume that the geometric set of interest also has its own material name. This
@@ -293,7 +293,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 # nested material
                 self.element_topology[0]['material'].append(material_number)
 
-    def _get_materials(self, line):
+    def get_materials(self, line):
         """Get the different material definitions from the dat file.
 
         Args:
@@ -302,7 +302,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         if self.current_dat_section == "MATERIALS":
             self.original_materials_in_dat.append(int(line.split()[1]))
 
-    def _get_topology(self, line):
+    def get_topology(self, line):
         """Get the geometric topology by extracting and grouping (mesh) nodes.
 
         Only nodes that belong to the desired geometric sets and save them to their
@@ -385,7 +385,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     }
                     self.volume_topology.extend(new_volume_topology_dict)
 
-    def _get_design_description(self, line):
+    def get_design_description(self, line):
         """Extract a short geometric description from the dat-file.
 
         Args:
@@ -405,7 +405,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             self.design_description[design_list[0]] = design_list[1]
 
-    def _get_only_desired_topology(self, line):
+    def get_only_desired_topology(self, line):
         """Check if the current line contains desired geometric sets.
 
         Skip the topology extraction if the current section does not contain a desired geometric
@@ -415,15 +415,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
             line (str): Current line of the dat-file
         """
         # skip lines that are not part of a desired section
-        desired_section_boolean = self._check_if_in_desired_dat_section()
+        desired_section_boolean = self.check_if_in_desired_dat_section()
 
         if not desired_section_boolean:
             pass
         else:
             # get topology groups
-            self._get_topology(line)
+            self.get_topology(line)
 
-    def _get_only_desired_coordinates(self, line):
+    def get_only_desired_coordinates(self, line):
         """Get coordinates of nodes that belong to a desired geometric set.
 
         Args:
@@ -432,13 +432,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
         if self.current_dat_section == 'NODE COORDS':
             node_list = line.split()
             if self.nodes_of_interest is None:
-                self._get_nodes_of_interest()
+                self.get_nodes_of_interest()
 
             if self.nodes_of_interest is not None:
                 if int(node_list[1]) in self.nodes_of_interest:
-                    self._get_coordinates_of_desired_geometric_sets(node_list)
+                    self.get_coordinates_of_desired_geometric_sets(node_list)
 
-    def _get_coordinates_of_desired_geometric_sets(self, node_list):
+    def get_coordinates_of_desired_geometric_sets(self, node_list):
         """Extract node and coordinate information of the current line.
 
         Args:
@@ -448,7 +448,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         nodes_as_float_list = [float(value) for value in node_list[3:6]]
         self.node_coordinates['coordinates'].append(nodes_as_float_list)
 
-    def _get_nodes_of_interest(self):
+    def get_nodes_of_interest(self):
         """From the extracted topology, get a unique list of all nodes."""
         node_mesh_nodes = []
         for node_topo in self.node_topology:
@@ -516,7 +516,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 old_line = line
                 line = line.strip()
 
-                match_bool = self._get_current_dat_section(line)
+                match_bool = self.get_current_dat_section(line)
                 # skip comments outside of section definition
                 if line[0:2] == '//' or match_bool or line.isspace() or line == "":
                     print(old_line, end='')
@@ -800,7 +800,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """
         # below we loop over numbers of nested materials
         for idx, material_num in enumerate(self.new_material_numbers[1]):
-
             # potentially replace material parameter
             line_new = BaciDatExternalGeometry._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
@@ -917,7 +916,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 if (field["type"] == "dirichlet") and (field["external_instance"] == geometric_set)
             ]
             if fields_dirich_on_geo_set:
-
                 old_num = BaciDatExternalGeometry._get_old_num_design_point_dirichlet_conditions(
                     line
                 )

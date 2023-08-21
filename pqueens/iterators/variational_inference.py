@@ -139,7 +139,6 @@ class VariationalInferenceIterator(Iterator):
 
         # Stochastic optimization
         for _ in self.stochastic_optimizer:
-
             self._catch_non_converging_simulations(old_parameters)
 
             # Just to avoid constant spamming
@@ -180,7 +179,7 @@ class VariationalInferenceIterator(Iterator):
         self._initialize_variational_params()
 
         # set the gradient according to input
-        self.stochastic_optimizer.set_gradient_function(self._get_gradient_function())
+        self.stochastic_optimizer.set_gradient_function(self.get_gradient_function())
         self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
             -1, 1
         )
@@ -377,7 +376,7 @@ class VariationalInferenceIterator(Iterator):
             fim = fim + np.eye(len(fim)) * dampening_coefficient
         return fim
 
-    def _get_gradient_function(self):
+    def get_gradient_function(self):
         """Select the gradient function for the stochastic optimizer.
 
         Two options exist, with or without natural gradient.

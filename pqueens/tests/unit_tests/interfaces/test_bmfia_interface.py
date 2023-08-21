@@ -128,19 +128,19 @@ def test_init():
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
-        is BmfiaInterface._instantiate_per_coordinate
+        is BmfiaInterface.instantiate_per_coordinate
     )
     assert bmfia_interface.num_processors_multi_processing == 2
     assert not bmfia_interface.probabilistic_mapping_obj_lst
     assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
-    assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_coordinate
+    assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface.evaluate_per_coordinate
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
-        is BmfiaInterface._evaluate_and_gradient_per_coordinate
+        is BmfiaInterface.evaluate_and_gradient_per_coordinate
     )
     assert (
         bmfia_interface.update_mappings_method.__func__
-        is BmfiaInterface._update_mappings_per_coordinate
+        is BmfiaInterface.update_mappings_per_coordinate
     )
     assert bmfia_interface.coord_labels is None
     assert bmfia_interface.time_vec is None
@@ -155,19 +155,19 @@ def test_init():
 
     assert (
         bmfia_interface.instantiate_probabilistic_mappings.__func__
-        is BmfiaInterface._instantiate_per_time_step
+        is BmfiaInterface.instantiate_per_time_step
     )
     assert bmfia_interface.num_processors_multi_processing == 2
     assert not bmfia_interface.probabilistic_mapping_obj_lst
     assert isinstance(bmfia_interface.probabilistic_mapping_obj_lst, list)
-    assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface._evaluate_per_time_step
+    assert bmfia_interface.evaluate_method.__func__ is BmfiaInterface.evaluate_per_time_step
     assert (
         bmfia_interface.evaluate_and_gradient_method.__func__
-        is BmfiaInterface._evaluate_and_gradient_per_time_step
+        is BmfiaInterface.evaluate_and_gradient_per_time_step
     )
     assert (
         bmfia_interface.update_mappings_method.__func__
-        is BmfiaInterface._update_mappings_per_time_step
+        is BmfiaInterface.update_mappings_per_time_step
     )
     assert bmfia_interface.coord_labels is None
     assert bmfia_interface.time_vec is None
@@ -184,11 +184,11 @@ def test_init():
 
 def test__init__():
     """Test the instantiation of the interface object."""
-    instantiate_probabilistic_mappings = BmfiaInterface._instantiate_per_coordinate
+    instantiate_probabilistic_mappings = BmfiaInterface.instantiate_per_coordinate
     num_processors_multi_processing = 3
-    evaluate_method = BmfiaInterface._evaluate_per_coordinate
-    evaluate_and_gradient_method = BmfiaInterface._evaluate_and_gradient_per_coordinate
-    update_mappings_method = BmfiaInterface._update_mappings_per_coordinate
+    evaluate_method = BmfiaInterface.evaluate_per_coordinate
+    evaluate_and_gradient_method = BmfiaInterface.evaluate_and_gradient_per_coordinate
+    update_mappings_method = BmfiaInterface.update_mappings_per_coordinate
 
     interface = BmfiaInterface(
         parameters="dummy_parameters",
@@ -223,12 +223,12 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
 
     mock_train_parallel = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.'
-        '_train_probabilistic_mappings_in_parallel',
+        'train_probabilistic_mappings_in_parallel',
         return_value=dummy_lst,
     )
     mock_optimize_state = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.'
-        '_set_optimized_state_of_probabilistic_mappings'
+        'set_optimized_state_of_probabilistic_mappings'
     )
     mocker.patch(
         'pqueens.visualization.bmfia_visualization.bmfia_visualization_instance',
@@ -285,7 +285,7 @@ def test_instantiate_per_coordinate(
 
     # test wrong z_lf_train input dimensions
     with pytest.raises(IndexError):
-        default_bmfia_interface._instantiate_per_coordinate(
+        default_bmfia_interface.instantiate_per_coordinate(
             z_lf_train, y_hf_train, time_vec, coords_mat, approx
         )
 
@@ -295,7 +295,7 @@ def test_instantiate_per_coordinate(
         z_lf_array_out,
         y_hf_array_out,
         probabilistic_mapping_obj_lst,
-    ) = default_bmfia_interface._instantiate_per_coordinate(
+    ) = default_bmfia_interface.instantiate_per_coordinate(
         z_lf_train, y_hf_train, time_vec, coords_mat, approx
     )
 
@@ -321,11 +321,11 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     approx = dummy_reg_obj
 
     mp_1 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._check_coordinates_return_dimensions",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
         return_value=(num_coords, t_size),
     )
     mp_2 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._prepare_z_lf_for_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
         return_value=z_lf_array_out,
     )
 
@@ -333,7 +333,7 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
         z_lf_array,
         y_hf_array,
         probabilistic_mapping_obj_lst,
-    ) = BmfiaInterface._instantiate_per_time_step(
+    ) = BmfiaInterface.instantiate_per_time_step(
         z_lf_train, y_hf_train, time_vec, coords_mat, approx
     )
 
@@ -362,7 +362,7 @@ def test_train_probabilistic_mappings_in_parallel(
     # test with valid configuration
     num_coords = Z_LF_train.T.shape[0]
     num_processors_multi_processing = 3
-    return_state_list = BmfiaInterface._train_probabilistic_mappings_in_parallel(
+    return_state_list = BmfiaInterface.train_probabilistic_mappings_in_parallel(
         num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
     )
     # --- asserts / tests ---
@@ -371,35 +371,35 @@ def test_train_probabilistic_mappings_in_parallel(
     # test with no specification for processors
     num_processors_multi_processing = None
     with pytest.raises(RuntimeError):
-        BmfiaInterface._train_probabilistic_mappings_in_parallel(
+        BmfiaInterface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
         )
 
     # test with 0 as a specification for processors
     num_processors_multi_processing = 0
     with pytest.raises(RuntimeError):
-        BmfiaInterface._train_probabilistic_mappings_in_parallel(
+        BmfiaInterface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
         )
 
     # test with float as a specification for processors
     default_bmfia_interface.num_processors_multi_processing = 1.3
     with pytest.raises(RuntimeError):
-        BmfiaInterface._train_probabilistic_mappings_in_parallel(
+        BmfiaInterface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
         )
 
     # test with str as a specification for processors
     default_bmfia_interface.num_processors_multi_processing = 'blabla'
     with pytest.raises(RuntimeError):
-        BmfiaInterface._train_probabilistic_mappings_in_parallel(
+        BmfiaInterface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
         )
 
     # test with too large number of processors
     default_bmfia_interface.num_processors_multi_processing = 99999999
     with pytest.raises(RuntimeError):
-        default_bmfia_interface._train_probabilistic_mappings_in_parallel(
+        default_bmfia_interface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
         )
 
@@ -409,7 +409,7 @@ def test_set_optimized_state_of_probabilistic_mappings(
 ):
     """Test the state update of the mappings."""
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
-    default_bmfia_interface._set_optimized_state_of_probabilistic_mappings(my_state_lst)
+    default_bmfia_interface.set_optimized_state_of_probabilistic_mappings(my_state_lst)
     for obj in default_bmfia_interface.probabilistic_mapping_obj_lst:
         assert obj.state == 1
 
@@ -417,7 +417,7 @@ def test_set_optimized_state_of_probabilistic_mappings(
 def test_optimize_hyper_params(mocker, dummy_reg_obj):
     """Test the training of a single mapping."""
     mo_1 = mocker.patch(__name__ + '.DummyRegression.train')
-    state_dict = BmfiaInterface._optimize_hyper_params(dummy_reg_obj)
+    state_dict = BmfiaInterface.optimize_hyper_params(dummy_reg_obj)
 
     # asserts / tests
     mo_1.assert_called_once()
@@ -498,7 +498,7 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker, default_probab
     map_2.predict.return_value = {"mean": np.array([[3], [4]]), "variance": np.array([[5], [6]])}
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
-    mean, variance = default_bmfia_interface._evaluate_per_coordinate(
+    mean, variance = default_bmfia_interface.evaluate_per_coordinate(
         z_lf, support, probabilistic_mapping_obj_lst, None, None
     )
 
@@ -531,19 +531,19 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
 
     # mock check coordinate compliance
     mp1 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._check_coordinates_return_dimensions",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
         return_value=(1, 2),
     )
     mp2 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._prepare_z_lf_for_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
         return_value=z_lf_array,
     )
     mp3 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._iterate_over_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.iterate_over_time_steps",
         return_value=(default_mean, default_variance, None, None),
     )
 
-    mean, variance = BmfiaInterface._evaluate_per_time_step(
+    mean, variance = BmfiaInterface.evaluate_per_time_step(
         z_lf, support, default_probabilistic_obj_lst, time_vec, coords_mat
     )
 
@@ -570,7 +570,7 @@ def test_prepare_z_lf_for_time_steps(default_bmfia_interface, mocker):
     coords_mat = np.array([[0, 1], [0, 1]])  # one coordinates in 2d
 
     # call the method
-    z_lf_out = BmfiaInterface._prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
+    z_lf_out = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
 
     # z_lf_out has 2 x 4 x 3
     z_lf_out_ref = np.array(
@@ -589,7 +589,7 @@ def test_iterate_over_time_steps(default_bmfia_interface, mocker):
     # test wrong z_lf dimension
     z_lf = np.array([[1, 2], [3, 4]])
     with pytest.raises(ValueError):
-        BmfiaInterface._iterate_over_time_steps(
+        BmfiaInterface.iterate_over_time_steps(
             z_lf, support, num_coords, ["test", "test"], gradient_bool
         )
 
@@ -612,7 +612,7 @@ def test_iterate_over_time_steps(default_bmfia_interface, mocker):
         "grad_var": np.array([[[11, 12], [12, 13]]]),
     }
     mappings = [mp1, mp2]
-    mean, variance, dummy_grad1, dummy_grad2 = BmfiaInterface._iterate_over_time_steps(
+    mean, variance, dummy_grad1, dummy_grad2 = BmfiaInterface.iterate_over_time_steps(
         z_lf, support, num_coords, mappings, gradient_bool
     )
 
@@ -623,7 +623,7 @@ def test_iterate_over_time_steps(default_bmfia_interface, mocker):
 
     # test iteration with gradient
     gradient_bool = True
-    mean, variance, grad_mean, grad_var = BmfiaInterface._iterate_over_time_steps(
+    mean, variance, grad_mean, grad_var = BmfiaInterface.iterate_over_time_steps(
         z_lf, support, num_coords, mappings, gradient_bool
     )
     np.testing.assert_array_equal(mean, np.array([[1], [3], [2], [4]]))
@@ -660,7 +660,7 @@ def test_evaluate_and_gradient_per_coordinate(default_bmfia_interface, mocker):
     }
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
-    (mean, variance, grad_mean, grad_var,) = BmfiaInterface._evaluate_and_gradient_per_coordinate(
+    (mean, variance, grad_mean, grad_var,) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
         Z_LF, support, probabilistic_mapping_obj_lst, None, None
     )
 
@@ -700,7 +700,7 @@ def test_evaluate_and_gradient_per_coordinate(default_bmfia_interface, mocker):
     }
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
-    (mean, variance, grad_mean, grad_var,) = BmfiaInterface._evaluate_and_gradient_per_coordinate(
+    (mean, variance, grad_mean, grad_var,) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
         Z_LF, support, probabilistic_mapping_obj_lst, None, None
     )
 
@@ -728,15 +728,15 @@ def test_evaluate_and_gradient_per_time_step(default_bmfia_interface, mocker):
 
     # mock check coordinate compliance
     mp1 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._check_coordinates_return_dimensions",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
         return_value=(1, 2),
     )
     mp2 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._prepare_z_lf_for_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
         return_value=z_lf_array,
     )
     mp3 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._iterate_over_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.iterate_over_time_steps",
         return_value=(default_mean, default_variance, default_grad_mean, default_grad_variance),
     )
 
@@ -745,7 +745,7 @@ def test_evaluate_and_gradient_per_time_step(default_bmfia_interface, mocker):
         variance,
         grad_mean,
         grad_variance,
-    ) = BmfiaInterface._evaluate_and_gradient_per_time_step(
+    ) = BmfiaInterface.evaluate_and_gradient_per_time_step(
         z_lf, support, probabilistic_mapping_obj_lst, time_vec, coords_mat
     )
 
@@ -772,7 +772,7 @@ def test_check_coordinates_return_dimensions():
     z_lf = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
     time_vec = np.array([1, 2])  # two time steps
     coords_mat = np.array([1, 2])  # one coordinates in 2d
-    num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+    num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
         z_lf, time_vec, coords_mat
     )
 
@@ -781,7 +781,7 @@ def test_check_coordinates_return_dimensions():
 
     time_vec = np.array([[1, 2]])  # two time steps
     coords_mat = np.array([[1, 2]])  # one coordinates in 2d
-    num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+    num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
         z_lf, time_vec, coords_mat
     )
 
@@ -791,7 +791,7 @@ def test_check_coordinates_return_dimensions():
     # test wrong coordinate dimension --> column vector = 2 coords in 1 d
     coords_mat = np.array([[1, 2]]).T  # one coordinates in 2d
     with pytest.raises(ValueError):
-        num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf, time_vec, coords_mat
         )
 
@@ -799,7 +799,7 @@ def test_check_coordinates_return_dimensions():
     time_vec = np.array([[1, 2, 3]])  # three time steps
     coords_mat = np.array([[1, 2]])  # one coordinates in 2d
     with pytest.raises(ValueError):
-        num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+        num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
             z_lf, time_vec, coords_mat
         )
 
@@ -807,7 +807,7 @@ def test_check_coordinates_return_dimensions():
     z_lf = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 2])  # two time steps
     coords_mat = np.array([1, 2])  # one coordinates in 2d
-    num_coords, t_size = BmfiaInterface._check_coordinates_return_dimensions(
+    num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(
         z_lf, time_vec, coords_mat
     )
 
@@ -830,7 +830,7 @@ def test_update_mappings_per_coordinate(
 
     # test wrong z_lf_train input dimensions
     with pytest.raises(IndexError):
-        BmfiaInterface._update_mappings_per_coordinate(
+        BmfiaInterface.update_mappings_per_coordinate(
             ["dummy", "dummy"], z_lf_train, y_hf_train, time_vec, coords_mat
         )
 
@@ -844,7 +844,7 @@ def test_update_mappings_per_coordinate(
         z_lf_array_out,
         y_hf_array_out,
         probabilistic_mapping_ob_lst,
-    ) = BmfiaInterface._update_mappings_per_coordinate(
+    ) = BmfiaInterface.update_mappings_per_coordinate(
         probabilistic_mapping_obj_lst, z_lf_train, y_hf_train, time_vec, coords_mat
     )
 
@@ -866,11 +866,11 @@ def test_update_mappings_per_time_step(mocker):
     coords_mat = np.array([[0, 1], [0, 1]])
 
     mp_1 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._check_coordinates_return_dimensions",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
         return_value=(num_coords, t_size),
     )
     mp_2 = mocker.patch(
-        "pqueens.interfaces.bmfia_interface.BmfiaInterface._prepare_z_lf_for_time_steps",
+        "pqueens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
         return_value=z_lf_array_out,
     )
 
@@ -882,7 +882,7 @@ def test_update_mappings_per_time_step(mocker):
         z_lf_array,
         y_hf_array,
         probabilistic_mapping_ob_lst,
-    ) = BmfiaInterface._update_mappings_per_time_step(
+    ) = BmfiaInterface.update_mappings_per_time_step(
         probabilistic_mapping_obj_lst, z_lf_train, y_hf_train, time_vec, coords_mat
     )
 

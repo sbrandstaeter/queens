@@ -38,7 +38,7 @@ def default_bmfia_iterator(
     num_features = None
     coord_cols = None
 
-    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
             features_config=features_config,
@@ -111,7 +111,7 @@ def test_init(
     num_features = 2
     coord_cols = [1, 2, 3]
 
-    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
             features_config=features_config,
@@ -149,11 +149,11 @@ def test_calculate_optimal_x_train(dummy_model, mocker, default_parameters_unifo
     model = dummy_model
     initial_design_dict = {'test': 'test'}
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._get_design_method',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.get_design_method',
         return_value=my_mock_design,
     )
 
-    x_train, (arg0, arg1, arg2) = BMFIAIterator._calculate_initial_x_train(
+    x_train, (arg0, arg1, arg2) = BMFIAIterator.calculate_initial_x_train(
         initial_design_dict, model, default_parameters_uniform_2d
     )
 
@@ -171,34 +171,34 @@ def test_get_design_method(mocker):
     # test the random design
     initial_design_dict = {"type": "random"}
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._random_design',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.random_design',
         return_value=my_mock_design,
     )
 
-    design = BMFIAIterator._get_design_method(initial_design_dict)
+    design = BMFIAIterator.get_design_method(initial_design_dict)
     assert design is mo_1
 
     # test invalid design
     with pytest.raises(NotImplementedError):
         initial_design_dict = {'type': 'randommm'}
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid key in dictionary
     with pytest.raises(AssertionError):
         initial_design_dict = {'typeeee': 'random'}
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid data type of input
     with pytest.raises(AssertionError):
         initial_design_dict = 1
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
 
 def test_random_design(dummy_model, default_parameters_uniform_2d, dummy_global_settings):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])
-    x_out = BMFIAIterator._random_design(
+    x_out = BMFIAIterator.random_design(
         initial_design_dict, dummy_model, default_parameters_uniform_2d
     )
 
@@ -235,8 +235,7 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     with patch.object(
         default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
     ) as mo_1:
-
-        default_bmfia_iterator._evaluate_LF_model_for_X_train()
+        default_bmfia_iterator.evaluate_LF_model_for_X_train()
 
         mo_1.assert_called_once()
         np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_LF_train)
@@ -247,8 +246,7 @@ def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     with patch.object(
         default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
     ) as mo_2:
-
-        default_bmfia_iterator._evaluate_HF_model_for_X_train()
+        default_bmfia_iterator.evaluate_HF_model_for_X_train()
 
         # Actual asserts / tests
         mo_2.assert_called_once()
@@ -454,16 +452,16 @@ def test_get_time_features(default_bmfia_iterator):
 def test_update_probabilistic_mapping_with_features(default_bmfia_iterator):
     """Test for updating with optimal informative features."""
     with pytest.raises(NotImplementedError):
-        default_bmfia_iterator._update_probabilistic_mapping_with_features()
+        default_bmfia_iterator.update_probabilistic_mapping_with_features()
 
 
 def test_eval_model(default_bmfia_iterator, mocker):
     """Test for evaluating the underlying model."""
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._evaluate_LF_model_for_X_train'
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.evaluate_LF_model_for_X_train'
     )
     mo_2 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._evaluate_HF_model_for_X_train'
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.evaluate_HF_model_for_X_train'
     )
     default_bmfia_iterator.eval_model()
 

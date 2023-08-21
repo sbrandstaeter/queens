@@ -146,7 +146,7 @@ class BMFMCIterator(Iterator):
         """
         design_method = self.initial_design.get('method')
         n_points = self.initial_design.get("num_HF_eval")
-        run_design_method = self._get_design_method(design_method)
+        run_design_method = self.get_design_method(design_method)
         run_design_method(n_points)
 
         # update the Bmfmc model variables
@@ -154,7 +154,7 @@ class BMFMCIterator(Iterator):
         self.model.X_train = self.X_train
         self.model.Y_LFs_train = self.Y_LFs_train
 
-    def _get_design_method(self, design_method):
+    def get_design_method(self, design_method):
         """Get the design method for selecting the HF data.
 
         Get the design method for selecting the HF data from the LF MC dataset.
@@ -167,10 +167,10 @@ class BMFMCIterator(Iterator):
         """
         self.model.calculate_extended_gammas()
         if design_method == 'random':
-            run_design_method = self._random_design
+            run_design_method = self.random_design
 
         elif design_method == 'diverse_subset':
-            run_design_method = self._diverse_subset_design
+            run_design_method = self.diverse_subset_design
 
         else:
             raise NotImplementedError(
@@ -182,7 +182,7 @@ class BMFMCIterator(Iterator):
 
         return run_design_method
 
-    def _diverse_subset_design(self, n_points):
+    def diverse_subset_design(self, n_points):
         """Calculate the HF training points based on psa_select.
 
         Calculate the HF training points from large LF-MC data-set based on
@@ -206,7 +206,7 @@ class BMFMCIterator(Iterator):
         self.X_train = self.model.X_mc[index, :]
         self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
 
-    def _random_design(self, n_points):
+    def random_design(self, n_points):
         """Calculate the HF training points based on random selection.
 
         Calculate the HF training points from large LF-MC data-set based on random selection from

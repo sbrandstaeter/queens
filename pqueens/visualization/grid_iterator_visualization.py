@@ -154,14 +154,14 @@ class GridIteratorVisualization:
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
         if self.plot_booleans[0] is True or self.save_bools[0] is True:
-            plotter = self._get_plotter(num_params)
+            plotter = self.get_plotter(num_params)
             plotter(output, samples, n_grid_p)
             _save_plot(self.save_bools[0], self.saving_paths_list[0])
 
         if self.plot_booleans[0] is True:
             plt.show()
 
-    def _get_plotter(self, num_params):
+    def get_plotter(self, num_params):
         """TODO_doc: add a one-line explanation.
 
         Get the correct plotting function depending on the dimension of the
@@ -174,12 +174,12 @@ class GridIteratorVisualization:
             Plotting function for corresponding dimension (obj)
         """
         if num_params == 1:
-            return self._plot_one_d
+            return self.plot_one_d
         if num_params == 2:
-            return self._plot_two_d
+            return self.plot_two_d
         raise NotImplementedError('Grid plot only possible up to 2 parameters')
 
-    def _plot_one_d(self, output, samples, n_grid_p):
+    def plot_one_d(self, output, samples, n_grid_p):
         """Plotting method for one dimensional grid.
 
         Args:
@@ -211,7 +211,7 @@ class GridIteratorVisualization:
         # adjust limits of axes
         ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
 
-    def _plot_two_d(self, output, samples, n_grid_p):
+    def plot_two_d(self, output, samples, n_grid_p):
         """Plotting method for two dimensional grid.
 
         Args:
