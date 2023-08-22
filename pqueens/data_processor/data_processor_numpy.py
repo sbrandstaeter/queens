@@ -54,13 +54,13 @@ class DataProcessorNumpy(DataProcessor):
             return raw_data
         except FileNotFoundError as error:
             _logger.warning(
-                "Could not find file %s. The FileNotFoundError was: %s. Skip...",
+                "Could not find the file: %s. The following FileNotFoundError was raised: %s. Skipping the file and continuing.",
                 file_path,
                 error,
             )
         except ValueError as error:
             _logger.warning(
-                "Could not read file %s. The ValueError was: %s. Skip...", file_path, error
+                "Could not read the file: %s. The following ValueError was raised: %s. Skipping the file and continuing.", file_path, error
             )
         return None
 

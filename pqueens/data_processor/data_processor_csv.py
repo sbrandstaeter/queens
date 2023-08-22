@@ -241,7 +241,7 @@ class DataProcessorCsv(DataProcessor):
             return raw_data
         except IOError as error:
             _logger.warning(
-                "Could not read file %s. The IOError was: %s. Skip...", file_path, error
+                "Could not read the file: %s. The following IOError was raised: %s. Skipping the file and continuing.", file_path, error
             )
             return None
 
