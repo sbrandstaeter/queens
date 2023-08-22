@@ -241,7 +241,10 @@ class DataProcessorCsv(DataProcessor):
             return raw_data
         except IOError as error:
             _logger.warning(
-                "Could not read the file: %s. The following IOError was raised: %s. Skipping the file and continuing.", file_path, error
+                "Could not read the file: %s. The following IOError was raised: %s. "
+                "Skipping the file and continuing.",
+                file_path,
+                error,
             )
             return None
 
@@ -284,11 +287,25 @@ class DataProcessorCsv(DataProcessor):
         return processed_data
 
     def _filter_entire_file(self, raw_data):
-        """Keep entire csv file data."""
+        """Keep entire csv file data.
+
+        Args:
+            raw_data (DataFrame): Raw data from file.
+
+        Returns:
+            raw_data (DataFrame): Raw data from file.
+        """
         return raw_data
 
     def _filter_by_row_index(self, raw_data):
-        """Filter the csv file based on given data rows."""
+        """Filter the csv file based on given data rows.
+
+        Args:
+            raw_data (DataFrame): Raw data from file.
+
+        Returns:
+            DataFrame: Filtered data.
+        """
         if any(raw_data):
             try:
                 return raw_data.iloc[self.use_rows_lst]
@@ -299,7 +316,14 @@ class DataProcessorCsv(DataProcessor):
         return None
 
     def _filter_by_target_values(self, raw_data):
-        """Filter the pandas data frame based on target values."""
+        """Filter the pandas data frame based on target values.
+
+        Args:
+            raw_data (DataFrame): Raw data from file.
+
+        Returns:
+            DataFrame: Filtered data.
+        """
         if any(raw_data):
             target_indices = []
             for target_value in self.filter_target_values:
@@ -311,7 +335,14 @@ class DataProcessorCsv(DataProcessor):
         return None
 
     def _filter_by_range(self, raw_data):
-        """Filter the pandas data frame based on values in a data column."""
+        """Filter the pandas data frame based on values in a data column.
+
+        Args:
+            raw_data (DataFrame): Raw data from file.
+
+        Returns:
+            DataFrame: Filtered data.
+        """
         if any(raw_data):
             range_start = int(
                 np.where(np.abs(raw_data.index - self.filter_range[0]) <= self.filter_tol)[0]
