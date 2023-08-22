@@ -4,8 +4,6 @@ import abc
 import logging
 from pathlib import Path
 
-import numpy as np
-
 _logger = logging.getLogger(__name__)
 
 
@@ -39,8 +37,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
         Args:
             file_name_identifier (str): Identifier for files.
-                                             The file prefix can contain regex expression and
-                                            subdirectories.
+                                        The file prefix can contain regex expression and
+                                        subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the file. The respective child class will
                                        implement valid options for this dictionary.
@@ -80,16 +78,12 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
-        self.file_path = None
-        self.processed_data = np.empty(shape=0)
-        self.raw_file_data = None
 
     def get_data_from_file(self, base_dir_file):
         """Get data of interest from file.
 
         Args:
-            base_dir_file (Path): Path of the base directory that
-                                           contains the file of interest
+            base_dir_file (Path): Path of the base directory that contains the file of interest
 
         Returns:
             processed_data (np.array): Final data from data processor module
@@ -105,14 +99,15 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
 
-        file_exists_bool = self._check_file_exist_and_is_unique(base_dir_file)
-        if file_exists_bool:
-            self._get_raw_data_from_file()
-            self._filter_and_manipulate_raw_data()
-            self._subsequent_data_manipulation()
+        file_path = self._check_file_exist_and_is_unique(base_dir_file)
+        processed_data = None
+        if file_path:
+            raw_data = self._get_raw_data_from_file(file_path)
+            filtered_data = self._filter_and_manipulate_raw_data(raw_data)
+            processed_data = self._subsequent_data_manipulation(filtered_data)
 
         self._clean_up(base_dir_file)
-        return self.processed_data
+        return processed_data
 
     def _check_file_exist_and_is_unique(self, base_dir_file):
         """Check if file exists.
@@ -121,8 +116,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             base_dir_file (Path): Path to base directory that contains file of interest
 
         Returns:
-            file_exists (bool): Boolean determine whether file exists. If true, the file
-                            exists.
+            file_path (str): Actual path to the file of interest.
         """
         file_list = list(base_dir_file.glob(self.file_name_identifier))
 
@@ -134,32 +128,52 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The file prefix must lead to a unique file. Abort..."
             )
         if len(file_list) == 1:
-            self.file_path = file_list[0]
-            file_exists = True
+            file_path = file_list[0]
         else:
             _logger.warning(
                 "The file '%s' does not exist!", base_dir_file / self.file_name_identifier
             )
-            file_exists = False
+            file_path = None
 
-        return file_exists
-
-    @abc.abstractmethod
-    def _get_raw_data_from_file(self):
-        """Get the raw data from the files of interest."""
+        return file_path
 
     @abc.abstractmethod
-    def _filter_and_manipulate_raw_data(self):
-        """Filter or clean the raw data for given criteria."""
+    def _get_raw_data_from_file(self, file_path):
+        """Get the raw data from the files of interest.
 
-    def _subsequent_data_manipulation(self):
+        Args:
+            file_path (str): Actual path to the file of interest.
+
+        Returns:
+            raw_data (obj): Raw data from file.
+        """
+
+    @abc.abstractmethod
+    def _filter_and_manipulate_raw_data(self, raw_data):
+        """Filter or clean the raw data for given criteria.
+
+        Args:
+            raw_data (obj): Raw data from file.
+
+        Returns:
+            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
+        """
+
+    def _subsequent_data_manipulation(self, processed_data):
         """Subsequent manipulate the data_processor data.
 
         This method can be easily implemented by overloading the empty
         method in a custom inheritance of a desired child class. Make
         sure to add the module to the `from_config_create` method in
         this file.
+
+        Args:
+            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
+
+        Returns:
+            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         """
+        return processed_data
 
     def _clean_up(self, base_dir_file):
         """Clean-up files in the output directory.
