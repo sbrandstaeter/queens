@@ -67,7 +67,7 @@ class BMFIAIterator(Iterator):
         super().__init__(None, parameters)  # Input prescribed by iterator.py
 
         # ---------- calculate the initial training samples via classmethods ----------
-        x_train = self._calculate_initial_x_train(initial_design, lf_model, parameters)
+        x_train = self.calculate_initial_x_train(initial_design, lf_model, parameters)
 
         self.X_train = x_train
         self.Y_LF_train = None
@@ -84,7 +84,7 @@ class BMFIAIterator(Iterator):
         self.coord_cols = coord_cols
 
     @classmethod
-    def _calculate_initial_x_train(cls, initial_design_dict, model, parameters):
+    def calculate_initial_x_train(cls, initial_design_dict, model, parameters):
         """Optimal training data set for probabilistic model.
 
         Based on the selected design method, determine the optimal set of
@@ -100,12 +100,12 @@ class BMFIAIterator(Iterator):
         Returns:
             x_train (np.array): Optimal training input samples
         """
-        run_design_method = cls._get_design_method(initial_design_dict)
+        run_design_method = cls.get_design_method(initial_design_dict)
         x_train = run_design_method(initial_design_dict, model, parameters)
         return x_train
 
     @classmethod
-    def _get_design_method(cls, initial_design_dict):
+    def get_design_method(cls, initial_design_dict):
         """Get the design method for initial training data.
 
         Select the method for the generation of the initial training data
@@ -128,7 +128,7 @@ class BMFIAIterator(Iterator):
 
         # choose design method
         if initial_design_dict['type'] == 'random':
-            run_design_method = cls._random_design
+            run_design_method = cls.random_design
         elif initial_design_dict['type'] == 'sobol':
             run_design_method = cls._sobol_design
         else:
@@ -141,7 +141,7 @@ class BMFIAIterator(Iterator):
         return run_design_method
 
     @staticmethod
-    def _random_design(initial_design_dict, model, parameters):
+    def random_design(initial_design_dict, model, parameters):
         """Generate a uniformly random design strategy.
 
         Get a random initial design using the Monte-Carlo sampler with a uniform distribution.
@@ -258,13 +258,13 @@ class BMFIAIterator(Iterator):
 
         return self.Z_train, self.Y_HF_train
 
-    def _evaluate_LF_model_for_X_train(self):
+    def evaluate_LF_model_for_X_train(self):
         """Evaluate the low-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
         self.Y_LF_train = self.lf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
 
-    def _evaluate_HF_model_for_X_train(self):
+    def evaluate_HF_model_for_X_train(self):
         """Evaluate the high-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
@@ -382,7 +382,7 @@ class BMFIAIterator(Iterator):
             self.num_features >= 1
         ), "Number of informative features must be an integer greater than one! Abort..."
 
-        z_mat = self._update_probabilistic_mapping_with_features()
+        z_mat = self.update_probabilistic_mapping_with_features()
         return z_mat
 
     def _get_coord_features(self, _, y_lf_mat, coords_mat):
@@ -465,7 +465,7 @@ class BMFIAIterator(Iterator):
         z_mat = np.hstack([y_lf_mat, time_vec])
         return z_mat
 
-    def _update_probabilistic_mapping_with_features(self):
+    def update_probabilistic_mapping_with_features(self):
         """Update multi-fidelity mapping with optimal lf-features."""
         raise NotImplementedError(
             "Optimal features for inverse problems are not yet implemented! Abort..."
@@ -482,7 +482,7 @@ class BMFIAIterator(Iterator):
         _logger.info('Starting to evaluate the low-fidelity model for training points....')
         _logger.info('-------------------------------------------------------------------')
 
-        self._evaluate_LF_model_for_X_train()
+        self.evaluate_LF_model_for_X_train()
 
         _logger.info('-------------------------------------------------------------------')
         _logger.info('Successfully calculated the low-fidelity training points!')
@@ -493,7 +493,7 @@ class BMFIAIterator(Iterator):
         _logger.info('Starting to evaluate the high-fidelity model for training points...')
         _logger.info('-------------------------------------------------------------------')
 
-        self._evaluate_HF_model_for_X_train()
+        self.evaluate_HF_model_for_X_train()
 
         _logger.info('-------------------------------------------------------------------')
         _logger.info('Successfully calculated the high-fidelity training points!')

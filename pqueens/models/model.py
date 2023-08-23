@@ -20,7 +20,7 @@ class Model(metaclass=abc.ABCMeta):
         response (dict): Response corresponding to parameters.
     """
 
-    _evaluate_and_gradient_bool = False
+    evaluate_and_gradient_bool = False
 
     def __init__(self):
         """Init model object."""
@@ -70,12 +70,12 @@ class Model(metaclass=abc.ABCMeta):
             model_gradient (np.array): Gradient w.r.t. current set of input samples
                                        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        Model._evaluate_and_gradient_bool = True
+        Model.evaluate_and_gradient_bool = True
         model_output = self.evaluate(samples)
         if upstream_gradient is None:
             upstream_gradient = np.ones((samples.shape[0], 1))
         model_gradient = self.grad(
             samples, upstream_gradient=upstream_gradient.reshape(samples.shape[0], 1)
         )
-        Model._evaluate_and_gradient_bool = False
+        Model.evaluate_and_gradient_bool = False
         return model_output, model_gradient

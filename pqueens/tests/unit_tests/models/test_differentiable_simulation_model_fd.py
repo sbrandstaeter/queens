@@ -61,14 +61,14 @@ def test_evaluate(default_fd_model):
     assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
 
-    Model._evaluate_and_gradient_bool = False
+    Model.evaluate_and_gradient_bool = False
     response = default_fd_model.evaluate(samples)
     assert len(response) == 1
     np.testing.assert_array_equal(response['mean'], expected_mean)
     assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
 
-    Model._evaluate_and_gradient_bool = True
+    Model.evaluate_and_gradient_bool = True
     response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=5)
@@ -83,7 +83,7 @@ def test_evaluate(default_fd_model):
     response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=4)
-    Model._evaluate_and_gradient_bool = False
+    Model.evaluate_and_gradient_bool = False
 
 
 def test_grad(default_fd_model):

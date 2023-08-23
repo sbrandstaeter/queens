@@ -27,15 +27,15 @@ def model():
 def test_init(model):
     """Test init."""
     assert model.response is None
-    assert model._evaluate_and_gradient_bool is False
+    assert model.evaluate_and_gradient_bool is False
 
 
 def test_evaluate_and_gradient(model):
     """Test evaluate_and_gradient method."""
-    assert model._evaluate_and_gradient_bool is False
+    assert model.evaluate_and_gradient_bool is False
 
     def model_eval(self, x):
-        assert self._evaluate_and_gradient_bool is True
+        assert self.evaluate_and_gradient_bool is True
         return np.sum(x**2, axis=1, keepdims=True)
 
     model.grad = Mock(
@@ -67,4 +67,4 @@ def test_evaluate_and_gradient(model):
             model.grad.call_args.kwargs['upstream_gradient'], upstream_[:, np.newaxis]
         )
 
-        assert model._evaluate_and_gradient_bool is False
+        assert model.evaluate_and_gradient_bool is False

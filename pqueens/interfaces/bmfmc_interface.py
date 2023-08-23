@@ -27,6 +27,7 @@ class BmfmcInterface(Interface):
                                          probabilistic dependency between high-fidelity model,
                                          low-fidelity models and informative input features.
         """
+        super().__init__(parameters=None)
         self.probabilistic_mapping = probabilistic_mapping
 
     def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):

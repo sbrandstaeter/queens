@@ -1,6 +1,5 @@
 """QUEENS scheduler parent class."""
 import abc
-import copy
 import logging
 
 import numpy as np
@@ -66,10 +65,9 @@ class Scheduler(metaclass=abc.ABCMeta):
             result_dict (dict): Dictionary containing results
         """
         futures = self.client.map(
-            self.driver_run,
+            driver.run,
             samples_list,
             pure=False,
-            driver=driver,
             num_procs=self.num_procs,
             num_procs_post=self.num_procs_post,
             experiment_dir=self.experiment_dir,
@@ -87,26 +85,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         result_dict['mean'] = np.array(result_dict['mean'])
         result_dict['gradient'] = np.array(result_dict['gradient'])
         return result_dict
-
-    @staticmethod
-    def driver_run(sample_dict, driver, num_procs, num_procs_post, experiment_dir, experiment_name):
-        """Run the driver.
-
-        Args:
-            sample_dict (list): Dict containing sample and job id
-            driver (Driver): Driver object that runs simulation
-            num_procs (int): number of cores per job
-            num_procs_post (int): number of cores per job for post-processing
-            experiment_name (str): name of QUEENS experiment.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-
-        Returns:
-            Result and potentially the gradient
-        """
-        #  This copy is currently necessary because processed data is stored and extended in
-        #  data processor
-        driver = copy.deepcopy(driver)
-        return driver.run(sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name)
 
     def copy_file(self, file_path):
         """Copy file to experiment directory.
