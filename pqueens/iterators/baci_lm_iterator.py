@@ -37,7 +37,7 @@ class BaciLMIterator(Iterator):
         verbose_output: TODO_doc
         iter_opt: TODO_doc
         lowesterror (float): The lowest error achieved during optimization. Initialized to None.
-        param_opt (np.ndarray): The optimized parameter values corresponding to the lowest error. Initialized to None.
+        param_opt (np.ndarray): The optimized parameter values corresponding to the lowest error.
         solution (any): The solution achieved by the optimization process.
     """
 
@@ -70,7 +70,7 @@ class BaciLMIterator(Iterator):
             update_reg: TODO_doc
             convergence_tolerance: TODO_doc
             max_feval: TODO_doc
-            lowesterror (float or None): The lowest error achieved during optimization. Initialized to None
+            lowesterror (float or None): The lowest error achieved during optimization.
             verbose_output: TODO_doc
         """
         super().__init__(model, parameters)
