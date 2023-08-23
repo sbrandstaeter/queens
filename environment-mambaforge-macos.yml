@@ -1,31 +1,41 @@
 name: queens
 channels:
   - conda-forge
+# We want to have a reproducible setup, so we don't want default channels,
+# which may be different for different users. All required channels should
+# be listed explicitly here.
+  - nodefaults
 dependencies:
   - python==3.10
 # to ensure that performance optimized backends are used,
 # the following packages are installed from conda
 # for example BLAS libraries like Intel MKL for numpy
   - cython
-  - numpy=1.23.5
-  - scipy
   - numba
-  - scikit-learn
+  - numpy==1.23.5
   - pandas
+  - scikit-learn
+  - scipy
+
+# Dask packages
+  - dask
+  - distributed # dask.distributed
+  - dask-jobqueue
+  - bokeh<3 # for dask dashboard
+  - fabric  # for ssh connection
 
 # Others
-  - pymongo # MongoDB
   - xarray # Special array format
   - pyDOE # design of experiments
   - SALib # for sensitivity analysis
   - vtk # vtk format handler
   - autograd # wrapper around numpy for automated differentiation
+  - chaospy # polynomial chaos
   - pyyaml # to load yaml files
   - jinja2
 
 # Machine learning libraries
   - arviz # Bayesian visualization
-  - gpy # for Gaussian Processes
   - gpflow # LV and variational GPs
   - optax # google jax based optimizer
   - tensorflow<2.11.0
@@ -58,7 +68,7 @@ dependencies:
 # Other Python stuff
   - pathos # multiprocessing with more complex python objects
 
-# dev requirements
+# Development
   - pylint>=2.16
   - isort>=5.0
   - black==22.3.0
@@ -71,6 +81,8 @@ dependencies:
   - pydocstyle>=6.3.0
   - docformatter>=1.5.1
   - yamllint>=1.19.0
+
+# These packages need to be installed via pip
   - pip
   - pip:
       - pip-tools
@@ -79,4 +91,3 @@ dependencies:
       - particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
       - liccheck
       - pylint-exit
-      - chaospy
