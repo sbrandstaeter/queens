@@ -34,6 +34,10 @@ def my_lik_model():
     class FakeDistr:
         """A fake distribution class."""
 
+        def __init__(self):
+            """A fake init method."""
+            self.cov = None
+
         def logpdf(self, x):
             """A fake logpdf method."""
             return x**2
@@ -72,7 +76,6 @@ def my_lik_model():
 # ----------------- actual unit tests ------------------------------#
 def test_init():
     """Test for the init method."""
-
     nugget_noise_variance = 1e-6
     forward_model = "my_forward_model"
     noise_type = "fixed_variance"

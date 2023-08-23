@@ -18,6 +18,12 @@ class RandomField:
                                         diagonal values of the covariance matrix).
             explained_variance (float): Explained variance by the eigen decomposition.
             dim_truncated: TODO_doc
+            K_mat (np.ndarray): Covariance matrix of the random field.
+            cholesky_decomp_covar_mat (np.ndarray): Cholesky decomposition of the covariance matrix.
+            eigen_vals_vec (np.ndarray): Eigenvalues of the covariance matrix.
+            eigen_vecs_mat (np.ndarray): Eigenvectors of the covariance matrix.
+            weighted_eigen_val_mat_truncated (np.ndarray): Truncated representation of the weighted
+                                                           eigenvalue matrix.
     """
 
     def __init__(
@@ -51,6 +57,11 @@ class RandomField:
         self.explained_variance = explained_variance
         self.initialize()
         self.dim_truncated = self.weighted_eigen_val_mat_truncated.shape[1]
+        self.K_mat = None
+        self.cholesky_decomp_covar_mat = None
+        self.eigen_vals_vec = None
+        self.eigen_vecs_mat = None
+        self.weighted_eigen_val_mat_truncated = None
 
     def draw(self, num_samples):
         """Draw samples from the truncated representation of the random field.

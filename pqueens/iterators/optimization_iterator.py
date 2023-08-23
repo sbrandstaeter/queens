@@ -74,6 +74,7 @@ class OptimizationIterator(Iterator):
         output_scaling_experimental: TODO_doc
         precalculated_positions (dict): Dictionary containing precalculated positions and
                                         corresponding model responses.
+        solution: Solution obtained from the optimization process.
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
@@ -159,6 +160,7 @@ class OptimizationIterator(Iterator):
         self.axis_scaling_experimental = axis_scaling_experimental
         self.output_scaling_experimental = output_scaling_experimental
         self.precalculated_positions = {'position': [], 'output': []}
+        self.solution = None
 
     def objective_function(self, x_vec, coordinates=None):
         """Evaluate objective function at *x_vec*.

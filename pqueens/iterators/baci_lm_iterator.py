@@ -36,6 +36,9 @@ class BaciLMIterator(Iterator):
         tolerance: TODO_doc
         verbose_output: TODO_doc
         iter_opt: TODO_doc
+        lowesterror (float): The lowest error achieved during optimization. Initialized to None.
+        param_opt (np.ndarray): The optimized parameter values corresponding to the lowest error. Initialized to None.
+        solution (any): The solution achieved by the optimization process.
     """
 
     def __init__(
@@ -67,6 +70,7 @@ class BaciLMIterator(Iterator):
             update_reg: TODO_doc
             convergence_tolerance: TODO_doc
             max_feval: TODO_doc
+            lowesterror (float or None): The lowest error achieved during optimization. Initialized to None
             verbose_output: TODO_doc
         """
         super().__init__(model, parameters)
@@ -92,6 +96,9 @@ class BaciLMIterator(Iterator):
 
         self.verbose_output = verbose_output
         self.iter_opt = 0
+        self.lowesterror = None
+        self.param_opt = None
+        self.solution = None
 
     def jacobian_and_residual(self, x0):
         """Evaluate Jacobian and residual of objective function at *x0*.
