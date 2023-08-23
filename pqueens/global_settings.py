@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.logger_settings import setup_basic_logging
+from pqueens.utils.path_utils import PATH_TO_QUEENS
 
 _logger = logging.getLogger(__name__)
 GLOBAL_SETTINGS = None
@@ -37,7 +38,19 @@ class GlobalSettings:
         if " " in experiment_name:
             raise ValueError("Experiment name can not contain spaces!")
 
-        git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+        try:
+            git_hash = (
+                subprocess.check_output(
+                    ['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']
+                )
+                .decode('ascii')
+                .strip()
+            )
+        except subprocess.CalledProcessError as subprocess_error:
+            _logger.warning("Could not get git hash. Failed with the following error:")
+            _logger.warning(str(subprocess_error))
+            git_hash = "unknown"
+            _logger.warning("Setting git hash to: '%s'!", git_hash)
 
         self.experiment_name = experiment_name
         self.output_dir = Path(output_dir)
