@@ -1,9 +1,8 @@
 """Test vtk utils."""
-# pylint:disable=no-name-in-module
 import numpy as np
 import pytest
-from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-from vtkmodules.vtkCommonCore import vtkPoints
+from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy  # pylint:disable=no-name-in-module
+from vtkmodules.vtkCommonCore import vtkPoints  # pylint:disable=no-name-in-module
 
 from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.vtk_utils import (
