@@ -6,7 +6,7 @@ from pqueens.distributions.bernoulli import BernoulliDistribution
 
 
 @pytest.fixture(name="reference_data")
-def fixture_reference_data():
+def reference_data_fixture():
     """Data for the distribution."""
     success_probability = 0.3
     reference_probabilities = np.array([1 - success_probability, success_probability])
@@ -15,7 +15,7 @@ def fixture_reference_data():
 
 
 @pytest.fixture(name="distribution")
-def fixture_distribution(reference_data):
+def distribution_fixture(reference_data):
     """Distribution fixture."""
     success_probability, _, _ = reference_data
     return BernoulliDistribution(success_probability)

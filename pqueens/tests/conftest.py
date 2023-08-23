@@ -136,7 +136,7 @@ def pytest_sessionfinish():
 
 
 @pytest.fixture(name="reset_loggers", autouse=True)
-def fixture_reset_logger():
+def reset_logger_fixture():
     """Reset loggers.
 
     This fixture is called at every test due to `autouse=True`. It acts

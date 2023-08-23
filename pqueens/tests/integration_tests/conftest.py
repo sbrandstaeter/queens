@@ -182,7 +182,7 @@ def baci_cluster_paths(connect_to_resource):
 
 
 @pytest.fixture(name="baci_example_expected_mean")
-def fixture_baci_example_expected_mean():
+def baci_example_expected_mean_fixture():
     """Expected result for the BACI example."""
     result = np.array(
         [

@@ -32,7 +32,7 @@ def test_external_geometry_from_dat(
 
 
 @pytest.fixture(name="expected_surface_topology")
-def fixture_expected_surface_topology():
+def expected_surface_topology_fixture():
     """Reference surface topology."""
     expected_topology = [
         {
@@ -62,7 +62,7 @@ def fixture_expected_surface_topology():
 
 
 @pytest.fixture(name="expected_node_coordinates")
-def fixture_expected_node_coordinates():
+def expected_node_coordinates_fixture():
     """Reference node coordinates and nodes."""
     node_coordinates = {
         'node_mesh': [

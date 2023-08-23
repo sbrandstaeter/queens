@@ -6,7 +6,7 @@ from pqueens.distributions.categorical import CategoricalDistribution
 
 
 @pytest.fixture(name="reference_distribution_data")
-def fixture_reference_distribution_data():
+def reference_distribution_data_fixture():
     """Data for the categorical distribution."""
     weights = [1, 3]
     probabilities = [1 / 4, 3 / 4]
@@ -15,7 +15,7 @@ def fixture_reference_distribution_data():
 
 
 @pytest.fixture(name="categorical_distribution")
-def fixture_categorical_distribution(reference_distribution_data):
+def categorical_distribution_fixture(reference_distribution_data):
     """Categorical distribution fixture."""
     weights, categories, _ = reference_distribution_data
 

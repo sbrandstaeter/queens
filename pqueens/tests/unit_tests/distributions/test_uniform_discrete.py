@@ -6,7 +6,7 @@ from pqueens.distributions.uniform_discrete import UniformDiscreteDistribution
 
 
 @pytest.fixture(name="reference_data", params=[1, 2])
-def fixture_reference_data(request):
+def reference_data_fixture(request):
     """Data for the distribution."""
     reference_weights = [1, 1, 1, 1]
     reference_probabilities = np.array([0.25, 0.25, 0.25, 0.25])
@@ -17,14 +17,14 @@ def fixture_reference_data(request):
 
 
 @pytest.fixture(name="distribution")
-def fixture_distribution(reference_data):
+def distribution_fixture(reference_data):
     """Distribution fixture."""
     _, _, sample_space, _ = reference_data
     return UniformDiscreteDistribution(sample_space)
 
 
 @pytest.fixture(name="distribution_for_init", params=[0, 1])
-def fixture_distribution_for_init(reference_data, distribution, request):
+def distribution_for_init_fixture(reference_data, distribution, request):
     """Distribution fixture."""
     if request.param == 0:
         return distribution

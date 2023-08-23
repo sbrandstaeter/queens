@@ -8,7 +8,7 @@ from pqueens.distributions.normal import NormalDistribution
 
 
 @pytest.fixture(name="component_data", params=[1, 2])
-def fixture_component_data(request):
+def component_data_fixture(request):
     """Data for two compoments."""
     if request.param == 1:
         return (1, 2), (0.5, 3)
@@ -17,7 +17,7 @@ def fixture_component_data(request):
 
 
 @pytest.fixture(name="reference_mixture_model_data")
-def fixture_reference(component_data):
+def reference_mixture_model_data_fixture(component_data):
     """Referencei data model fixture."""
     component_data0, component_data1 = component_data
     normal0 = NormalDistribution(*component_data0)
@@ -27,7 +27,7 @@ def fixture_reference(component_data):
 
 
 @pytest.fixture(name="mixture_model")
-def fixture_mixture_model(reference_mixture_model_data):
+def mixture_model_fixture(reference_mixture_model_data):
     """Mixture model fixture."""
     weights, normal1, normal2 = reference_mixture_model_data
     mixture_model = MixtureDistribution(weights, (normal1, normal2))

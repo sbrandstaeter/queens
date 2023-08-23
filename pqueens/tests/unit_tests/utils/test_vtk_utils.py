@@ -15,19 +15,19 @@ from pqueens.utils.vtk_utils import (
 
 
 @pytest.fixture(name="template_file_path")
-def fixture_template_file_path():
+def template_file_path_fixture():
     """Path to vtu example file."""
     return relative_path_from_pqueens("tests/unit_tests/external_files/Rectangle_10x10.vtk")
 
 
 @pytest.fixture(name="cell_data_array", scope='module', params=[(100), (100, 2), (100, 15)])
-def fixture_cell_data_array(request):
+def cell_data_array_fixture(request):
     """Numpy array for cell data."""
     return np.ones(request.param)
 
 
 @pytest.fixture(name="cell_data_vtkarray", scope='module', params=[(100), (100, 2), (100, 15)])
-def fixture_cell_data_vtkarray(request):
+def cell_data_vtkarray(_fixturerequest):
     """Fixture vtkArray for cell data."""
     array = numpy_to_vtk(np.ones(request.param))
     array.SetName("test_name_different_from_the_other")
@@ -35,13 +35,13 @@ def fixture_cell_data_vtkarray(request):
 
 
 @pytest.fixture(name="point_data_array", scope='module', params=[(121), (121, 2), (121, 15)])
-def fixture_point_data_array(request):
+def point_data_array_fixture(request):
     """Numpy array for point data."""
     return np.ones(request.param)
 
 
 @pytest.fixture(name="point_data_vtkarray", scope='module', params=[(121), (121, 2), (121, 15)])
-def fixture_point_data_vtkarray(request):
+def point_data_vtkarray_fixture(request):
     """Fixture vtkArray for point data."""
     array = numpy_to_vtk(np.ones(request.param))
     array.SetName("test_name_different_from_the_other")

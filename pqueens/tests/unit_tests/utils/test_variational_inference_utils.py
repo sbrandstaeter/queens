@@ -48,31 +48,31 @@ DISTRIBUTION_NAMES = ["mean_field", "fullrank", "particles", "mixture"]
 
 
 @pytest.fixture(name="mean_field_distribution")
-def fixture_mean_field_distribution():
+def mean_field_distribution_fixture():
     """Mean field Normal distribution."""
     return MeanFieldNormalVariational(3)
 
 
 @pytest.fixture(name="fullrank_distribution")
-def fixture_fullrank_distribution():
+def fullrank_distribution_fixture():
     """Fullrank Normal distribution."""
     return FullRankNormalVariational(3)
 
 
 @pytest.fixture(name="mixture_distribution")
-def fixture_mixture_distribution(mean_field_distribution):
+def mixture_distribution_fixture(mean_field_distribution):
     """Mixutre models of mean field distributions."""
     return MixtureModel(mean_field_distribution, mean_field_distribution.dimension, 2)
 
 
 @pytest.fixture(name="particles_distribution")
-def fixture_particles_distribution():
+def particles_distribution_fixture():
     """Particles distribution."""
     return ParticleVariational(1, [[1], [2]])
 
 
 @pytest.fixture(name="mean_field_reference_data")
-def fixture_meanfield_reference_data():
+def meanfield_reference_data_fixture():
     """Reference data for the mean field distribution."""
     mean = np.ones((3, 1))
     cov = np.eye(3) * 2
@@ -102,7 +102,7 @@ def fixture_meanfield_reference_data():
 
 
 @pytest.fixture(name="fullrank_reference_data")
-def fixture_fullrank_reference_data():
+def fullrank_reference_data_fixture():
     """Reference data for the fullrank field distribution."""
     mean = np.ones(3).reshape(-1, 1)
     lower_chol = np.array([[2, 0, 0], [1, 2, 0], [1, 1, 2]])
@@ -153,7 +153,7 @@ def fixture_fullrank_reference_data():
 
 
 @pytest.fixture(name="mixture_reference_data")
-def fixture_mixture_reference_data(mean_field_reference_data):
+def mixture_reference_data_fixture(mean_field_reference_data):
     """Reference data for the mixture distribution."""
     distribution_1 = mean_field_reference_data.distribution
     (mean_1, cov_1) = mean_field_reference_data.distribution_parameters
@@ -206,7 +206,7 @@ def fixture_mixture_reference_data(mean_field_reference_data):
 
 
 @pytest.fixture(name="particles_reference_data")
-def fixture_particles_reference_data():
+def particles_reference_data_fixture():
     """Reference data for the particles distribution."""
     probabilities = np.array([0.1, 0.9])
     sample_space = np.array([[1], [2]])
@@ -231,7 +231,7 @@ def fixture_particles_reference_data():
 
 
 @pytest.fixture(name="distributions")
-def fixture_distributions(request):
+def distributions_fixture(request):
     """Fixture to loop through the distributions."""
     distribution_name = request.param
     distribution = request.getfixturevalue(distribution_name + "_distribution")
