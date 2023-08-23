@@ -37,7 +37,7 @@ class PymcDistributionWrapper(pt.Op):
         (sample,) = inputs
 
         value = self.logpdf(sample)
-        outputs[0][0] = np.array(value)
+        output_storage[0][0] = np.array(value)
 
     def grad(self, inputs, output_grads):
         """Get gradient and multiply with upstream gradient."""
@@ -71,7 +71,7 @@ class PymcGradientWrapper(pt.Op):
         (sample,) = inputs
         if self.gradient_func is not None:
             grads = self.gradient_func(sample)
-            outputs[0][0] = grads
+            output_storage[0][0] = grads
         else:
             raise TypeError("Gradient function is not callable")
 
