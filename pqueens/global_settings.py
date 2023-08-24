@@ -41,7 +41,7 @@ class GlobalSettings:
         try:
             git_hash = (
                 subprocess.check_output(
-                    ['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']
+                    ['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD'], shell=True
                 )
                 .decode('ascii')
                 .strip()
