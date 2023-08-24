@@ -1,12 +1,12 @@
 """Global Settings module."""
 
 import logging
-import subprocess
 from pathlib import Path
 
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.logger_settings import setup_basic_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 GLOBAL_SETTINGS = None
@@ -38,24 +38,29 @@ class GlobalSettings:
         if " " in experiment_name:
             raise ValueError("Experiment name can not contain spaces!")
 
-        try:
-            git_hash = (
-                subprocess.check_output(
-                    ['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD'], shell=True
-                )
-                .decode('ascii')
-                .strip()
-            )
-        except subprocess.CalledProcessError as subprocess_error:
-            _logger.warning("Could not get git hash. Failed with the following error:")
-            _logger.warning(str(subprocess_error))
-            git_hash = "unknown"
-            _logger.warning("Setting git hash to: '%s'!", git_hash)
-
         self.experiment_name = experiment_name
-        self.output_dir = Path(output_dir)
-        self.git_hash = git_hash
+        self.output_dir = output_dir
         self.debug = debug
+
+        # set up logging
+        log_file_path = self.output_dir / f'{self.experiment_name}.log'
+        setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
+
+        return_code, _, stdout, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        if not return_code:
+            git_hash = stdout.strip()
+        else:
+            git_hash = "unknown"
+            _logger.warning("Could not get git hash. Failed with the following stderror:")
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git hash to: %s!", git_hash)
+
+        self.git_hash = git_hash
+        _logger.info("This QUEENS run is based on the git commit with hash: %s", self.git_hash)
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.
@@ -67,10 +72,6 @@ class GlobalSettings:
         """
         global GLOBAL_SETTINGS  # pylint: disable=global-statement
         GLOBAL_SETTINGS = self
-
-        # set up logging
-        log_file_path = self.output_dir / f'{self.experiment_name}.log'
-        setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return self
 
