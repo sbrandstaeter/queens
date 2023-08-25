@@ -1,6 +1,7 @@
 """From config create utils."""
 
 import logging
+import types
 
 from pqueens.data_processor import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from pqueens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
@@ -14,6 +15,7 @@ from pqueens.models import VALID_TYPES as VALID_MODEL_TYPES
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.parameters.parameters import from_config_create_parameters
 from pqueens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
+from pqueens.utils.classifier import VALID_CLASSIFIER_LEARNING_TYPES, VALID_CLASSIFIER_TYPES
 from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.experimental_data_reader import (
     VALID_TYPES as VALID_EXPERIMENTAL_DATA_READER_TYPES,
@@ -26,16 +28,18 @@ _logger = logging.getLogger(__name__)
 
 
 VALID_TYPES = {
+    **VALID_CLASSIFIER_LEARNING_TYPES,
+    **VALID_CLASSIFIER_TYPES,
     **VALID_DATA_PROCESSOR_TYPES,
     **VALID_DISTRIBUTION_TYPES,
     **VALID_DRIVER_TYPES,
+    **VALID_EXPERIMENTAL_DATA_READER_TYPES,
     **VALID_EXTERNAL_GEOMETRY_TYPES,
     **VALID_INTERFACE_TYPES,
+    **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_ITERATOR_TYPES,
     **VALID_MODEL_TYPES,
     **VALID_SCHEDULER_TYPES,
-    **VALID_EXPERIMENTAL_DATA_READER_TYPES,
-    **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_STOCHASTIC_OPTIMIZER_TYPES,
 }
 
@@ -112,6 +116,8 @@ def from_config_create_object(obj_description, parameters=None):
         obj: Initialized object
     """
     object_class = get_module_class(obj_description, VALID_TYPES)
+    if isinstance(object_class, types.FunctionType):
+        return object_class
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description['parameters'] = parameters
     return object_class(**obj_description)
