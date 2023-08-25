@@ -43,6 +43,7 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+LoadBACIModules
 DoChecks
 StageIn
 RunProgram
