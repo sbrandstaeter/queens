@@ -6,6 +6,7 @@ from pathlib import Path
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.logger_settings import setup_basic_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -89,6 +90,19 @@ class GlobalSettings:
         self.git_hash = git_hash
         self.git_branch = git_branch
         self.git_clean_working_tree = git_clean_working_tree
+
+    def print_git_information(self):
+        """Print information on the status of the git repository."""
+        _logger.info(
+            get_str_table(
+                name="git information",
+                print_dict={
+                    "commit hash": self.git_hash,
+                    "branch": self.git_branch,
+                    "clean working tree": self.git_clean_working_tree,
+                },
+            )
+        )
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.

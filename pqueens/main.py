@@ -49,6 +49,7 @@ def run_iterator(iterator):
         iterator (Iterator): Main queens iterator
     """
     print_banner_and_description()
+    pqueens.global_settings.GLOBAL_SETTINGS.print_git_information()
 
     start_time_calc = time.time()
 
@@ -58,10 +59,10 @@ def run_iterator(iterator):
 
     try:
         iterator.run()
-    except Exception as e:
+    except Exception as exception:
         pqueens.global_settings.GLOBAL_SETTINGS.__exit__(None, None, None)
         # TODO: Write iterator in pickle file
-        raise e
+        raise exception
 
     end_time_calc = time.time()
     _logger.info("")

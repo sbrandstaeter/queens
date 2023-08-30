@@ -1,6 +1,9 @@
 """Print utils."""
 
 
+DEFAULT_OUTPUT_WIDTH = 81
+
+
 def get_str_table(name, print_dict):
     """Function to get table to be used in *__str__* methods.
 
@@ -18,8 +21,10 @@ def get_str_table(name, print_dict):
 
     data_template = f"{{:<{column_width_name}}} : {{:<{column_width_value}}}"
 
-    # find max width and create sepreators
-    seperator_width = max(max(len(data_template.format("", "")), len(name)) + 4, 81)
+    # find max width and create seperators
+    seperator_width = max(
+        max(len(data_template.format("", "")), len(name)) + 4, DEFAULT_OUTPUT_WIDTH
+    )
     line_template = f"| {{:{seperator_width-4}}} |\n"
     main_seperator_line = "+" + "-" * (seperator_width - 2) + "+\n"
     soft_separator_line = (

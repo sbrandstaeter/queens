@@ -3,11 +3,9 @@ import logging
 
 import pyfiglet
 
-import pqueens.global_settings
+from pqueens.utils.print_utils import DEFAULT_OUTPUT_WIDTH
 
 _logger = logging.getLogger(__name__)
-
-DEFAULT_OUTPUT_WIDTH = 63
 
 
 def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
@@ -144,14 +142,3 @@ def print_banner_and_description(output_width=DEFAULT_OUTPUT_WIDTH):
     Inverse Problems and Simulation Analytics
     """
     print_centered_multiline(description, output_width)
-    print_centered_multiline(
-        (
-            "git information\n"
-            "---------------\n"
-            f"commit hash:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_hash}\n"
-            f"branch:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_branch}\n"
-            f"clean working tree:\n"
-            f"{pqueens.global_settings.GLOBAL_SETTINGS.git_clean_working_tree}\n"
-        ),
-        output_width,
-    )
