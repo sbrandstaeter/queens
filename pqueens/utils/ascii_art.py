@@ -3,6 +3,8 @@ import logging
 
 import pyfiglet
 
+import pqueens.global_settings
+
 _logger = logging.getLogger(__name__)
 
 DEFAULT_OUTPUT_WIDTH = 63
@@ -142,3 +144,7 @@ def print_banner_and_description(output_width=DEFAULT_OUTPUT_WIDTH):
     Inverse Problems and Simulation Analytics
     """
     print_centered_multiline(description, output_width)
+    print_centered_multiline(
+        f" git commit hash:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_hash}",
+        output_width,
+    )

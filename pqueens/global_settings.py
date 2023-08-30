@@ -60,7 +60,6 @@ class GlobalSettings:
             _logger.warning("Setting git hash to: %s!", git_hash)
 
         self.git_hash = git_hash
-        _logger.info("This QUEENS run is based on the git commit with hash: %s", self.git_hash)
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.
