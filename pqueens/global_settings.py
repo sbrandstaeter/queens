@@ -59,7 +59,36 @@ class GlobalSettings:
             _logger.warning(str(stderr))
             _logger.warning("Setting git hash to: %s!", git_hash)
 
+        return_code, _, git_branch, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', '--abbrev-ref', 'HEAD']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        git_branch = git_branch.strip()
+        if return_code:
+            git_branch = "unknown"
+            _logger.warning("Could not determine git branch. Failed with the following stderror:")
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git branch to: %s!", git_branch)
+
+        return_code, _, git_status, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'status', '--porcelain']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        git_clean_working_tree = not git_status
+        if return_code:
+            git_clean_working_tree = "unknown"
+            _logger.warning(
+                "Could not determine if git working tree is clean. "
+                "Failed with the following stderror:"
+            )
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git working tree status to: %s!", git_clean_working_tree)
+
         self.git_hash = git_hash
+        self.git_branch = git_branch
+        self.git_clean_working_tree = git_clean_working_tree
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.

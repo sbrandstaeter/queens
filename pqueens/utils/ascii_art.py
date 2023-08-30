@@ -145,6 +145,13 @@ def print_banner_and_description(output_width=DEFAULT_OUTPUT_WIDTH):
     """
     print_centered_multiline(description, output_width)
     print_centered_multiline(
-        f" git commit hash:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_hash}",
+        (
+            "git information\n"
+            "---------------\n"
+            f"commit hash:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_hash}\n"
+            f"branch:\n{pqueens.global_settings.GLOBAL_SETTINGS.git_branch}\n"
+            f"clean working tree:\n"
+            f"{pqueens.global_settings.GLOBAL_SETTINGS.git_clean_working_tree}\n"
+        ),
         output_width,
     )
