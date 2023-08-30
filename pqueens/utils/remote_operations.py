@@ -112,6 +112,7 @@ class RemoteConnection(Connection):
         _logger.info("Starting Dask cluster on %s", self.host)
 
         python_cmd = (
+            "source /etc/profile;"
             f"{self.remote_python} "
             f"{Path(cluster_queens_repository) / 'pqueens' / 'utils' / 'start_dask_cluster.py'} "
             f"--workload-manager {workload_manager} "
