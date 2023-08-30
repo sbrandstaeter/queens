@@ -1,9 +1,9 @@
 """Collect fixtures used by the integration tests."""
 
-import getpass
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pytest
@@ -14,11 +14,11 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-DEEP_CLUSTER_TYPE = "deep"
+THOUGHT_CLUSTER_TYPE = "thought"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
 CHARON_CLUSTER_TYPE = "charon"
 
-VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
+VALID_PBS_CLUSTER_TYPES = (THOUGHT_CLUSTER_TYPE,)
 VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
 
 VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
@@ -31,7 +31,7 @@ class ClusterConfig:
     Attributes:
         name (str):                         name of cluster
         cluster_address (str):              hostname or address to reach cluster from network
-        workload_manager (str):          type of work load scheduling software (PBS or SLURM)
+        workload_manager (str):             type of work load scheduling software (PBS or SLURM)
         jobscript_template (Path):          absolute path to jobscript template file
         cluster_internal_address (str)      ip address of login node in cluster internal network
         default_python_path (str):          path indicating the default remote python location
@@ -39,6 +39,7 @@ class ClusterConfig:
                                             needed for the jobscript
         dask_jobscript_template (Path):     path to the shell script template that runs a
                                             forward solver call (e.g., BACI plus post-processor)
+        queue (str, opt):                   Destination queue for each worker job
     """
 
     name: str
@@ -49,19 +50,21 @@ class ClusterConfig:
     default_python_path: str
     cluster_script_path: Path
     dask_jobscript_template: Path
+    queue: Optional[str] = 'null'
 
     dict = asdict
 
 
-DEEP_CONFIG = ClusterConfig(
-    name="deep",
-    cluster_address="deep.lnm.ed.tum.de",
-    workload_manager="pbs",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+THOUGHT_CONFIG = ClusterConfig(
+    name="thought",
+    cluster_address="129.187.58.22",
+    workload_manager="slurm",
+    queue="normal",
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
     cluster_internal_address="null",
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
-    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
+    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
 )
 
 
@@ -89,34 +92,23 @@ CHARON_CONFIG = ClusterConfig(
 )
 
 CLUSTER_CONFIGS = {
-    DEEP_CLUSTER_TYPE: DEEP_CONFIG,
+    THOUGHT_CLUSTER_TYPE: THOUGHT_CONFIG,
     BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
     CHARON_CLUSTER_TYPE: CHARON_CONFIG,
 }
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
-@pytest.fixture(scope="session")
-def user():
-    """Name of user calling the test suite."""
-    return getpass.getuser()
 
 
-@pytest.fixture(scope="session")
-def cluster_user(user, hostname):
+@pytest.fixture(name="cluster_user", scope="session")
+def cluster_user_fixture(pytestconfig):
     """Username of cluster account to use for tests."""
-    # user who called the test suite
-    # gitlab-runner has to run simulation as different user on cluster everyone else should use
-    # account with same name
-    if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
-        cluster_user = "queens"
-    else:
-        cluster_user = user
-    return cluster_user
+    return pytestconfig.getoption("remote_user")
 
 
-@pytest.fixture(scope="session")
-def cluster(request):
+@pytest.fixture(name="cluster", scope="session")
+def cluster_fixture(request):
     """Iterate over clusters.
 
     The actual parameterization is done on a per test basis which also
@@ -125,8 +117,8 @@ def cluster(request):
     return request.param
 
 
-@pytest.fixture(scope="session")
-def cluster_settings(cluster, cluster_user):
+@pytest.fixture(name="cluster_settings", scope="session")
+def cluster_settings_fixture(cluster, cluster_user):
     """Hold all settings of cluster."""
     settings = CLUSTER_CONFIGS.get(cluster).dict()
     _logger.debug("raw cluster config: %s", settings)
@@ -136,14 +128,14 @@ def cluster_settings(cluster, cluster_user):
     return settings
 
 
-@pytest.fixture(scope="session")
-def connect_to_resource(cluster_settings):
+@pytest.fixture(name="connect_to_resource", scope="session")
+def connect_to_resource_fixture(cluster_settings):
     """Use for ssh connect to the cluster."""
     return cluster_settings["connect_to_resource"]
 
 
-@pytest.fixture(scope="session")
-def baci_cluster_paths(connect_to_resource):
+@pytest.fixture(name="baci_cluster_paths", scope="session")
+def baci_cluster_paths_fixture(connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
@@ -178,7 +170,7 @@ def baci_cluster_paths(connect_to_resource):
 
 
 @pytest.fixture(name="baci_example_expected_mean")
-def fixture_baci_example_expected_mean():
+def baci_example_expected_mean_fixture():
     """Expected result for the BACI example."""
     result = np.array(
         [
@@ -204,7 +196,7 @@ def fixture_baci_example_expected_mean():
 
 
 @pytest.fixture(name="baci_example_expected_var")
-def name_baci_example_expected_var():
+def baci_example_expected_var_fixture():
     """Expected variance for the BACI example."""
     result = np.array(
         [

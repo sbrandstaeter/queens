@@ -82,7 +82,6 @@ class OptimizationIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         initial_guess,
         result_description,
@@ -104,7 +103,6 @@ class OptimizationIterator(Iterator):
 
         Args:
             model: TODO_doc
-            global_settings: TODO_doc
             parameters (obj): Parameters object
             initial_guess: TODO_doc
             result_description: TODO_doc
@@ -122,11 +120,8 @@ class OptimizationIterator(Iterator):
             axis_scaling_experimental: TODO_doc
             output_scaling_experimental: TODO_doc
         """
-        super().__init__(model, global_settings, parameters)
-        _logger.info(
-            "Optimization Iterator for experiment: %s",
-            self.global_settings['experiment_name'],
-        )
+        super().__init__(model, parameters)
+        _logger.info("Optimization Iterator for experiment: %s", self.experiment_name)
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
@@ -335,11 +330,7 @@ class OptimizationIterator(Iterator):
 
         if self.result_description:
             if self.result_description["write_results"]:
-                write_results(
-                    self.solution,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
+                write_results(self.solution, self.output_dir, self.experiment_name)
 
     # -------------- private helper functions --------------------------
     def _get_experimental_data(self):

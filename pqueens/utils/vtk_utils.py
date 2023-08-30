@@ -2,7 +2,7 @@
 import numpy as np
 import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-from vtkmodules.vtkCommonCore import vtkDoubleArray
+from vtkmodules.vtkCommonCore import vtkDoubleArray  # pylint:disable=no-name-in-module
 
 from pqueens.utils.path_utils import check_if_path_exists
 

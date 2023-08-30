@@ -10,7 +10,6 @@ pandas==1.5.3
 scikit-learn==1.2.2
 scipy==1.10.1
 
-
 # Dask packages
 dask
 distributed # dask.distributed
@@ -39,6 +38,7 @@ tensorflow-probability<0.19
 torch
 jax[cpu]
 jax
+scikit-activeml>=0.4.1
 pymc==5.0.2
 
 # making fancy plots

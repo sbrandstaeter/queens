@@ -29,13 +29,6 @@ def dummy_high_fidelity_model(parameters):
     return hf_model
 
 
-@pytest.fixture()
-def global_settings():
-    """Create global settings."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
 class PreProcessor:
     """TODO_doc."""
 
@@ -99,7 +92,9 @@ def settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture()
-def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
+def default_bmfmc_model(
+    dummy_global_settings, parameters, settings_probab_mapping, default_interface
+):
     """Create default BMFMC model."""
     model = BMFMCModel(
         parameters=parameters,
@@ -128,10 +123,10 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
 
 
 @pytest.fixture()
-def default_data_iterator(result_description, global_settings):
+def default_data_iterator(result_description, dummy_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
-    data_iterator = DataIterator(path_to_data, result_description, global_settings)
+    data_iterator = DataIterator(path_to_data, result_description)
     return data_iterator
 
 
@@ -150,7 +145,7 @@ def dummy_MC_data(parameters):
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, settings_probab_mapping, parameters):
+def test_init(dummy_global_settings, mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 
@@ -360,8 +355,8 @@ def test_build_approximation(mocker, default_bmfmc_model):
 
 def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
     """Test computation of the high-fidelity output density prediction."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_mean')
-    mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_var')
+    mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_p_yhf_mean')
+    mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_p_yhf_var')
     default_bmfmc_model.predictive_var_bool = True
 
     default_bmfmc_model.compute_pyhf_statistics()
@@ -379,7 +374,7 @@ def test_calculate_p_yhf_mean(default_bmfmc_model):
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
     default_bmfmc_model.m_f_mc = np.linspace(0, 10.0, 10)
 
-    default_bmfmc_model._calculate_p_yhf_mean()
+    default_bmfmc_model.calculate_p_yhf_mean()
 
     expected_mean_pdf = np.array(
         [
@@ -425,7 +420,7 @@ def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
         ]
     )
 
-    default_bmfmc_model._calculate_p_yhf_var()
+    default_bmfmc_model.calculate_p_yhf_var()
 
     expected_var = np.array(
         [
@@ -527,7 +522,7 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
     def linear_scale_dummy(a, b):
         return a
 
-    with patch.object(bmfmc_model, '_linear_scale_a_to_b', linear_scale_dummy):
+    with patch.object(bmfmc_model, 'linear_scale_a_to_b', linear_scale_dummy):
         default_bmfmc_model.calculate_extended_gammas()
 
         mp1.assert_called_once()
@@ -569,9 +564,9 @@ def test_input_dim_red(mocker, default_bmfmc_model):
         return_value=(1.0, 1.0),
     )
     mp2 = mocker.patch(
-        'pqueens.models.bmfmc_model._project_samples_on_truncated_basis', return_value=1.0
+        'pqueens.models.bmfmc_model.project_samples_on_truncated_basis', return_value=1.0
     )
-    mp3 = mocker.patch('pqueens.models.bmfmc_model._assemble_x_red_stdizd', retrun_value=1.0)
+    mp3 = mocker.patch('pqueens.models.bmfmc_model.assemble_x_red_stdizd', retrun_value=1.0)
     default_bmfmc_model.input_dim_red()
 
     mp1.assert_called_once()
@@ -622,7 +617,7 @@ def test_project_samples_on_truncated_basis():
         ]
     )
 
-    coef_mat = bmfmc_model._project_samples_on_truncated_basis(truncated_basis_dict, num_samples)
+    coef_mat = bmfmc_model.project_samples_on_truncated_basis(truncated_basis_dict, num_samples)
 
     np.testing.assert_array_almost_equal(coef_mat, expected_coef_mat, decimal=6)
 
@@ -645,7 +640,7 @@ def test_linear_scale_a_to_b():
     b_vec = np.linspace(-5.0, 5.0, 10)
 
     expected_scaled_a_vec = np.linspace(-5.0, 5.0, 10)
-    scaled_a_vec = bmfmc_model._linear_scale_a_to_b(a_vec, b_vec)
+    scaled_a_vec = bmfmc_model.linear_scale_a_to_b(a_vec, b_vec)
     np.testing.assert_array_almost_equal(scaled_a_vec, expected_scaled_a_vec, decimal=6)
 
 
@@ -663,5 +658,5 @@ def test_assemble_x_red_stdizd():
         ]
     )
 
-    X_stdized = bmfmc_model._assemble_x_red_stdizd(x_uncorr, coef_mat)
+    X_stdized = bmfmc_model.assemble_x_red_stdizd(x_uncorr, coef_mat)
     np.testing.assert_array_almost_equal(X_stdized, expected_X_stdized, decimal=6)

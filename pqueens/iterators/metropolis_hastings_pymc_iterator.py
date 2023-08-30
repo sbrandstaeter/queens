@@ -31,7 +31,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         num_samples,
         seed,
@@ -52,7 +51,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             seed (int): Seed for rng
@@ -73,16 +71,11 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             Initialise pymc iterator
         """
-        _logger.info(
-            "PyMC Metropolis-Hastings Iterator for experiment: %s",
-            global_settings.get('experiment_name'),
-        )
         if covariance is not None:
             covariance = np.array(covariance)
 
         super().__init__(
             model=model,
-            global_settings=global_settings,
             parameters=parameters,
             num_burn_in=num_burn_in,
             num_chains=num_chains,
@@ -97,6 +90,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             progressbar=progressbar,
         )
 
+        _logger.info("PyMC Metropolis-Hastings Iterator for experiment: %s", self.experiment_name)
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling

@@ -7,7 +7,7 @@ method:
   result_description:
     write_results: true
     plot_results: false
-pre_processing:
+random_field_preprocessor:
   type: baci_dat
   list_geometric_sets: [DSURFACE 1]
   associated_material_numbers_geometric_set: [[10, 11]]

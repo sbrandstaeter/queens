@@ -1,11 +1,12 @@
 """From config create utils."""
 
 import logging
+import types
 
 from pqueens.data_processor import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from pqueens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from pqueens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
-from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.external_geometry import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
 from pqueens.interfaces import VALID_TYPES as VALID_INTERFACE_TYPES
 from pqueens.interfaces.interface import Interface
 from pqueens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
@@ -14,7 +15,7 @@ from pqueens.models import VALID_TYPES as VALID_MODEL_TYPES
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.parameters.parameters import from_config_create_parameters
 from pqueens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
-from pqueens.schedulers.scheduler import Scheduler
+from pqueens.utils.classifier import VALID_CLASSIFIER_LEARNING_TYPES, VALID_CLASSIFIER_TYPES
 from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.experimental_data_reader import (
     VALID_TYPES as VALID_EXPERIMENTAL_DATA_READER_TYPES,
@@ -27,16 +28,19 @@ _logger = logging.getLogger(__name__)
 
 
 VALID_TYPES = {
+    **VALID_CLASSIFIER_LEARNING_TYPES,
+    **VALID_CLASSIFIER_TYPES,
+    **VALID_DATA_PROCESSOR_TYPES,
+    **VALID_DISTRIBUTION_TYPES,
+    **VALID_DRIVER_TYPES,
+    **VALID_EXPERIMENTAL_DATA_READER_TYPES,
+    **VALID_EXTERNAL_GEOMETRY_TYPES,
+    **VALID_INTERFACE_TYPES,
+    **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_ITERATOR_TYPES,
     **VALID_MODEL_TYPES,
-    **VALID_INTERFACE_TYPES,
-    **VALID_DATA_PROCESSOR_TYPES,
-    **VALID_STOCHASTIC_OPTIMIZER_TYPES,
-    **VALID_DISTRIBUTION_TYPES,
-    **VALID_EXPERIMENTAL_DATA_READER_TYPES,
-    **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_SCHEDULER_TYPES,
-    **VALID_DRIVER_TYPES,
+    **VALID_STOCHASTIC_OPTIMIZER_TYPES,
 }
 
 
@@ -57,14 +61,14 @@ def from_config_create_iterator(config):
         new_obj (iterator): Main queens iterator with all initialized objects.
     """
     # do pre-processing
-    pre_processer = from_config_create_external_geometry(config, 'pre_processing')
-    if pre_processer:
-        config.pop('pre_processing')
-        pre_processer.main_run()
-        pre_processer.write_random_fields_to_dat()
+    rf_preprocessor = None
+    rf_preprocessor_options = config.pop('random_field_preprocessor', None)
+    if rf_preprocessor_options:
+        rf_preprocessor = from_config_create_object(rf_preprocessor_options)
+        rf_preprocessor.main_run()
+        rf_preprocessor.write_random_fields_to_dat()
 
-    parameters = from_config_create_parameters(config.pop('parameters', {}), pre_processer)
-    global_settings = config.pop('global_settings')
+    parameters = from_config_create_parameters(config.pop('parameters', {}), rf_preprocessor)
     obj_key = None
     for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
         deadlock = True
@@ -82,12 +86,8 @@ def from_config_create_iterator(config):
             )
 
         try:
-            if config[obj_key]['type'] in ["baci_dat"]:  # TODO: refactor fcc of external geometry
-                new_obj = from_config_create_external_geometry(config, obj_key)
-                config.pop(obj_key)
-            else:
-                obj_description = config.pop(obj_key)
-                new_obj = from_config_create_object(obj_description, global_settings, parameters)
+            obj_description = config.pop(obj_key)
+            new_obj = from_config_create_object(obj_description, parameters)
         except (TypeError, InvalidOptionError) as err:
             raise InvalidOptionError(f"Object '{obj_key}' can not be initialized.") from err
 
@@ -105,20 +105,19 @@ def from_config_create_iterator(config):
     )
 
 
-def from_config_create_object(obj_description, global_settings=None, parameters=None):
+def from_config_create_object(obj_description, parameters=None):
     """Create object from description.
 
     Args:
         obj_description (dict): Description of the object
-        global_settings (dict, optional): Global settings for the QUEENS run.
         parameters (obj, optional): Parameters object
 
     Returns:
         obj: Initialized object
     """
     object_class = get_module_class(obj_description, VALID_TYPES)
-    if issubclass(object_class, (Iterator, Scheduler)):
-        obj_description['global_settings'] = global_settings
+    if isinstance(object_class, types.FunctionType):
+        return object_class
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description['parameters'] = parameters
     return object_class(**obj_description)

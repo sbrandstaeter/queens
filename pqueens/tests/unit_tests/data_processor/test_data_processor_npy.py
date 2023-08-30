@@ -56,7 +56,6 @@ def default_data_processor_npy(data_path):
         file_options_dict,
         files_to_be_deleted_regex_lst,
     )
-    data_processor.file_path = data_path
 
     return data_processor
 
@@ -77,39 +76,33 @@ def test_init():
     assert data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert data_processor.file_options_dict == file_options_dict
     assert data_processor.file_name_identifier == file_name_identifier
-    assert data_processor.file_path is None
-    np.testing.assert_array_equal(data_processor.processed_data, np.empty(shape=0))
-    assert data_processor.raw_file_data is None
 
 
 def test_get_raw_data_from_file(
     default_data_processor_npy,
+    data_path,
     dummy_data,
     write_dummy_data,
 ):
     """Test get raw data from file."""
-    default_data_processor_npy._get_raw_data_from_file()
-    np.testing.assert_array_equal(default_data_processor_npy.raw_file_data, dummy_data)
+    raw_data = default_data_processor_npy._get_raw_data_from_file(data_path)
+    np.testing.assert_array_equal(raw_data, dummy_data)
 
 
-def test_non_existing_file(
-    default_data_processor_npy,
-):
+def test_non_existing_file(default_data_processor_npy, data_path):
     """Test non-existing raw data file."""
     default_data_processor_npy.file_path = Path("non_existing_file.npy")
-    default_data_processor_npy._get_raw_data_from_file()
-    assert default_data_processor_npy.raw_file_data is None
+    raw_data = default_data_processor_npy._get_raw_data_from_file(data_path)
+    assert raw_data is None
 
 
 def test_wrong_file_type(default_data_processor_npy, write_wrong_dummy_data, wrong_data_path):
     """Test with wrong file type."""
-    default_data_processor_npy.file_path = wrong_data_path
-    default_data_processor_npy._get_raw_data_from_file()
-    assert default_data_processor_npy.raw_file_data is None
+    raw_data = default_data_processor_npy._get_raw_data_from_file(wrong_data_path)
+    assert raw_data is None
 
 
 def test_filter_and_manipulate_raw_data(default_data_processor_npy, dummy_data):
     """Test filter and manipulate raw data."""
-    default_data_processor_npy.raw_file_data = dummy_data
-    default_data_processor_npy._filter_and_manipulate_raw_data()
-    np.testing.assert_array_equal(default_data_processor_npy.processed_data, dummy_data)
+    processed_data = default_data_processor_npy._filter_and_manipulate_raw_data(dummy_data)
+    np.testing.assert_array_equal(processed_data, dummy_data)

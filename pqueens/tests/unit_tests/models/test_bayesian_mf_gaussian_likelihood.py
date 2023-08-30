@@ -21,13 +21,6 @@ def result_description():
 
 
 @pytest.fixture()
-def global_settings():
-    """Fixture for dummy global settings."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
-@pytest.fixture()
 def dummy_model():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
@@ -55,7 +48,7 @@ def default_interface():
 
 
 @pytest.fixture()
-def default_bmfia_iterator(global_settings):
+def default_bmfia_iterator(dummy_global_settings):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
@@ -71,9 +64,8 @@ def default_bmfia_iterator(global_settings):
     num_features = None
     coord_cols = None
 
-    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
-            global_settings=global_settings,
             parameters="dummy_parameters",
             features_config=features_config,
             hf_model=hf_model,
@@ -126,7 +118,7 @@ def default_mf_likelihood(
     )
     mocker.patch(
         "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
-        "._build_approximation"
+        ".build_approximation"
     )
     mocker.patch(
         "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
@@ -214,7 +206,7 @@ def test_init(mocker, dummy_model, default_interface, default_bmfia_iterator):
     )
     mocker.patch(
         "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
-        "._build_approximation"
+        ".build_approximation"
     )
     mocker.patch(
         "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
@@ -284,7 +276,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     mf_log_likelihood_exp = np.array([[7], [9]])
     mp1 = mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.'
-        'BMFGaussianModel._evaluate_mf_likelihood',
+        'BMFGaussianModel.evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
     )
 
@@ -338,7 +330,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
         return_value=(m_f_mat, var_y_mat),
     )
 
-    log_lik_mf = default_mf_likelihood._evaluate_mf_likelihood(x_batch, y_lf_mat)
+    log_lik_mf = default_mf_likelihood.evaluate_mf_likelihood(x_batch, y_lf_mat)
 
     # ------ assert and test statements ------------------------------------
     mp1.assert_called_once()
@@ -516,7 +508,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, mocker):
         return_value=None,
     )
 
-    BMFGaussianModel._build_approximation(
+    BMFGaussianModel.build_approximation(
         default_bmfia_iterator,
         default_interface,
         approx,

@@ -14,12 +14,6 @@ def default_geo_obj(tmp_path):
     path_to_dat_file = tmp_path / 'myfile.dat'
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
-    element_topology = [{"element_number": [], "nodes": [], "material": []}]
-    node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
-    line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
-    surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
-    volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
-    node_coordinates = {"node_mesh": [], "coordinates": []}
 
     path_to_preprocessed_dat_file = tmp_path / 'preprocessed'
     random_fields = (
@@ -27,17 +21,11 @@ def default_geo_obj(tmp_path):
     )
 
     geo_obj = BaciDatExternalGeometry(
-        path_to_dat_file,
-        list_geometric_sets,
-        list_associated_material_numbers,
-        element_topology,
-        node_topology,
-        line_topology,
-        surface_topology,
-        volume_topology,
-        node_coordinates,
-        path_to_preprocessed_dat_file,
-        random_fields,
+        input_template=path_to_dat_file,
+        input_template_preprocessed=path_to_preprocessed_dat_file,
+        list_geometric_sets=list_geometric_sets,
+        associated_material_numbers_geometric_set=list_associated_material_numbers,
+        random_fields=random_fields,
     )
     return geo_obj
 
@@ -201,7 +189,7 @@ def test_init(mocker, tmp_path):
     element_topology = [{"element_number": [], "nodes": [], "material": []}]
     node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
     line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
-    surface_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
+    surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
     mp = mocker.patch('pqueens.external_geometry.external_geometry.ExternalGeometry.__init__')
@@ -212,17 +200,11 @@ def test_init(mocker, tmp_path):
     )
 
     geo_obj = BaciDatExternalGeometry(
-        path_to_dat_file,
-        list_geometric_sets,
-        list_associated_material_numbers,
-        element_topology,
-        node_topology,
-        line_topology,
-        surface_topology,
-        volume_topology,
-        node_coordinates,
-        path_to_preprocessed_dat_file,
-        random_fields,
+        input_template=path_to_dat_file,
+        input_template_preprocessed=path_to_preprocessed_dat_file,
+        list_geometric_sets=list_geometric_sets,
+        associated_material_numbers_geometric_set=list_associated_material_numbers,
+        random_fields=random_fields,
     )
     mp.assert_called_once()
     assert geo_obj.path_to_dat_file == path_to_dat_file
@@ -237,6 +219,8 @@ def test_init(mocker, tmp_path):
     assert geo_obj.nodes_of_interest is None
     assert geo_obj.node_coordinates == node_coordinates
     assert geo_obj.path_to_preprocessed_dat_file == path_to_preprocessed_dat_file
+    assert geo_obj.line_topology == line_topology
+    assert geo_obj.element_topology == element_topology
     assert geo_obj.random_fields == random_fields
 
 
@@ -247,47 +231,47 @@ def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_current_dat_section',
+        '.get_current_dat_section',
         return_value=False,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_design_description',
+        '.get_design_description',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_only_desired_topology',
+        '.get_only_desired_topology',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_only_desired_coordinates',
+        '.get_only_desired_coordinates',
         return_value=1,
     )
 
     mocker.patch(
-        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_materials',
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_materials',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_elements_belonging_to_desired_material',
+        '.get_elements_belonging_to_desired_material',
         return_value=1,
     )
 
-    default_geo_obj._read_geometry_from_dat_file()
+    default_geo_obj.read_geometry_from_dat_file()
 
-    assert default_geo_obj._get_current_dat_section.call_count == 2
-    assert default_geo_obj._get_design_description.call_count == 0
-    assert default_geo_obj._get_only_desired_topology.call_count == 0
-    assert default_geo_obj._get_only_desired_coordinates.call_count == 0
-    assert default_geo_obj._get_materials.call_count == 0
-    assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 0
+    assert default_geo_obj.get_current_dat_section.call_count == 2
+    assert default_geo_obj.get_design_description.call_count == 0
+    assert default_geo_obj.get_only_desired_topology.call_count == 0
+    assert default_geo_obj.get_only_desired_coordinates.call_count == 0
+    assert default_geo_obj.get_materials.call_count == 0
+    assert default_geo_obj.get_elements_belonging_to_desired_material.call_count == 0
 
 
 def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, default_geo_obj):
@@ -299,51 +283,51 @@ def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, d
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_current_dat_section',
+        '.get_current_dat_section',
         return_value=False,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_design_description',
+        '.get_design_description',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_only_desired_topology',
+        '.get_only_desired_topology',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_only_desired_coordinates',
+        '.get_only_desired_coordinates',
         return_value=1,
     )
 
     mocker.patch(
-        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_materials',
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_materials',
         return_value=1,
     )
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_elements_belonging_to_desired_material',
+        '.get_elements_belonging_to_desired_material',
         return_value=1,
     )
 
-    default_geo_obj._read_geometry_from_dat_file()
+    default_geo_obj.read_geometry_from_dat_file()
 
-    assert default_geo_obj._get_current_dat_section.call_count == 4
-    assert default_geo_obj._get_design_description.call_count == 4
-    assert default_geo_obj._get_only_desired_topology.call_count == 4
-    assert default_geo_obj._get_only_desired_coordinates.call_count == 4
-    assert default_geo_obj._get_materials.call_count == 4
-    assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 4
+    assert default_geo_obj.get_current_dat_section.call_count == 4
+    assert default_geo_obj.get_design_description.call_count == 4
+    assert default_geo_obj.get_only_desired_topology.call_count == 4
+    assert default_geo_obj.get_only_desired_coordinates.call_count == 4
+    assert default_geo_obj.get_materials.call_count == 4
+    assert default_geo_obj.get_elements_belonging_to_desired_material.call_count == 4
 
 
 def test_organize_sections(default_geo_obj):
-    """Wrapper for *_get_desired_dat_sections*."""
+    """Wrapper for *get_desired_dat_sections*."""
     desired_geo_sets = ['DSURFACE 9', 'DVOL 2', 'DLINE 1', 'DSURFACE 8']
     expected_dat_section = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
@@ -351,14 +335,14 @@ def test_organize_sections(default_geo_obj):
         'DVOL-NODE TOPOLOGY': ['DVOL 2'],
     }
     default_geo_obj.list_geometric_sets = desired_geo_sets
-    default_geo_obj._get_desired_dat_sections()
+    default_geo_obj.get_desired_dat_sections()
 
     assert default_geo_obj.desired_dat_sections == expected_dat_section
 
 
 def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
     """TODO_doc."""
-    default_geo_obj._get_current_dat_section(dat_section_true)
+    default_geo_obj.get_current_dat_section(dat_section_true)
     clean_section_name = dat_section_true.strip()
     clean_section_name = clean_section_name.strip('-')
     assert default_geo_obj.current_dat_section == clean_section_name
@@ -366,7 +350,7 @@ def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
 
 def test_get_current_dat_section_false(default_geo_obj, dat_section_false):
     """TODO_doc."""
-    default_geo_obj._get_current_dat_section(dat_section_false)
+    default_geo_obj.get_current_dat_section(dat_section_false)
     assert default_geo_obj.current_dat_section is None
 
 
@@ -379,12 +363,12 @@ def test_check_if_in_desired_dat_section(default_geo_obj):
 
     # return true
     default_geo_obj.current_dat_section = 'DSURF-NODE TOPOLOGY'
-    return_value = default_geo_obj._check_if_in_desired_dat_section()
+    return_value = default_geo_obj.check_if_in_desired_dat_section()
     assert return_value
 
     # return false
     default_geo_obj.current_dat_section = 'DVOL-NODE TOPOLOGY'
-    return_value = default_geo_obj._check_if_in_desired_dat_section()
+    return_value = default_geo_obj.check_if_in_desired_dat_section()
     assert not return_value
 
 
@@ -404,25 +388,25 @@ def test_get_topology(
 
     if current_dat_sections == 'DNODE-NODE TOPOLOGY':
         for line in default_topology_node:
-            default_geo_obj._get_topology(line)
+            default_geo_obj.get_topology(line)
         assert default_geo_obj.node_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
         assert default_geo_obj.node_topology[0]['node_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DLINE-NODE TOPOLOGY':
         for line in default_topology_line:
-            default_geo_obj._get_topology(line)
+            default_geo_obj.get_topology(line)
         assert default_geo_obj.line_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
         assert default_geo_obj.line_topology[0]['line_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DSURF-NODE TOPOLOGY':
         for line in default_topology_surf:
-            default_geo_obj._get_topology(line)
+            default_geo_obj.get_topology(line)
         assert default_geo_obj.surface_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
         assert default_geo_obj.surface_topology[0]['surface_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DVOL-NODE TOPOLOGY':
         for line in default_topology_vol:
-            default_geo_obj._get_topology(line)
+            default_geo_obj.get_topology(line)
         assert default_geo_obj.volume_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
         assert default_geo_obj.volume_topology[0]['volume_topology'] == [1, 1, 1, 1, 1]
 
@@ -432,23 +416,23 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
     line = 'dummy'
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._check_if_in_desired_dat_section',
+        '.check_if_in_desired_dat_section',
         return_value=True,
     )
     mp1 = mocker.patch(
-        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_topology',
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_topology',
         return_value=None,
     )
-    default_geo_obj._get_only_desired_topology(line)
+    default_geo_obj.get_only_desired_topology(line)
     assert mp1.call_count == 1
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._check_if_in_desired_dat_section',
+        '.check_if_in_desired_dat_section',
         return_value=False,
     )
     # counter stays 1 as called before
-    default_geo_obj._get_only_desired_topology(line)
+    default_geo_obj.get_only_desired_topology(line)
     assert mp1.call_count == 1
 
 
@@ -457,21 +441,21 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
     line = 'dummy 2'
     mp1 = mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_nodes_of_interest',
+        '.get_nodes_of_interest',
         return_value=[1, 2, 3, 4, 5],
     )
     mp2 = mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
-        '._get_coordinates_of_desired_geometric_sets',
+        '.get_coordinates_of_desired_geometric_sets',
         return_value=None,
     )
     default_geo_obj.current_dat_section = 'NODE COORDS'
-    default_geo_obj._get_only_desired_coordinates(line)
+    default_geo_obj.get_only_desired_coordinates(line)
     mp1.assert_called_once()
 
     nodes_of_interest = [1, 2, 3, 4, 5]
     default_geo_obj.nodes_of_interest = nodes_of_interest
-    default_geo_obj._get_only_desired_coordinates(line)
+    default_geo_obj.get_only_desired_coordinates(line)
     mp1.assert_called_once()
     mp2.assert_called_once()
 
@@ -480,7 +464,7 @@ def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coor
     """TODO_doc."""
     for line in default_coords:
         node_list = line.split()
-        default_geo_obj._get_coordinates_of_desired_geometric_sets(node_list)
+        default_geo_obj.get_coordinates_of_desired_geometric_sets(node_list)
     assert default_geo_obj.node_coordinates['node_mesh'] == [1, 2, 3, 4]
     np.testing.assert_array_equal(
         default_geo_obj.node_coordinates['coordinates'],
@@ -506,5 +490,5 @@ def test_get_nodes_of_interest(default_geo_obj):
     default_geo_obj.volume_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
     default_geo_obj.volume_topology[-1]['volume_topology'] = [1, 1, 1, 1, 1]
 
-    default_geo_obj._get_nodes_of_interest()
+    default_geo_obj.get_nodes_of_interest()
     assert default_geo_obj.nodes_of_interest == [1, 2, 4, 9, 13]

@@ -59,7 +59,6 @@ class VariationalInferenceIterator(Iterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         result_description,
         variational_distribution,
@@ -80,7 +79,6 @@ class VariationalInferenceIterator(Iterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
@@ -102,7 +100,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             Initialise variational inference iterator
         """
-        super().__init__(model, global_settings, parameters)
+        super().__init__(model, parameters)
 
         self.result_description = result_description
         self.variational_params_initialization_approach = variational_params_initialization
@@ -141,7 +139,6 @@ class VariationalInferenceIterator(Iterator):
 
         # Stochastic optimization
         for _ in self.stochastic_optimizer:
-
             self._catch_non_converging_simulations(old_parameters)
 
             # Just to avoid constant spamming
@@ -182,7 +179,7 @@ class VariationalInferenceIterator(Iterator):
         self._initialize_variational_params()
 
         # set the gradient according to input
-        self.stochastic_optimizer.set_gradient_function(self._get_gradient_function())
+        self.stochastic_optimizer.set_gradient_function(self.get_gradient_function())
         self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
             -1, 1
         )
@@ -191,11 +188,7 @@ class VariationalInferenceIterator(Iterator):
         """Write results and potentially visualize them."""
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(
-                result_dict,
-                self.global_settings['output_dir'],
-                self.global_settings['experiment_name'],
-            )
+            write_results(result_dict, self.output_dir, self.experiment_name)
 
         if qvis.vi_visualization_instance:
             qvis.vi_visualization_instance.save_plots()
@@ -219,11 +212,7 @@ class VariationalInferenceIterator(Iterator):
     def _write_results(self):
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(
-                result_dict,
-                self.global_settings['output_dir'],
-                self.global_settings['experiment_name'],
-            )
+            write_results(result_dict, self.output_dir, self.experiment_name)
 
     def _initialize_variational_params(self):
         """Initialize the variational parameters.
@@ -387,7 +376,7 @@ class VariationalInferenceIterator(Iterator):
             fim = fim + np.eye(len(fim)) * dampening_coefficient
         return fim
 
-    def _get_gradient_function(self):
+    def get_gradient_function(self):
         """Select the gradient function for the stochastic optimizer.
 
         Two options exist, with or without natural gradient.

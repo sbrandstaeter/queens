@@ -6,7 +6,6 @@ from mock import Mock
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.schedulers.local_scheduler import LocalScheduler
 from pqueens.utils.exceptions import InvalidOptionError
 from pqueens.utils.fcc_utils import (
     VALID_TYPES,
@@ -51,12 +50,6 @@ def parameters():
 
 
 @pytest.fixture
-def global_settings():
-    """Dummy global_settings."""
-    return Mock()
-
-
-@pytest.fixture
 def dummy_obj():
     """Dummy object."""
     return Mock()
@@ -96,20 +89,16 @@ def test_insert_new_obj(config_2, dummy_obj, inserted_config_2):
     assert config == inserted_config_2
 
 
-def test_from_config_create_object_iterator(mocker, config_1, global_settings, parameters):
+def test_from_config_create_object_iterator(mocker, config_1, parameters):
     """Test case for from_config_create_object function."""
     mp1 = mocker.patch("pqueens.utils.fcc_utils.get_module_class", return_value=MonteCarloIterator)
     mp2 = mocker.patch(
         "pqueens.iterators.monte_carlo_iterator.MonteCarloIterator.__init__", return_value=None
     )
-    from_config_create_object(config_1, global_settings, parameters)
+    from_config_create_object(config_1, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
-    assert mp2.call_args_list[0].kwargs == {
-        **config_1,
-        "parameters": parameters,
-        "global_settings": global_settings,
-    }
+    assert mp2.call_args_list[0].kwargs == {**config_1, "parameters": parameters}
     assert not mp2.call_args_list[0].args
     assert mp2.call_count == 1
 
@@ -120,7 +109,7 @@ def test_from_config_create_object_model(mocker, config_1):
     mp2 = mocker.patch(
         "pqueens.models.simulation_model.SimulationModel.__init__", return_value=None
     )
-    from_config_create_object(config_1, global_settings, parameters)
+    from_config_create_object(config_1, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == config_1
@@ -137,24 +126,10 @@ def test_from_config_create_object_interface(mocker, config_1, parameters):
         "pqueens.interfaces.direct_python_interface.DirectPythonInterface.__init__",
         return_value=None,
     )
-    from_config_create_object(config_1, global_settings, parameters)
+    from_config_create_object(config_1, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == {**config_1, "parameters": parameters}
-    assert not mp2.call_args_list[0].args
-    assert mp2.call_count == 1
-
-
-def test_from_config_create_object_scheduler(mocker, config_1, parameters):
-    """Test case for from_config_create_object function."""
-    mp1 = mocker.patch("pqueens.utils.fcc_utils.get_module_class", return_value=LocalScheduler)
-    mp2 = mocker.patch(
-        "pqueens.schedulers.local_scheduler.LocalScheduler.__init__", return_value=None
-    )
-    from_config_create_object(config_1, global_settings, parameters)
-
-    assert mp1.called_once_with(config_1, VALID_TYPES)
-    assert mp2.call_args_list[0].kwargs == {**config_1, "global_settings": global_settings}
     assert not mp2.call_args_list[0].args
     assert mp2.call_count == 1
 
@@ -165,7 +140,7 @@ def test_from_config_create_iterator_runtime_error_case_1():
     Configuration fails due to missing 'method' description.
     """
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
-        from_config_create_iterator({'global_settings': 'b', 'c': 'd'})
+        from_config_create_iterator({'c': 'd'})
 
 
 def test_from_config_create_iterator_runtime_error_case_2():
@@ -173,7 +148,7 @@ def test_from_config_create_iterator_runtime_error_case_2():
 
     Configuration fails due to circular dependencies.
     """
-    config = {'global_settings': {}, 'a': {'b_name': 'd'}, 'd': {'e_name': 'a'}}
+    config = {'a': {'b_name': 'd'}, 'd': {'e_name': 'a'}}
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
         from_config_create_iterator(config)
 
@@ -183,10 +158,7 @@ def test_from_config_create_iterator_invalid_option_error_case_1():
 
     Configuration fails due to invalid class type 'bla'.
     """
-    config = {
-        'global_settings': {},
-        'a': {'type': 'bla'},
-    }
+    config = {'a': {'type': 'bla'}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
         from_config_create_iterator(config)
 
@@ -196,9 +168,6 @@ def test_from_config_create_iterator_invalid_option_error_case_2():
 
     Configuration fails due to missing options for 'monte_carlo'.
     """
-    config = {
-        'global_settings': {},
-        'a': {'type': 'monte_carlo'},
-    }
+    config = {'a': {'type': 'monte_carlo'}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
         from_config_create_iterator(config)

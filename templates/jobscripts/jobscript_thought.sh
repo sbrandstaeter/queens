@@ -1,4 +1,5 @@
-#!/bin/bash:q
+#!/bin/bash
+source /etc/profile
 ##########################################
 #                                        #
 #  Specify your paths                    #
@@ -43,6 +44,7 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+LoadBACIModules
 DoChecks
 StageIn
 RunProgram

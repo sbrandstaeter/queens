@@ -43,7 +43,6 @@ class NUTSIterator(PyMCIterator):
     def __init__(
         self,
         model,
-        global_settings,
         parameters,
         num_samples,
         seed,
@@ -69,7 +68,6 @@ class NUTSIterator(PyMCIterator):
 
         Args:
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            global_settings (dict): Global settings of the QUEENS simulations
             parameters (obj): Parameters object
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             seed (int): Seed for rng
@@ -93,10 +91,8 @@ class NUTSIterator(PyMCIterator):
             init_strategy (str): Strategy to tune mass damping matrix
             advi_iterations (int): Number of iteration steps of ADVI based init strategies
         """
-        _logger.info("NUTS Iterator for experiment: %s", global_settings.get('experiment_name'))
         super().__init__(
             model=model,
-            global_settings=global_settings,
             parameters=parameters,
             num_burn_in=num_burn_in,
             num_chains=num_chains,
@@ -110,7 +106,7 @@ class NUTSIterator(PyMCIterator):
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
         )
-
+        _logger.info("NUTS Iterator for experiment: %s", self.experiment_name)
         self.max_treedepth = max_treedepth
         self.early_max_treedepth = early_max_treedepth
         self.step_size = step_size

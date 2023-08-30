@@ -5,10 +5,8 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
 from pqueens.models.simulation_model import SimulationModel
-from pqueens.parameters.parameters import Parameters
 
 
 # ------------ fixtures and params -----------------------------------
@@ -20,22 +18,7 @@ def result_description():
 
 
 @pytest.fixture()
-def global_settings():
-    """Fixture for dummy global settings."""
-    global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
-    return global_set
-
-
-@pytest.fixture()
-def parameters():
-    """Fixture for dummy parameters."""
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=x1, x2=x2)
-
-
-@pytest.fixture()
-def dummy_model(parameters):
+def dummy_model():
     """Fixture for dummy model."""
     interface = 'my_dummy_interface'
     model = SimulationModel(interface)
@@ -43,7 +26,9 @@ def dummy_model(parameters):
 
 
 @pytest.fixture()
-def default_bmfia_iterator(result_description, global_settings, dummy_model):
+def default_bmfia_iterator(
+    result_description, dummy_model, dummy_global_settings, default_parameters_uniform_2d
+):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = dummy_model
@@ -53,10 +38,9 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     num_features = None
     coord_cols = None
 
-    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
-            global_settings=global_settings,
-            parameters=parameters,
+            parameters=default_parameters_uniform_2d,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -111,7 +95,13 @@ def my_mock_design(*args):
 
 
 # -------------- Actual tests -------------------------------------
-def test_init(result_description, global_settings, dummy_model, settings_probab_mapping):
+def test_init(
+    result_description,
+    dummy_global_settings,
+    dummy_model,
+    settings_probab_mapping,
+    default_parameters_uniform_2d,
+):
     """Test the init of the Bayesian multi-fidelity iterator."""
     features_config = 'no_features'
     hf_model = dummy_model
@@ -121,10 +111,9 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     num_features = 2
     coord_cols = [1, 2, 3]
 
-    with patch.object(BMFIAIterator, '_calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
-            global_settings=global_settings,
-            parameters=parameters,
+            parameters=default_parameters_uniform_2d,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -150,7 +139,7 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     assert iterator.coord_cols == coord_cols
 
 
-def test_calculate_optimal_x_train(dummy_model, mocker, parameters):
+def test_calculate_optimal_x_train(dummy_model, mocker, default_parameters_uniform_2d):
     """Test calculation of optimal *x_train*.
 
     **Note:** Here we return the input arguments of the design method to
@@ -160,12 +149,12 @@ def test_calculate_optimal_x_train(dummy_model, mocker, parameters):
     model = dummy_model
     initial_design_dict = {'test': 'test'}
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._get_design_method',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.get_design_method',
         return_value=my_mock_design,
     )
 
-    x_train, (arg0, arg1, arg2) = BMFIAIterator._calculate_initial_x_train(
-        initial_design_dict, model, parameters
+    x_train, (arg0, arg1, arg2) = BMFIAIterator.calculate_initial_x_train(
+        initial_design_dict, model, default_parameters_uniform_2d
     )
 
     np.testing.assert_array_almost_equal(x_train, expected_x_train)
@@ -174,7 +163,7 @@ def test_calculate_optimal_x_train(dummy_model, mocker, parameters):
     # test if the input arguments are correct
     assert arg0 == initial_design_dict
     assert arg1 == dummy_model
-    assert arg2 == parameters
+    assert arg2 == default_parameters_uniform_2d
 
 
 def test_get_design_method(mocker):
@@ -182,34 +171,36 @@ def test_get_design_method(mocker):
     # test the random design
     initial_design_dict = {"type": "random"}
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._random_design',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.random_design',
         return_value=my_mock_design,
     )
 
-    design = BMFIAIterator._get_design_method(initial_design_dict)
+    design = BMFIAIterator.get_design_method(initial_design_dict)
     assert design is mo_1
 
     # test invalid design
     with pytest.raises(NotImplementedError):
         initial_design_dict = {'type': 'randommm'}
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid key in dictionary
     with pytest.raises(AssertionError):
         initial_design_dict = {'typeeee': 'random'}
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid data type of input
     with pytest.raises(AssertionError):
         initial_design_dict = 1
-        BMFIAIterator._get_design_method(initial_design_dict)
+        BMFIAIterator.get_design_method(initial_design_dict)
 
 
-def test_random_design(dummy_model, parameters):
+def test_random_design(dummy_model, default_parameters_uniform_2d, dummy_global_settings):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])
-    x_out = BMFIAIterator._random_design(initial_design_dict, dummy_model, parameters)
+    x_out = BMFIAIterator.random_design(
+        initial_design_dict, dummy_model, default_parameters_uniform_2d
+    )
 
     np.testing.assert_array_almost_equal(x_train, x_out, decimal=4)
 
@@ -244,8 +235,7 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     with patch.object(
         default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
     ) as mo_1:
-
-        default_bmfia_iterator._evaluate_LF_model_for_X_train()
+        default_bmfia_iterator.evaluate_LF_model_for_X_train()
 
         mo_1.assert_called_once()
         np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_LF_train)
@@ -256,8 +246,7 @@ def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     with patch.object(
         default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
     ) as mo_2:
-
-        default_bmfia_iterator._evaluate_HF_model_for_X_train()
+        default_bmfia_iterator.evaluate_HF_model_for_X_train()
 
         # Actual asserts / tests
         mo_2.assert_called_once()
@@ -463,16 +452,16 @@ def test_get_time_features(default_bmfia_iterator):
 def test_update_probabilistic_mapping_with_features(default_bmfia_iterator):
     """Test for updating with optimal informative features."""
     with pytest.raises(NotImplementedError):
-        default_bmfia_iterator._update_probabilistic_mapping_with_features()
+        default_bmfia_iterator.update_probabilistic_mapping_with_features()
 
 
 def test_eval_model(default_bmfia_iterator, mocker):
     """Test for evaluating the underlying model."""
     mo_1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._evaluate_LF_model_for_X_train'
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.evaluate_LF_model_for_X_train'
     )
     mo_2 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._evaluate_HF_model_for_X_train'
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.evaluate_HF_model_for_X_train'
     )
     default_bmfia_iterator.eval_model()
 

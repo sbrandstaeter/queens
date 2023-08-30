@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
+import pqueens.global_settings
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.remote_build import build_remote_environment, sync_remote_repository
@@ -22,7 +23,6 @@ VALID_WORKLOAD_MANAGERS = {
         "job_extra_directives": lambda nodes, cores: f"--ntasks={nodes * cores}",
         "job_directives_skip": [
             '#SBATCH -n 1',
-            '#SBATCH -p batch',
             '#SBATCH --mem=',
             '#SBATCH --cpus-per-task=',
         ],
@@ -40,7 +40,6 @@ class ClusterScheduler(Scheduler):
 
     def __init__(
         self,
-        global_settings,
         workload_manager,
         cluster_address,
         cluster_user,
@@ -51,7 +50,7 @@ class ClusterScheduler(Scheduler):
         num_procs=1,
         num_procs_post=1,
         num_nodes=1,
-        queue='batch',
+        queue=None,
         cluster_internal_address=None,
         cluster_queens_repository=None,
         cluster_build_environment=False,
@@ -60,7 +59,6 @@ class ClusterScheduler(Scheduler):
         """Init method for the cluster scheduler.
 
         Args:
-            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
             cluster_user (str): cluster username
@@ -83,7 +81,7 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
         _logger.debug("cluster queens repository: %s", cluster_queens_repository)
 
-        experiment_name = global_settings['experiment_name']
+        experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
 
         sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
 
@@ -97,6 +95,8 @@ class ClusterScheduler(Scheduler):
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
         job_extra_directives = dask_cluster_options['job_extra_directives'](num_nodes, num_cores)
         job_directives_skip = dask_cluster_options['job_directives_skip']
+        if queue is None:
+            job_directives_skip.append('#SBATCH -p')
 
         connection = RemoteConnection(cluster_address, cluster_python_path, user=cluster_user)
         connection.open()
