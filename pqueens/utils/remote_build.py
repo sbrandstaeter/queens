@@ -5,13 +5,15 @@ import sys
 import time
 from pathlib import Path
 
+from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
 DEFAULT_PACKAGE_MANAGER = "mamba"
-SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, "conda"]
+FALLBACK_PACKAGE_MANAGER = "conda"
+SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
 
 
 def sync_remote_repository(remote_address, remote_user, remote_queens_repository):
@@ -63,17 +65,55 @@ def build_remote_environment(
             f"The package manager '{package_manager}' is not supported.\n"
             f"Supported package managers are: {SUPPORTED_PACKAGE_MANAGERS}"
         )
+    remote_connect = f'{remote_user}@{remote_address}'
+
+    # check if requested package_manager is installed on remote machine:
+    def package_manager_exists_remote(package_manager_name):
+        """Check if requested package manager exists on remote.
+
+        Args:
+            package_manager_name (string): name of package manager
+        """
+        try:
+            run_subprocess(
+                f'which {package_manager_name}',
+                subprocess_type="remote",
+                remote_connect=remote_connect,
+            )
+        except SubprocessError as error:
+            message = (
+                f"Could not find requested package manager '{package_manager_name}' "
+                f"on '{remote_connect}'."
+            )
+            if package_manager_name == DEFAULT_PACKAGE_MANAGER:
+                _logger.warning(message)
+                _logger.warning(
+                    "Trying to fall back to the '%s' package manager.", FALLBACK_PACKAGE_MANAGER
+                )
+                package_manager_exists_remote(package_manager_name=FALLBACK_PACKAGE_MANAGER)
+            else:
+                raise SubprocessError(message) from error
+            return False
+        return True
+
+    if not package_manager_exists_remote(package_manager_name=package_manager):
+        package_manager = FALLBACK_PACKAGE_MANAGER
+
     _logger.info("Build remote QUEENS environment...")
     environment_name = Path(remote_python).parents[1].name
     command_string = (
-        f'ssh {remote_user}@{remote_address} "'
         f'cd {remote_queens_repository}; '
         f'{package_manager} env create -f environment.yml --name {environment_name} --force; '
         f'{package_manager} activate {environment_name};'
-        f'pip install -e ."'
+        f'pip install -e .'
     )
     start_time = time.time()
-    _, _, stdout, _ = run_subprocess(command_string, raise_error_on_subprocess_failure=False)
+    _, _, stdout, _ = run_subprocess(
+        command_string,
+        subprocess_type="remote",
+        remote_connect=remote_connect,
+        raise_error_on_subprocess_failure=False,
+    )
     _logger.debug(stdout)
     _logger.info("Build of remote queens environment was successful.")
     _logger.info("It took: %s s.\n", time.time() - start_time)
