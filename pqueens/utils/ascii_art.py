@@ -3,9 +3,9 @@ import logging
 
 import pyfiglet
 
-_logger = logging.getLogger(__name__)
+from pqueens.utils.print_utils import DEFAULT_OUTPUT_WIDTH
 
-DEFAULT_OUTPUT_WIDTH = 63
+_logger = logging.getLogger(__name__)
 
 
 def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
