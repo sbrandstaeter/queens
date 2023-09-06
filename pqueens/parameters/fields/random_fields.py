@@ -56,7 +56,7 @@ class RandomField:
         self.nugget_variance_rf = 1e-9
         self.explained_variance = explained_variance
         self.weighted_eigen_val_mat_truncated = None
-        self.K_mat = self.calculate_covariance_matrix_and_cholseky()
+        self.K_mat = self.compute_covariance_matrix_and_cholseky()
         self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.K_mat)
         # compute eigendecomposition
         self.eigen_vals_vec, self.eigen_vecs_mat = self.compute_eigendecomposition()
