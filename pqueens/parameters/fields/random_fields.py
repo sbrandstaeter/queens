@@ -111,8 +111,8 @@ class RandomField:
             )
         return mean
 
-    def calculate_covariance_matrix_and_cholseky(self):
-        """Calculate discretized covariance matrix and cholesky decomposition.
+    def compute_covariance_matrix_and_cholseky(self):
+        """Compute discretized covariance matrix and cholesky decomposition.
 
         Based on the kernel description of the random field, build its
         covariance matrix using the external geometry and coordinates.
