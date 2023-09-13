@@ -3,7 +3,7 @@ import atexit
 import logging
 import socket
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
@@ -33,6 +33,25 @@ VALID_WORKLOAD_MANAGERS = {
         "job_directives_skip": ["#PBS -l select"],
     },
 }
+
+
+def timedelta_to_str(timedelta_obj):
+    """Format a timedelta object to str.
+
+    This function seems unnecessarily complicated, but unfortunately the datetime library does not
+     support this formatting for timedeltas. Returns the format HH:MM:SS.
+
+    Args:
+        timedelta_obj (datetime.timedelta): Timedelta object to format
+
+    Returns:
+        str: String of the timedelta object
+    """
+    # Time in seconds
+    time_in_seconds = int(timedelta_obj.total_seconds())
+    (minutes, seconds) = divmod(time_in_seconds, 60)
+    (hours, minutes) = divmod(minutes, 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
 class ClusterScheduler(Scheduler):
@@ -110,11 +129,14 @@ class ClusterScheduler(Scheduler):
         _logger.debug(
             "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
         )
-        walltime_delta = datetime.strptime(walltime, "%H:%M:%S") - datetime.strptime("0", "%S")
+        hours, minutes, seconds = map(int, walltime.split(':'))
+        walltime_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
         # Increase jobqueue walltime by 5 minutes to kill dask workers in time
-        walltime = str(walltime_delta + timedelta(minutes=5))
+        walltime = timedelta_to_str(walltime_delta + timedelta(minutes=5))
+
         # dask worker lifetime = walltime - 3m +/- 2m
-        worker_lifetime = str((walltime_delta + timedelta(minutes=2)).seconds) + "s"
+        worker_lifetime = str(int((walltime_delta + timedelta(minutes=2)).total_seconds())) + "s"
 
         remote_port = connection.run_function(self.get_port)
         remote_port_dashboard = connection.run_function(self.get_port)
