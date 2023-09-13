@@ -59,6 +59,8 @@ class ClusterScheduler(Scheduler):
     ):
         """Init method for the cluster scheduler.
 
+        The total number of cores per job is given by num_procs*num_nodes.
+
         Args:
             workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
@@ -67,9 +69,9 @@ class ClusterScheduler(Scheduler):
             walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
-            num_procs (int, opt): number of cores per job
-            num_procs_post (int, opt): number of cores per job for post-processing
-            num_nodes (int, opt): Number of cluster nodes
+            num_procs (int, opt): Number of cores per job per node
+            num_procs_post (int, opt): Number of cores per job for post-processing
+            num_nodes (int, opt): Number of cluster nodes per job
             queue (str, opt): Destination queue for each worker job
             cluster_internal_address (str, opt): Internal address of cluster
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
