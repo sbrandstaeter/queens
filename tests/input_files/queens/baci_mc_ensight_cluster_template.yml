@@ -1,4 +1,15 @@
 experiment_name: {{ experiment_name }}
+remote_connection:
+{{ remote_connection }}
+#remote_connection:
+#  host: {{ host }}
+#  user: {{ user }}
+#  remote_python: {{ remote_python }}
+#  remote_queens_repository: {{ remote_queens_repository }}
+#  gateway:
+#    host: {{ gateway_host }}
+#    user: {{ gateway_user }}
+# {{ gateway }}
 method:
   type: monte_carlo
   seed: 42
@@ -50,12 +61,7 @@ scheduler:
   num_nodes: 1
   workload_manager: {{ workload_manager }}
   queue: {{ queue }}
-  cluster_address: {{ cluster_address }}
   cluster_internal_address: {{ cluster_internal_address }}
-  cluster_user: {{ cluster_user }}
-  cluster_python_path: {{ cluster_python_path }}
-  cluster_queens_repository: {{ cluster_queens_repository }}
-  cluster_build_environment: false
 driver:
   type: jobscript
   input_template: {{ input_template }}

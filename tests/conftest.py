@@ -31,6 +31,25 @@ def pytest_addoption(parser):
         help="Time tests. Raises timeout exception in case the selected tests take too long. To"
         " change the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
     )
+    parser.addoption(
+        "--gateway-host",
+        action="store",
+        default=None,
+        help="host of gateway connection (proxyjump) for remote connection",
+    )
+    parser.addoption(
+        "--gateway-user",
+        action="store",
+        default=None,
+        help="user for gateway connection (proxyjump) for remote connection",
+    )
+
+    parser.addoption(
+        "--gateway",
+        action="store",
+        default=None,
+        help="user for gateway connection (proxyjump) for remote connection",
+    )
 
 
 def check_item_for_marker(item, marker_name):
@@ -76,7 +95,6 @@ def fixture_time_tests(request):
     """Time tests if desired."""
     # Check if test timing is on
     if request.config.getoption("--time-tests"):
-
         # Measure time
         start_time = perf_counter()
         yield

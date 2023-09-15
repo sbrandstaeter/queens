@@ -71,29 +71,13 @@ class TestDaskCluster:
             connect_to_resource,
         )
 
-    @pytest.fixture(name="remote_python", scope="session")
-    def fixture_remote_python(self, pytestconfig, cluster_settings):
-        """Path to Python environment on remote host."""
-        remote_python = pytestconfig.getoption("remote_python")
-        if remote_python is None:
-            remote_python = cluster_settings["default_python_path"]
-        return remote_python
-
-    @pytest.fixture(name="remote_queens_repository", scope="session")
-    def fixture_remote_queens_repository(self, pytestconfig):
-        """Path to queens repository on remote host."""
-        return pytestconfig.getoption("remote_queens_repository")
-
     def test_baci_mc_ensight_cluster(
         self,
         inputdir,
         tmp_path,
         third_party_inputs,
         cluster_settings,
-        cluster_user,
         baci_cluster_paths,
-        remote_queens_repository,
-        remote_python,
         baci_example_expected_mean,
         baci_example_expected_var,
         baci_example_expected_output,
@@ -113,10 +97,7 @@ class TestDaskCluster:
             tmp_path (Path): Temporary directory for this test
             third_party_inputs (str): Path to the BACI input files
             cluster_settings (dict): Cluster settings
-            cluster_user (str): name or id of the account to log in on cluster
             baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
-            remote_queens_repository (str): Path to QUEENS repository on remote host
-            remote_python (str): Path to Python environment on remote host
             baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
             baci_example_expected_var (np.ndarray): Expected var for the MC samples
             baci_example_expected_output (np.ndarray): Expected output for the MC samples
@@ -135,9 +116,6 @@ class TestDaskCluster:
             **cluster_settings,
             'experiment_name': experiment_name,
             'input_template': baci_input_file_template,
-            'cluster_user': cluster_user,
-            'cluster_python_path': remote_python,
-            'cluster_queens_repository': remote_queens_repository,
         }
         queens_input_file_template = inputdir / "baci_mc_ensight_cluster_template.yml"
         queens_input_file = tmp_path / f"baci_mc_ensight_cluster_{cluster_name}.yml"

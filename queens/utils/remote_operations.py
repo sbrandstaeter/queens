@@ -3,16 +3,23 @@ import atexit
 import json
 import logging
 import pickle
+import time
 import uuid
 from functools import partial
 from pathlib import Path
 
 import cloudpickle
 from fabric import Connection
+from invoke.exceptions import UnexpectedExit
 
+from queens.utils.path_utils import PATH_TO_QUEENS
 from queens.utils.run_subprocess import start_subprocess
 
 _logger = logging.getLogger(__name__)
+
+DEFAULT_PACKAGE_MANAGER = "mamba"
+FALLBACK_PACKAGE_MANAGER = "conda"
+SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
 
 
 class RemoteConnection(Connection):
@@ -25,30 +32,30 @@ class RemoteConnection(Connection):
         python_cmd (str): Command that is executed on remote machine to run python function
     """
 
-    def __init__(self, host, remote_python, user=None):
+    def __init__(self, host, remote_python, remote_queens_repository, user=None, gateway=None):
         """Initialize RemoteConnection object.
 
         Args:
             host (str): address of remote host
             remote_python (str): Path to remote python
-            user (str): User name on remote machine
+            remote_queens_repository (str): Path to queens repository on remote host
+            user (str): Username on remote machine
+            gateway (dict,Connection,None): An object to use as a proxy or gateway for this
+                                            connection. See docs of Fabric's Connection object for
+                                            details.
         """
-        super().__init__(host, user=user)
-        self.func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
-        self.output_file_name = f"output_{str(uuid.uuid4())}.pickle"
+        if isinstance(gateway, dict):
+            gateway = Connection(**gateway)
+
+        super().__init__(host, user=user, gateway=gateway)
         self.remote_python = remote_python
-        self.python_cmd = (
-            f"{remote_python} -c 'import pickle; from pathlib import Path;"
-            f"file = open(\"{self.func_file_name}\", \"rb\");"
-            f"func = pickle.load(file); file.close();"
-            f"Path(\"{self.func_file_name}\").unlink(); result = func();"
-            f"file = open(\"{self.output_file_name}\", \"wb\");"
-            f"pickle.dump(result, file); file.close();'"
-        )
+        _logger.debug("remote python path: %s", self.remote_python)
+
+        self.remote_queens_repository = remote_queens_repository
+        _logger.debug("remote queens repository: %s", self.remote_queens_repository)
 
     def start_cluster(
         self,
-        cluster_queens_repository,
         workload_manager,
         dask_cluster_kwargs,
         dask_cluster_adapt_kwargs,
@@ -57,7 +64,6 @@ class RemoteConnection(Connection):
         """Start a Dask Cluster remotely using an ssh connection.
 
         Args:
-            cluster_queens_repository (str): Path to Queens repository on cluster
             workload_manager (str): Workload manager ("pbs" or "slurm") on cluster
             dask_cluster_kwargs (dict): collection of keyword arguments to be forwarded to
                                         DASK Cluster
@@ -72,7 +78,7 @@ class RemoteConnection(Connection):
         python_cmd = (
             "source /etc/profile;"
             f"{self.remote_python} "
-            f"{Path(cluster_queens_repository) / 'queens' / 'utils' / 'start_dask_cluster.py'} "
+            f"{Path(self.remote_queens_repository) / 'queens' / 'utils' / 'start_dask_cluster.py'} "
             f"--workload-manager {workload_manager} "
             f"--dask-cluster-kwargs '{json.dumps(dask_cluster_kwargs)}' "
             f"--dask-cluster-adapt-kwargs '{json.dumps(dask_cluster_adapt_kwargs)}' "
@@ -94,26 +100,44 @@ class RemoteConnection(Connection):
             return_value (obj): Return value of function
         """
         _logger.info("Running %s on %s", func.__name__, self.host)
+        func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
+        output_file_name = f"output_{str(uuid.uuid4())}.pickle"
+        python_cmd = (
+            f"{self.remote_python} -c 'import pickle; from pathlib import Path;"
+            f"file = open(\"{func_file_name}\", \"rb\");"
+            f"func = pickle.load(file); file.close();"
+            f"Path(\"{func_file_name}\").unlink(); "
+            f"result = func();"
+            f"file = open(\"{output_file_name}\", \"wb\");"
+            f"pickle.dump(result, file); file.close();'"
+        )
         partial_func = partial(func, *func_args, **func_kwargs)  # insert function arguments
-        with open(self.func_file_name, "wb") as file:
+        with open(func_file_name, "wb") as file:
             cloudpickle.dump(partial_func, file)  # pickle function by value
 
-        self.put(self.func_file_name)  # upload local function file
-        Path(self.func_file_name).unlink()  # delete local function file
+        self.put(func_file_name)  # upload local function file
+        Path(func_file_name).unlink()  # delete local function file
 
         if not wait:
-            _, stdout, stderr = self.client.exec_command(self.python_cmd, get_pty=True)
+            _, stdout, stderr = self.client.exec_command(python_cmd, get_pty=True)
             return stdout, stderr
 
-        self.run(self.python_cmd, in_stream=False)  # run function remote
-        self.get(self.output_file_name)  # download result
+        try:
+            result = self.run(python_cmd, in_stream=False, hide=True)  # run function remote
+        except UnexpectedExit as unexpected_exit:
+            _logger.debug(unexpected_exit.result.stdout)
+            _logger.debug(unexpected_exit.result.stderr)
+            raise unexpected_exit
+        _logger.debug(result.stdout)
+        _logger.debug(result.stderr)
+        self.get(output_file_name)  # download result
 
-        self.run(f'rm {self.output_file_name}', in_stream=False)  # delete remote files
+        self.run(f'rm {output_file_name}', in_stream=False)  # delete remote files
 
-        with open(self.output_file_name, 'rb') as file:  # read return value from output file
+        with open(output_file_name, 'rb') as file:  # read return value from output file
             return_value = pickle.load(file)
 
-        Path(self.output_file_name).unlink()  # delete local output file
+        Path(output_file_name).unlink()  # delete local output file
 
         return return_value
 
@@ -124,9 +148,112 @@ class RemoteConnection(Connection):
             local_port (int): Local port
             remote_port (int): Remote port
         """
-        cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
+        proxyjump = ""
+        if self.gateway is not None:
+            proxyjump = f"-J {self.gateway.user}@{self.gateway.host}:{self.gateway.port}"
+        cmd = (
+            f"ssh {proxyjump} -f -N -L {local_port}:{self.host}:{remote_port} "
+            f"{self.user}@{self.host}"
+        )
         start_subprocess(cmd)
         _logger.debug("Port-forwarding opened successfully.")
 
         kill_cmd = f'pkill -f "{cmd}"'
         atexit.register(start_subprocess, kill_cmd)
+
+    def create_remote_directory(self, remote_directory):
+        """Make a directory (including parents) on the remote host.
+
+        Args:
+            remote_directory (Path, str): path of the directory that will be created
+        """
+        _logger.debug("Creating folder %s on %s@%s.", remote_directory, self.user, self.host)
+        result = self.run(f'mkdir -v -p {remote_directory}', in_stream=False)
+        stdout = result.stdout
+        if stdout:
+            _logger.debug(stdout)
+        else:
+            _logger.debug("%s already exists on %s@%s.", remote_directory, self.user, self.host)
+
+    def sync_remote_repository(self):
+        """Synchronize local and remote QUEENS source files."""
+        _logger.info("Syncing remote QUEENS repository with local one...")
+        start_time = time.time()
+        self.create_remote_directory(self.remote_queens_repository)
+
+        # build command string for rsync
+        remote_shell_command = ""
+        if self.gateway is not None:
+            remote_shell_command = f"--rsh='ssh {self.gateway.user}@{self.gateway.host} ssh'"
+
+        rsync_cmd = (
+            "rsync --out-format='%n' --archive --checksum --verbose --verbose "
+            f"--filter=':- .gitignore' --exclude '.git' {remote_shell_command} "
+            f"{PATH_TO_QUEENS}/ {self.user}@{self.host}:{self.remote_queens_repository}"
+        )
+
+        # Run rsync command
+        result = self.local(rsync_cmd, in_stream=False)
+        _logger.debug(result.stdout)
+        _logger.info("Sync of remote repository was successful.")
+        _logger.info("It took: %s s.\n", time.time() - start_time)
+
+    def build_remote_environment(
+        self,
+        package_manager=DEFAULT_PACKAGE_MANAGER,
+    ):
+        """Build remote QUEENS environment.
+
+        Args:
+            remote_python (str): Path to Python environment on remote host
+            package_manager(str, optional): Package manager used for the creation of the environment
+                                            ("mamba" or "conda")
+        """
+        if package_manager not in SUPPORTED_PACKAGE_MANAGERS:
+            raise ValueError(
+                f"The package manager '{package_manager}' is not supported.\n"
+                f"Supported package managers are: {SUPPORTED_PACKAGE_MANAGERS}"
+            )
+        remote_connect = f'{self.user}@{self.host}'
+
+        # check if requested package_manager is installed on remote machine:
+        def package_manager_exists_remote(package_manager_name):
+            """Check if requested package manager exists on remote.
+
+            Args:
+                package_manager_name (string): name of package manager
+            """
+            result_which = self.run(f'which {package_manager_name}')
+            if result_which.stderr:
+                message = (
+                    f"Could not find requested package manager '{package_manager_name}' "
+                    f"on '{remote_connect}'."
+                )
+                if package_manager_name == DEFAULT_PACKAGE_MANAGER:
+                    _logger.warning(message)
+                    _logger.warning(
+                        "Trying to fall back to the '%s' package manager.", FALLBACK_PACKAGE_MANAGER
+                    )
+                    package_manager_exists_remote(package_manager_name=FALLBACK_PACKAGE_MANAGER)
+                else:
+                    raise RuntimeError(message)
+                return False
+            return True
+
+        if not package_manager_exists_remote(package_manager_name=package_manager):
+            package_manager = FALLBACK_PACKAGE_MANAGER
+
+        _logger.info("Build remote QUEENS environment...")
+        start_time = time.time()
+        environment_name = Path(self.remote_python).parents[1].name
+        command_string = (
+            f'cd {self.remote_queens_repository}; '
+            f'{package_manager} env create -f environment.yml --name {environment_name} --force; '
+            f'{package_manager} activate {environment_name};'
+            f'pip install -e .'
+        )
+        result = self.run(command_string, in_stream=False)
+
+        _logger.debug(result.stdout)
+        _logger.info("Build of remote queens environment was successful.")
+        _logger.info("It took: %s s.\n", time.time() - start_time)

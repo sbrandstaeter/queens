@@ -1,9 +1,11 @@
 """Global Settings module."""
-
+import atexit
 import logging
+import socket
 from pathlib import Path
 
 from queens.schedulers.scheduler import SHUTDOWN_CLIENTS
+from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import reset_logging, setup_basic_logging
 from queens.utils.path_utils import PATH_TO_QUEENS
 from queens.utils.print_utils import get_str_table
@@ -20,15 +22,17 @@ class GlobalSettings:
         experiment_name (str): Experiment name of queens run
         output_dir (Path): Output directory for queens run
         git_hash (str): Hash of active git commit
+        remote_connection (RemoteConnection): ssh connection to the remote host
         debug (bool): True if debug mode is to be used
     """
 
-    def __init__(self, experiment_name, output_dir, debug=False):
+    def __init__(self, experiment_name, output_dir, remote_connection=None, debug=False):
         """Initialize global settings.
 
         Args:
             experiment_name (str): Experiment name of queens run
             output_dir (str, Path): Output directory for queens run
+            remote_connection (RemoteConnection): ssh connection to the remote host
             debug (bool): True if debug mode is to be used
         """
         output_dir = Path(output_dir)
@@ -40,7 +44,7 @@ class GlobalSettings:
             raise ValueError("Experiment name can not contain spaces!")
 
         self.experiment_name = experiment_name
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir)
         self.debug = debug
 
         # set up logging
@@ -87,6 +91,35 @@ class GlobalSettings:
         self.git_hash = git_hash
         self.git_branch = git_branch
         self.git_clean_working_tree = git_clean_working_tree
+
+        self.remote_connection = remote_connection
+        if self.remote_connection is not None:
+            self.remote_connection.open()
+            atexit.register(self.remote_connection.close)
+            self.remote_connection.sync_remote_repository()
+            self.remote_port = self.remote_connection.run_function(get_port)
+            self.remote_port_dashboard = self.remote_connection.run_function(get_port)
+            self.local_port = get_port()
+            self.local_port_dashboard = get_port()
+
+            self.remote_experiment_dir = self.remote_connection.run_function(
+                experiment_directory, self.experiment_name
+            )
+            _logger.debug(
+                "experiment directory on %s@%s: %s",
+                self.remote_connection.user,
+                self.remote_connection.host,
+                self.remote_experiment_dir,
+            )
+            _logger.info("remote port: %d", self.remote_port)
+            _logger.info("local port: %d", self.local_port)
+            _logger.info("remote port dashboard: %d", self.remote_port_dashboard)
+            _logger.info("local port dashboard: %d", self.local_port_dashboard)
+
+            self.remote_connection.open_port_forwarding(self.local_port, self.remote_port)
+            self.remote_connection.open_port_forwarding(
+                self.local_port_dashboard, self.remote_port_dashboard
+            )
 
     def print_git_information(self):
         """Print information on the status of the git repository."""
@@ -135,3 +168,14 @@ class GlobalSettings:
             shutdown_client()
 
         reset_logging()
+
+
+def get_port():
+    """Get free port.
+
+    Returns:
+        int: free port
+    """
+    sock = socket.socket()
+    sock.bind(('', 0))
+    return int(sock.getsockname()[1])

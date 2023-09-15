@@ -9,6 +9,7 @@ from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.cli_utils import get_cli_options, print_greeting_message
 from queens.utils.fcc_utils import from_config_create_iterator
 from queens.utils.io_utils import load_input_file
+from queens.utils.remote_operations import RemoteConnection
 
 _logger = logging.getLogger(__name__)
 
@@ -27,8 +28,18 @@ def run(input_file, output_dir, debug=False):
     config = load_input_file(input_file)
 
     experiment_name = config.pop('experiment_name')
+    remote_connection_config = config.pop("remote_connection")
+    remote_connection = None
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=debug):
+    if remote_connection_config is not None:
+        remote_connection = RemoteConnection(**remote_connection_config)
+
+    with GlobalSettings(
+        experiment_name=experiment_name,
+        output_dir=output_dir,
+        remote_connection=remote_connection,
+        debug=debug,
+    ):
         # create iterator
         my_iterator = from_config_create_iterator(config)
 

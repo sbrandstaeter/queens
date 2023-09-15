@@ -1,5 +1,4 @@
 """Cluster scheduler for QUEENS runs."""
-import atexit
 import logging
 import socket
 import subprocess
@@ -11,9 +10,6 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 
 import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
-from queens.utils.config_directories import experiment_directory
-from queens.utils.remote_build import build_remote_environment, sync_remote_repository
-from queens.utils.remote_operations import RemoteConnection
 from queens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -61,9 +57,6 @@ class ClusterScheduler(Scheduler):
     def __init__(
         self,
         workload_manager,
-        cluster_address,
-        cluster_user,
-        cluster_python_path,
         walltime,
         max_jobs=1,
         min_jobs=0,
@@ -72,8 +65,6 @@ class ClusterScheduler(Scheduler):
         num_nodes=1,
         queue=None,
         cluster_internal_address=None,
-        cluster_queens_repository=None,
-        cluster_build_environment=False,
         restart_workers=True,
         allowed_failures=5,
     ):
@@ -83,9 +74,6 @@ class ClusterScheduler(Scheduler):
 
         Args:
             workload_manager (str): Workload manager ("pbs" or "slurm")
-            cluster_address (str): address of cluster
-            cluster_user (str): cluster username
-            cluster_python_path (str): Path to Python on cluster
             walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
@@ -94,26 +82,11 @@ class ClusterScheduler(Scheduler):
             num_nodes (int, opt): Number of cluster nodes per job
             queue (str, opt): Destination queue for each worker job
             cluster_internal_address (str, opt): Internal address of cluster
-            cluster_queens_repository (str, opt): Path to Queens repository on cluster
-            cluster_build_environment (bool, opt): Flag to decide if queens environment should be
-                                                   build on cluster
             restart_workers (bool): If true, restart workers after each finished job. For larger
                                     jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
-        if cluster_queens_repository is None:
-            cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
-        _logger.debug("cluster queens repository: %s", cluster_queens_repository)
-
         experiment_name = queens.global_settings.GLOBAL_SETTINGS.experiment_name
-
-        sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
-
-        _logger.debug("cluster python path: %s", cluster_python_path)
-        if cluster_build_environment:
-            build_remote_environment(
-                cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
-            )
 
         num_cores = max(num_procs, num_procs_post)
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
@@ -122,16 +95,6 @@ class ClusterScheduler(Scheduler):
         if queue is None:
             job_directives_skip.append('#SBATCH -p')
 
-        connection = RemoteConnection(cluster_address, cluster_python_path, user=cluster_user)
-        connection.open()
-        atexit.register(connection.close)
-
-        # note that we are executing the command on remote directly such the local version of
-        # experiment_directory has to be used
-        experiment_dir = connection.run_function(experiment_directory, experiment_name)
-        _logger.debug(
-            "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
-        )
         hours, minutes, seconds = map(int, walltime.split(':'))
         walltime_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
@@ -141,8 +104,8 @@ class ClusterScheduler(Scheduler):
         # dask worker lifetime = walltime - 3m +/- 2m
         worker_lifetime = str(int((walltime_delta + timedelta(minutes=2)).total_seconds())) + "s"
 
-        remote_port = connection.run_function(self.get_port)
-        remote_port_dashboard = connection.run_function(self.get_port)
+        remote_port = queens.global_settings.GLOBAL_SETTINGS.remote_port
+        remote_port_dashboard = queens.global_settings.GLOBAL_SETTINGS.remote_port_dashboard
         scheduler_options = {
             "port": remote_port,
             "dashboard_address": remote_port_dashboard,
@@ -157,7 +120,7 @@ class ClusterScheduler(Scheduler):
             "memory": '10TB',
             "scheduler_options": scheduler_options,
             "walltime": walltime,
-            "log_directory": str(experiment_dir),
+            "log_directory": str(queens.global_settings.GLOBAL_SETTINGS.remote_experiment_dir),
             "job_directives_skip": job_directives_skip,
             "job_extra_directives": [job_extra_directives],
             "worker_extra_args": ["--lifetime", worker_lifetime, "--lifetime-stagger", "2m"],
@@ -166,19 +129,20 @@ class ClusterScheduler(Scheduler):
             "minimum_jobs": min_jobs,
             "maximum_jobs": max_jobs,
         }
-        stdout, stderr = connection.start_cluster(
-            cluster_queens_repository,
+        stdout, stderr = queens.global_settings.GLOBAL_SETTINGS.remote_connection.start_cluster(
             workload_manager,
             dask_cluster_kwargs,
             dask_cluster_adapt_kwargs,
-            experiment_dir,
+            queens.global_settings.GLOBAL_SETTINGS.remote_experiment_dir,
         )
+        _logger.debug(stdout)
+        _logger.debug(stderr)
 
-        local_port = self.get_port()
-        local_port_dashboard = self.get_port()
+        local_port = queens.global_settings.GLOBAL_SETTINGS.local_port
+        local_port_dashboard = queens.global_settings.GLOBAL_SETTINGS.local_port_dashboard
 
-        connection.open_port_forwarding(local_port, remote_port)
-        connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
+        # connection.open_port_forwarding(local_port, remote_port)
+        # connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
             try:
@@ -202,7 +166,7 @@ class ClusterScheduler(Scheduler):
 
         super().__init__(
             experiment_name=experiment_name,
-            experiment_dir=experiment_dir,
+            experiment_dir=queens.global_settings.GLOBAL_SETTINGS.remote_experiment_dir,
             client=client,
             num_procs=num_procs,
             num_procs_post=num_procs_post,
