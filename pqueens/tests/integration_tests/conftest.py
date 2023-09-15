@@ -1,6 +1,5 @@
 """Collect fixtures used by the integration tests."""
 
-import getpass
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -100,27 +99,16 @@ CLUSTER_CONFIGS = {
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
-@pytest.fixture(scope="session")
-def user():
-    """Name of user calling the test suite."""
-    return getpass.getuser()
 
 
-@pytest.fixture(scope="session")
-def cluster_user(user, hostname):
+@pytest.fixture(name="cluster_user", scope="session")
+def cluster_user_fixture(pytestconfig):
     """Username of cluster account to use for tests."""
-    # user who called the test suite
-    # gitlab-runner has to run simulation as different user on cluster everyone else should use
-    # account with same name
-    if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
-        cluster_user = "queens"
-    else:
-        cluster_user = user
-    return cluster_user
+    return pytestconfig.getoption("remote_user")
 
 
-@pytest.fixture(scope="session")
-def cluster(request):
+@pytest.fixture(name="cluster", scope="session")
+def cluster_fixture(request):
     """Iterate over clusters.
 
     The actual parameterization is done on a per test basis which also
@@ -129,8 +117,8 @@ def cluster(request):
     return request.param
 
 
-@pytest.fixture(scope="session")
-def cluster_settings(cluster, cluster_user):
+@pytest.fixture(name="cluster_settings", scope="session")
+def cluster_settings_fixture(cluster, cluster_user):
     """Hold all settings of cluster."""
     settings = CLUSTER_CONFIGS.get(cluster).dict()
     _logger.debug("raw cluster config: %s", settings)
@@ -140,14 +128,14 @@ def cluster_settings(cluster, cluster_user):
     return settings
 
 
-@pytest.fixture(scope="session")
-def connect_to_resource(cluster_settings):
+@pytest.fixture(name="connect_to_resource", scope="session")
+def connect_to_resource_fixture(cluster_settings):
     """Use for ssh connect to the cluster."""
     return cluster_settings["connect_to_resource"]
 
 
-@pytest.fixture(scope="session")
-def baci_cluster_paths(connect_to_resource):
+@pytest.fixture(name="baci_cluster_paths", scope="session")
+def baci_cluster_paths_fixture(connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
@@ -208,7 +196,7 @@ def baci_example_expected_mean_fixture():
 
 
 @pytest.fixture(name="baci_example_expected_var")
-def name_baci_example_expected_var():
+def baci_example_expected_var_fixture():
     """Expected variance for the BACI example."""
     result = np.array(
         [

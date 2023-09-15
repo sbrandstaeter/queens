@@ -53,4 +53,5 @@ VALID_TYPES = {
     'bbvi': ['pqueens.iterators.black_box_variational_bayes', 'BBVIIterator'],
     'bmfia': ['pqueens.iterators.bmfia_iterator', 'BMFIAIterator'],
     'rpvi': ['pqueens.iterators.reparameteriztion_based_variational_inference', 'RPVIIterator'],
+    'classification': ['pqueens.iterators.classification', 'ClassificationIterator'],
 }

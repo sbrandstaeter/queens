@@ -3,9 +3,9 @@ import logging
 
 import pyfiglet
 
-_logger = logging.getLogger(__name__)
+from pqueens.utils.print_utils import DEFAULT_OUTPUT_WIDTH
 
-DEFAULT_OUTPUT_WIDTH = 63
+_logger = logging.getLogger(__name__)
 
 
 def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
@@ -47,6 +47,44 @@ def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
           .
     """
     print_centered_multiline_block(rocket, output_width)
+
+
+def print_classification():
+    """Print like a sir as the iterator is classyfication."""
+    las = """                    ./@@@@@@@@
+             *&@@@@@@@@@@@@@@@@(
+        #@@@@@@@@@@@@@@@@@@@@@@@@
+    /@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   ,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.
+     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#       ,#@@@@@@@.
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@@@@@@@@@@@#
+        /@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.
+          @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+           ,@@@@@@@@@@@@@@@@@@.              *@
+         ,@@@@@@@@@@@@@&        (@@@@@@@@@@@&  *%
+  .#@@@@@@@@@@@@@@%    ,(###@      @*.%%/@@&&   /@
+#@@@@@@@,   *@@&   *@ @*  ,@@@     /&      @     @     ,@&
+ .          @@*  *@, @.  , ( ,(       %&@&,&@@@@@@@@@@@@@&
+           #@& .@@@@@   #    ,(   /@@@@@@@@@@/    @
+           @@,  #  /@  ,&  %,@  *@@@          @.  @
+          ,@@*  &      *%%#    %@@   @& %,**   , %#
+           @@@  *,          @@@@.     .         ,@
+           ,@@@  #                             (@                ,*
+            ,@@@,%                           ,@%              &@. &@.
+              .@@@&                       .@@#              .@
+                  &@@@@,             *@@@%% @@             %@
+                      %@@,,#@    & /@@ /@%@ %@@@@@&/     /@/
+                        .@   &%  .@@@@  @//, *@@.   %@@@@/
+                         /@/   ., @  #@@@@  @/# @.
+                        *@@@#   % %  #@(  @  &.  @/
+                       %@  @@    .@% #@(   @ *.   @.
+                      .@   &@       &,&@*  @#@,    @
+                      @*  ,@@@@@@%##, #  ,(  @     #/
+
+                            C L A S S ification
+    """
+    print_centered_multiline_block(las)
 
 
 def print_crown(output_width=DEFAULT_OUTPUT_WIDTH):

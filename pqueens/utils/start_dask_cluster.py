@@ -3,7 +3,6 @@ import argparse
 import asyncio
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -65,7 +64,6 @@ if __name__ == "__main__":
     _logger.info("Starting event loop")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    os.environ["PATH"] += os.pathsep + "/opt/slurm/bin"
     try:
         _logger.info("Starting dask cluster of type: %s", dask_cluster_cls)
         _logger.debug("Dask cluster kwargs:")
