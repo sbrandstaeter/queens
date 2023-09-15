@@ -1,6 +1,7 @@
 """Sequential Monte Carlo implementation using *particles* package."""
 
 import logging
+import re
 
 import numpy as np
 import particles
@@ -172,7 +173,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.smc_obj = particles.SMC(
             fk=feynman_kac_model,
             N=self.num_particles,
-            verbose=True,
+            verbose=False,
             collect=[col.Moments()],
             resampling=self.resampling_method,
             qmc=False,  # QMC can not be used in this static setting in particles (currently)
@@ -189,9 +190,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
         _logger.info('Welcome to SMC (particles) core run.')
 
         for _ in self.smc_obj:
-            _logger.info("SMC step %s", self.smc_obj.t - 1)
+            _logger.info(re.sub(r"t=.*?,", f"t={self.smc_obj.t -1},", str(self.smc_obj)))
             self.n_sims = self.smc_obj.fk.model.n_sims
-            _logger.info("Number of forward runs %s", self.n_sims)
+            _logger.info("Total number of forward runs %s", self.n_sims)
             _logger.info("-" * 70)
             if self.n_sims >= self.max_feval:
                 _logger.warning("Maximum number of model evaluations reached!")

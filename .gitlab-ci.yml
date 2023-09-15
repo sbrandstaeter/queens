@@ -283,6 +283,7 @@ imcs-ubuntu_full_test_suite:
   script:
     - pytest pqueens/tests/integration_tests/cluster/
       -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
+      --remote-user=queens
       --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
 

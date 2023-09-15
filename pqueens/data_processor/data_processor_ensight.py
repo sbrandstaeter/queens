@@ -184,15 +184,30 @@ class DataProcessorEnsight(DataProcessor):
                 f"{file_options_dict['physical_field_dict'].keys()}"
             )
 
-    def _get_raw_data_from_file(self):
-        """Read-in EnSight files using the vtkEnsightGoldBinaryReader."""
-        # Set vtk reader object as raw file data
-        self.raw_file_data = vtk.vtkEnSightGoldBinaryReader()
-        self.raw_file_data.SetCaseFileName(self.file_path)
-        self.raw_file_data.Update()
+    def _get_raw_data_from_file(self, file_path):
+        """Read-in EnSight files using the vtkEnsightGoldBinaryReader.
 
-    def _filter_and_manipulate_raw_data(self):
-        """Filter the ensight raw data for desired time steps."""
+        Args:
+            file_path (str): Actual path to the file of interest.
+
+        Returns:
+            raw_data (obj): Raw data from file.
+        """
+        # Set vtk reader object as raw file data
+        raw_data = vtk.vtkEnSightGoldBinaryReader()
+        raw_data.SetCaseFileName(file_path)
+        raw_data.Update()
+        return raw_data
+
+    def _filter_and_manipulate_raw_data(self, raw_data):
+        """Filter the ensight raw data for desired time steps.
+
+        Args:
+            raw_data (obj): Raw data from file.
+
+        Returns:
+            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
+        """
         # determine the correct time vector depending on input specification
         if self.target_time_lst[0] == "from_experimental_data":
             # get unique time list
@@ -203,7 +218,7 @@ class DataProcessorEnsight(DataProcessor):
         # loop over different time-steps here.
         time_lst = sorted(time_lst)
         for time_value in time_lst:
-            vtk_data_per_time_step = self._vtk_from_ensight(time_value)
+            vtk_data_per_time_step = self._vtk_from_ensight(raw_data, time_value)
 
             # check if data was found
             if not vtk_data_per_time_step:
@@ -215,13 +230,7 @@ class DataProcessorEnsight(DataProcessor):
                 time_value,
             )
 
-            # potentially append new time step result to result array
-            if self.processed_data.size > 0:
-                self.processed_data = np.hstack(
-                    (self.processed_data, processed_data_per_time_step_interpolated)
-                )
-            else:
-                self.processed_data = processed_data_per_time_step_interpolated
+            return processed_data_per_time_step_interpolated
 
     def _get_field_values_by_coordinates(
         self,
@@ -412,7 +421,7 @@ class DataProcessorEnsight(DataProcessor):
 
         return interpolated_data
 
-    def _vtk_from_ensight(self, target_time):
+    def _vtk_from_ensight(self, raw_data, target_time):
         """Load a vtk-object from the ensight file.
 
         Args:
@@ -422,16 +431,16 @@ class DataProcessorEnsight(DataProcessor):
             vtk_solution_field (obj)
         """
         # Ensight contains different "timesets" which are containers for the actual data
-        number_of_timesets = self.raw_file_data.GetTimeSets().GetNumberOfItems()
+        number_of_timesets = raw_data.GetTimeSets().GetNumberOfItems()
 
         for num in range(number_of_timesets):
-            time_set = vtk_to_numpy(self.raw_file_data.GetTimeSets().GetItem(num))
+            time_set = vtk_to_numpy(raw_data.GetTimeSets().GetItem(num))
             # Find the timeset that has more than one entry as sometimes there is an empty dummy
             # timeset in the ensight file (seems to be an artifact)
             if time_set.size > 1:
                 # if the keyword `last` was provided, get the last timestep
                 if target_time == 'last':
-                    self.raw_file_data.SetTimeValue(time_set[-1])
+                    raw_data.SetTimeValue(time_set[-1])
                 else:
                     timestep = time_set.flat[np.abs(time_set - target_time).argmin()]
 
@@ -441,10 +450,10 @@ class DataProcessorEnsight(DataProcessor):
                             f"Target time: {target_time}, selected time: {timestep},"
                             f"tolerance {self.time_tol}"
                         )
-                    self.raw_file_data.SetTimeValue(timestep)
+                    raw_data.SetTimeValue(timestep)
 
-                self.raw_file_data.Update()
-                input_vtk = self.raw_file_data.GetOutput()
+                raw_data.Update()
+                input_vtk = raw_data.GetOutput()
 
                 # the data is in the first block of the vtk object
                 vtk_solution_field = input_vtk.GetBlock(0)

@@ -45,7 +45,7 @@ def get_module_attribute(path_to_module, function_or_class_name):
         function = getattr(module, function_or_class_name)
     except AttributeError as error:
         raise AttributeError(
-            f"External python module {path_to_module} does not have a function or class"
+            f"External python module {path_to_module} does not have an attribute called "
             f"{function_or_class_name}"
         ) from error
 

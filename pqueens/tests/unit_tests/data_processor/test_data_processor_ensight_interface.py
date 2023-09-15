@@ -146,9 +146,6 @@ def test_init(mocker):
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.file_options_dict == file_options_dict
     assert my_data_processor.file_name_identifier == file_name_identifier
-    assert my_data_processor.file_path is None
-    np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
-    assert my_data_processor.raw_file_data is None
 
 
 def test_from_config_create_data_processor(mocker):

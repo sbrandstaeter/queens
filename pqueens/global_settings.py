@@ -1,11 +1,13 @@
 """Global Settings module."""
 
 import logging
-import subprocess
 from pathlib import Path
 
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
 from pqueens.utils.logger_settings import setup_basic_logging
+from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.print_utils import get_str_table
+from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 GLOBAL_SETTINGS = None
@@ -37,12 +39,70 @@ class GlobalSettings:
         if " " in experiment_name:
             raise ValueError("Experiment name can not contain spaces!")
 
-        git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
-
         self.experiment_name = experiment_name
-        self.output_dir = Path(output_dir)
-        self.git_hash = git_hash
+        self.output_dir = output_dir
         self.debug = debug
+
+        # set up logging
+        log_file_path = self.output_dir / f'{self.experiment_name}.log'
+        setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
+
+        return_code, _, stdout, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        if not return_code:
+            git_hash = stdout.strip()
+        else:
+            git_hash = "unknown"
+            _logger.warning("Could not get git hash. Failed with the following stderror:")
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git hash to: %s!", git_hash)
+
+        return_code, _, git_branch, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', '--abbrev-ref', 'HEAD']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        git_branch = git_branch.strip()
+        if return_code:
+            git_branch = "unknown"
+            _logger.warning("Could not determine git branch. Failed with the following stderror:")
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git branch to: %s!", git_branch)
+
+        return_code, _, git_status, stderr = run_subprocess(
+            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'status', '--porcelain']),
+            subprocess_type="simple",
+            raise_error_on_subprocess_failure=False,
+        )
+        git_clean_working_tree = not git_status
+        if return_code:
+            git_clean_working_tree = "unknown"
+            _logger.warning(
+                "Could not determine if git working tree is clean. "
+                "Failed with the following stderror:"
+            )
+            _logger.warning(str(stderr))
+            _logger.warning("Setting git working tree status to: %s!", git_clean_working_tree)
+
+        self.git_hash = git_hash
+        self.git_branch = git_branch
+        self.git_clean_working_tree = git_clean_working_tree
+
+    def print_git_information(self):
+        """Print information on the status of the git repository."""
+        _logger.info(
+            get_str_table(
+                name="git information",
+                print_dict={
+                    "commit hash": self.git_hash,
+                    "branch": self.git_branch,
+                    "clean working tree": self.git_clean_working_tree,
+                },
+            )
+        )
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.
@@ -54,10 +114,6 @@ class GlobalSettings:
         """
         global GLOBAL_SETTINGS  # pylint: disable=global-statement
         GLOBAL_SETTINGS = self
-
-        # set up logging
-        log_file_path = self.output_dir / f'{self.experiment_name}.log'
-        setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return self
 

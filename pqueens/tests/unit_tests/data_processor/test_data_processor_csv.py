@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import pqueens.data_processor.data_processor_csv_data
-from pqueens.data_processor.data_processor_csv_data import DataProcessorCsv
+import pqueens.data_processor.data_processor_csv
+from pqueens.data_processor.data_processor_csv import DataProcessorCsv
 
 
 @pytest.fixture(name="dummy_csv_file", scope="session")
@@ -99,8 +99,7 @@ def default_data_processor_fixture(mocker):
     }
 
     mocker.patch(
-        'pqueens.data_processor.data_processor_csv_data.DataProcessorCsv.'
-        '_check_valid_filter_options',
+        'pqueens.data_processor.data_processor_csv.DataProcessorCsv.' '_check_valid_filter_options',
         return_value=None,
     )
     pp = DataProcessorCsv(
@@ -142,8 +141,7 @@ def test_init(mocker):
     }
 
     mp = mocker.patch(
-        'pqueens.data_processor.data_processor_csv_data.DataProcessorCsv.'
-        '_check_valid_filter_options',
+        'pqueens.data_processor.data_processor_csv.DataProcessorCsv.' '_check_valid_filter_options',
         return_value=None,
     )
 
@@ -163,9 +161,6 @@ def test_init(mocker):
     assert my_data_processor.header_row == header_row
     assert my_data_processor.index_column == index_column
     assert my_data_processor.file_name_identifier == file_name_identifier
-    assert my_data_processor.file_path is None
-    np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
-    assert my_data_processor.raw_file_data is None
     assert my_data_processor.skip_rows == skip_rows
     assert my_data_processor.use_cols_lst == use_cols_lst
     assert my_data_processor.use_rows_lst == use_rows_lst
@@ -239,11 +234,10 @@ def test_get_raw_data_from_file_with_index(
     default_data_processor.use_cols_lst = [1, 3]
     default_data_processor.skip_rows = 3
     default_data_processor.index_column = 0
-    default_data_processor.file_path = dummy_csv_file
 
-    default_data_processor._get_raw_data_from_file()
+    raw_data = default_data_processor._get_raw_data_from_file(dummy_csv_file)
 
-    pd.testing.assert_frame_equal(default_data_processor.raw_file_data, default_raw_data)
+    pd.testing.assert_frame_equal(raw_data, default_raw_data)
 
 
 def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_processor):
@@ -252,9 +246,8 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
     default_data_processor.use_cols_lst = [1, 3]
     default_data_processor.skip_rows = 3
     default_data_processor.index_column = False
-    default_data_processor.file_path = dummy_csv_file
 
-    default_data_processor._get_raw_data_from_file()
+    raw_data = default_data_processor._get_raw_data_from_file(dummy_csv_file)
 
     expected_values = [
         [0.02000, 0.64879],
@@ -272,7 +265,7 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
         expected_values, index=np.arange(0, 10), columns=['step', 'd_x']
     )
 
-    pd.testing.assert_frame_equal(default_data_processor.raw_file_data, expected_raw_data)
+    pd.testing.assert_frame_equal(raw_data, expected_raw_data)
 
 
 def test_filter_entire_file(default_data_processor, default_raw_data):
@@ -280,13 +273,13 @@ def test_filter_entire_file(default_data_processor, default_raw_data):
     default_data_processor.filter_type = 'entire_file'
     default_data_processor.raw_file_data = default_raw_data
 
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
 
     expected_data = np.array(
         [0.64879, 1.15097, 1.54266, 1.86050, 2.12885, 2.36284, 2.57195, 2.76238, 2.93828, 3.10256]
     ).reshape((10, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data, processed_data)
 
 
 def test_filter_by_range(default_data_processor, default_raw_data):
@@ -296,11 +289,11 @@ def test_filter_by_range(default_data_processor, default_raw_data):
     default_data_processor.filter_tol = 1e-2
     default_data_processor.raw_file_data = default_raw_data
 
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
 
     expected_data = np.array([1.54266, 1.86050, 2.12885, 2.36284]).reshape((4, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data, processed_data)
 
 
 def test_filter_by_target_values(default_data_processor, default_raw_data):
@@ -310,11 +303,11 @@ def test_filter_by_target_values(default_data_processor, default_raw_data):
     default_data_processor.filter_tol = 1e-2
     default_data_processor.raw_file_data = default_raw_data
 
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
 
     expected_data = np.array([1.54266, 2.12885, 2.93828]).reshape((3, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data, processed_data)
 
 
 def test_filter_by_row_index(default_data_processor, default_raw_data):
@@ -323,33 +316,32 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
     default_data_processor.use_rows_lst = [0, 5, 8]
     default_data_processor.raw_file_data = default_raw_data
 
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
 
     expected_data = np.array([0.64879, 2.36284, 2.93828]).reshape((3, 1))
-    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data, processed_data)
 
 
 def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
     """Test output format in numpy."""
     default_data_processor.returned_filter_format = 'numpy'
     default_data_processor.raw_file_data = default_raw_data
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
     expected_data = default_raw_data.to_numpy()
-    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data, processed_data)
 
 
 def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
     """Test output format as dict."""
     default_data_processor.returned_filter_format = 'dict'
     default_data_processor.raw_file_data = default_raw_data
-    default_data_processor._filter_and_manipulate_raw_data()
+    processed_data = default_data_processor._filter_and_manipulate_raw_data(default_raw_data)
     expected_data = default_raw_data.to_dict('list')
-    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+    np.testing.assert_allclose(expected_data['d_x'], processed_data['d_x'])
 
 
 def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
     """Test wrong output format."""
     default_data_processor.returned_filter_format = 'stuff'
-    default_data_processor.raw_file_data = default_raw_data
     with pytest.raises(pqueens.utils.valid_options_utils.InvalidOptionError):
-        default_data_processor._filter_and_manipulate_raw_data()
+        default_data_processor._filter_and_manipulate_raw_data(default_raw_data)

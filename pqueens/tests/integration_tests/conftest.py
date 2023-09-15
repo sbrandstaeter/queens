@@ -1,6 +1,5 @@
 """Collect fixtures used by the integration tests."""
 
-import getpass
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -109,14 +108,7 @@ def user_fixture():
 @pytest.fixture(name="cluster_user", scope="session")
 def cluster_user_fixture(user, hostname):
     """Username of cluster account to use for tests."""
-    # user who called the test suite
-    # gitlab-runner has to run simulation as different user on cluster everyone else should use
-    # account with same name
-    if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
-        cluster_user = "queens"
-    else:
-        cluster_user = user
-    return cluster_user
+    return pytestconfig.getoption("remote_user")
 
 
 @pytest.fixture(name="cluster", scope="session")
@@ -182,7 +174,7 @@ def baci_cluster_paths_fixture(connect_to_resource):
 
 
 @pytest.fixture(name="baci_example_expected_mean")
-def fixture_baci_example_expected_mean():
+def baci_example_expected_mean_fixture():
     """Expected result for the BACI example."""
     result = np.array(
         [
@@ -208,7 +200,7 @@ def fixture_baci_example_expected_mean():
 
 
 @pytest.fixture(name="baci_example_expected_var")
-def name_baci_example_expected_var():
+def baci_example_expected_var_fixture():
     """Expected variance for the BACI example."""
     result = np.array(
         [

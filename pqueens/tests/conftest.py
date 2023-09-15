@@ -1,4 +1,5 @@
 """Configuration module for the entire test suite (highest level)."""
+import getpass
 import logging
 import socket
 from pathlib import Path
@@ -14,6 +15,9 @@ _logger = logging.getLogger(__name__)
 
 def pytest_addoption(parser):
     """Add pytest options."""
+    # default remote_user is same as local_user
+    local_user = getpass.getuser()
+    parser.addoption("--remote-user", action="store", default=local_user)
     parser.addoption("--remote-python", action="store", default=None)
     parser.addoption("--remote-queens-repository", action="store", default="null")
 
@@ -138,7 +142,7 @@ def pytest_sessionfinish():
 
 
 @pytest.fixture(name="reset_loggers", autouse=True)
-def fixture_reset_logger():
+def reset_loggers_fixture():
     """Reset loggers.
 
     This fixture is called at every test due to `autouse=True`. It acts

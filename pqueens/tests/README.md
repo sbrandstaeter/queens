@@ -15,8 +15,10 @@ Every test is marked with a pytest marker. These allow us to group tests togethe
   - `pytest -m integration_tests_baci`
 - Integration tests with or without BACI
   - `pytest -m "integration_tests or integration_tests_baci"`
-- Cluster tests (requires BACI) 
-  - `pytest -m lnm_clusters`  
+- Cluster tests on LNM clusters (requires LNM clusters access as well as BACI) 
+  - `pytest -m lnm_cluster`
+- Cluster tests on IMCS clusters (requires IMCS cluster access as well as BACI) 
+  - `pytest -m imcs_cluster`   
 - Benchmarks (requires BACI)   
   - `pytest -m benchmark`
 

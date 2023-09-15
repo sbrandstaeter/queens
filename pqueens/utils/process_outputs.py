@@ -28,8 +28,8 @@ def process_outputs(output_data, output_description, input_data=None):
     processed_results = {}
     try:
         processed_results = do_processing(output_data, output_description)
-    except:
-        _logger.info("Could not process results properly.")
+    except (TypeError, KeyError) as error:
+        _logger.warning("Error occurred during result processing: %s", str(error))
 
     # add the actual raw input and output data
     processed_results["raw_output_data"] = output_data
@@ -65,7 +65,7 @@ def do_processing(output_data, output_description):
     # result interval
     result_interval = output_description.get('result_interval', None)
     # TODO: we get an error below!
-    output_data["mean"] = output_data["mean"].astype(np.float64)
+
     if result_interval is None:
         # estimate interval from results
         result_interval = estimate_result_interval(output_data)

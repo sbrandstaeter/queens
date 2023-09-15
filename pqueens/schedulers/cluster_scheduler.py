@@ -55,6 +55,7 @@ class ClusterScheduler(Scheduler):
         cluster_queens_repository=None,
         cluster_build_environment=False,
         progressbar=True,
+        allowed_failures=5,
     ):
         """Init method for the cluster scheduler.
 
@@ -76,6 +77,7 @@ class ClusterScheduler(Scheduler):
                                                    build on cluster
             progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
                                      schedulers are used, the progressbar must be disabled.
+            allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
         if cluster_queens_repository is None:
             cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
@@ -116,7 +118,11 @@ class ClusterScheduler(Scheduler):
 
         remote_port = connection.run_function(self.get_port)
         remote_port_dashboard = connection.run_function(self.get_port)
-        scheduler_options = {"port": remote_port, "dashboard_address": remote_port_dashboard}
+        scheduler_options = {
+            "port": remote_port,
+            "dashboard_address": remote_port_dashboard,
+            "allowed_failures": allowed_failures,
+        }
         if cluster_internal_address:
             scheduler_options["contact_address"] = f"{cluster_internal_address}:{remote_port}"
         dask_cluster_kwargs = {

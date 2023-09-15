@@ -504,7 +504,7 @@ class BmfiaInterface(Interface):
             probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
                                               mapping objects
         """
-        super().__init__(parameters)
+        super().__init__(parameters=None)
         # instantiate probabilistic mapping objects
         (
             instantiate_probabilistic_mappings,
