@@ -38,7 +38,7 @@ class BaciLMIterator(Iterator):
         iter_opt: TODO_doc
         lowesterror (float): The lowest error achieved during optimization. Initialized to None.
         param_opt (np.ndarray): The optimized parameter values corresponding to the lowest error.
-        solution (any): The solution achieved by the optimization process.
+        solution (np.array): The solution achieved by the optimization process.
     """
 
     def __init__(
@@ -163,7 +163,6 @@ class BaciLMIterator(Iterator):
 
         # Levenberg Marquardt iterations
         while not converged:
-
             if i > self.max_feval:
                 converged = True
                 _logger.info('Maximum number of steps max_feval= %d reached.', self.max_feval)
@@ -236,7 +235,7 @@ class BaciLMIterator(Iterator):
                 raise ValueError('update_reg unknown')
             i += 1
 
-        # store set of parameters which leads to lowest residual as solution
+        # store set of parameters which leads to the lowest residual as solution
         self.solution = self.param_opt
 
     def post_run(self):

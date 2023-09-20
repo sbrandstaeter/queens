@@ -74,7 +74,7 @@ class OptimizationIterator(Iterator):
         output_scaling_experimental: TODO_doc
         precalculated_positions (dict): Dictionary containing precalculated positions and
                                         corresponding model responses.
-        solution: Solution obtained from the optimization process.
+        solution (np.array): Solution obtained from the optimization process.
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
