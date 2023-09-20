@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
-from pqueens.utils.logger_settings import setup_basic_logging
+from pqueens.utils.logger_settings import reset_logging, setup_basic_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -136,3 +136,5 @@ class GlobalSettings:
         for shutdown_client in SHUTDOWN_CLIENTS.copy():
             SHUTDOWN_CLIENTS.remove(shutdown_client)
             shutdown_client()
+
+        reset_logging()
