@@ -73,7 +73,7 @@ class Parameters:
         names (list): Parameter names.
     """
 
-    def __init__(self, **parameters):
+    def __init__(self, **parameters):  # pylint: disable=redefined-outer-name
         """Initialize Parameters object.
 
         Args:

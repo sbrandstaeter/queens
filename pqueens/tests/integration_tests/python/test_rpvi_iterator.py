@@ -32,7 +32,7 @@ def test_rpvi_iterator_park91a_hifi(
         "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
         "model": "model",
-        "external_python_module": module_path_fixture,
+        "external_python_module": fixture_module_path,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
@@ -118,7 +118,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "forward_model_name": "simulation_model",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "model": "model",
-        "external_python_module": module_path_fixture,
+        "external_python_module": fixture_module_path,
     }
     input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)

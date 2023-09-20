@@ -109,7 +109,7 @@ def test_from_config_create_object_model(mocker, config_1):
     mp2 = mocker.patch(
         "pqueens.models.simulation_model.SimulationModel.__init__", return_value=None
     )
-    from_config_create_object(config_1, parameters_fixture)
+    from_config_create_object(config_1, fixture_parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == config_1

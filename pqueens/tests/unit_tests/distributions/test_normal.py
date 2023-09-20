@@ -233,7 +233,7 @@ def test_init_normal_not_symmetric():
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
-        NormalDistribution(mean=mean_3d_fixture, covariance=covariance)
+        NormalDistribution(mean=fixture_mean_3d, covariance=covariance)
 
 
 def logpdf(x, logpdf_const, mean, precision):

@@ -232,7 +232,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     )
     mocker.patch(
         'pqueens.visualization.bmfia_visualization.bmfia_visualization_instance',
-        return_value=dummy_plot_instance_fixture,
+        return_value=fixture_dummy_plot_instance,
     )
 
     default_bmfia_interface.num_processors_multi_processing = 3
@@ -544,7 +544,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
     )
 
     mean, variance = BmfiaInterface.evaluate_per_time_step(
-        z_lf, support, default_probabilistic_obj_lst_fixture, time_vec, coords_mat
+        z_lf, support, fixture_default_probabilistic_obj_lst, time_vec, coords_mat
     )
 
     mp1.assert_called_once()
@@ -555,7 +555,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
 
     mp3.assert_called_once()
     mp3.assert_called_with(
-        z_lf_array, support, num_coords, default_probabilistic_obj_lst_fixture, gradient_bool=False
+        z_lf_array, support, num_coords, fixture_default_probabilistic_obj_lst, gradient_bool=False
     )
 
     np.testing.assert_array_equal(mean, default_mean)
@@ -875,7 +875,7 @@ def test_update_mappings_per_time_step(mocker):
     )
 
     mapping = mocker.MagicMock()
-    mapping.update_training_data.return_value = dummy_reg_obj_fixture
+    mapping.update_training_data.return_value = fixture_dummy_reg_obj
     probabilistic_mapping_obj_lst = [mapping] * t_size
 
     (
