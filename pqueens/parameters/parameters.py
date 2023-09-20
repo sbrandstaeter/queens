@@ -73,7 +73,7 @@ class Parameters:
         names (list): Parameter names.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **parameters):
         """Initialize Parameters object.
 
         Args:
@@ -83,7 +83,7 @@ class Parameters:
         joint_parameters_dim = 0
         random_field_flag = False
 
-        for parameter_name, parameter_obj in kwargs.items():
+        for parameter_name, parameter_obj in parameters.items():
             if isinstance(parameter_obj, ContinuousDistribution):
                 joint_parameters_keys = _add_parameters_keys(
                     joint_parameters_keys, parameter_name, parameter_obj.dimension
@@ -98,11 +98,11 @@ class Parameters:
                     f"Parameter class '{parameter_obj.__class__.__name__}' " "not supported."
                 )
 
-        self.dict = kwargs
+        self.dict = parameters
         self.parameters_keys = joint_parameters_keys
         self.num_parameters = joint_parameters_dim
         self.random_field_flag = random_field_flag
-        self.names = list(kwargs.keys())
+        self.names = list(parameters.keys())
 
     def draw_samples(self, num_samples):
         """Draw samples from all parameters.
