@@ -18,25 +18,25 @@ from pqueens.utils import smc_utils
         ("generic", type(smc_utils.temper_logpdf_generic)),
     ],
 )
-def temper_keyword_and_temper_type_fixture(request):
+def fixture_temper_keyword_and_temper_type(request):
     """Return a set of valid keyword and corresponding temper type."""
     return request.param
 
 
 @pytest.fixture(name="temper_parameter", scope='module', params=[0.0, 1e-4, 0.9, 1.0])
-def temper_parameter_fixture(request):
+def fixture_temper_parameter(request):
     """Return a valid temper parameter."""
     return request.param
 
 
 @pytest.fixture(name="logpdf0", scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
-def logpdf0_fixture(request):
+def fixture_logpdf0(request):
     """Return a valid logpdf."""
     return request.param
 
 
 @pytest.fixture(name="logpdf1", scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
-def logpdf1_fixture(request):
+def fixture_logpdf1(request):
     """Return a valid logpdf."""
     return request.param
 

@@ -42,7 +42,7 @@ def test_Adam(adam_optimizer):
 
 
 @pytest.fixture(name="adam_optimizer")
-def adam_optimizer_fixture():
+def fixture_adam_optimizer():
     """Adam optimizer."""
     optimizer = Adam(
         learning_rate=1e-2,
@@ -55,7 +55,7 @@ def adam_optimizer_fixture():
 
 
 @pytest.fixture(name="adamax_optimizer")
-def adamax_optimizer_fixture():
+def fixture_adamax_optimizer():
     """Adamax optimizer."""
     optimizer = Adamax(
         learning_rate=1e-2,
@@ -68,7 +68,7 @@ def adamax_optimizer_fixture():
 
 
 @pytest.fixture(name="rmsprop_optimizer")
-def rmsprop_optimizer_fixture():
+def fixture_rmsprop_optimizer():
     """Rmsprop optimzer."""
     optimizer = RMSprop(
         learning_rate=5e-2,

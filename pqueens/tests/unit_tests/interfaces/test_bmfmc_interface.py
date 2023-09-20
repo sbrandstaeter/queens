@@ -26,7 +26,7 @@ class FakeRegression:
 
 
 @pytest.fixture(name="config")
-def config_fixture(approx_name):
+def fixture_config(approx_name):
     """Create dummy config for testing."""
     config = {
         approx_name: {"surrogate_model_name": "gp"},
@@ -41,28 +41,28 @@ def config_fixture(approx_name):
 
 
 @pytest.fixture(name="default_interface")
-def default_interface_fixture(probabilistic_mapping_obj):
+def fixture_default_interface(probabilistic_mapping_obj):
     """Create default interface."""
     interface = BmfmcInterface(probabilistic_mapping_obj)
     return interface
 
 
 @pytest.fixture(name="probabilistic_mapping_obj")
-def probabilistic_mapping_obj_fixture(map_output_dict):
+def fixture_probabilistic_mapping_obj(map_output_dict):
     """Create probabilistic mapping object."""
     probabilistic_mapping_obj = FakeRegression(map_output_dict)
     return probabilistic_mapping_obj
 
 
 @pytest.fixture(name="map_output_dict")
-def map_output_dict_fixture():
+def fixture_map_output_dict():
     """Map output dictionary."""
     output = {'mean': np.linspace(1.0, 5.0, 5), 'variance': np.linspace(5.0, 10.0, 5)}
     return output
 
 
 @pytest.fixture(name="approx_name")
-def approx_name_fixture():
+def fixture_approx_name():
     """Create approximation name."""
     name = 'some_name'
     return name

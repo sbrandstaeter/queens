@@ -7,7 +7,7 @@ from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsItera
 
 
 @pytest.fixture(name="default_elementary_effects_iterator")
-def default_elementary_effects_iterator_fixture(
+def fixture_default_elementary_effects_iterator(
     dummy_global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default elementary effects iterator."""

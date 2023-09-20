@@ -16,7 +16,7 @@ from pqueens.utils.stochastic_optimizer import Adam
 
 
 @pytest.fixture(name="gp_model")
-def gp_model_fixture():
+def fixture_gp_model():
     """Configuration for jitted GP model."""
     optimizer = Adam(
         learning_rate=0.01,

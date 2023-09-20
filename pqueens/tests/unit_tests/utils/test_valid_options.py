@@ -42,7 +42,7 @@ def test_get_option_invalid(valid_options):
 
 
 @pytest.fixture(name="valid_options")
-def valid_options_fixture():
+def fixture_valid_options():
     """Valid options fixture."""
     options = {
         "a_valid_option": "its response",
@@ -61,7 +61,7 @@ def valid_options_fixture():
         dict(zip(["another_ivalid_option", "another_valid_option"], [1, 2])),
     ],
 )
-def requested_options_invalid_fixture(request):
+def fixture_requested_options_invalid(request):
     """Invalid requested options."""
     return request.param
 
@@ -74,6 +74,6 @@ def requested_options_invalid_fixture(request):
         dict(zip(["a_valid_option", "another_valid_option"], [1, 2])),
     ],
 )
-def requested_options_valid_fixture(request):
+def fixture_requested_options_valid(request):
     """Valid requested options."""
     return request.param

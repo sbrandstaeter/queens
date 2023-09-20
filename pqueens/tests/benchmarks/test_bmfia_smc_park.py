@@ -51,7 +51,7 @@ def test_bmfia_park_hf_smc(
 
 
 @pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
-def create_experimental_data_park91a_hifi_on_grid_fixture(tmp_path):
+def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Fixture to write dummy observation data."""
     # Fix random seed
     np.random.seed(seed=1)
@@ -90,7 +90,7 @@ def create_experimental_data_park91a_hifi_on_grid_fixture(tmp_path):
 
 
 @pytest.fixture(name="expected_weights")
-def expected_weights_fixture():
+def fixture_expected_weights():
     """Expected weights."""
     weights = np.array(
         [
@@ -200,7 +200,7 @@ def expected_weights_fixture():
 
 
 @pytest.fixture(name="expected_samples")
-def expected_samples_fixture():
+def fixture_expected_samples():
     """Expected samples."""
     samples = np.array(
         [

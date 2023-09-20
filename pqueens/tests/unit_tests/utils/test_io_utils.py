@@ -14,7 +14,7 @@ pytestmark = pytest.mark.unit_tests
 
 
 @pytest.fixture(name="input_dict")
-def input_dict_fixture():
+def fixture_input_dict():
     """Input dict for testing."""
     return {"test_key": "test_value"}
 

@@ -19,7 +19,7 @@ class DummyModel(Model):
 
 
 @pytest.fixture(name="model")
-def model_fixture():
+def fixture_model():
     """An instance of an empty Model class."""
     return DummyModel()
 

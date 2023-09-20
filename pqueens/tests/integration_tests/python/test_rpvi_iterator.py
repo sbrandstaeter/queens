@@ -157,7 +157,7 @@ def target_density(self, samples):
 
 
 @pytest.fixture(name="forward_model", scope="module", params=['simulation_model', 'fd_model'])
-def forward_model_fixture(request):
+def fixture_forward_model(request):
     """Gradient method."""
     return request.param
 
@@ -196,7 +196,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, forward_model):
 
 
 @pytest.fixture(name="dummy_data")
-def dummy_data_fixture(tmp_path):
+def fixture_dummy_data(tmp_path):
     """Fixture for dummy data."""
     data_dict = {'y_obs': np.zeros(1)}
     experimental_data_path = tmp_path / 'experimental_data.csv'
@@ -205,14 +205,14 @@ def dummy_data_fixture(tmp_path):
 
 
 @pytest.fixture(name="module_path")
-def module_path_fixture(tmp_path):
+def fixture_module_path(tmp_path):
     """Generate path for new likelihood module."""
     my_module_path = tmp_path / "my_likelihood_module.py"
     return str(my_module_path)
 
 
 @pytest.fixture(name="write_custom_likelihood_model")
-def write_custom_likelihood_model_fixture(module_path):
+def fixture_write_custom_likelihood_model(module_path):
     """Write custom likelihood class to file."""
     custom_class_lst = [
         "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",

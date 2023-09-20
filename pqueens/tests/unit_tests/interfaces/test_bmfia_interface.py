@@ -11,7 +11,7 @@ from pqueens.utils.exceptions import InvalidOptionError
 
 # ---- Fixtures and helper methods / classes ---------
 @pytest.fixture(name="default_bmfia_interface")
-def default_bmfia_interface_fixture():
+def fixture_default_bmfia_interface():
     """Fixture for a dummy bmfia interface."""
     default_interface = BmfiaInterface(
         parameters="dummy_parameters",
@@ -49,21 +49,21 @@ class DummyRegression:
 
 
 @pytest.fixture(name="dummy_reg_obj")
-def dummy_reg_obj_fixture():
+def fixture_dummy_reg_obj():
     """Fixture for a dummy regression object."""
     obj = DummyRegression()
     return obj
 
 
 @pytest.fixture(name="default_probabilistic_obj_lst")
-def default_probabilistic_obj_lst_fixture(dummy_reg_obj):
+def fixture_default_probabilistic_obj_lst(dummy_reg_obj):
     """Fixture for probabilistic mapping objects."""
     dummy_lst = [dummy_reg_obj] * 3
     return dummy_lst
 
 
 @pytest.fixture(name="my_state_lst")
-def my_state_lst_fixture():
+def fixture_my_state_lst():
     """Fixture for a dummy state list."""
     return [1, 2, 3]
 
@@ -101,7 +101,7 @@ class MyContext:
 
 
 @pytest.fixture(name="dummy_plot_instance")
-def dummy_plot_instance_fixture():
+def fixture_dummy_plot_instance():
     """Quick fake plotting object."""
 
     class my_plot:

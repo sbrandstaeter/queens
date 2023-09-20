@@ -12,7 +12,7 @@ from pqueens.parameters.parameters import Parameters
 
 
 @pytest.fixture(name="grid_dict_one")
-def grid_dict_one_fixture():
+def fixture_grid_dict_one():
     """TODO_doc."""
     axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
     grid_dict_dummy = {"x1": axis_description}
@@ -20,7 +20,7 @@ def grid_dict_one_fixture():
 
 
 @pytest.fixture(name="grid_dict_two")
-def grid_dict_two_fixture():
+def fixture_grid_dict_two():
     """TODO_doc."""
     axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
     grid_dict_dummy = {"x1": axis_description, "x2": axis_description}
@@ -28,7 +28,7 @@ def grid_dict_two_fixture():
 
 
 @pytest.fixture(name="grid_dict_three")
-def grid_dict_three_fixture():
+def fixture_grid_dict_three():
     """TODO_doc."""
     axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
     grid_dict_dummy = {"x1": axis_description, "x2": axis_description, "x3": axis_description}
@@ -36,42 +36,42 @@ def grid_dict_three_fixture():
 
 
 @pytest.fixture(name="parameters_one")
-def parameters_one_fixture():
+def fixture_parameters_one():
     """TODO_doc."""
     rv = UniformDistribution(lower_bound=-2, upper_bound=2)
     return Parameters(x1=rv)
 
 
 @pytest.fixture(name="parameters_two")
-def parameters_two_fixture():
+def fixture_parameters_two():
     """TODO_doc."""
     rv = UniformDistribution(lower_bound=-2, upper_bound=2)
     return Parameters(x1=rv, x2=deepcopy(rv))
 
 
 @pytest.fixture(name="parameters_three")
-def parameters_three_fixture():
+def fixture_parameters_three():
     """TODO_doc."""
     rv = UniformDistribution(lower_bound=-2, upper_bound=2)
     return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
 
 
 @pytest.fixture(name="result_description")
-def result_description_fixture():
+def fixture_result_description():
     """TODO_doc."""
     description = {"write_results": True}
     return description
 
 
 @pytest.fixture(name="expected_samples_one")
-def expected_samples_one_fixture():
+def fixture_expected_samples_one():
     """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     return np.atleast_2d(x1).T
 
 
 @pytest.fixture(name="expected_samples_two")
-def expected_samples_two_fixture():
+def fixture_expected_samples_two():
     """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
@@ -81,7 +81,7 @@ def expected_samples_two_fixture():
 
 
 @pytest.fixture(name="expected_samples_three")
-def expected_samples_three_fixture():
+def fixture_expected_samples_three():
     """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
@@ -93,7 +93,7 @@ def expected_samples_three_fixture():
 
 # fixtures for some objects
 @pytest.fixture(name="default_model")
-def default_model_fixture(parameters_two):
+def fixture_default_model(parameters_two):
     """TODO_doc."""
     interface = 'dummy_interface'
     model = SimulationModel(interface)
@@ -101,7 +101,7 @@ def default_model_fixture(parameters_two):
 
 
 @pytest.fixture(name="default_grid_iterator")
-def default_grid_iterator_fixture(
+def fixture_default_grid_iterator(
     dummy_global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
     """TODO_doc."""

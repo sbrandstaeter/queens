@@ -9,7 +9,7 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 
 # general input fixtures
 @pytest.fixture(name="default_geo_obj")
-def default_geo_obj_fixture(tmp_path):
+def fixture_default_geo_obj(tmp_path):
     """TODO_doc."""
     path_to_dat_file = tmp_path / 'myfile.dat'
     list_geometric_sets = ["DSURFACE 9"]
@@ -37,7 +37,7 @@ def write_to_file(data, filepath):
 
 
 @pytest.fixture(name="dat_dummy_comment")
-def dat_dummy_comment_fixture():
+def fixture_dat_dummy_comment():
     """TODO_doc."""
     data = [
         '// this is a comment\n',
@@ -49,7 +49,7 @@ def dat_dummy_comment_fixture():
 
 
 @pytest.fixture(name="dat_dummy_get_fun")
-def dat_dummy_get_fun_fixture():
+def fixture_dat_dummy_get_fun():
     """TODO_doc."""
     data = [
         'NODE    3419 DSURFACE 10\n',
@@ -72,7 +72,7 @@ def dat_dummy_get_fun_fixture():
         '------------------------------------------------NODE COORDS//         ',
     ],
 )
-def dat_section_true_fixture(request):
+def fixture_dat_section_true(request):
     """TODO_doc."""
     return request.param
 
@@ -88,7 +88,7 @@ def dat_section_true_fixture(request):
         '------------------------------------------------NODECOORDS//           ',
     ],
 )
-def dat_section_false_fixture(request):
+def fixture_dat_section_false(request):
     """TODO_doc."""
     return request.param
 
@@ -102,13 +102,13 @@ def dat_section_false_fixture(request):
         'DVOL-NODE TOPOLOGY',
     ],
 )
-def current_dat_sections_fixture(request):
+def fixture_current_dat_sections(request):
     """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(name="desired_sections")
-def desired_sections_fixture():
+def fixture_desired_sections():
     """TODO_doc."""
     sections = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
@@ -120,7 +120,7 @@ def desired_sections_fixture():
 
 
 @pytest.fixture(name="default_coords")
-def default_coords_fixture():
+def fixture_default_coords():
     """TODO_doc."""
     coords = [
         'NODE 1 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 0.0000000000000000e+00',
@@ -132,7 +132,7 @@ def default_coords_fixture():
 
 
 @pytest.fixture(name="default_topology_node")
-def default_topology_node_fixture():
+def fixture_default_topology_node():
     """TODO_doc."""
     data = [
         'NODE    1 DNODE 1',
@@ -145,7 +145,7 @@ def default_topology_node_fixture():
 
 
 @pytest.fixture(name="default_topology_line")
-def default_topology_line_fixture():
+def fixture_default_topology_line():
     """TODO_doc."""
     data = [
         'NODE    1 DLINE 1',
@@ -158,7 +158,7 @@ def default_topology_line_fixture():
 
 
 @pytest.fixture(name="default_topology_surf")
-def default_topology_surf_fixture():
+def fixture_default_topology_surf():
     """TODO_doc."""
     data = [
         'NODE    1 DSURFACE 1',
@@ -171,7 +171,7 @@ def default_topology_surf_fixture():
 
 
 @pytest.fixture(name="default_topology_vol")
-def default_topology_vol_fixture():
+def fixture_default_topology_vol():
     """TODO_doc."""
     data = [
         'NODE    1 DVOL 1',

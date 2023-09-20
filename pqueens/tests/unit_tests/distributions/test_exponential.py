@@ -15,13 +15,13 @@ def sample_pos_1d(request):
 
 
 @pytest.fixture(name="rate_1d", scope='module')
-def rate_1d_fixture():
+def fixture_rate_1d():
     """A possible rate."""
     return 2.0
 
 
 @pytest.fixture(name="exponential_1d", scope='module')
-def exponential_1d_fixture(rate_1d):
+def fixture_exponential_1d(rate_1d):
     """An exponential distribution."""
     return ExponentialDistribution(rate=rate_1d)
 
@@ -39,13 +39,13 @@ def sample_pos_2d(request):
 
 
 @pytest.fixture(name="rate_2d", scope='module')
-def rate_2d_fixture():
+def fixture_rate_2d():
     """A possible rate."""
     return np.array([1.0, 0.5])
 
 
 @pytest.fixture(name="exponential_2d", scope='module')
-def exponential_2d_fixture(rate_2d):
+def fixture_exponential_2d(rate_2d):
     """An exponential distribution."""
     return ExponentialDistribution(rate=rate_2d)
 

@@ -6,7 +6,7 @@ from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 
 
 @pytest.fixture(name="default_mc_iterator")
-def default_mc_iterator_fixture(
+def fixture_default_mc_iterator(
     dummy_global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Default monte carlo iterator."""

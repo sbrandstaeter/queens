@@ -13,7 +13,7 @@ from pqueens.distributions.mean_field_normal import MeanFieldNormalDistribution
 
 
 @pytest.fixture(name="mean_field_normal")
-def mean_field_normal_fixture():
+def fixture_mean_field_normal():
     """Create dummy mean-field normal distribution."""
     mean = np.zeros(5).reshape(-1)
     variance = np.ones(5).reshape(-1)
@@ -23,7 +23,7 @@ def mean_field_normal_fixture():
 
 
 @pytest.fixture(name="samples")
-def samples_fixture():
+def fixture_samples():
     """Create two 5 dimensional samples."""
     np.random.seed(0)
     samples = np.random.normal(2, 3, 10).reshape(2, 5)

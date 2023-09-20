@@ -18,7 +18,7 @@ from pqueens.utils.process_outputs import write_results
 
 # ---- fixtures ----------------------------------------------------------------
 @pytest.fixture(name="generate_X_mc")
-def generate_X_mc_fixture():
+def fixture_generate_X_mc():
     """TODO_doc."""
     # generate 5000 uniform samples for x1 and x2 in [0,1]
     np.random.seed(1)
@@ -28,7 +28,7 @@ def generate_X_mc_fixture():
 
 
 @pytest.fixture(name="generate_LF_MC_data")
-def generate_LF_MC_data_fixture(generate_X_mc):
+def fixture_generate_LF_MC_data(generate_X_mc):
     """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
@@ -41,7 +41,7 @@ def generate_LF_MC_data_fixture(generate_X_mc):
 
 
 @pytest.fixture(name="generate_HF_MC_data")
-def generate_HF_MC_data_fixture(generate_X_mc):
+def fixture_generate_HF_MC_data(generate_X_mc):
     """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
@@ -54,7 +54,7 @@ def generate_HF_MC_data_fixture(generate_X_mc):
 
 
 @pytest.fixture(name="write_LF_MC_data_to_pickle")
-def write_LF_MC_data_to_pickle_fixture(tmp_path, generate_X_mc, generate_LF_MC_data):
+def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
     file_name = 'LF_MC_data'
     input_description = {
@@ -80,7 +80,7 @@ def write_LF_MC_data_to_pickle_fixture(tmp_path, generate_X_mc, generate_LF_MC_d
 
 
 @pytest.fixture(name="design_method", params=['random', 'diverse_subset'])
-def design_method_fixture(request):
+def fixture_design_method(request):
     """TODO_doc."""
     design = request.param
     return design

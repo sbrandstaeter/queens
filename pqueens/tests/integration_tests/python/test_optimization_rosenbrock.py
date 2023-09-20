@@ -12,7 +12,7 @@ from pqueens.utils import injector
 
 
 @pytest.fixture(name="algorithm", params=['NELDER-MEAD', 'POWELL', 'CG', 'BFGS', 'L-BFGS-B', 'TNC'])
-def algorithm_fixture(request):
+def fixture_algorithm(request):
     """TODO_doc."""
     return request.param
 

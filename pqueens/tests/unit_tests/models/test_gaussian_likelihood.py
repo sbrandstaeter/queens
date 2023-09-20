@@ -11,7 +11,7 @@ from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelih
 
 # ---------------- some fixtures ---------------------------------- #
 @pytest.fixture(name="dummy_config")
-def dummy_config_fixture():
+def fixture_dummy_config():
     """A dummy config dictionary."""
     config = {
         "my_lik_model": {
@@ -27,7 +27,7 @@ def dummy_config_fixture():
 
 
 @pytest.fixture(name="my_lik_model")
-def my_lik_model_fixture():
+def fixture_my_lik_model():
     """Fixture for dummy likelihood model."""
     forward_model_dummy = namedtuple("forward_model", ["evaluate"])
 

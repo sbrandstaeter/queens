@@ -15,19 +15,19 @@ def sample_pos_1d(request):
 
 
 @pytest.fixture(name="lower_bound_1d", scope='module')
-def lower_bound_1d_fixture():
+def fixture_lower_bound_1d():
     """A possible left bound of interval."""
     return -1.0
 
 
 @pytest.fixture(name="upper_bound_1d", scope='module')
-def upper_bound_1d_fixture():
+def fixture_upper_bound_1d():
     """A possible right bound of interval."""
     return 1.0
 
 
 @pytest.fixture(name="uniform_1d", scope='module')
-def uniform_1d_fixture(lower_bound_1d, upper_bound_1d):
+def fixture_uniform_1d(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
 
@@ -45,19 +45,19 @@ def sample_pos_2d(request):
 
 
 @pytest.fixture(name="lower_bound_2d", scope='module')
-def lower_bound_2d_fixture():
+def fixture_lower_bound_2d():
     """A possible left bound of interval."""
     return np.array([-1.0, -3.0])
 
 
 @pytest.fixture(name="upper_bound_2d", scope='module')
-def upper_bound_2d_fixture():
+def fixture_upper_bound_2d():
     """A possible right bound of interval."""
     return np.array([1.0, 2.0])
 
 
 @pytest.fixture(name="uniform_2d", scope='module')
-def uniform_2d_fixture(lower_bound_2d, upper_bound_2d):
+def fixture_uniform_2d(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
 

@@ -6,7 +6,7 @@ import pqueens.utils.qnumpy as qnp
 
 
 @pytest.fixture(name="arrays", scope='module')
-def arrays_fixture():
+def fixture_arrays():
     """Create QArrays."""
     np.random.seed(42)
     np_arr_1 = np.random.rand(10, 3, 8)
@@ -28,7 +28,7 @@ def test_dot_product(arrays, expected_result):
 
 
 @pytest.fixture(name="expected_result")
-def expected_result_fixture():
+def fixture_expected_result():
     """Expected result of dot product."""
     result = np.array(
         [

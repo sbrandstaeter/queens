@@ -46,7 +46,7 @@ def test_bmfia_smc_park(
 
 
 @pytest.fixture(name="expected_samples")
-def expected_samples_fixture():
+def fixture_expected_samples():
     """Fixture for expected SMC samples."""
     samples = np.array(
         [
@@ -67,7 +67,7 @@ def expected_samples_fixture():
 
 
 @pytest.fixture(name="expected_weights")
-def expected_weights_fixture():
+def fixture_expected_weights():
     """Fixture for expected SMC weights."""
     weights = np.array(
         [
@@ -124,7 +124,7 @@ def test_bmfia_rpvi_gp_park(
 
 
 @pytest.fixture(name="expected_variational_mean")
-def expected_variational_mean_fixture():
+def fixture_expected_variational_mean():
     """Fixture for expected variational_mean."""
     exp_var_mean = np.array([0.53399236, 0.52731554]).reshape(-1, 1)
 
@@ -132,7 +132,7 @@ def expected_variational_mean_fixture():
 
 
 @pytest.fixture(name="expected_variational_cov")
-def expected_variational_cov_fixture():
+def fixture_expected_variational_cov():
     """Fixture for expected variational covariance."""
     exp_var_cov = np.array([[0.00142648, 0.0], [0.0, 0.00347234]])
     return exp_var_cov
@@ -176,7 +176,7 @@ def test_bmfia_rpvi_NN_park(
 
 
 @pytest.fixture(name="expected_variational_mean_nn")
-def expected_variational_mean_nn_fixture():
+def fixture_expected_variational_mean_nn():
     """Fixture for expected variational_mean."""
     exp_var_mean = np.array([0.19221321, 0.33134219]).reshape(-1, 1)
 
@@ -184,7 +184,7 @@ def expected_variational_mean_nn_fixture():
 
 
 @pytest.fixture(name="expected_variational_cov_nn")
-def expected_variational_cov_nn_fixture():
+def fixture_expected_variational_cov_nn():
     """Fixture for expected variational covariance."""
     exp_var_cov = np.array([[0.01245263, 0.0], [0.0, 0.01393423]])
     return exp_var_cov

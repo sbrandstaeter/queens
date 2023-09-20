@@ -39,14 +39,14 @@ NAME_OF_HOST = socket.gethostname()
 
 
 @pytest.fixture(name="hostname", scope="session")
-def hostname_fixture(name_of_host=NAME_OF_HOST):
+def fixture_hostname(name_of_host=NAME_OF_HOST):
     """Hostname calling the test suite."""
     _logger.debug("Tests are run on: %s", name_of_host)
     return name_of_host
 
 
 @pytest.fixture(name="global_mock_local_base_dir", autouse=True)
-def global_mock_local_base_dir_fixture(monkeypatch, tmp_path):
+def fixture_global_mock_local_base_dir(monkeypatch, tmp_path):
     """Mock the local base directory for all tests.
 
     This is necessary to keep the base directory of a user clean from
@@ -63,13 +63,13 @@ def global_mock_local_base_dir_fixture(monkeypatch, tmp_path):
 
 
 @pytest.fixture(name="mock_value_experiments_base_folder_name", scope="session")
-def mock_value_experiments_base_folder_name_fixture():
+def fixture_mock_value_experiments_base_folder_name():
     """Value to mock the experiments base folder name."""
     return "pytest"
 
 
 @pytest.fixture(name="global_mock_experiments_base_folder_name", autouse=True)
-def global_mock_experiments_base_folder_name_fixture(
+def fixture_global_mock_experiments_base_folder_name(
     mock_value_experiments_base_folder_name, monkeypatch
 ):
     """Mock the name of the folders containing experiments in base directory.
@@ -88,28 +88,28 @@ def global_mock_experiments_base_folder_name_fixture(
 
 
 @pytest.fixture(name="inputdir", scope='session')
-def inputdir_fixture():
+def fixture_inputdir():
     """Return the path to the json input-files of the function test."""
     input_files_path = relative_path_from_pqueens("tests/integration_tests/queens_input_files")
     return input_files_path
 
 
 @pytest.fixture(name="third_party_inputs", scope='session')
-def third_party_inputs_fixture():
+def fixture_third_party_inputs():
     """Return the path to the json input-files of the function test."""
     input_files_path = relative_path_from_pqueens("tests/integration_tests/third_party_input_files")
     return input_files_path
 
 
 @pytest.fixture(name="config_dir", scope='session')
-def config_dir_fixture():
+def fixture_config_dir():
     """Return the path to the json input-files of the function test."""
     config_dir_path = relative_path_from_queens("config")
     return config_dir_path
 
 
 @pytest.fixture(name="baci_link_paths", scope="session")
-def baci_link_paths_fixture(config_dir):
+def fixture_baci_link_paths(config_dir):
     """Set symbolic links for baci on testing machine."""
     baci = config_dir / 'baci-release'
     post_ensight = config_dir / 'post_ensight'
@@ -118,7 +118,7 @@ def baci_link_paths_fixture(config_dir):
 
 
 @pytest.fixture(name="baci_source_paths_for_gitlab_runner", scope="session")
-def baci_source_paths_for_gitlab_runner_fixture():
+def fixture_baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
     home = Path.home()
     src_baci = home / 'workspace/build/baci-release'
@@ -128,7 +128,7 @@ def baci_source_paths_for_gitlab_runner_fixture():
 
 
 @pytest.fixture(name="example_simulator_fun_dir", scope='session')
-def example_simulator_fun_dir_fixture():
+def fixture_example_simulator_fun_dir():
     """Return the path to the example simulator functions."""
     input_files_path = relative_path_from_pqueens(
         "tests/integration_tests/example_simulator_functions"
@@ -142,7 +142,7 @@ def pytest_sessionfinish():
 
 
 @pytest.fixture(name="reset_loggers", autouse=True)
-def reset_loggers_fixture():
+def fixture_reset_loggers():
     """Reset loggers.
 
     This fixture is called at every test due to `autouse=True`. It acts

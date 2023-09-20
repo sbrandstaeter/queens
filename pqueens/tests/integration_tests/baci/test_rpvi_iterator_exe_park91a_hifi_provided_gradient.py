@@ -162,7 +162,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
 
 
 @pytest.fixture(name="create_input_file_executable_park91a_hifi_on_grid")
-def create_input_file_executable_park91a_hifi_on_grid_fixture(tmp_path):
+def fixture_create_input_file_executable_park91a_hifi_on_grid(tmp_path):
     """Write temporary input file for executable."""
     input_path = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     input_path.write_text("{{ x1 }}\n{{ x2 }}", encoding="utf-8")

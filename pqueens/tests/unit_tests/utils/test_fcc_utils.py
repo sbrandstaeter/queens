@@ -17,7 +17,7 @@ from pqueens.utils.fcc_utils import (
 
 
 @pytest.fixture(name="config_1")
-def config_1_fixture():
+def fixture_config_1():
     """Dummy config 1."""
     config = {
         "a": "b",
@@ -33,7 +33,7 @@ def config_1_fixture():
 
 
 @pytest.fixture(name="config_2")
-def config_2_fixture():
+def fixture_config_2():
     """Dummy config 2."""
     config = {
         "a": "b",
@@ -44,19 +44,19 @@ def config_2_fixture():
 
 
 @pytest.fixture(name="parameters")
-def parameters_fixture():
+def fixture_parameters():
     """Dummy parameters."""
     return Mock()
 
 
 @pytest.fixture(name="dummy_obj")
-def dummy_obj_fixture():
+def fixture_dummy_obj():
     """Dummy object."""
     return Mock()
 
 
 @pytest.fixture(name="inserted_config_2")
-def inserted_config_2_fixture(dummy_obj):
+def fixture_inserted_config_2(dummy_obj):
     """Dummy config_2 with inserted object."""
     config = {
         "a": "b",

@@ -12,13 +12,13 @@ from pqueens.data_processor.data_processor_ensight_interface import (
 
 ############## fixtures
 @pytest.fixture(name="all_dimensions", scope='module', params=['2d', '3d'])
-def all_dimensions_fixture(request):
+def fixture_all_dimensions(request):
     """Parameterized fixture to select problem dimension."""
     return request.param
 
 
 @pytest.fixture(name="default_data_processor")
-def default_data_processor_fixture(mocker):
+def fixture_default_data_processor(mocker):
     """Default ensight class for upcoming tests."""
     file_name_identifier = 'dummy_prefix*dummyfix'
     file_options_dict = {
@@ -44,7 +44,7 @@ def default_data_processor_fixture(mocker):
 
 
 @pytest.fixture(name="vtkUnstructuredGridExample2d")
-def vtkUnstructuredGridExample2d_fixture():
+def fixture_vtkUnstructuredGridExample2d():
     """Exemplary vtk grid."""
     node_coords = [
         [-2, 0, 0],
@@ -73,7 +73,7 @@ def vtkUnstructuredGridExample2d_fixture():
 
 
 @pytest.fixture(name="vtkUnstructuredGridExample3d")
-def vtkUnstructuredGridExample3d_fixture():
+def fixture_vtkUnstructuredGridExample3d():
     """Exemplary unstructured 3D vtk grid."""
     node_coords = [
         [0, 0, 0],

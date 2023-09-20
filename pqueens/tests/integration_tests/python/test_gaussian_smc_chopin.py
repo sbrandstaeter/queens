@@ -54,7 +54,7 @@ def target_density(self, samples):
 
 
 @pytest.fixture(name="dummy_data")
-def dummy_data_fixture(tmp_path):
+def fixture_dummy_data(tmp_path):
     """Fixture for dummy data."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()

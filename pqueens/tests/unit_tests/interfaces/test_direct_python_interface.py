@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(name="parameters", scope='module')
-def parameters_fixture():
+def fixture_parameters():
     """Options dictionary to create variables."""
     x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
     x2 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
@@ -23,7 +23,7 @@ def parameters_fixture():
 
 
 @pytest.fixture(name="samples", scope='module')
-def samples_fixture():
+def fixture_samples():
     """Parameters and samples."""
     # set values
     samples = np.ones((2, 3))
@@ -31,31 +31,31 @@ def samples_fixture():
 
 
 @pytest.fixture(name="expected_result", scope='module')
-def expected_result_fixture():
+def fixture_expected_result():
     """Expected result of ishigami function for [1., 1., 1.]."""
     return np.array([[5.8821320112036846]])
 
 
 @pytest.fixture(name="expected_results", scope='module')
-def expected_results_fixture(expected_result):
+def fixture_expected_results(expected_result):
     """Expected results corresponding to *list_of_samples*."""
     return np.concatenate([expected_result, expected_result])
 
 
 @pytest.fixture(name="direct_python_interface", scope='module')
-def direct_python_interface_fixture(parameters):
+def fixture_direct_python_interface(parameters):
     """Direct python interface."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=1)
 
 
 @pytest.fixture(name="direct_python_interface_parallel", scope='module')
-def direct_python_interface_parallel_fixture(parameters):
+def fixture_direct_python_interface_parallel(parameters):
     """An instance of Variables class."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
 
 
 @pytest.fixture(name="direct_python_interface_path", scope='module')
-def direct_python_interface_path_fixture(parameters):
+def fixture_direct_python_interface_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
     path_to_file = relative_path_from_pqueens(
         "tests/integration_tests/example_simulator_functions/ishigami90.py"

@@ -7,7 +7,7 @@ from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 
 
 @pytest.fixture(name="default_qmc_iterator")
-def default_qmc_iterator_fixture(
+def fixture_default_qmc_iterator(
     dummy_global_settings, default_simulation_model, default_parameters_mixed
 ):
     """TODO_doc."""

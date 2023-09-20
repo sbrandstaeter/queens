@@ -10,7 +10,7 @@ from pqueens.utils import injector
 
 
 @pytest.fixture(name="algorithm", params=['COBYLA', 'SLSQP'])
-def algorithm_fixture(request):
+def fixture_algorithm(request):
     """TODO_doc."""
     return request.param
 

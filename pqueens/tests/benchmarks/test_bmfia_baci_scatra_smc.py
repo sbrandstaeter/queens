@@ -61,14 +61,14 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
 
 
 @pytest.fixture(name="expected_weights")
-def expected_weights_fixture():
+def fixture_expected_weights():
     """TODO_doc."""
     weights = 1
     return weights
 
 
 @pytest.fixture(name="expected_samples")
-def expected_samples_fixture():
+def fixture_expected_samples():
     """TODO_doc."""
     samples = 1
     return samples

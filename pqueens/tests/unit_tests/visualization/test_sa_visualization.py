@@ -6,7 +6,7 @@ from pqueens.visualization.sa_visualization import SAVisualization
 
 
 @pytest.fixture(name="dummy_vis")
-def dummy_vis_fixture(tmp_path):
+def fixture_dummy_vis(tmp_path):
     """Generate dummy instance of class SAVisualization."""
     paths = [
         tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
@@ -39,7 +39,7 @@ def test_init(tmp_path, dummy_vis):
 
 
 @pytest.fixture(name="dummy_sensitivity_indices")
-def dummy_sensitivity_indices_fixture():
+def fixture_dummy_sensitivity_indices():
     """Generate dummy output data.
 
     Returns:

@@ -25,7 +25,7 @@ def test_grid_iterator(inputdir, tmp_path, expected_response, expected_grid):
 
 
 @pytest.fixture(name="expected_grid")
-def expected_grid_fixture():
+def fixture_expected_grid():
     """TODO_doc."""
     input_data = np.array(
         [
@@ -60,7 +60,7 @@ def expected_grid_fixture():
 
 
 @pytest.fixture(name="expected_response")
-def expected_response_fixture():
+def fixture_expected_response():
     """TODO_doc."""
     expected_response = np.atleast_2d(
         np.array(

@@ -25,7 +25,7 @@ def test_neural_network_gauss_bayesian_branin(inputdir, tmp_path, expected_mean,
 
 
 @pytest.fixture(name="expected_mean")
-def expected_mean_fixture():
+def fixture_expected_mean():
     """TODO_doc."""
     mean = np.array(
         [
@@ -47,7 +47,7 @@ def expected_mean_fixture():
 
 
 @pytest.fixture(name="expected_var")
-def expected_var_fixture():
+def fixture_expected_var():
     """TODO_doc."""
     var = np.array(
         [
