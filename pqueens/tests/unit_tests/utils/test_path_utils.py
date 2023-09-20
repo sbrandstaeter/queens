@@ -16,13 +16,13 @@ pytestmark = pytest.mark.unit_tests
 
 
 @pytest.fixture(name="path_to_queens")
-def path_to_queens_fixture():
+def fixture_path_to_queens():
     """Path to QUEENS."""
     return str(Path(__file__).parent).split("pqueens", maxsplit=1)[0]
 
 
 @pytest.fixture(name="path_to_pqueens")
-def path_to_pqueens_fixture():
+def fixture_path_to_pqueens():
     """Path to pqueens."""
     return str(Path(__file__).parent).split("tests", maxsplit=1)[0]
 

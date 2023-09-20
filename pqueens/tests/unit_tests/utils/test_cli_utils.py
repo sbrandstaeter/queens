@@ -8,7 +8,7 @@ from pqueens.utils.exceptions import CLIError
 
 
 @pytest.fixture(name="debug_flag", params=[True, False])
-def debug_flag_fixture(request):
+def fixture_debug_flag(request):
     """Debug flag."""
     return request.param
 

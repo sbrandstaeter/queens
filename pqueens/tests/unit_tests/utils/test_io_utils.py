@@ -14,13 +14,13 @@ pytestmark = pytest.mark.unit_tests
 
 
 @pytest.fixture(name="input_dict")
-def input_dict_fixture():
+def fixture_input_dict():
     """Input dict for testing."""
     return {"test_key": "test_value"}
 
 
 @pytest.fixture(name="input_file", params=["json", "yml", "yaml"])
-def input_file_fixture(request, input_dict, tmp_path):
+def fixture_input_file(request, input_dict, tmp_path):
     """Input files for testing."""
     file_type = request.param
     input_file_path = tmp_path / f"input_file.{file_type}"

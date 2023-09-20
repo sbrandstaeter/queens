@@ -6,7 +6,7 @@ from pqueens.distributions.particles import ParticleDiscreteDistribution
 
 
 @pytest.fixture(name="reference_data", params=[1, 2])
-def reference_data_fixture(request):
+def fixture_reference_data(request):
     """Data for the distribution."""
     reference_weights = [1, 2, 3, 4]
     reference_probabilities = np.array([0.1, 0.2, 0.3, 0.4])
@@ -35,14 +35,14 @@ def reference_data_fixture(request):
 
 
 @pytest.fixture(name="distribution")
-def distribution_fixture(reference_data):
+def fixture_distribution(reference_data):
     """Distribution fixture."""
     _, probabilities, sample_space, _, _ = reference_data
     return ParticleDiscreteDistribution(probabilities, sample_space)
 
 
 @pytest.fixture(name="distribution_fcc")
-def distribution_fcc_fixture(reference_data):
+def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_probabilities, _, reference_sample_space, _, _ = reference_data
 
@@ -54,7 +54,7 @@ def distribution_fcc_fixture(reference_data):
 
 
 @pytest.fixture(name="distributions", params=['init', 'fcc'])
-def distributions_fixture(request, distribution, distribution_fcc):
+def fixture_distributions(request, distribution, distribution_fcc):
     """Distributions fixture once from init once from fcc."""
     if request.param == "init":
         return distribution

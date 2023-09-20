@@ -46,13 +46,13 @@ def test_points_iterator_failure(inputdir, tmp_path):
 
 
 @pytest.fixture(name="inputs")
-def inputs_fixture():
+def fixture_inputs():
     """Input fixtures."""
     return {"x1": [1, 2], "x2": [3, 4]}
 
 
 @pytest.fixture(name="expected_results")
-def expected_results_fixture(inputs):
+def fixture_expected_results(inputs):
     """Expected results fixture."""
     input_as_array = inputs.copy()
     input_as_array["x1"] = np.array(input_as_array["x1"]).reshape(-1, 1)

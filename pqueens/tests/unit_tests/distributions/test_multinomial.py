@@ -6,7 +6,7 @@ from pqueens.distributions.multinomial import MultinomialDistribution
 
 
 @pytest.fixture(name="reference_data")
-def reference_data_fixture():
+def fixture_reference_data():
     """Data for the distribution."""
     reference_n_trials = 10
     reference_probabilities = [0.1, 0.2, 0.3, 0.4]
@@ -16,14 +16,14 @@ def reference_data_fixture():
 
 
 @pytest.fixture(name="distribution")
-def distribution_fixture(reference_data):
+def fixture_distribution(reference_data):
     """Distribution fixture."""
     n_trials, probabilities, _, _ = reference_data
     return MultinomialDistribution(n_trials, probabilities)
 
 
 @pytest.fixture(name="distribution_fcc")
-def distribution_fcc_fixture(reference_data):
+def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_n_trials, reference_probabilities, _, _ = reference_data
     return MultinomialDistribution(
@@ -33,7 +33,7 @@ def distribution_fcc_fixture(reference_data):
 
 # pylint: disable=duplicate-code
 @pytest.fixture(name="distributions", params=["init", "fcc"])
-def distributions_fixture(request, distribution, distribution_fcc):
+def fixture_distributions(request, distribution, distribution_fcc):
     """Distributions fixture."""
     if request.param == "init":
         return distribution

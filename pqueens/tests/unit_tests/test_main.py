@@ -15,7 +15,7 @@ pytestmark = pytest.mark.unit_tests
 
 
 @pytest.fixture(name="input_file")
-def input_file_fixture(tmp_path):
+def fixture_input_file(tmp_path):
     """Fixture to create input file."""
     input_file_dict = {"experiment_name": "test_experiment_name", "Iterator": "A"}
     input_file_path = tmp_path / "input_file.yml"
@@ -25,7 +25,7 @@ def input_file_fixture(tmp_path):
 
 
 @pytest.fixture(name="debug_flag", params=[True, False])
-def debug_flag_fixture(request):
+def fixture_debug_flag(request):
     """Debug flag."""
     return request.param
 
@@ -43,7 +43,7 @@ def test_get_config_dict_input_fail(tmp_path):
         run(input_file, tmp_path)
 
 
-def test_get_config_dict_input(input_file, tmp_path, debug_flag):
+def test_get_config_dict_input(input_file, *_):
     """Test if config dict is created properly."""
     input_path = input_file
     config = load_input_file(input_path)
@@ -58,7 +58,6 @@ def test_main_greeting_message(caplog):
     """Test if greeting message is provided for in case of no inputs."""
     argv = ["python_file.py"]
     with patch.object(sys, 'argv', argv):
-
         with caplog.at_level(logging.INFO):
             main()
         assert "To use QUEENS run" in caplog.text

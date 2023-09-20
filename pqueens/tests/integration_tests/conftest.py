@@ -102,13 +102,13 @@ CLUSTER_CONFIGS = {
 
 
 @pytest.fixture(name="cluster_user", scope="session")
-def cluster_user_fixture(pytestconfig):
+def fixture_cluster_user(pytestconfig):
     """Username of cluster account to use for tests."""
     return pytestconfig.getoption("remote_user")
 
 
 @pytest.fixture(name="cluster", scope="session")
-def cluster_fixture(request):
+def fixture_cluster(request):
     """Iterate over clusters.
 
     The actual parameterization is done on a per test basis which also
@@ -118,7 +118,7 @@ def cluster_fixture(request):
 
 
 @pytest.fixture(name="cluster_settings", scope="session")
-def cluster_settings_fixture(cluster, cluster_user):
+def fixture_cluster_settings(cluster, cluster_user):
     """Hold all settings of cluster."""
     settings = CLUSTER_CONFIGS.get(cluster).dict()
     _logger.debug("raw cluster config: %s", settings)
@@ -129,13 +129,13 @@ def cluster_settings_fixture(cluster, cluster_user):
 
 
 @pytest.fixture(name="connect_to_resource", scope="session")
-def connect_to_resource_fixture(cluster_settings):
+def fixture_connect_to_resource(cluster_settings):
     """Use for ssh connect to the cluster."""
     return cluster_settings["connect_to_resource"]
 
 
 @pytest.fixture(name="baci_cluster_paths", scope="session")
-def baci_cluster_paths_fixture(connect_to_resource):
+def fixture_baci_cluster_paths(connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
@@ -170,7 +170,7 @@ def baci_cluster_paths_fixture(connect_to_resource):
 
 
 @pytest.fixture(name="baci_example_expected_mean")
-def baci_example_expected_mean_fixture():
+def fixture_baci_example_expected_mean():
     """Expected result for the BACI example."""
     result = np.array(
         [
@@ -196,7 +196,7 @@ def baci_example_expected_mean_fixture():
 
 
 @pytest.fixture(name="baci_example_expected_var")
-def baci_example_expected_var_fixture():
+def fixture_baci_example_expected_var():
     """Expected variance for the BACI example."""
     result = np.array(
         [
