@@ -1,7 +1,6 @@
 """QUEENS scheduler parent class."""
 import abc
 import logging
-import subprocess
 
 import numpy as np
 import tqdm
@@ -23,7 +22,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         client (Client): Dask client that connects to and submits computation to a Dask cluster
         num_procs (int): number of cores per job
         num_procs_post (int): number of cores per job for post-processing
-        restart_worker (bool): If true, restart worker after each finished job
+        restart_workers (bool): If true, restart workers after each finished job
     """
 
     def __init__(
@@ -33,7 +32,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         client,
         num_procs,
         num_procs_post,
-        restart_worker=False,
+        restart_workers,
     ):
         """Initialize scheduler.
 
@@ -43,14 +42,14 @@ class Scheduler(metaclass=abc.ABCMeta):
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             num_procs (int): number of cores per job
             num_procs_post (int): number of cores per job for post-processing
-            restart_worker (bool): If true, restart worker after each finished job
+            restart_workers (bool): If true, restart workers after each finished job
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_procs = num_procs
         self.num_procs_post = num_procs_post
         self.client = client
-        self.restart_worker = restart_worker
+        self.restart_workers = restart_workers
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
@@ -79,16 +78,9 @@ class Scheduler(metaclass=abc.ABCMeta):
             for future in as_completed(futures):
                 results[future.key] = future.result()
                 progressbar.update(1)
-                if self.restart_worker:
+                if self.restart_workers:
                     worker = list(self.client.who_has(future).values())[0]
-                    job_id = self.client.run(
-                        lambda: subprocess.check_output('echo $SLURM_JOB_ID', shell=True),
-                        workers=list(worker),
-                    )
-                    job_id = str(list(job_id.values())[0])[2:-3]
-                    self.client.run_on_scheduler(
-                        lambda: subprocess.run(f'scancel {job_id}', check=False, shell=True)
-                    )
+                    self.restart_worker(worker)
 
         result_dict = {'mean': [], 'gradient': []}
         for result in results.values():
@@ -108,6 +100,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         file = read_file(file_path)
         destination = self.experiment_dir / file_path.name
         self.client.submit(destination.write_text, file, encoding='utf-8').result()
+
+    @abc.abstractmethod
+    def restart_worker(self, worker):
+        """Restart a worker."""
 
     async def shutdown_client(self):
         """Shutdown the DASK client."""
