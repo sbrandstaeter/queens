@@ -77,19 +77,18 @@ class Scheduler(metaclass=abc.ABCMeta):
         results = {future.key: None for future in futures}
         with tqdm.tqdm(total=len(futures)) as progressbar:
             for future in as_completed(futures):
+                results[future.key] = future.result()
+                progressbar.update(1)
                 if self.restart_worker:
                     worker = list(self.client.who_has(future).values())[0]
-                    results[future.key] = future.result()
                     job_id = self.client.run(
                         lambda: subprocess.check_output('echo $SLURM_JOB_ID', shell=True),
                         workers=list(worker),
                     )
                     job_id = str(list(job_id.values())[0])[2:-3]
-                    # _logger.debug(f'scancel %s', job_id)
                     self.client.run_on_scheduler(
                         lambda: subprocess.run(f'scancel {job_id}', check=False, shell=True)
                     )
-                progressbar.update(1)
 
         result_dict = {'mean': [], 'gradient': []}
         for result in results.values():
