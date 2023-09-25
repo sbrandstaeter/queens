@@ -1,9 +1,11 @@
 """QUEENS scheduler parent class."""
 import abc
 import logging
+import subprocess
 
 import numpy as np
-from dask.distributed import progress
+import tqdm
+from dask.distributed import as_completed
 
 from pqueens.utils.injector import read_file
 
@@ -21,8 +23,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         client (Client): Dask client that connects to and submits computation to a Dask cluster
         num_procs (int): number of cores per job
         num_procs_post (int): number of cores per job for post-processing
-        progressbar (bool): If true, print progressbar. WARNING: If multiple dask schedulers are
-                            used, the progressbar must be disabled.
+        restart_worker (bool): If true, restart worker after each finished job
     """
 
     def __init__(
@@ -32,7 +33,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         client,
         num_procs,
         num_procs_post,
-        progressbar,
+        restart_worker=False,
     ):
         """Initialize scheduler.
 
@@ -42,15 +43,14 @@ class Scheduler(metaclass=abc.ABCMeta):
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             num_procs (int): number of cores per job
             num_procs_post (int): number of cores per job for post-processing
-            progressbar (bool): If true, print progressbar. WARNING: If multiple dask schedulers are
-                                used, the progressbar must be disabled.
+            restart_worker (bool): If true, restart worker after each finished job
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_procs = num_procs
         self.num_procs_post = num_procs_post
         self.client = client
-        self.progressbar = progressbar
+        self.restart_worker = restart_worker
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
@@ -73,12 +73,26 @@ class Scheduler(metaclass=abc.ABCMeta):
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )
-        if self.progressbar:
-            progress(futures)
-        results = self.client.gather(futures)
+
+        results = {future.key: None for future in futures}
+        with tqdm.tqdm(total=len(futures)) as progressbar:
+            for future in as_completed(futures):
+                if self.restart_worker:
+                    worker = list(self.client.who_has(future).values())[0]
+                    results[future.key] = future.result()
+                    job_id = self.client.run(
+                        lambda: subprocess.check_output('echo $SLURM_JOB_ID', shell=True),
+                        workers=list(worker),
+                    )
+                    job_id = str(list(job_id.values())[0])[2:-3]
+                    # _logger.debug(f'scancel %s', job_id)
+                    self.client.run_on_scheduler(
+                        lambda: subprocess.run(f'scancel {job_id}', check=False, shell=True)
+                    )
+                progressbar.update(1)
 
         result_dict = {'mean': [], 'gradient': []}
-        for result in results:
+        for result in results.values():
             # We should remove this squeeze! It is only introduced for consistency with old test.
             result_dict['mean'].append(np.atleast_1d(np.array(result[0]).squeeze()))
             result_dict['gradient'].append(result[1])

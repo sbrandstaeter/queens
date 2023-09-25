@@ -73,7 +73,7 @@ class ClusterScheduler(Scheduler):
         cluster_internal_address=None,
         cluster_queens_repository=None,
         cluster_build_environment=False,
-        progressbar=True,
+        restart_worker=True,
         allowed_failures=5,
     ):
         """Init method for the cluster scheduler.
@@ -94,8 +94,7 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
             cluster_build_environment (bool, opt): Flag to decide if queens environment should be
                                                    build on cluster
-            progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
-                                     schedulers are used, the progressbar must be disabled.
+            restart_worker (bool): If true, restart worker after each finished job
             allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
         if cluster_queens_repository is None:
@@ -203,7 +202,7 @@ class ClusterScheduler(Scheduler):
             client=client,
             num_procs=num_procs,
             num_procs_post=num_procs_post,
-            progressbar=progressbar,
+            restart_worker=restart_worker,
         )
 
     @staticmethod

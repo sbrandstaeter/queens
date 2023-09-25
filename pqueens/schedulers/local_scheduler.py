@@ -18,7 +18,6 @@ class LocalScheduler(Scheduler):
         max_concurrent=1,
         num_procs=1,
         num_procs_post=1,
-        progressbar=True,
     ):
         """Initialize local scheduler.
 
@@ -26,8 +25,6 @@ class LocalScheduler(Scheduler):
             max_concurrent (int, opt): Number of concurrent jobs
             num_procs (int, opt): number of cores per job
             num_procs_post (int, opt): number of cores per job for post-processing
-            progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
-                                     schedulers are used, the progressbar must be disabled.
         """
         experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
         experiment_dir = experiment_directory(experiment_name=experiment_name)
@@ -49,5 +46,4 @@ class LocalScheduler(Scheduler):
             client=client,
             num_procs=num_procs,
             num_procs_post=num_procs_post,
-            progressbar=progressbar,
         )
