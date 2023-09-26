@@ -95,7 +95,8 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
             cluster_build_environment (bool, opt): Flag to decide if queens environment should be
                                                    build on cluster
-            restart_workers (bool): If true, restart workers after each finished job
+            restart_workers (bool): If true, restart workers after each finished job. For larger
+                                    jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
         if cluster_queens_repository is None:

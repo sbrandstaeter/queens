@@ -20,7 +20,8 @@ class LocalScheduler(Scheduler):
             max_concurrent (int, opt): Number of concurrent jobs
             num_procs (int, opt): number of cores per job
             num_procs_post (int, opt): number of cores per job for post-processing
-            restart_workers (bool): If true, restart workers after each finished job
+            restart_workers (bool): If true, restart workers after each finished job. Try setting it
+                                    to true in case you are experiencing memory-leakage warnings.
         """
         experiment_name = pqueens.global_settings.GLOBAL_SETTINGS.experiment_name
         experiment_dir = experiment_directory(experiment_name=experiment_name)
