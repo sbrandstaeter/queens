@@ -13,7 +13,6 @@ _allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 def run_subprocess(
     command,
-    remote_connect='',
     raise_error_on_subprocess_failure=True,
     additional_error_message=None,
     allowed_errors=None,
@@ -23,7 +22,6 @@ def run_subprocess(
     return stderr and stdout
     Args:
         command (str): command, that will be run in subprocess
-        remote_connect (str, optional): <user>@<hostname>
         raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
         additional_error_message (str, optional): Additional error message to be displayed
         allowed_errors (lst, optional): List of strings to be removed from the error message
@@ -33,9 +31,6 @@ def run_subprocess(
         stdout (str): standard output content
         stderr (str): standard error content
     """
-    if remote_connect:
-        command = f'ssh {remote_connect} "{command}"'
-
     process = start_subprocess(command)
 
     stdout, stderr = process.communicate()
@@ -51,6 +46,37 @@ def run_subprocess(
         allowed_errors=allowed_errors,
     )
     return process_returncode, process_id, stdout, stderr
+
+
+def run_subprocess_remote(
+    command,
+    remote_connect,
+    raise_error_on_subprocess_failure=True,
+    additional_error_message=None,
+    allowed_errors=None,
+):
+    """Run a system command on a remote machine.
+
+    return stderr and stdout
+    Args:
+        command (str): command, that will be run on a remote machine.
+        remote_connect (str): <user>@<hostname>
+        raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
+        additional_error_message (str, optional): Additional error message to be displayed
+        allowed_errors (lst, optional): List of strings to be removed from the error message
+    Returns:
+        process_returncode (int): code for success of subprocess
+        process_id (int): unique process id, the subprocess was assigned on computing machine
+        stdout (str): standard output content
+        stderr (str): standard error content
+    """
+    command = f'ssh {remote_connect} "{command}"'
+    return run_subprocess(
+        command=command,
+        raise_error_on_subprocess_failure=raise_error_on_subprocess_failure,
+        additional_error_message=additional_error_message,
+        allowed_errors=allowed_errors,
+    )
 
 
 def run_subprocess_simulation(

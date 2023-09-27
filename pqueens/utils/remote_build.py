@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.path_utils import PATH_TO_QUEENS
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess, run_subprocess_remote
 
 _logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def build_remote_environment(
             package_manager_name (string): name of package manager
         """
         try:
-            run_subprocess(
+            run_subprocess_remote(
                 f'which {package_manager_name}',
                 remote_connect=remote_connect,
             )
@@ -107,7 +107,7 @@ def build_remote_environment(
         f'pip install -e .'
     )
     start_time = time.time()
-    _, _, stdout, _ = run_subprocess(
+    _, _, stdout, _ = run_subprocess_remote(
         command_string,
         remote_connect=remote_connect,
         raise_error_on_subprocess_failure=False,
