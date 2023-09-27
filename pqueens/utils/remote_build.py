@@ -77,7 +77,6 @@ def build_remote_environment(
         try:
             run_subprocess(
                 f'which {package_manager_name}',
-                subprocess_type="remote",
                 remote_connect=remote_connect,
             )
         except SubprocessError as error:
@@ -110,7 +109,6 @@ def build_remote_environment(
     start_time = time.time()
     _, _, stdout, _ = run_subprocess(
         command_string,
-        subprocess_type="remote",
         remote_connect=remote_connect,
         raise_error_on_subprocess_failure=False,
     )

@@ -10,7 +10,7 @@ from pathlib import Path
 import cloudpickle
 from fabric import Connection
 
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess, start_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -167,8 +167,8 @@ class RemoteConnection(Connection):
             remote_port (int): Remote port
         """
         cmd = f"ssh -f -N -L {local_port}:{self.host}:{remote_port} {self.user}@{self.host}"
-        run_subprocess(cmd, subprocess_type='submit')
+        start_subprocess(cmd)
         _logger.debug("Port-forwarding opened successfully.")
 
         kill_cmd = f'pkill -f "{cmd}"'
-        atexit.register(run_subprocess, kill_cmd, subprocess_type='submit')
+        atexit.register(start_subprocess, kill_cmd, subprocess_type='submit')

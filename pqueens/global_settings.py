@@ -49,7 +49,6 @@ class GlobalSettings:
 
         return_code, _, stdout, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         if not return_code:
@@ -62,7 +61,6 @@ class GlobalSettings:
 
         return_code, _, git_branch, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', '--abbrev-ref', 'HEAD']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         git_branch = git_branch.strip()
@@ -74,7 +72,6 @@ class GlobalSettings:
 
         return_code, _, git_status, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'status', '--porcelain']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         git_clean_working_tree = not git_status

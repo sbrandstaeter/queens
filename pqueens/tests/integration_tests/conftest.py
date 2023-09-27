@@ -150,8 +150,7 @@ def baci_cluster_paths_fixture(connect_to_resource):
         """Check for existence of a file on remote machine."""
         command_string = f'find {file_path}'
         run_subprocess(
-            command_string=command_string,
-            subprocess_type='remote',
+            command=command_string,
             remote_connect=connect_to_resource,
             additional_error_message=f"Could not find executable on {connect_to_resource}.\n"
             f"Was looking here: {file_path}",

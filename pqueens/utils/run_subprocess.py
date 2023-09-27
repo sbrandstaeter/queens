@@ -4,7 +4,6 @@ import subprocess
 
 from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
-from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
@@ -12,220 +11,173 @@ _logger = logging.getLogger(__name__)
 _allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
-def run_subprocess(command_string, **kwargs):
-    """Run a system command outside the Python script.
-
-    Different implementations dependent on *subprocess_type*.
-
-    Args:
-        command_string (str): Command string that should be run outside of Python
-
-    Returns:
-        process_returncode (int): Code for execution success of subprocess
-        process_id (int): Process ID that was assigned to process
-        stdout (str): Standard output content
-        stderr (str): Standard error content
-    """
-    _logger.debug('Run subprocess with command:')
-    _logger.debug(command_string)
-    # default subprocess type is "simple"
-    subprocess_type = kwargs.get('subprocess_type', 'simple')
-
-    subprocess_specific = _get_subprocess(subprocess_type)
-    return subprocess_specific(command_string, **kwargs)
-
-
-def _get_subprocess(desired_subprocess):
-    """Choose subprocess implementation by subprocess_type.
-
-    Args:
-        desired_subprocess (str): subprocess type of run_subprocess
-    Returns:
-        function object (obj): function object for implementation type of run_subprocess from utils
-    """
-    valid_subprocess_types = {
-        'simple': _run_subprocess_simple,
-        'simulation': _run_subprocess_simulation,
-        'submit': _run_subprocess_submit_job,
-        'remote': _run_subprocess_remote,
-    }
-    return get_option(
-        valid_subprocess_types, desired_subprocess, error_message="Invalid subprocess type!"
-    )
-
-
-def _run_subprocess_simple(command_string, **kwargs):
+def run_subprocess(
+    command,
+    remote_connect='',
+    raise_error_on_subprocess_failure=True,
+    additional_error_message=None,
+    allowed_errors=None,
+):
     """Run a system command outside of the Python script.
 
     return stderr and stdout
     Args:
-        command_string (str): command, that will be run in subprocess
+        command (str): command, that will be run in subprocess
+        remote_connect (str, optional): <user>@<hostname>
+        raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
+        additional_error_message (str, optional): Additional error message to be displayed
+        allowed_errors (lst, optional): List of strings to be removed from the error message
     Returns:
         process_returncode (int): code for success of subprocess
         process_id (int): unique process id, the subprocess was assigned on computing machine
         stdout (str): standard output content
         stderr (str): standard error content
     """
-    process = subprocess.Popen(  # pylint: disable=consider-using-with
-        command_string,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
+    if remote_connect:
+        command = f'ssh {remote_connect} "{command}"'
+
+    process = start_subprocess(command)
+
     stdout, stderr = process.communicate()
     process_id = process.pid
     process_returncode = process.returncode
 
-    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
+    _raise_or_warn_error(
+        command=command,
+        stdout=stdout,
+        stderr=stderr,
+        raise_error_on_subprocess_failure=raise_error_on_subprocess_failure,
+        additional_error_message=additional_error_message,
+        allowed_errors=allowed_errors,
+    )
     return process_returncode, process_id, stdout, stderr
 
 
-def _run_subprocess_simulation(command_string, **kwargs):
+def run_subprocess_simulation(
+    command,
+    terminate_expression,
+    logger_name,
+    log_file,
+    error_file,
+    full_log_formatting=True,
+    streaming=False,
+    raise_error_on_subprocess_failure=True,
+    additional_error_message=None,
+    allowed_errors=None,
+):
     """Run a system command outside of the Python script.
 
     Log errors and stdout-return to initialized logger during runtime. Terminate subprocess if
     regular expression pattern is found in stdout.
 
     Args:
-        command_string (str): command, that will be run in subprocess
-        terminate_expr (str): regular expression to terminate subprocess
-        logger (str): logger name to write to. Should be configured previously
+        command (str): command, that will be run in subprocess
+        terminate_expression (str): regular expression to terminate subprocess
+        logger_name (str): logger name to write to. Should be configured previously
         log_file (str): path to log file
         error_file (str): path to error file
         full_log_formatting (bool): Flag to add logger metadata in the simulation logs
+        streaming (bool, optional): Flag for additional streaming to stdout
+        raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
+        additional_error_message (str, optional): Additional error message to be displayed
+        allowed_errors (lst, optional): List of strings to be removed from the error message
     Returns:
         process_returncode (int): code for success of subprocess
         process_id (int): unique process id, the subprocess was assigned on computing machine
         stdout (str): always None
         stderr (str): standard error content
     """
-    # get input data
-    logger_name = kwargs.get('loggername')
-    log_file = kwargs.get('log_file')
-    error_file = kwargs.get('error_file')
-    streaming = kwargs.get('streaming')
-    terminate_expr = kwargs.get('terminate_expr')
-    full_log_formatting = kwargs.get('full_log_formatting', True)
-
     # setup job logging and get job logger as well as handlers
-    joblogger, log_file_handle, error_file_handler, stream_handler = get_job_logger(
-        logger_name, log_file, error_file, streaming, full_log_formatting=full_log_formatting
+    job_logger, log_file_handle, error_file_handler, stream_handler = get_job_logger(
+        logger_name=logger_name,
+        log_file=log_file,
+        error_file=error_file,
+        streaming=streaming,
+        full_log_formatting=full_log_formatting,
     )
 
     # run subprocess
-    process = subprocess.Popen(  # pylint: disable=consider-using-with
-        command_string,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
+    process = start_subprocess(command)
 
     # actual logging of job
-    stderr = job_logging(command_string, process, joblogger, terminate_expr)
+    stderr = job_logging(
+        command_string=command,
+        process=process,
+        job_logger=job_logger,
+        terminate_expression=terminate_expression,
+    )
 
-    # stdout should be empty. nevertheless None is returned by default to keep the interface to
-    # run_subprocess consistent.
-    stdout = None
+    stdout = ""
 
     # get ID and returncode of subprocess
     process_id = process.pid
     process_returncode = process.returncode
 
     # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
-    finish_job_logger(joblogger, log_file_handle, error_file_handler, stream_handler)
+    finish_job_logger(
+        job_logger=job_logger,
+        lfh=log_file_handle,
+        efh=error_file_handler,
+        stream_handler=stream_handler,
+    )
 
-    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
+    _raise_or_warn_error(
+        command=command,
+        stdout=stdout,
+        stderr=stderr,
+        raise_error_on_subprocess_failure=raise_error_on_subprocess_failure,
+        additional_error_message=additional_error_message,
+        allowed_errors=allowed_errors,
+    )
     return process_returncode, process_id, stdout, stderr
 
 
-def _run_subprocess_submit_job(command_string, **kwargs):  # pylint: disable=unused-argument
-    """Submit a system command (drop errors and stdout-return).
+def start_subprocess(command):
+    """Start subprocess.
 
     Args:
-        command_string (str): command, that will be run in subprocess
+        command (str): command, that will be run in subprocess
+
     Returns:
-        process_returncode (int): always None here. this function does not wait for
-                                    subprocess to finish.
-        process_id (int): unique process id, the subprocess was assigned on computing machine
-        stdout (str): always None
-        stderr (str): always None
+         process (subprocess.Popen): subprocess object
     """
     process = subprocess.Popen(  # pylint: disable=consider-using-with
-        command_string,
+        command,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=True,
         universal_newlines=True,
     )
-
-    process_id = process.pid
-    # to keep the interface for run_subprocess consistent first return value is None (as it would
-    # be, when you just submit the subprocess and not wait)
-    process_returncode = None
-
-    # stdout and stderr cannot be written in this state. nevertheless None is returned by default.
-    stdout = None
-    stderr = None
-
-    return process_returncode, process_id, stdout, stderr
+    return process
 
 
-def _run_subprocess_remote(command_string, **kwargs):
-    """Run a system command on a remote machine via ssh.
-
-    Args:
-        command_string (str): command, that will be run in subprocess
-    Returns:
-        process_returncode (int): code for success of subprocess
-        process_id (int): unique process id, the subprocess was assigned on computing machine
-        stdout (str): standard output content
-        stderr (str): standard error content
-    """
-    remote_connect = kwargs.get("remote_connect", None)
-    if not remote_connect:
-        raise SubprocessError("Remote commands needs argument remote_connect='<user>@<hostname>'.")
-
-    command_string = f'ssh {remote_connect} "{command_string}"'
-    process = subprocess.Popen(  # pylint: disable=consider-using-with
-        command_string,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
-    stdout, stderr = process.communicate()
-    process_id = process.pid
-    process_returncode = process.returncode
-    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
-    return process_returncode, process_id, stdout, stderr
-
-
-def _raise_or_warn_error(command, stdout, stderr, **kwargs):
+def _raise_or_warn_error(
+    command,
+    stdout,
+    stderr,
+    raise_error_on_subprocess_failure,
+    additional_error_message,
+    allowed_errors,
+):
     """Raise or warn eventual exception if subprocess fails.
 
     Args:
         command (str): Command string
         stdout (str): Command output
         stderr (str): Error of the output
-        raise_error_on_subprocess_failure (bool,optional): Raise or warn error defaults to True
-        additional_error_message (str,optional): Additional error message to be displayed
-        allowed_errors (lst,optional): List of strings to be removed from the error message
+        raise_error_on_subprocess_failure (bool): Raise or warn error defaults to True
+        additional_error_message (str): Additional error message to be displayed
+        allowed_errors (lst): List of strings to be removed from the error message
     """
     # Check for allowed error messages and remove them
-    allowed_errors = kwargs.get("allowed_errors", [])
+    if allowed_errors is None:
+        allowed_errors = []
 
     stderr = _remove_allowed_errors(stderr, allowed_errors)
     if stderr:
-        raise_error_on_subprocess_failure = kwargs.get('raise_error_on_subprocess_failure', True)
-        additional_message = kwargs.get('additional_error_message', None)
         subprocess_error = SubprocessError.construct_error_from_command(
-            command, stdout, stderr, additional_message
+            command, stdout, stderr, additional_error_message
         )
         if raise_error_on_subprocess_failure:
             raise subprocess_error
