@@ -134,12 +134,21 @@ def connect_to_resource_fixture(cluster_settings):
 
 
 @pytest.fixture(name="baci_cluster_paths", scope="session")
-def baci_cluster_paths_fixture(connect_to_resource):
+def baci_cluster_paths_fixture(
+    connect_to_resource,
+):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
     """
-    base_directory = Path("$HOME") / "workspace" / "build"
+    _, _, remote_home, _ = run_subprocess_remote(
+        "echo ~",
+        remote_connect=connect_to_resource,
+        additional_error_message=f"Unable to identify home on remote.\n"
+        f"Tried to connect to {connect_to_resource}.",
+    )
+
+    base_directory = Path(remote_home.rstrip()) / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
