@@ -2,8 +2,6 @@
 import logging
 from pathlib import Path
 
-from pqueens.utils.run_subprocess import run_subprocess
-
 _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
@@ -36,14 +34,8 @@ def experiment_directory(experiment_name):
 
 def create_directory(dir_path):
     """Create a directory either local or remote."""
-    command_string = f'mkdir -v -p {dir_path}'
     _logger.debug("Creating folder %s.", dir_path)
-    _, _, stdout, _ = run_subprocess(command_string)
-
-    if stdout:
-        _logger.debug(stdout)
-    else:
-        _logger.debug("%s already exists.", dir_path)
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 
 def current_job_directory(experiment_dir, job_id):

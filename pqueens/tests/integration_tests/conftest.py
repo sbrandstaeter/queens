@@ -134,9 +134,7 @@ def connect_to_resource_fixture(cluster_settings):
 
 
 @pytest.fixture(name="baci_cluster_paths", scope="session")
-def baci_cluster_paths_fixture(
-    connect_to_resource,
-):
+def baci_cluster_paths_fixture(connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
