@@ -2,7 +2,7 @@
 import pytest
 
 from pqueens.utils.exceptions import SubprocessError
-from pqueens.utils.run_subprocess import _run_subprocess_simple
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 def test_subprocess_correct_message_construction():
@@ -30,4 +30,4 @@ def test_subprocess_correct_message_construction():
 def test_subprocess_raises_error():
     """Check if non existing command raises an SubprocessError."""
     with pytest.raises(SubprocessError):
-        _run_subprocess_simple("NonExistingCommand")
+        run_subprocess("NonExistingCommand")

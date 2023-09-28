@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess, run_subprocess_remote
 
 _logger = logging.getLogger(__name__)
 
@@ -20,9 +20,8 @@ def local_base_directory():
 
 def remote_home(remote_connect):
     """Get home of remote user."""
-    _, _, home, _ = run_subprocess(
+    _, _, home, _ = run_subprocess_remote(
         "echo ~",
-        subprocess_type="remote",
         remote_connect=remote_connect,
         additional_error_message=f"Unable to identify home on remote.\n"
         f"Tried to connect to {remote_connect}.",
@@ -63,20 +62,16 @@ def experiment_directory(experiment_name, remote_connect=None):
 
 def create_directory(dir_path, remote_connect=None):
     """Create a directory either local or remote."""
-    if remote_connect is None:
-        subprocess_type = 'simple'
-        location = ""
-    else:
-        subprocess_type = 'remote'
-        location = f" on {remote_connect}"
-
-    _logger.debug("Creating folder %s%s.", dir_path, location)
     command_string = f'mkdir -v -p {dir_path}'
-    _, _, stdout, _ = run_subprocess(
-        command_string=command_string,
-        subprocess_type=subprocess_type,
-        remote_connect=remote_connect,
-    )
+    if remote_connect is None:
+        location = ""
+        _logger.debug("Creating folder %s.", dir_path)
+        _, _, stdout, _ = run_subprocess(command_string)
+    else:
+        location = f" on {remote_connect}"
+        _logger.debug("Creating folder %s%s.", dir_path, location)
+        _, _, stdout, _ = run_subprocess_remote(command_string, remote_connect=remote_connect)
+
     if stdout:
         _logger.debug(stdout)
     else:

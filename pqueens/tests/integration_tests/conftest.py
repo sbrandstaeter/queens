@@ -10,7 +10,7 @@ import pytest
 
 from pqueens.utils import config_directories
 from pqueens.utils.path_utils import relative_path_from_queens
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess_remote
 
 _logger = logging.getLogger(__name__)
 
@@ -149,9 +149,8 @@ def baci_cluster_paths_fixture(connect_to_resource):
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
         command_string = f'find {file_path}'
-        run_subprocess(
-            command_string=command_string,
-            subprocess_type='remote',
+        run_subprocess_remote(
+            command=command_string,
             remote_connect=connect_to_resource,
             additional_error_message=f"Could not find executable on {connect_to_resource}.\n"
             f"Was looking here: {file_path}",

@@ -203,13 +203,13 @@ def get_job_logger(
         propagate (bool): Flag for propagation of stream (default: *False*)
         full_log_formatting (bool): Flag to add logger metadata such as time
     Returns:
-        joblogger (logging.logger): Job logger
+        job_logger (logging.logger): Job logger
         lfh (logging.FileHandler): Logging file handler
         efh (logging.FileHandler): Error logging file handler
         stream_handler (logging.StreamHandler): Streaming handler, i.e. logging to console
     """
     # get job logger
-    joblogger = logging.getLogger(logger_name)
+    job_logger = logging.getLogger(logger_name)
 
     if full_log_formatting:
         # define formatter
@@ -218,21 +218,21 @@ def get_job_logger(
         formatter = NewLineFormatter('%(message)s')
 
     # set level
-    joblogger.setLevel(logging.INFO)
+    job_logger.setLevel(logging.INFO)
 
     # set option to propagate (default: false)
-    joblogger.propagate = propagate
+    job_logger.propagate = propagate
 
     # add handlers for log and error file (remark: python code is run in parallel
     # for cluster runs; thus, each processor logs his own file.)
     lfh = logging.FileHandler(log_file, mode='w', delay=False)
     lfh.setLevel(logging.INFO)
     lfh.setFormatter(formatter)
-    joblogger.addHandler(lfh)
+    job_logger.addHandler(lfh)
     efh = logging.FileHandler(error_file, mode='w', delay=False)
     efh.setLevel(logging.ERROR)
     efh.setFormatter(formatter)
-    joblogger.addHandler(efh)
+    job_logger.addHandler(efh)
 
     # add handler for additional streaming to given stream, if required
     if streaming:
@@ -240,22 +240,22 @@ def get_job_logger(
         stream_handler.setLevel(logging.INFO)
         stream_handler.terminator = ''
         stream_handler.setFormatter(fmt=None)
-        joblogger.addHandler(stream_handler)
+        job_logger.addHandler(stream_handler)
     else:
         stream_handler = None
 
     # return job logger and handlers
-    return joblogger, lfh, efh, stream_handler
+    return job_logger, lfh, efh, stream_handler
 
 
-def job_logging(command_string, process, joblogger, terminate_expr):
+def job_logging(command_string, process, job_logger, terminate_expression):
     """Actual logging of job.
 
     Args:
         command_string (str): Command string for the subprocess
         process (obj): Subprocess object
-        joblogger (obj): Job logger object
-        terminate_expr (str): Expression on which to terminate
+        job_logger (obj): Job logger object
+        terminate_expression (str): Expression on which to terminate
 
     Returns:
         stderr (str): Error messages
@@ -264,51 +264,51 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     stderr = None
 
     # start logging
-    joblogger.info('run_subprocess started with:')
-    joblogger.info(command_string)
+    job_logger.info('run_subprocess started with:')
+    job_logger.info(command_string)
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
         line = line.rstrip()  # remove any trailing whitespaces
         exit_code = process.poll()
         if line == '' and exit_code is not None:
-            joblogger.info("subprocess exited with code %s.", exit_code)
+            job_logger.info("subprocess exited with code %s.", exit_code)
             # This line waits for termination and puts together stdout not yet consumed from the
             # stream by the logger and finally the stderr.
             stdout, stderr = process.communicate()
             # following line should never really do anything. We want to log all that was
             # written to stdout even after program was terminated.
-            joblogger.info(stdout)
+            job_logger.info(stdout)
             if stderr:
-                joblogger.error('error message (if provided) follows:')
+                job_logger.error('error message (if provided) follows:')
                 for errline in io.StringIO(stderr):
-                    joblogger.error(errline)
+                    job_logger.error(errline)
             break
-        if terminate_expr:
+        if terminate_expression:
             # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
-            if re.search(terminate_expr, line):
-                joblogger.warning('run_subprocess detected terminate expression:')
-                joblogger.error(line)
+            if re.search(terminate_expression, line):
+                job_logger.warning('run_subprocess detected terminate expression:')
+                job_logger.error(line)
                 # give program the chance to terminate by itself, because terminate expression
                 # will be found also if program terminates itself properly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
-                    joblogger.warning('running job will be terminated by QUEENS.')
+                    job_logger.warning('running job will be terminated by QUEENS.')
                     process.terminate()
                     # wait before communicate call which gathers all the output
                     time.sleep(2)
                 continue
-        joblogger.info(line)
+        job_logger.info(line)
 
     return stderr
 
 
-def finish_job_logger(joblogger, lfh, efh, stream_handler):
+def finish_job_logger(job_logger, lfh, efh, stream_handler):
     """Close and remove file handlers.
 
     (to prevent OSError: [Errno 24] Too many open files)
 
     Args:
-        joblogger (logging.logger): Job logger
+        job_logger (logging.logger): Job logger
         lfh (logging.FileHandler): Logging file handler
         efh (logging.FileHandler): Error logging file handler
         stream_handler (logging.StreamHandler): Streaming handler, i.e. logging to console
@@ -316,11 +316,11 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     # we need to close the FileHandlers to
     lfh.close()
     efh.close()
-    joblogger.removeHandler(lfh)
-    joblogger.removeHandler(efh)
+    job_logger.removeHandler(lfh)
+    job_logger.removeHandler(efh)
     if stream_handler is not None:
         stream_handler.close()
-        joblogger.removeHandler(stream_handler)
+        job_logger.removeHandler(stream_handler)
 
 
 def reset_logging():
