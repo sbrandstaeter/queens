@@ -79,7 +79,7 @@ def run_subprocess_remote(
     )
 
 
-def run_subprocess_simulation(
+def run_subprocess_with_logging(
     command,
     terminate_expression,
     logger_name,
