@@ -8,7 +8,7 @@ from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job
 _logger = logging.getLogger(__name__)
 
 # Currently allowed errors that might appear but have no effect on subprocesses
-_allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
+_ALLOWED_ERRORS = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
 def run_subprocess(
@@ -221,7 +221,7 @@ def _remove_allowed_errors(stderr, allowed_errors):
         stderr (str): error message without allowed errors
     """
     # Add known exceptions
-    allowed_errors.extend(_allowed_errors)
+    allowed_errors.extend(_ALLOWED_ERRORS)
     # Remove the allowed error messages from stderr
     for error_message in allowed_errors:
         stderr = stderr.replace(error_message, "")

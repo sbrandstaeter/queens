@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 
-from pqueens.utils.run_subprocess import run_subprocess_remote
+from pqueens.utils.run_subprocess import run_subprocess, run_subprocess_remote
 
 _logger = logging.getLogger(__name__)
 
@@ -62,14 +62,16 @@ def experiment_directory(experiment_name, remote_connect=None):
 
 def create_directory(dir_path, remote_connect=None):
     """Create a directory either local or remote."""
+    command_string = f'mkdir -v -p {dir_path}'
     if remote_connect is None:
         location = ""
+        _logger.debug("Creating folder %s.", dir_path)
+        _, _, stdout, _ = run_subprocess(command_string)
     else:
         location = f" on {remote_connect}"
+        _logger.debug("Creating folder %s%s.", dir_path, location)
+        _, _, stdout, _ = run_subprocess_remote(command_string, remote_connect=remote_connect)
 
-    _logger.debug("Creating folder %s%s.", dir_path, location)
-    command_string = f'mkdir -v -p {dir_path}'
-    _, _, stdout, _ = run_subprocess_remote(command=command_string, remote_connect=remote_connect)
     if stdout:
         _logger.debug(stdout)
     else:

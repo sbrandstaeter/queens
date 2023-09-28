@@ -171,4 +171,4 @@ class RemoteConnection(Connection):
         _logger.debug("Port-forwarding opened successfully.")
 
         kill_cmd = f'pkill -f "{cmd}"'
-        atexit.register(start_subprocess, kill_cmd, subprocess_type='submit')
+        atexit.register(start_subprocess, kill_cmd)
