@@ -267,6 +267,7 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     joblogger.info('run_subprocess started with:')
     joblogger.info(command_string)
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
+        line = line.rstrip()  # remove any trailing whitespaces
         exit_code = process.poll()
         if line == '' and exit_code is not None:
             joblogger.info("subprocess exited with code %s.", exit_code)
