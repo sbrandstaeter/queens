@@ -11,6 +11,8 @@ variables:
   PYTEST_OPTIONAL_PARAMETERS: ""
   LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
   IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  # python environment manager
+  PYTHON_ENVIRONMENT_MANAGER: "conda"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -77,9 +79,10 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - mamba update -n base -y conda
+    - 'echo "Using python environment manager: $PYTHON_ENVIRONMENT_MANAGER"'
+    - $PYTHON_ENVIRONMENT_MANAGER update -n base -y conda
   script:
-    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - $PYTHON_ENVIRONMENT_MANAGER env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
