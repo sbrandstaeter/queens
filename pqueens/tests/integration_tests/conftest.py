@@ -8,7 +8,6 @@ from typing import Optional
 import numpy as np
 import pytest
 
-from pqueens.utils import config_directories
 from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess_remote
 
@@ -140,7 +139,14 @@ def baci_cluster_paths_fixture(connect_to_resource):
 
     Checks also for existence of the executables.
     """
-    base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build"
+    _, _, remote_home, _ = run_subprocess_remote(
+        "echo ~",
+        remote_connect=connect_to_resource,
+        additional_error_message=f"Unable to identify home on remote.\n"
+        f"Tried to connect to {connect_to_resource}.",
+    )
+
+    base_directory = Path(remote_home.rstrip()) / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
