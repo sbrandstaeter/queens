@@ -1,5 +1,6 @@
 """Collect fixtures used by the integration tests."""
 
+import getpass
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -106,7 +107,7 @@ def fixture_user():
 
 
 @pytest.fixture(name="cluster_user", scope="session")
-def fixture_cluster_user(user, hostname):
+def fixture_cluster_user(pytestconfig):
     """Username of cluster account to use for tests."""
     return pytestconfig.getoption("remote_user")
 
