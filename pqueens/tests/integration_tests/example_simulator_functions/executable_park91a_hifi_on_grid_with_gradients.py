@@ -213,7 +213,7 @@ def run_type_adjoint(x3_vec, x4_vec, params):
     # --> 1 * lambda = -do_dy, with o being the objective function, here log-likelihood
     # and y the value the output of this function, do_dy is here read-in from a csv file
     # hence: lambda = -do_dy, which we will load in the next lines:
-    adjoint_base_path = Path(input_file_path=sys.argv[2]).parent  # not parent but -
+    adjoint_base_path = Path(sys.argv[2]).parent  # not parent but -
     adjoint_path = adjoint_base_path / "grad_objective.csv"
     do_dy = genfromtxt(adjoint_path, delimiter=',')
     lambda_var = np.negative(np.atleast_2d(np.array(do_dy)))
