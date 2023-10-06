@@ -79,8 +79,8 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - 'echo "Using python environment manager: $PYTHON_ENVIRONMENT_MANAGER"'
-    - $PYTHON_ENVIRONMENT_MANAGER update -n base -y conda
+    - 'PYTHON_ENVIRONMENT_MANAGER_INFO=`$PYTHON_ENVIRONMENT_MANAGER --version`'
+    - 'echo "Using python environment manager: $PYTHON_ENVIRONMENT_MANAGER_INFO"'
   script:
     - $PYTHON_ENVIRONMENT_MANAGER env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
