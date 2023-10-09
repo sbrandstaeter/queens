@@ -96,6 +96,7 @@ class TestDaskCluster:
         remote_python,
         baci_example_expected_mean,
         baci_example_expected_var,
+        baci_example_expected_output,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
 
@@ -118,6 +119,7 @@ class TestDaskCluster:
             remote_python (str): Path to Python environment on remote host
             baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
             baci_example_expected_var (np.ndarray): Expected var for the MC samples
+            baci_example_expected_output (np.ndarray): Expected output for the MC samples
         """
         cluster_name = cluster_settings["name"]
 
@@ -151,3 +153,6 @@ class TestDaskCluster:
         # assert statements
         np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
         np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
+        np.testing.assert_array_almost_equal(
+            results['raw_output_data']['mean'], baci_example_expected_output, decimal=6
+        )

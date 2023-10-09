@@ -11,6 +11,8 @@ variables:
   PYTEST_OPTIONAL_PARAMETERS: ""
   LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
   IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+  # python package manager
+  PYTHON_PACKAGE_MANAGER: "conda"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -77,9 +79,9 @@ workflow:
   rules:
     - !reference [.ubuntu_build_conditions, rules]
   before_script:
-    - mamba update -n base -y conda
+    - 'echo "Using python environment manager: `$PYTHON_PACKAGE_MANAGER --version`"'
   script:
-    - mamba env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
@@ -111,7 +113,8 @@ imcs-build_conda_env:
   script:
     - python pqueens/utils/remote_build.py
       --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
-      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
+      $PYTHON_PACKAGE_MANAGER
 
 #bruteforce-build_conda_env:
 #  extends:
@@ -164,6 +167,7 @@ update:
     - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
     # Checkout to a new branch so we push the changes to a new branch
     - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
+    - git add requirements.txt dev-requirements.txt
     - git commit -m "Update requirements based on pip-tools"
     - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
     - >

@@ -9,9 +9,8 @@ from typing import Optional
 import numpy as np
 import pytest
 
-from pqueens.utils import config_directories
 from pqueens.utils.path_utils import relative_path_from_queens
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess_remote
 
 _logger = logging.getLogger(__name__)
 
@@ -145,7 +144,14 @@ def fixture_baci_cluster_paths(connect_to_resource):
 
     Checks also for existence of the executables.
     """
-    base_directory = config_directories.remote_home(connect_to_resource) / "workspace" / "build"
+    _, _, remote_home, _ = run_subprocess_remote(
+        "echo ~",
+        remote_connect=connect_to_resource,
+        additional_error_message=f"Unable to identify home on remote.\n"
+        f"Tried to connect to {connect_to_resource}.",
+    )
+
+    base_directory = Path(remote_home.rstrip()) / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
@@ -154,9 +160,8 @@ def fixture_baci_cluster_paths(connect_to_resource):
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
         command_string = f'find {file_path}'
-        run_subprocess(
-            command_string=command_string,
-            subprocess_type='remote',
+        run_subprocess_remote(
+            command=command_string,
             remote_connect=connect_to_resource,
             additional_error_message=f"Could not find executable on {connect_to_resource}.\n"
             f"Was looking here: {file_path}",
@@ -221,6 +226,52 @@ def fixture_baci_example_expected_var():
             [9.86153027e-08, 9.86153027e-08, 2.94994460e-07],
             [1.93285820e-07, 1.93285820e-07, 2.94994460e-07],
             [1.93285820e-07, 3.19513506e-07, 2.94994460e-07],
+        ]
+    )
+    return result
+
+
+@pytest.fixture(name="baci_example_expected_output")
+def baci_example_expected_output_fixture():
+    """Expected outputs for the BACI example."""
+    result = np.array(
+        [
+            [
+                [0.00375521, 0.00125174, -0.00922795],
+                [0.00125174, 0.00292072, -0.00922795],
+                [0.00208623, 0.00292072, -0.00922795],
+                [0.00375521, 0.00208623, -0.00922795],
+                [0.00125174, 0.00375521, -0.00922795],
+                [0.00375521, 0.00292072, -0.00922795],
+                [0.00208623, 0.00375521, -0.00922795],
+                [0.00375521, 0.00375521, -0.00922795],
+                [0.00125174, 0.00125174, -0.00922795],
+                [0.00292072, 0.00125174, -0.00922795],
+                [0.00125174, 0.00208623, -0.00922795],
+                [0.00208623, 0.00125174, -0.00922795],
+                [0.00292072, 0.00208623, -0.00922795],
+                [0.00208623, 0.00208623, -0.00922795],
+                [0.00292072, 0.00292072, -0.00922795],
+                [0.00292072, 0.00375521, -0.00922795],
+            ],
+            [
+                [0.00455460, 0.00151820, -0.00999606],
+                [0.00151820, 0.00354247, -0.00999606],
+                [0.00253033, 0.00354247, -0.00999606],
+                [0.00455460, 0.00253033, -0.00999606],
+                [0.00151820, 0.00455460, -0.00999606],
+                [0.00455460, 0.00354247, -0.00999606],
+                [0.00253033, 0.00455460, -0.00999606],
+                [0.00455460, 0.00455460, -0.00999606],
+                [0.00151820, 0.00151820, -0.00999606],
+                [0.00354247, 0.00151820, -0.00999606],
+                [0.00151820, 0.00253033, -0.00999606],
+                [0.00253033, 0.00151820, -0.00999606],
+                [0.00354247, 0.00253033, -0.00999606],
+                [0.00253033, 0.00253033, -0.00999606],
+                [0.00354247, 0.00354247, -0.00999606],
+                [0.00354247, 0.00455460, -0.00999606],
+            ],
         ]
     )
     return result

@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from pqueens.utils.injector import inject
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import run_subprocess_with_logging
 
 _logger = logging.getLogger(__name__)
 
@@ -92,11 +92,10 @@ class Driver(metaclass=abc.ABCMeta):
             error_file (Path): Path to error file
             verbose (bool, opt): flag for additional streaming to terminal
         """
-        run_subprocess(
+        run_subprocess_with_logging(
             execute_cmd,
-            subprocess_type='simulation',
-            terminate_expr='PROC.*ERROR',
-            loggername=__name__ + f'_{job_id}',
+            terminate_expression='PROC.*ERROR',
+            logger_name=__name__ + f'_{job_id}',
             log_file=str(log_file),
             error_file=str(error_file),
             streaming=verbose,

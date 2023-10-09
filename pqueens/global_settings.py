@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from pqueens.schedulers.scheduler import SHUTDOWN_CLIENTS
-from pqueens.utils.logger_settings import setup_basic_logging
+from pqueens.utils.logger_settings import reset_logging, setup_basic_logging
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -49,7 +49,6 @@ class GlobalSettings:
 
         return_code, _, stdout, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         if not return_code:
@@ -62,7 +61,6 @@ class GlobalSettings:
 
         return_code, _, git_branch, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', '--abbrev-ref', 'HEAD']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         git_branch = git_branch.strip()
@@ -74,7 +72,6 @@ class GlobalSettings:
 
         return_code, _, git_status, stderr = run_subprocess(
             " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'status', '--porcelain']),
-            subprocess_type="simple",
             raise_error_on_subprocess_failure=False,
         )
         git_clean_working_tree = not git_status
@@ -136,3 +133,5 @@ class GlobalSettings:
         for shutdown_client in SHUTDOWN_CLIENTS.copy():
             SHUTDOWN_CLIENTS.remove(shutdown_client)
             shutdown_client()
+
+        reset_logging()
