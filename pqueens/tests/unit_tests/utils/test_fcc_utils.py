@@ -103,13 +103,13 @@ def test_from_config_create_object_iterator(mocker, config_1, parameters):
     assert mp2.call_count == 1
 
 
-def test_from_config_create_object_model(mocker, config_1):
+def test_from_config_create_object_model(parameters, mocker, config_1):
     """Test case for from_config_create_object function."""
     mp1 = mocker.patch("pqueens.utils.fcc_utils.get_module_class", return_value=SimulationModel)
     mp2 = mocker.patch(
         "pqueens.models.simulation_model.SimulationModel.__init__", return_value=None
     )
-    from_config_create_object(config_1, fixture_parameters)
+    from_config_create_object(config_1, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == config_1
