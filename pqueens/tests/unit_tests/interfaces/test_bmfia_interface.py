@@ -211,7 +211,9 @@ def test__init__():
     assert interface.coords_mat is None
 
 
-def test_build_approximation(default_bmfia_interface, mocker, default_probabilistic_obj_lst):
+def test_build_approximation(
+    default_bmfia_interface, mocker, default_probabilistic_obj_lst, dummy_plot_instance
+):
     """Test the set-up / build of the probabilistic regression models."""
     z_lf_train = np.zeros((2, 30))
     y_hf_train = np.zeros((2, 25))
@@ -232,7 +234,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     )
     mocker.patch(
         'pqueens.visualization.bmfia_visualization.bmfia_visualization_instance',
-        return_value=fixture_dummy_plot_instance,
+        return_value=dummy_plot_instance,
     )
 
     default_bmfia_interface.num_processors_multi_processing = 3
@@ -405,7 +407,7 @@ def test_train_probabilistic_mappings_in_parallel(
 
 
 def test_set_optimized_state_of_probabilistic_mappings(
-    default_bmfia_interface, my_state_lst, mocker, default_probabilistic_obj_lst
+    default_bmfia_interface, my_state_lst, default_probabilistic_obj_lst
 ):
     """Test the state update of the mappings."""
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
@@ -484,7 +486,7 @@ def test_evaluate_and_gradient(default_bmfia_interface, mocker):
     np.testing.assert_almost_equal(grad_var, per_coordinate_return[3])
 
 
-def test_evaluate_per_coordinate(default_bmfia_interface, mocker, default_probabilistic_obj_lst):
+def test_evaluate_per_coordinate(default_bmfia_interface, mocker):
     """Test the evaluation per coordinate."""
     # general inputs
     support = "y"
@@ -517,7 +519,7 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker, default_probab
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))
 
 
-def test_evaluate_per_time_step(default_bmfia_interface, mocker):
+def test_evaluate_per_time_step(default_bmfia_interface, default_probabilistic_obj_lst, mocker):
     """Test the evaluation per time step."""
     # general inputs
     z_lf = np.array([[[1, 2], [3, 4]]])
@@ -544,7 +546,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
     )
 
     mean, variance = BmfiaInterface.evaluate_per_time_step(
-        z_lf, support, fixture_default_probabilistic_obj_lst, time_vec, coords_mat
+        z_lf, support, default_probabilistic_obj_lst, time_vec, coords_mat
     )
 
     mp1.assert_called_once()
@@ -555,14 +557,14 @@ def test_evaluate_per_time_step(default_bmfia_interface, mocker):
 
     mp3.assert_called_once()
     mp3.assert_called_with(
-        z_lf_array, support, num_coords, fixture_default_probabilistic_obj_lst, gradient_bool=False
+        z_lf_array, support, num_coords, default_probabilistic_obj_lst, gradient_bool=False
     )
 
     np.testing.assert_array_equal(mean, default_mean)
     np.testing.assert_array_equal(variance, default_variance)
 
 
-def test_prepare_z_lf_for_time_steps(default_bmfia_interface, mocker):
+def test_prepare_z_lf_for_time_steps(default_bmfia_interface):
     """Test the preparation of the latent function for time steps."""
     # some inputs
     z_lf = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])  # 2 x 2 x 2
@@ -855,7 +857,7 @@ def test_update_mappings_per_coordinate(
     np.testing.assert_array_equal(y_hf_array_out, y_hf_train)
 
 
-def test_update_mappings_per_time_step(mocker):
+def test_update_mappings_per_time_step(dummy_reg_obj, mocker):
     """Test the update mappings per time step."""
     z_lf_train = np.zeros((1, 2, 3))
     y_hf_train = np.zeros((2, 2, 2))
@@ -875,7 +877,7 @@ def test_update_mappings_per_time_step(mocker):
     )
 
     mapping = mocker.MagicMock()
-    mapping.update_training_data.return_value = fixture_dummy_reg_obj
+    mapping.update_training_data.return_value = dummy_reg_obj
     probabilistic_mapping_obj_lst = [mapping] * t_size
 
     (
