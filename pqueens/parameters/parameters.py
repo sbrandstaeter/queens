@@ -73,11 +73,11 @@ class Parameters:
         names (list): Parameter names.
     """
 
-    def __init__(self, **parameters):  # pylint: disable=redefined-outer-name
+    def __init__(self, **parameters):
         """Initialize Parameters object.
 
         Args:
-            **kwargs (ContinuousDistribution, RandomField): parameters as keyword arguments
+            **parameters (ContinuousDistribution, RandomField): parameters as keyword arguments
         """
         joint_parameters_keys = []
         joint_parameters_dim = 0
