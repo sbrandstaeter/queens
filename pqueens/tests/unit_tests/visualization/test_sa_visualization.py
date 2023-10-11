@@ -5,8 +5,8 @@ import pytest
 from pqueens.visualization.sa_visualization import SAVisualization
 
 
-@pytest.fixture()
-def dummy_vis(tmp_path):
+@pytest.fixture(name="dummy_vis")
+def fixture_dummy_vis(tmp_path):
     """Generate dummy instance of class SAVisualization."""
     paths = [
         tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
@@ -38,8 +38,8 @@ def test_init(tmp_path, dummy_vis):
     assert dummy_vis.should_be_displayed == plot_booleans
 
 
-@pytest.fixture()
-def dummy_sensitivity_indices():
+@pytest.fixture(name="dummy_sensitivity_indices")
+def fixture_dummy_sensitivity_indices():
     """Generate dummy output data.
 
     Returns:

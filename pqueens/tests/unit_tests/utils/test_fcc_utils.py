@@ -16,8 +16,8 @@ from pqueens.utils.fcc_utils import (
 )
 
 
-@pytest.fixture
-def config_1():
+@pytest.fixture(name="config_1")
+def fixture_config_1():
     """Dummy config 1."""
     config = {
         "a": "b",
@@ -32,8 +32,8 @@ def config_1():
     return config
 
 
-@pytest.fixture
-def config_2():
+@pytest.fixture(name="config_2")
+def fixture_config_2():
     """Dummy config 2."""
     config = {
         "a": "b",
@@ -43,20 +43,20 @@ def config_2():
     return config
 
 
-@pytest.fixture
-def parameters():
+@pytest.fixture(name="parameters")
+def fixture_parameters():
     """Dummy parameters."""
     return Mock()
 
 
-@pytest.fixture
-def dummy_obj():
+@pytest.fixture(name="dummy_obj")
+def fixture_dummy_obj():
     """Dummy object."""
     return Mock()
 
 
-@pytest.fixture
-def inserted_config_2(dummy_obj):
+@pytest.fixture(name="inserted_config_2")
+def fixture_inserted_config_2(dummy_obj):
     """Dummy config_2 with inserted object."""
     config = {
         "a": "b",
@@ -103,7 +103,7 @@ def test_from_config_create_object_iterator(mocker, config_1, parameters):
     assert mp2.call_count == 1
 
 
-def test_from_config_create_object_model(mocker, config_1):
+def test_from_config_create_object_model(parameters, mocker, config_1):
     """Test case for from_config_create_object function."""
     mp1 = mocker.patch("pqueens.utils.fcc_utils.get_module_class", return_value=SimulationModel)
     mp2 = mocker.patch(

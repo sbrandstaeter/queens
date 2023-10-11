@@ -58,7 +58,6 @@ def test_main_greeting_message(caplog):
     """Test if greeting message is provided for in case of no inputs."""
     argv = ["python_file.py"]
     with patch.object(sys, 'argv', argv):
-
         with caplog.at_level(logging.INFO):
             main()
         assert "To use QUEENS run" in caplog.text

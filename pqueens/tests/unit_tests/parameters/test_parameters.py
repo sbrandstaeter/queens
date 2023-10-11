@@ -8,16 +8,16 @@ from pqueens.distributions.uniform import UniformDistribution
 from pqueens.parameters.parameters import Parameters, from_config_create_parameters
 
 
-@pytest.fixture(scope='module')
-def parameters_set_1():
+@pytest.fixture(name="parameters_set_1", scope='module')
+def fixture_parameters_set_1():
     """Parameters dict without random field."""
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
     x2 = NormalDistribution(mean=[0, 1], covariance=np.diag([1, 2]))
     return Parameters(x1=x1, x2=x2)
 
 
-@pytest.fixture(scope='module')
-def parameters_set_2():
+@pytest.fixture(name="parameters_set_2", scope='module')
+def fixture_parameters_set_2():
     """Parameters dict without random field."""
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
     x2 = NormalDistribution(mean=0, covariance=1)
@@ -103,8 +103,8 @@ def test_to_list(parameters_set_1):
 # -------------------------------------------------------------------------------
 # -------------------------   With random field   -------------------------------
 # -------------------------------------------------------------------------------
-@pytest.fixture(scope='module')
-def parameters_options_3():
+@pytest.fixture(name="parameters_options_3", scope='module')
+def fixture_parameters_options_3():
     """Parameters dict with random field."""
     parameters_dict = {
         "x1": {
@@ -128,8 +128,8 @@ def parameters_options_3():
     return parameters_dict
 
 
-@pytest.fixture(scope='module')
-def pre_processor():
+@pytest.fixture(name="pre_processor", scope='module')
+def fixture_pre_processor():
     """Create basic preprocessor class instance."""
 
     class PreProcessor:

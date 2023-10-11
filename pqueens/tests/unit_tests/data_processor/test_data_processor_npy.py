@@ -9,43 +9,43 @@ from pqueens.data_processor.data_processor_numpy import DataProcessorNumpy
 
 
 # ------ fixtures ----------
-@pytest.fixture()
-def data_path(tmp_path):
+@pytest.fixture(name="data_path")
+def fixture_data_path(tmp_path):
     """Create a dummy data path."""
     my_data_path = tmp_path / "my_data.npy"
     return my_data_path
 
 
-@pytest.fixture()
-def wrong_data_path(tmp_path):
+@pytest.fixture(name="wrong_data_path")
+def fixture_wrong_data_path(tmp_path):
     """Create a dummy data path."""
     my_data_path = tmp_path / "my_data.csv"
     return my_data_path
 
 
-@pytest.fixture()
-def dummy_data():
+@pytest.fixture(name="dummy_data")
+def fixture_dummy_data():
     """Create some dummy data."""
     data = np.array([[1, 2], [3, 4]])
     return data
 
 
-@pytest.fixture()
-def write_dummy_data(data_path, dummy_data):
+@pytest.fixture(name="write_dummy_data")
+def fixture_write_dummy_data(data_path, dummy_data):
     """Write the dummy data."""
     with open(data_path, "wb") as f:
         np.save(f, dummy_data)
 
 
-@pytest.fixture()
-def write_wrong_dummy_data(wrong_data_path, dummy_data):
+@pytest.fixture(name="write_wrong_dummy_data")
+def fixture_write_wrong_dummy_data(wrong_data_path, dummy_data):
     """Write the wrong dummy data."""
     with open(wrong_data_path, "w") as f:
         np.savetxt(f, dummy_data)
 
 
-@pytest.fixture()
-def default_data_processor_npy(data_path):
+@pytest.fixture(name="default_data_processor_npy")
+def fixture_default_data_processor_npy(data_path):
     """Dummy data processor npy."""
     file_name_identifier = "dummy"
     file_options_dict = {}

@@ -24,8 +24,8 @@ def test_branin_gpflow_heteroskedastic(inputdir, tmp_path, expected_mean, expect
     )
 
 
-@pytest.fixture()
-def expected_mean():
+@pytest.fixture(name="expected_mean")
+def fixture_expected_mean():
     """TODO_doc."""
     mean = np.array(
         [
@@ -44,8 +44,8 @@ def expected_mean():
     return mean
 
 
-@pytest.fixture()
-def expected_var():
+@pytest.fixture(name="expected_var")
+def fixture_expected_var():
     """TODO_doc."""
     var = np.array(
         [

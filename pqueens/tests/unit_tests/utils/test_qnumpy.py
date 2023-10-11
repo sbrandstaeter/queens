@@ -5,8 +5,8 @@ import pytest
 import pqueens.utils.qnumpy as qnp
 
 
-@pytest.fixture(scope='module')
-def arrays():
+@pytest.fixture(name="arrays", scope='module')
+def fixture_arrays():
     """Create QArrays."""
     np.random.seed(42)
     np_arr_1 = np.random.rand(10, 3, 8)
@@ -27,8 +27,8 @@ def test_dot_product(arrays, expected_result):
     np.testing.assert_array_almost_equal(np_res, expected_result, decimal=8)
 
 
-@pytest.fixture()
-def expected_result():
+@pytest.fixture(name="expected_result")
+def fixture_expected_result():
     """Expected result of dot product."""
     result = np.array(
         [

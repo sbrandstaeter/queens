@@ -10,8 +10,8 @@ from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelih
 
 
 # ---------------- some fixtures ---------------------------------- #
-@pytest.fixture()
-def dummy_config():
+@pytest.fixture(name="dummy_config")
+def fixture_dummy_config():
     """A dummy config dictionary."""
     config = {
         "my_lik_model": {
@@ -26,8 +26,8 @@ def dummy_config():
     return config
 
 
-@pytest.fixture()
-def my_lik_model():
+@pytest.fixture(name="my_lik_model")
+def fixture_my_lik_model():
     """Fixture for dummy likelihood model."""
     forward_model_dummy = namedtuple("forward_model", ["evaluate"])
 
@@ -72,7 +72,6 @@ def my_lik_model():
 # ----------------- actual unit tests ------------------------------#
 def test_init():
     """Test for the init method."""
-
     nugget_noise_variance = 1e-6
     forward_model = "my_forward_model"
     noise_type = "fixed_variance"

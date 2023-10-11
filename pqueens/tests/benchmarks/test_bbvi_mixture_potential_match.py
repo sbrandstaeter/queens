@@ -58,8 +58,8 @@ def test_bbvi_GMM_density_match(
     assert kl_divergence < 5.0
 
 
-@pytest.fixture()
-def dummy_bbvi_instance(tmp_path, variational_distribution_obj):
+@pytest.fixture(name="dummy_bbvi_instance")
+def fixture_dummy_bbvi_instance(tmp_path, variational_distribution_obj):
     """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
@@ -161,8 +161,8 @@ def negative_potential(self, x=None):
     return log_posterior_unnormalized
 
 
-@pytest.fixture()
-def variational_distribution_obj():
+@pytest.fixture(name="variational_distribution_obj")
+def fixture_variational_distribution_obj():
     """Variational distribution object."""
     k = 4
     d = 2
@@ -180,8 +180,8 @@ def variational_distribution_obj():
     return mixture_model_obj
 
 
-@pytest.fixture()
-def visualization_obj(tmp_path):
+@pytest.fixture(name="visualization_obj")
+def fixture_visualization_obj(tmp_path):
     """Create visualization module."""
     visualization_dict = {
         "method": {

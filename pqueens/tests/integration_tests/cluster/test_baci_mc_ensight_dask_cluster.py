@@ -71,16 +71,16 @@ class TestDaskCluster:
             connect_to_resource,
         )
 
-    @pytest.fixture(scope="session")
-    def remote_python(self, pytestconfig, cluster_settings):
+    @pytest.fixture(name="remote_python", scope="session")
+    def fixture_remote_python(self, pytestconfig, cluster_settings):
         """Path to Python environment on remote host."""
         remote_python = pytestconfig.getoption("remote_python")
         if remote_python is None:
             remote_python = cluster_settings["default_python_path"]
         return remote_python
 
-    @pytest.fixture(scope="session")
-    def remote_queens_repository(self, pytestconfig):
+    @pytest.fixture(name="remote_queens_repository", scope="session")
+    def fixture_remote_queens_repository(self, pytestconfig):
         """Path to queens repository on remote host."""
         return pytestconfig.getoption("remote_queens_repository")
 

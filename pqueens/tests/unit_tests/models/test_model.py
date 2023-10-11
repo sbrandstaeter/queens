@@ -18,8 +18,8 @@ class DummyModel(Model):
         """Evaluate gradient of model with current set of samples."""
 
 
-@pytest.fixture()
-def model():
+@pytest.fixture(name="model")
+def fixture_model():
     """An instance of an empty Model class."""
     return DummyModel()
 

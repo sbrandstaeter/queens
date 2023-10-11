@@ -10,6 +10,7 @@ from pqueens.utils.mcmc_utils import tune_scale_covariance
 
 
 @pytest.fixture(
+    name="accept_rate_and_scale_covariance",
     scope='module',
     params=[
         (1e-4, 0.1),
@@ -21,7 +22,7 @@ from pqueens.utils.mcmc_utils import tune_scale_covariance
         (9.9e-1, 10.0),
     ],
 )
-def accept_rate_and_scale_covariance(request):
+def fixture_accept_rate_and_scale_covariance(request):
     """Return a set of valid acceptance rate and adjusted scale.
 
     Given that the current scale is 1.0.

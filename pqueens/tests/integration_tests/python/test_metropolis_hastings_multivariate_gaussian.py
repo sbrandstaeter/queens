@@ -68,8 +68,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture()
-def dummy_data(tmp_path):
+@pytest.fixture(name="dummy_data")
+def fixture_dummy_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_2d.draw(10)
