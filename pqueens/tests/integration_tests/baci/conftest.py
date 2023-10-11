@@ -11,8 +11,8 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 )
 
 
-@pytest.fixture(autouse=True)
-def setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runner):
+@pytest.fixture(name="setup_symbolic_links_baci", autouse=True)
+def fixture_setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runner):
     """Set-up of BACI symbolic links.
 
     Args:
@@ -95,8 +95,8 @@ def setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_gitlab_runn
         ) from error
 
 
-@pytest.fixture()
-def create_experimental_data_park91a_hifi_on_grid(tmp_path):
+@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed
     np.random.seed(seed=1)

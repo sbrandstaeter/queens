@@ -29,8 +29,8 @@ def test_gpflow_surrogate_branin(
     )
 
 
-@pytest.fixture()
-def expected_mean():
+@pytest.fixture(name="expected_mean")
+def fixture_expected_mean():
     """Expected mean."""
     expected_mean = np.array(
         [
@@ -49,8 +49,8 @@ def expected_mean():
     return expected_mean
 
 
-@pytest.fixture()
-def expected_variance():
+@pytest.fixture(name="expected_variance")
+def fixture_expected_variance():
     """Expected variance."""
     expected_variance = np.array(
         [
@@ -69,8 +69,8 @@ def expected_variance():
     return expected_variance
 
 
-@pytest.fixture()
-def expected_posterior_samples():
+@pytest.fixture(name="expected_posterior_samples")
+def fixture_expected_posterior_samples():
     """Expected posterior samples."""
     expected_posterior_samples = np.array(
         [

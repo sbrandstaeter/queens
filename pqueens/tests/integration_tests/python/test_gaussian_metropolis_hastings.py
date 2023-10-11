@@ -5,9 +5,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import pytest
-from mock import Mock, patch
+from mock import patch
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens import run
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
@@ -24,9 +23,6 @@ def test_gaussian_metropolis_hastings(inputdir, tmp_path, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = tmp_path / "gaussian_metropolis_hastings_realiz.yml"
     injector.inject(dir_dict, template, input_file)
-
-    parameters_module.parameters = Mock()
-    parameters_module.parameters.num_parameters = 1
 
     with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
         run(input_file, tmp_path)
@@ -52,8 +48,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture()
-def dummy_data(tmp_path):
+@pytest.fixture(name="dummy_data")
+def fixture_dummy_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()

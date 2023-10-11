@@ -60,15 +60,15 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
 
 
-@pytest.fixture()
-def expected_weights():
+@pytest.fixture(name="expected_weights")
+def fixture_expected_weights():
     """TODO_doc."""
     weights = 1
     return weights
 
 
-@pytest.fixture()
-def expected_samples():
+@pytest.fixture(name="expected_samples")
+def fixture_expected_samples():
     """TODO_doc."""
     samples = 1
     return samples

@@ -2,8 +2,9 @@
 import atexit
 import logging
 import socket
+import subprocess
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
@@ -35,6 +36,25 @@ VALID_WORKLOAD_MANAGERS = {
 }
 
 
+def timedelta_to_str(timedelta_obj):
+    """Format a timedelta object to str.
+
+    This function seems unnecessarily complicated, but unfortunately the datetime library does not
+     support this formatting for timedeltas. Returns the format HH:MM:SS.
+
+    Args:
+        timedelta_obj (datetime.timedelta): Timedelta object to format
+
+    Returns:
+        str: String of the timedelta object
+    """
+    # Time in seconds
+    time_in_seconds = int(timedelta_obj.total_seconds())
+    (minutes, seconds) = divmod(time_in_seconds, 60)
+    (hours, minutes) = divmod(minutes, 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+
 class ClusterScheduler(Scheduler):
     """Cluster scheduler for QUEENS."""
 
@@ -54,7 +74,7 @@ class ClusterScheduler(Scheduler):
         cluster_internal_address=None,
         cluster_queens_repository=None,
         cluster_build_environment=False,
-        progressbar=True,
+        restart_workers=True,
         allowed_failures=5,
     ):
         """Init method for the cluster scheduler.
@@ -75,8 +95,8 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str, opt): Path to Queens repository on cluster
             cluster_build_environment (bool, opt): Flag to decide if queens environment should be
                                                    build on cluster
-            progressbar (bool, opt): If true, print progressbar. WARNING: If multiple dask
-                                     schedulers are used, the progressbar must be disabled.
+            restart_workers (bool): If true, restart workers after each finished job. For larger
+                                    jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
         if cluster_queens_repository is None:
@@ -110,11 +130,14 @@ class ClusterScheduler(Scheduler):
         _logger.debug(
             "experiment directory on %s@%s: %s", cluster_user, cluster_address, experiment_dir
         )
-        walltime_delta = datetime.strptime(walltime, "%H:%M:%S") - datetime.strptime("0", "%S")
+        hours, minutes, seconds = map(int, walltime.split(':'))
+        walltime_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
         # Increase jobqueue walltime by 5 minutes to kill dask workers in time
-        walltime = str(walltime_delta + timedelta(minutes=5))
+        walltime = timedelta_to_str(walltime_delta + timedelta(minutes=5))
+
         # dask worker lifetime = walltime - 3m +/- 2m
-        worker_lifetime = str((walltime_delta + timedelta(minutes=2)).seconds) + "s"
+        worker_lifetime = str(int((walltime_delta + timedelta(minutes=2)).total_seconds())) + "s"
 
         remote_port = connection.run_function(self.get_port)
         remote_port_dashboard = connection.run_function(self.get_port)
@@ -181,8 +204,24 @@ class ClusterScheduler(Scheduler):
             client=client,
             num_procs=num_procs,
             num_procs_post=num_procs_post,
-            progressbar=progressbar,
+            restart_workers=restart_workers,
         )
+
+    def restart_worker(self, worker):
+        """Restart a worker.
+
+        This method cancels the job in the queue of the HPC system. The Client.adapt method of dask
+        will subsequently submit new jobs to the queue. Warning: Currently only slurm is supported.
+
+        Args:
+            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
+        """
+        job_id = self.client.run(
+            lambda: subprocess.check_output('echo $SLURM_JOB_ID', shell=True),
+            workers=list(worker),
+        )
+        cancel_cmd = f'scancel {str(list(job_id.values())[0])[2:-3]}'
+        self.client.run_on_scheduler(lambda: subprocess.run(cancel_cmd, check=False, shell=True))
 
     @staticmethod
     def get_port():

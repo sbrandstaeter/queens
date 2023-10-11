@@ -71,16 +71,16 @@ class TestDaskCluster:
             connect_to_resource,
         )
 
-    @pytest.fixture(scope="session")
-    def remote_python(self, pytestconfig, cluster_settings):
+    @pytest.fixture(name="remote_python", scope="session")
+    def fixture_remote_python(self, pytestconfig, cluster_settings):
         """Path to Python environment on remote host."""
         remote_python = pytestconfig.getoption("remote_python")
         if remote_python is None:
             remote_python = cluster_settings["default_python_path"]
         return remote_python
 
-    @pytest.fixture(scope="session")
-    def remote_queens_repository(self, pytestconfig):
+    @pytest.fixture(name="remote_queens_repository", scope="session")
+    def fixture_remote_queens_repository(self, pytestconfig):
         """Path to queens repository on remote host."""
         return pytestconfig.getoption("remote_queens_repository")
 
@@ -96,6 +96,7 @@ class TestDaskCluster:
         remote_python,
         baci_example_expected_mean,
         baci_example_expected_var,
+        baci_example_expected_output,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
 
@@ -118,6 +119,7 @@ class TestDaskCluster:
             remote_python (str): Path to Python environment on remote host
             baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
             baci_example_expected_var (np.ndarray): Expected var for the MC samples
+            baci_example_expected_output (np.ndarray): Expected output for the MC samples
         """
         cluster_name = cluster_settings["name"]
 
@@ -151,3 +153,6 @@ class TestDaskCluster:
         # assert statements
         np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
         np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
+        np.testing.assert_array_almost_equal(
+            results['raw_output_data']['mean'], baci_example_expected_output, decimal=6
+        )

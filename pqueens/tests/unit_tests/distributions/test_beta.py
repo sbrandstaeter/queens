@@ -13,32 +13,32 @@ def sample_pos(request):
     return np.array(request.param)
 
 
-@pytest.fixture(scope='module')
-def lower_bound():
+@pytest.fixture(name="lower_bound", scope='module')
+def fixture_lower_bound():
     """A possible left bound of interval."""
     return -1.0
 
 
-@pytest.fixture(scope='module')
-def upper_bound():
+@pytest.fixture(name="upper_bound", scope='module')
+def fixture_upper_bound():
     """A possible right bound of interval."""
     return 2.0
 
 
-@pytest.fixture(scope='module')
-def shape_a():
+@pytest.fixture(name="shape_a", scope='module')
+def fixture_shape_a():
     """A possible shape parameter *a*."""
     return 3.0
 
 
-@pytest.fixture(scope='module')
-def shape_b():
+@pytest.fixture(name="shape_b", scope='module')
+def fixture_shape_b():
     """A possible shape parameter *b*."""
     return 0.5
 
 
-@pytest.fixture(scope='module')
-def beta(lower_bound, upper_bound, shape_a, shape_b):
+@pytest.fixture(name="beta", scope='module')
+def fixture_beta(lower_bound, upper_bound, shape_a, shape_b):
     """A beta distribution."""
     return BetaDistribution(lower_bound=lower_bound, upper_bound=upper_bound, a=shape_a, b=shape_b)
 

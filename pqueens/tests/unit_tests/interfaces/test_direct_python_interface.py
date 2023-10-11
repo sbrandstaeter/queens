@@ -13,8 +13,8 @@ from pqueens.utils.path_utils import relative_path_from_pqueens
 _logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='module')
-def parameters():
+@pytest.fixture(name="parameters", scope='module')
+def fixture_parameters():
     """Options dictionary to create variables."""
     x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
     x2 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
@@ -22,40 +22,40 @@ def parameters():
     return Parameters(x1=x1, x2=x2, x3=x3)
 
 
-@pytest.fixture(scope='module')
-def samples():
+@pytest.fixture(name="samples", scope='module')
+def fixture_samples():
     """Parameters and samples."""
     # set values
     samples = np.ones((2, 3))
     return samples
 
 
-@pytest.fixture(scope='module')
-def expected_result():
+@pytest.fixture(name="expected_result", scope='module')
+def fixture_expected_result():
     """Expected result of ishigami function for [1., 1., 1.]."""
     return np.array([[5.8821320112036846]])
 
 
-@pytest.fixture(scope='module')
-def expected_results(expected_result):
+@pytest.fixture(name="expected_results", scope='module')
+def fixture_expected_results(expected_result):
     """Expected results corresponding to *list_of_samples*."""
     return np.concatenate([expected_result, expected_result])
 
 
-@pytest.fixture(scope='module')
-def direct_python_interface(parameters):
+@pytest.fixture(name="direct_python_interface", scope='module')
+def fixture_direct_python_interface(parameters):
     """Direct python interface."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=1)
 
 
-@pytest.fixture(scope='module')
-def direct_python_interface_parallel(parameters):
+@pytest.fixture(name="direct_python_interface_parallel", scope='module')
+def fixture_direct_python_interface_parallel(parameters):
     """An instance of Variables class."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
 
 
-@pytest.fixture(scope='module')
-def direct_python_interface_path(parameters):
+@pytest.fixture(name="direct_python_interface_path", scope='module')
+def fixture_direct_python_interface_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
     path_to_file = relative_path_from_pqueens(
         "tests/integration_tests/example_simulator_functions/ishigami90.py"

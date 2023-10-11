@@ -6,8 +6,8 @@ import pytest
 from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
 
 
-@pytest.fixture
-def default_sobol_index_iterator(
+@pytest.fixture(name="default_sobol_index_iterator")
+def fixture_default_sobol_index_iterator(
     dummy_global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default sobol index iterator."""

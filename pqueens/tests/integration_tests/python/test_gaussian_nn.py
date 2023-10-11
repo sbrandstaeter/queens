@@ -11,8 +11,8 @@ from pqueens.tests.integration_tests.example_simulator_functions.sinus import (
 )
 
 
-@pytest.fixture()
-def my_model():
+@pytest.fixture(name="my_model")
+def fixture_my_model():
     """Configuration for gaussian nn model."""
     model = GaussianNeuralNetworkModel(
         activation_per_hidden_layer_lst=["elu", "elu", "elu", "elu"],

@@ -10,8 +10,8 @@ import pqueens.data_processor.data_processor_csv
 from pqueens.data_processor.data_processor_csv import DataProcessorCsv
 
 
-@pytest.fixture(scope="session")
-def dummy_csv_file(tmp_path_factory):
+@pytest.fixture(name="dummy_csv_file", scope="session")
+def fixture_dummy_csv_file(tmp_path_factory):
     """Create dummy csv-file for tests."""
     dummy_data = """# structure problem, writing nodal data of node 26
 # control information: nodal coordinates   x = 1.13276e-15    y = 18.5    z = 1
@@ -35,8 +35,8 @@ def dummy_csv_file(tmp_path_factory):
     return dummy_data_processor_path
 
 
-@pytest.fixture()
-def default_raw_data():
+@pytest.fixture(name="default_raw_data")
+def fixture_default_raw_data():
     """Default raw data for tests."""
     index = [
         0.02000,
@@ -67,8 +67,8 @@ def default_raw_data():
     return raw_data
 
 
-@pytest.fixture()
-def default_data_processor(mocker):
+@pytest.fixture(name="default_data_processor")
+def fixture_default_data_processor(mocker):
     """Default data processor csv class for unit tests."""
     file_name_identifier = 'dummy_prefix*dummyfix'
     filter_type = 'entire_file'

@@ -74,7 +74,7 @@ class Parameters:
     """
 
     def __init__(self, **parameters):
-        """Initialize parameters object.
+        """Initialize Parameters object.
 
         Args:
             **parameters (ContinuousDistribution, RandomField): parameters as keyword arguments

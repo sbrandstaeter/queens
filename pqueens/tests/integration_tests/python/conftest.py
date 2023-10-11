@@ -12,8 +12,8 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 )
 
 
-@pytest.fixture()
-def create_experimental_data_park91a_hifi_on_grid(tmp_path):
+@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed
     np.random.seed(seed=1)

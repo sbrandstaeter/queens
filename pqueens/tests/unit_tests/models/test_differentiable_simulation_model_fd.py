@@ -10,8 +10,8 @@ from pqueens.utils.valid_options_utils import InvalidOptionError
 
 
 # ------------------ some fixtures ------------------------------- #
-@pytest.fixture()
-def default_fd_model():
+@pytest.fixture(name="default_fd_model")
+def fixture_default_fd_model():
     """A default finite difference model."""
     model_obj = DifferentiableSimulationModelFD(
         interface=Mock(),

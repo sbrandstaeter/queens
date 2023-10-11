@@ -60,6 +60,7 @@ def run_iterator(iterator):
     try:
         iterator.run()
     except Exception as exception:
+        _logger.exception(exception)
         pqueens.global_settings.GLOBAL_SETTINGS.__exit__(None, None, None)
         # TODO: Write iterator in pickle file
         raise exception

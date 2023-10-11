@@ -18,6 +18,7 @@ def test_rpvi_iterator_park91a_hifi(
     inputdir,
     tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
+    module_path,
 ):
     """Integration test for the rpvi iterator.
 
@@ -105,7 +106,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
 
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
-    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid, module_path
 ):
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -156,8 +157,8 @@ def target_density(self, samples):
     return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(scope="module", params=['simulation_model', 'fd_model'])
-def forward_model(request):
+@pytest.fixture(name="forward_model", scope="module", params=['simulation_model', 'fd_model'])
+def fixture_forward_model(request):
     """Gradient method."""
     return request.param
 
@@ -195,8 +196,8 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, forward_model):
     )
 
 
-@pytest.fixture()
-def dummy_data(tmp_path):
+@pytest.fixture(name="dummy_data")
+def fixture_dummy_data(tmp_path):
     """Fixture for dummy data."""
     data_dict = {'y_obs': np.zeros(1)}
     experimental_data_path = tmp_path / 'experimental_data.csv'
@@ -204,15 +205,15 @@ def dummy_data(tmp_path):
     df.to_csv(experimental_data_path, index=False)
 
 
-@pytest.fixture()
-def module_path(tmp_path):
+@pytest.fixture(name="module_path")
+def fixture_module_path(tmp_path):
     """Generate path for new likelihood module."""
     my_module_path = tmp_path / "my_likelihood_module.py"
     return str(my_module_path)
 
 
-@pytest.fixture()
-def write_custom_likelihood_model(module_path):
+@pytest.fixture(name="write_custom_likelihood_model")
+def fixture_write_custom_likelihood_model(module_path):
     """Write custom likelihood class to file."""
     custom_class_lst = [
         "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",

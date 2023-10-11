@@ -15,6 +15,7 @@ def test_baci_mc_ensight(
     baci_link_paths,
     baci_example_expected_mean,
     baci_example_expected_var,
+    baci_example_expected_output,
 ):
     """Test simple BACI run."""
     # generate json input file from template
@@ -47,3 +48,6 @@ def test_baci_mc_ensight(
     # assert statements
     np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
     np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
+    np.testing.assert_array_almost_equal(
+        results['raw_output_data']['mean'], baci_example_expected_output, decimal=6
+    )

@@ -11,25 +11,26 @@ from scipy.optimize._numdiff import approx_derivative
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 
 
-@pytest.fixture(scope='module', params=['2-point', '3-point'])
-def method(request):
+@pytest.fixture(name="method", scope='module', params=['2-point', '3-point'])
+def fixture_method(request):
     """All possible finite difference schemes."""
     return request.param
 
 
-@pytest.fixture(scope='module', params=[None, 0.1])
-def rel_step(request):
+@pytest.fixture(name="rel_step", scope='module', params=[None, 0.1])
+def fixture_rel_step(request):
     """Whether user specified a relative step size."""
     return request.param
 
 
-@pytest.fixture(scope='module')
-def x0():
+@pytest.fixture(name="x0", scope='module')
+def fixture_x0():
     """Position where Jacobian should be evaluated."""
     return np.array([-3.0, 4.0])
 
 
 @pytest.fixture(
+    name="bounds",
     scope='module',
     params=[
         (-np.inf, np.inf),  # no bounds
@@ -40,7 +41,7 @@ def x0():
         ([-10.0, -10.0], [10.0, 4.0]),
     ],
 )
-def bounds(request):
+def fixture_bounds(request):
     """Possible combination of bounds."""
     return request.param
 
