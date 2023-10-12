@@ -34,6 +34,10 @@ def fixture_my_lik_model():
     class FakeDistr:
         """A fake distribution class."""
 
+        def __init__(self):
+            """A fake init method."""
+            self.cov = None
+
         def logpdf(self, x):
             """A fake logpdf method."""
             return x**2

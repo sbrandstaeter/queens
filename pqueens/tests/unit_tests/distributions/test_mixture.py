@@ -17,7 +17,7 @@ def fixture_component_data(request):
 
 
 @pytest.fixture(name="reference_mixture_model_data")
-def fixture_reference(component_data):
+def fixture_reference_mixture_model_data(component_data):
     """Referencei data model fixture."""
     component_data0, component_data1 = component_data
     normal0 = NormalDistribution(*component_data0)

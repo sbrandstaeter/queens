@@ -43,7 +43,7 @@ def test_get_config_dict_input_fail(tmp_path):
         run(input_file, tmp_path)
 
 
-def test_get_config_dict_input(input_file, tmp_path, debug_flag):
+def test_get_config_dict_input(input_file):
     """Test if config dict is created properly."""
     input_path = input_file
     config = load_input_file(input_path)

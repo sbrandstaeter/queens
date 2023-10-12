@@ -128,6 +128,7 @@ class BMFMCModel(Model):
                                  from a file (optional and only for scientific benchmark).
         training_indices (np.array): Vector with indices to select the training data subset from
                                      the larger data set of Monte-Carlo data.
+        uncertain_parameters (obj): UncertainParameters object.
 
     Returns:
         Instance of BMFMCModel
@@ -223,6 +224,7 @@ class BMFMCModel(Model):
         self.y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
         self.hf_data_iterator = hf_data_iterator
         self.training_indices = None
+        self.uncertain_parameters = None
 
         super().__init__()
 
