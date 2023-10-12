@@ -32,12 +32,12 @@ class PymcDistributionWrapper(pt.Op):
         self.logpdf_grad = PymcGradientWrapper(self.logpdf_gradients)
 
     # pylint: disable-next=unused-argument
-    def perform(self, _node, inputs, outputs):
+    def perform(self, _node, inputs, output_storage, params=None):
         """Call outside pdf function."""
         (sample,) = inputs
 
         value = self.logpdf(sample)
-        outputs[0][0] = np.array(value)
+        output_storage[0][0] = np.array(value)
 
     def grad(self, inputs, output_grads):
         """Get gradient and multiply with upstream gradient."""
@@ -66,12 +66,12 @@ class PymcGradientWrapper(pt.Op):
         self.gradient_func = gradient_func
 
     # pylint: disable-next=unused-argument
-    def perform(self, _node, inputs, outputs):
+    def perform(self, _node, inputs, output_storage, params=None):
         """Evaluate the gradient."""
         (sample,) = inputs
         if self.gradient_func is not None:
             grads = self.gradient_func(sample)
-            outputs[0][0] = grads
+            output_storage[0][0] = grads
         else:
             raise TypeError("Gradient function is not callable")
 
