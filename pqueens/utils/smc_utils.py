@@ -148,11 +148,11 @@ class StaticStateSpaceModel(ssp.StaticModel):
         self.random_variable_keys = random_variable_keys
         self.n_sims = 0
 
-    def loglik(self, theta):
+    def loglik(self, theta, t=None):
         """Log. Likelihood function for *particles* SMC implementation.
 
         Args:
-            theta (obj): Samples at which to evaluate the likehood
+            theta (obj): Samples at which to evaluate the likelihood
 
         Returns:
             The log likelihood
