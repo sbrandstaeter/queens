@@ -4,7 +4,7 @@ import pickle
 
 import numpy as np
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_elementary_effects_sobol(inputdir, tmp_path):

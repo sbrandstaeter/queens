@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_branin_gpflow_heteroskedastic(inputdir, tmp_path, expected_mean, expected_var):

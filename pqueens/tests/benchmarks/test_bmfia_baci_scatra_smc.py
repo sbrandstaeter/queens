@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
-from pqueens import run
+from pqueens.main import run
 from pqueens.utils import injector
 
 

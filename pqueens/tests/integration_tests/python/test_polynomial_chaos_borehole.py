@@ -3,7 +3,7 @@ import pickle
 
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmp_path):

@@ -4,7 +4,7 @@ import pickle
 
 import pytest
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_latin_hyper_cube_borehole(inputdir, tmp_path):

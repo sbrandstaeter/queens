@@ -7,11 +7,11 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from pqueens import run
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from pqueens.main import run
 
 # fmt: off
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (

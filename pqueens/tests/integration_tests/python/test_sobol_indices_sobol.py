@@ -3,7 +3,7 @@ import pickle
 
 import numpy as np
 
-from pqueens import run
+from pqueens.main import run
 
 
 def test_sobol_indices_sobol(inputdir, tmp_path):

@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
-from pqueens import run
+from pqueens.main import run
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.utils import injector
 
