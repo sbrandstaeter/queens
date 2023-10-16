@@ -51,8 +51,6 @@ cloudpickle==2.2.1
     #   distributed
     #   pymc
     #   tensorflow-probability
-cmake==3.27.5
-    # via triton
 cons==0.4.6
     # via
     #   etuples
@@ -112,10 +110,7 @@ fabric==3.2.2
 fastprogress==1.0.3
     # via pymc
 filelock==3.12.4
-    # via
-    #   pytensor
-    #   torch
-    #   triton
+    # via pytensor
 flatbuffers==23.5.26
     # via tensorflow
 fonttools==4.42.1
@@ -178,7 +173,6 @@ jinja2==3.1.2
     #   -r requirements.in
     #   bokeh
     #   distributed
-    #   torch
 joblib==1.2.0
     # via
     #   particles
@@ -194,8 +188,6 @@ lark==1.1.7
     # via check-shapes
 libclang==16.0.6
     # via tensorflow
-lit==16.0.6
-    # via triton
 llvmlite==0.40.1
     # via numba
 locket==1.0.0
@@ -229,8 +221,6 @@ ml-dtypes==0.3.1
     #   jaxlib
 mock==5.1.0
     # via -r requirements.in
-mpmath==1.3.0
-    # via sympy
 msgpack==1.0.6
     # via distributed
 multipledispatch==1.0.0
@@ -243,8 +233,6 @@ multiprocess==0.70.15
     # via
     #   pathos
     #   salib
-networkx==3.1
-    # via torch
 numba==0.57.0
     # via
     #   -r requirements.in
@@ -291,31 +279,6 @@ numpy==1.23.5
     #   xarray-einstats
 numpysane==0.39
     # via gnuplotlib
-nvidia-cublas-cu11==11.10.3.66
-    # via
-    #   nvidia-cudnn-cu11
-    #   nvidia-cusolver-cu11
-    #   torch
-nvidia-cuda-cupti-cu11==11.7.101
-    # via torch
-nvidia-cuda-nvrtc-cu11==11.7.99
-    # via torch
-nvidia-cuda-runtime-cu11==11.7.99
-    # via torch
-nvidia-cudnn-cu11==8.5.0.96
-    # via torch
-nvidia-cufft-cu11==10.9.0.58
-    # via torch
-nvidia-curand-cu11==10.2.10.91
-    # via torch
-nvidia-cusolver-cu11==11.4.0.1
-    # via torch
-nvidia-cusparse-cu11==11.7.4.91
-    # via torch
-nvidia-nccl-cu11==2.14.3
-    # via torch
-nvidia-nvtx-cu11==11.7.91
-    # via torch
 oauthlib==3.2.2
     # via requests-oauthlib
 opt-einsum==3.3.0
@@ -467,8 +430,6 @@ six==1.16.0
     #   tensorflow-probability
 sortedcontainers==2.4.0
     # via distributed
-sympy==1.12
-    # via torch
 tabulate==0.9.0
     # via gpflow
 tblib==2.0.0
@@ -510,18 +471,12 @@ toolz==0.12.0
     #   logical-unification
     #   minikanren
     #   partd
-torch==2.0.1
-    # via
-    #   -r requirements.in
-    #   triton
 tornado==6.3.3
     # via
     #   bokeh
     #   distributed
 tqdm==4.66.1
     # via -r requirements.in
-triton==2.0.0
-    # via torch
 typing-extensions==4.8.0
     # via
     #   arviz
@@ -531,7 +486,6 @@ typing-extensions==4.8.0
     #   pymc
     #   pytensor
     #   tensorflow
-    #   torch
 urllib3==1.26.16
     # via
     #   distributed
@@ -544,12 +498,6 @@ werkzeug==2.3.7
 wheel==0.41.2
     # via
     #   astunparse
-    #   nvidia-cublas-cu11
-    #   nvidia-cuda-cupti-cu11
-    #   nvidia-cuda-runtime-cu11
-    #   nvidia-curand-cu11
-    #   nvidia-cusparse-cu11
-    #   nvidia-nvtx-cu11
     #   tensorboard
 wrapt==1.15.0
     # via
