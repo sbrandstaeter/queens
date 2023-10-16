@@ -2,7 +2,7 @@
 
 import logging
 
-from torch.quasirandom import SobolEngine
+from scipy.stats.qmc import Sobol
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.process_outputs import process_outputs, write_results
@@ -61,14 +61,13 @@ class SobolSequenceIterator(Iterator):
         _logger.info('Randomize: %s', self.randomize)
 
         # create samples
-        sobol_engine = SobolEngine(
-            dimension=self.parameters.num_parameters, scramble=self.randomize, seed=self.seed
+        sobol_engine = Sobol(
+            d=self.parameters.num_parameters, scramble=self.randomize, seed=self.seed
         )
 
-        qmc_samples = sobol_engine.draw(n=self.number_of_samples)
-
+        qmc_samples = sobol_engine.random(n=self.number_of_samples)
         # scale and transform samples according to the inverse cdf
-        self.samples = self.parameters.inverse_cdf_transform(qmc_samples.numpy().astype('float64'))
+        self.samples = self.parameters.inverse_cdf_transform(qmc_samples)
 
     def core_run(self):
         """Run Sobol sequence analysis on model."""
