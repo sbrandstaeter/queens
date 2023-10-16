@@ -49,7 +49,7 @@ workflow:
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
-    - conda activate queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
   rules:
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ workflow:
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
   before_script:
-    - conda activate queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
   rules:
     - !reference [.default_test_conditions, rules]
   stage: codechecks
@@ -82,9 +82,9 @@ workflow:
     - 'echo "Using python environment manager: `$PYTHON_PACKAGE_MANAGER --version`"'
   script:
     - $PYTHON_PACKAGE_MANAGER env create -f environment.yml -n queens-$CI_PIPELINE_ID
-    - conda activate queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
-    - conda env export > pipeline_conda_environment.yml
+    - $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
     paths:
@@ -106,11 +106,13 @@ imcs-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster:
   stage: build
-  before_script:
-    - conda activate queens-$CI_PIPELINE_ID
   rules:
     - if: $CLUSTER_TESTS == "1"
   script:
+    - ENV_PREFIX=queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10
+    - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
+    - pip install -e . --no-dependencies
     - python pqueens/utils/remote_build.py
       --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
@@ -122,8 +124,6 @@ imcs-build_conda_env:
 #  variables:
 #    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
 #    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-#  needs:
-#    - lnm-build_conda_env
 #  tags:
 #    - lnm-build
 
@@ -133,8 +133,6 @@ thought-build_conda_env:
   variables:
     REMOTE_ADDRESS: 'thought'
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-  needs:
-    - lnm-build_conda_env
   tags:
     - lnm-build
 
@@ -144,8 +142,6 @@ charon-build_conda_env:
   variables:
     REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
-  needs:
-    - imcs-build_conda_env
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
@@ -154,13 +150,13 @@ update:
   script:
     - cd $CI_PROJECT_DIR
     # create a simple environment to use pip-tools
-    - conda create -n piptools-env python==3.10 -y
-    - conda activate piptools-env
+    - $PYTHON_PACKAGE_MANAGER create -n piptools-env python==3.10 -y
+    - $PYTHON_PACKAGE_MANAGER activate piptools-env
     - pip install pip-tools
     - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
     - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
     - cd $CI_PROJECT_DIR
-    - conda deactivate
+    - $PYTHON_PACKAGE_MANAGER deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
     - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
     - git config --global user.name "${AUTO_COMMITTER_NAME}"
@@ -440,7 +436,7 @@ pages:
 .remove_conda_env:
   stage: cleanup
   script:
-    - conda env remove -n queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID
   when: always
   variables:
     GIT_STRATEGY: none
@@ -467,7 +463,7 @@ imcs-remove_conda_env:
 .remove_conda_env_cluster:
   stage: cleanup
   script:
-    - ssh queens@$REMOTE_ADDRESS "conda env remove -n queens-$CI_PIPELINE_ID;
+    - ssh queens@$REMOTE_ADDRESS "$PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID;
       rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID; rm -rf /home/queens/queens-simulation-data/tests"
   when: always
   rules:
