@@ -35,7 +35,6 @@ gpflow # LV and variational GPs
 optax # google jax based optimizer
 tensorflow<2.11.0
 tensorflow-probability<0.19
-torch
 jax[cpu]
 jax
 scikit-activeml>=0.4.1

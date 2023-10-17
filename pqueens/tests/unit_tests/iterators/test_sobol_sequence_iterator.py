@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Unit tests for sobol sequence iterator."""
 
 import numpy as np
 import pytest
@@ -10,7 +10,7 @@ from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 def fixture_default_qmc_iterator(
     dummy_global_settings, default_simulation_model, default_parameters_mixed
 ):
-    """TODO_doc."""
+    """Sobol sequence iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed
     my_iterator = SobolSequenceIterator(
         model=default_simulation_model,
@@ -28,17 +28,17 @@ def test_correct_sampling(default_qmc_iterator):
     default_qmc_iterator.pre_run()
 
     # check if mean and std match
-    means_ref = np.array([0.0204326276, -0.0072869057, 2.2047842442])
+    means_ref = np.array([-0.000981751215250255, 0.002827691955533891, 2.211574656721489])
 
     np.testing.assert_allclose(
         np.mean(default_qmc_iterator.samples, axis=0), means_ref, 1e-09, 1e-09
     )
 
-    std_ref = np.array([1.8154208424, 1.9440692556, 2.5261052422])
+    std_ref = np.array([1.8030798500938032, 2.0254290820900027, 2.617797964759257])
     np.testing.assert_allclose(np.std(default_qmc_iterator.samples, axis=0), std_ref, 1e-09, 1e-09)
 
     # check if samples are identical too
-    ref_sample_first_row = np.array([3.1259685949, -2.5141151734, 3.4102209094])
+    ref_sample_first_row = np.array([-0.4333545933125702, 1.788216201875851, 3.205130570125655])
 
     np.testing.assert_allclose(
         default_qmc_iterator.samples[0, :], ref_sample_first_row, 1e-07, 1e-07
@@ -53,16 +53,16 @@ def test_correct_results(default_qmc_iterator):
     # check if results are identical too
     ref_results = np.array(
         [
-            2.6397695522,
-            5.1992267219,
-            2.9953908199,
-            7.8633899617,
-            0.5600099301,
-            -55.9005701034,
-            6.6225412593,
-            5.0542526964,
-            6.4044981383,
-            -0.9481326093,
+            1.8229016260009976,
+            1.639467613025844,
+            2.2243805849936695,
+            6.085953170625794,
+            5.468098968335089,
+            88.62846222355823,
+            2.457108989824364,
+            1.2278235961901531,
+            0.46305177903124134,
+            6.734923724227602,
         ]
     )
 
