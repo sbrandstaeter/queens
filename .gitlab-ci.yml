@@ -12,7 +12,7 @@ variables:
   LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
   IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
   # python package manager
-  PYTHON_PACKAGE_MANAGER: "conda"
+  PYTHON_PACKAGE_MANAGER: "mamba"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
