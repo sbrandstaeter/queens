@@ -78,7 +78,7 @@ def fixture_BMFMC_reference():
 
 @pytest.fixture(name="default_bmfmc_iterator")
 def fixture_default_bmfmc_iterator(
-    dummy_global_settings,
+    _initialize_global_settings,
     default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,

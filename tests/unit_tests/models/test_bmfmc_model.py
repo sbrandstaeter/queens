@@ -93,7 +93,7 @@ def fixture_settings_probab_mapping(config, approximation_name):
 
 @pytest.fixture(name="default_bmfmc_model")
 def fixture_default_bmfmc_model(
-    dummy_global_settings, parameters, settings_probab_mapping, default_interface
+    _initialize_global_settings, parameters, settings_probab_mapping, default_interface
 ):
     """Create default BMFMC model."""
     model = BMFMCModel(
@@ -123,7 +123,7 @@ def fixture_default_bmfmc_model(
 
 
 @pytest.fixture(name="default_data_iterator")
-def fixture_default_data_iterator(result_description, dummy_global_settings):
+def fixture_default_data_iterator(result_description, _initialize_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
     data_iterator = DataIterator(path_to_data, result_description)
@@ -145,7 +145,7 @@ def fixture_dummy_MC_data(parameters):
 
 
 # ------------ unit_tests -------------------------
-def test_init(dummy_global_settings, mocker, settings_probab_mapping, parameters):
+def test_init(_initialize_global_settings, mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 

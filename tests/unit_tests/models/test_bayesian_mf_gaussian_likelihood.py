@@ -48,7 +48,7 @@ def fixture_default_interface():
 
 
 @pytest.fixture(name="default_bmfia_iterator")
-def fixture_default_bmfia_iterator(dummy_global_settings):
+def fixture_default_bmfia_iterator(_initialize_global_settings):
     """Dummy iterator for testing."""
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
