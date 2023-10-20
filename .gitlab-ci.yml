@@ -113,7 +113,7 @@ imcs-build_conda_env:
     - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
-    - python pqueens/utils/remote_build.py
+    - python queens/utils/remote_build.py
       --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
       $PYTHON_PACKAGE_MANAGER
@@ -192,10 +192,10 @@ code_analysis:
     - .codechecks_settings
   stage: codechecks
   script:
-    - isort --check-only pqueens/ > track_isort.txt
-    - black --check pqueens > track_black.txt
-    - pylint --rcfile=.pylintrc_ci pqueens | tee track_pylint.txt
-    - pydocstyle --match-dir='^(?!.*test).*$' pqueens > track_pydocstyle.txt
+    - isort --check-only queens/ > track_isort.txt
+    - black --check queens > track_black.txt
+    - pylint --rcfile=.pylintrc_ci queens | tee track_pylint.txt
+    - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
@@ -212,7 +212,7 @@ documentation:
     - .codechecks_settings
   stage: codechecks
   script:
-    - sphinx-apidoc -o doc/source pqueens -f -M
+    - sphinx-apidoc -o doc/source queens -f -M
     - cd doc
     # "make html" triggers:
     - sphinx-build -b html -d build/doctrees   source build/html
@@ -281,7 +281,7 @@ imcs-ubuntu_full_test_suite:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest pqueens/tests/integration_tests/cluster/
+    - pytest tests/integration_tests/cluster/
       -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
       --remote-user=queens
       --remote-python=$REMOTE_PYTHON

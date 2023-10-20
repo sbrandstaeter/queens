@@ -201,7 +201,7 @@ make html
 ```
 After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:
 ```bash
-sphinx-apidoc -o doc/source pqueens -f -M
+sphinx-apidoc -o doc/source queens -f -M
 ```
 before the make command.
 
@@ -209,7 +209,7 @@ before the make command.
 
 ## Run Test Suite
 QUEENS has a couple of **unittests** and **integration test** which can be found under
- `<QUEENS_BaseDir>/pqueens/tests`.
+ `<QUEENS_BaseDir>/tests`.
 In order to run local integration tests together with `BACI`, it is necessary that the user creates
 **symbolic links** to the `BACI-executables`, which are then stored under
 `<QUEENS_BaseDir>/config`. The links can be created by running the following commands:
@@ -220,7 +220,7 @@ ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
 > **NOTE**: The workflows with BACI are tested with the BACI version [53abb9c91f90c909e559c8239f12757885dd81e3](https://gitlab.lrz.de/baci/baci/-/commit/53abb9c91f90c909e559c8239f12757885dd81e3)
 
-The testing strategy is more closely described in [TESTING.md](pqueens/tests/README.md)
+The testing strategy is more closely described in [TESTING.md](tests/README.md)
 To run the test suite type:
 ```bash
 pytest

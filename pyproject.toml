@@ -12,7 +12,7 @@ use_parentheses = true
 force_grid_wrap = 0
 multi_line_output = 3
 include_trailing_comma = true
-skip = ["pqueens/tests"]
+skip = ["tests"]
 
 [tool.pydocstyle]
 convention = "google"
