@@ -519,7 +519,7 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker):
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))
 
 
-def test_evaluate_per_time_step(default_bmfia_interface, default_probabilistic_obj_lst, mocker):
+def test_evaluate_per_time_step(default_probabilistic_obj_lst, mocker):
     """Test the evaluation per time step."""
     # general inputs
     z_lf = np.array([[[1, 2], [3, 4]]])
@@ -564,7 +564,7 @@ def test_evaluate_per_time_step(default_bmfia_interface, default_probabilistic_o
     np.testing.assert_array_equal(variance, default_variance)
 
 
-def test_prepare_z_lf_for_time_steps(default_bmfia_interface):
+def test_prepare_z_lf_for_time_steps():
     """Test the preparation of the latent function for time steps."""
     # some inputs
     z_lf = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])  # 2 x 2 x 2
@@ -581,7 +581,7 @@ def test_prepare_z_lf_for_time_steps(default_bmfia_interface):
     np.testing.assert_array_equal(z_lf_out, z_lf_out_ref)
 
 
-def test_iterate_over_time_steps(default_bmfia_interface, mocker):
+def test_iterate_over_time_steps(mocker):
     """Test iterating over time steps."""
     # general inputs
     support = 'y'
@@ -638,7 +638,7 @@ def test_iterate_over_time_steps(default_bmfia_interface, mocker):
     )
 
 
-def test_evaluate_and_gradient_per_coordinate(default_bmfia_interface, mocker):
+def test_evaluate_and_gradient_per_coordinate(mocker):
     """Test the evaluation and gradient per coordinate."""
     # general inputs
     Z_LF = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
