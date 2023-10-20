@@ -27,7 +27,7 @@ def fixture_dummy_model():
 
 @pytest.fixture(name="default_bmfia_iterator")
 def fixture_default_bmfia_iterator(
-    result_description, dummy_model, _initialize_global_settings, default_parameters_uniform_2d
+    dummy_model, _initialize_global_settings, default_parameters_uniform_2d
 ):
     """Dummy iterator for testing."""
     features_config = 'no_features'
@@ -60,13 +60,6 @@ def fixture_default_bmfia_iterator(
     return iterator
 
 
-@pytest.fixture(name="settings_probab_mapping")
-def fixture_settings_probab_mapping(config, approximation_name):
-    """Dummy settings for the probabilistic mapping for testing."""
-    settings = config[approximation_name]
-    return settings
-
-
 @pytest.fixture(name="approximation_name")
 def fixture_approximation_name():
     """Dummy approximation name for testing."""
@@ -96,10 +89,8 @@ def my_mock_design(*args):
 
 # -------------- Actual tests -------------------------------------
 def test_init(
-    result_description,
     _initialize_global_settings,
     dummy_model,
-    settings_probab_mapping,
     default_parameters_uniform_2d,
 ):
     """Test the init of the Bayesian multi-fidelity iterator."""
