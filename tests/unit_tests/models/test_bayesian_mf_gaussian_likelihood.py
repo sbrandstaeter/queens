@@ -142,11 +142,11 @@ def fixture_default_mf_likelihood(
 class InstanceMock:
     """Mock class."""
 
-    def __init__(self, *args):
+    def __init__(self, *_args):
         """Initialize dummy class."""
         self.counter = 0
 
-    def plot(self, *args, **kwargs):
+    def plot(self, *_args, **_kwargs):
         """Mock plot function."""
         self.counter += 1
         return 1
@@ -166,7 +166,7 @@ class InstanceMockModel:
         """Init method for mock model."""
         self.variables = 1
 
-    def evaluate(self, *args, **kwargs):
+    def evaluate(self, *_args, **_kwargs):
         """Mock evaluate method."""
         return {"mean": 1}
 
