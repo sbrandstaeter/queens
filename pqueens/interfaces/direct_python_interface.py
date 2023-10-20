@@ -39,15 +39,18 @@ class DirectPythonInterface(Interface):
 
         Args:
             parameters (obj): Parameters object
-            function (str): Name of function to evaluate
+            function (callable, str): Function or name of example function provided by QUEENS
             external_python_module_function (pathos pool): Path to external module with function
             num_workers (int): Number of workers
             verbose (boolean): verbosity of evaluations
         """
         super().__init__(parameters)
         if external_python_module_function is None:
-            # Try to load existing simulator functions
-            my_function = example_simulator_function_by_name(function)
+            if isinstance(function, str):
+                # Try to load existing simulator functions
+                my_function = example_simulator_function_by_name(function)
+            else:
+                my_function = function
         else:
             # Try to load external simulator functions
             my_function = get_module_attribute(external_python_module_function, function)
