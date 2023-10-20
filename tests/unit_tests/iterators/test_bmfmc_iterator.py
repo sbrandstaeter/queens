@@ -15,14 +15,6 @@ def fixture_approx_name():
     return name
 
 
-@pytest.fixture(name="default_interface")
-def fixture_default_interface():
-    """TODO_doc."""
-    approx = "dummy_approx"
-    interface = BmfmcInterface(approx)
-    return interface
-
-
 @pytest.fixture(name="config")
 def fixture_config():
     """TODO_doc."""
@@ -36,7 +28,7 @@ def fixture_config():
 
 
 @pytest.fixture(name="default_bmfmc_model")
-def fixture_default_bmfmc_model(default_interface):
+def fixture_default_bmfmc_model():
     """TODO_doc."""
     np.random.seed(1)
     model = Mock()
@@ -64,18 +56,6 @@ def fixture_initial_design():
     return {"num_HF_eval": 5, "num_bins": 5, "method": "diverse_subset"}
 
 
-@pytest.fixture(name="predictive_var")
-def fixture_predictive_var():
-    """TODO_doc."""
-    return False
-
-
-@pytest.fixture(name="BMFMC_reference")
-def fixture_BMFMC_reference():
-    """TODO_doc."""
-    return "dummy_reference"
-
-
 @pytest.fixture(name="default_bmfmc_iterator")
 def fixture_default_bmfmc_iterator(
     _initialize_global_settings,
@@ -83,8 +63,6 @@ def fixture_default_bmfmc_iterator(
     default_bmfmc_model,
     result_description,
     initial_design,
-    predictive_var,
-    BMFMC_reference,
 ):
     """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
