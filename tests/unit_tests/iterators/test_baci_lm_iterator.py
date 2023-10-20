@@ -144,7 +144,7 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
     mp.assert_called_once()
 
 
-def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
+def test_residual(default_baci_lm_iterator, mocker):
     """TODO_doc."""
     mocker.patch(
         'queens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
@@ -349,7 +349,7 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     m4.assert_not_called()
 
 
-def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
+def test_post_run_0param(mocker, default_baci_lm_iterator):
     """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -398,7 +398,7 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param, outpu
         default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
 
 
-def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
+def test_checkbounds(default_baci_lm_iterator, caplog):
     """Test bound checking."""
     default_baci_lm_iterator.bounds = np.array([[0.0, 0.0], [5.0, 2.0]])
     with caplog.at_level(logging.WARNING):
