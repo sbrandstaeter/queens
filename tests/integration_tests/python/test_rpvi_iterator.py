@@ -149,7 +149,9 @@ likelihood_covariance = np.diag(np.array([0.1, 10.0]))
 likelihood = NormalDistribution(likelihood_mean, likelihood_covariance)
 
 
-def target_density(self, samples):  # pylint: disable=unused-argument
+def target_density(
+    self, samples
+):  # pylint: disable=unused-argument  # pylint: disable=unused-argument
     """Target posterior density."""
     log_likelihood_output = likelihood.logpdf(samples)
     grad_log_likelihood = likelihood.grad_logpdf(samples)

@@ -14,7 +14,7 @@ from queens.main import run
 from queens.utils import injector
 
 
-def test_smc_generic_temper_multivariate_gaussian(inputdir, tmp_path, dummy_data):
+def test_smc_generic_temper_multivariate_gaussian(inputdir, tmp_path, _create_experimental_data):
     """Test SMC with a multivariate Gaussian and generic tempering."""
     template = inputdir / "smc_generic_temper_multivariate_gaussian.yml"
     experimental_data_path = tmp_path
@@ -56,7 +56,7 @@ def test_smc_generic_temper_multivariate_gaussian(inputdir, tmp_path, dummy_data
     )
 
 
-def target_density(self, samples):
+def target_density(self, samples):  # pylint: disable=unused-argument
     """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_4d_logpdf(samples).reshape(-1, 1)
@@ -64,8 +64,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture(name="dummy_data")
-def fixture_dummy_data(tmp_path):
+@pytest.fixture(name="_create_experimental_data")
+def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_4d.draw(10)
