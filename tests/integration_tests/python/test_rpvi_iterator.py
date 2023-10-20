@@ -17,7 +17,7 @@ from queens.utils import injector
 def test_rpvi_iterator_park91a_hifi(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     module_path,
 ):
     """Integration test for the rpvi iterator.
@@ -62,7 +62,7 @@ def test_rpvi_iterator_park91a_hifi(
 def test_rpvi_iterator_park91a_hifi_external_module(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     write_custom_likelihood_model,
     module_path,
 ):
@@ -106,7 +106,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
 
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
-    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid, module_path
+    inputdir, tmp_path, _create_experimental_data_park91a_hifi_on_grid, module_path
 ):
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template

@@ -8,7 +8,7 @@ import pytest
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid, x3_vec, x4_vec
 
 
-@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
 def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed

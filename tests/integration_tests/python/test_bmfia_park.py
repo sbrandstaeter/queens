@@ -13,7 +13,7 @@ from queens.utils import injector
 def test_bmfia_smc_park(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     expected_samples,
     expected_weights,
 ):
@@ -89,7 +89,7 @@ def fixture_expected_weights():
 def test_bmfia_rpvi_gp_park(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean,
     expected_variational_cov,
 ):
@@ -141,7 +141,7 @@ def fixture_expected_variational_cov():
 def test_bmfia_rpvi_NN_park(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean_nn,
     expected_variational_cov_nn,
 ):

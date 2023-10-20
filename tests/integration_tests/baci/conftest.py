@@ -91,7 +91,7 @@ def fixture_setup_symbolic_links_baci(baci_link_paths, baci_source_paths_for_git
         ) from error
 
 
-@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
 def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed

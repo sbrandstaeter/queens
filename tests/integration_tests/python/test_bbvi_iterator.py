@@ -63,7 +63,7 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, _create_experimental_data_park91a_hifi_on_grid
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
