@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.interfaces.bmfmc_interface import BmfmcInterface
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 
 
