@@ -93,7 +93,7 @@ def fixture_expected_samples_three():
 
 # fixtures for some objects
 @pytest.fixture(name="default_model")
-def fixture_default_model(parameters_two):
+def fixture_default_model():
     """TODO_doc."""
     interface = 'dummy_interface'
     model = SimulationModel(interface)
@@ -178,7 +178,6 @@ def test_pre_run_one(
 def test_pre_run_two(
     grid_dict_two,
     parameters_two,
-    result_description,
     expected_samples_two,
     default_model,
     _initialize_global_settings,
