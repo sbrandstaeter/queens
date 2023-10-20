@@ -13,7 +13,6 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
 ):
@@ -61,7 +60,6 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
 ):
@@ -110,7 +108,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
 ):
