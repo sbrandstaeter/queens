@@ -10,7 +10,7 @@ http://doi.org/10.1016/j.jcp.2009.07.014
 import numpy as np
 
 
-def agawal09a(x1, x2, a1=0.5, a2=0.5, **kwargs):
+def agawal09a(x1, x2, a1=0.5, a2=0.5, **_kwargs):
     r"""Compute the Agawal09a function.
 
     Two dimensional benchmark function for UQ approaches proposed in [1].

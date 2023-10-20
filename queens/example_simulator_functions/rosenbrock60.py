@@ -9,7 +9,7 @@ Greatest or Least Value of a      Function. The Computer Journal, 3(3),
 import numpy as np
 
 
-def rosenbrock60(x1, x2, **kwargs):
+def rosenbrock60(x1, x2, **_kwargs):
     """Rosenbrocks banana function.
 
     Args:
@@ -24,7 +24,7 @@ def rosenbrock60(x1, x2, **kwargs):
     return a * a + b * b * 100.0
 
 
-def rosenbrock60_residual(x1, x2, **kwargs):
+def rosenbrock60_residual(x1, x2, **_kwargs):
     """Residuals of the Rosenbrock banana function.
 
     Args:
@@ -40,7 +40,7 @@ def rosenbrock60_residual(x1, x2, **kwargs):
     return np.array([res1, res2])
 
 
-def rosenbrock60_residual_1d(x1, **kwargs):
+def rosenbrock60_residual_1d(x1, **_kwargs):
     """Residuals of the Rosenbrock banana function.
 
     Args:

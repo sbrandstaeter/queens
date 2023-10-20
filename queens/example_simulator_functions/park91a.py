@@ -25,7 +25,7 @@ def unit_bounding(*args):
     return tuple(args)
 
 
-def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **kwargs):
+def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **_kwargs):
     """Evaluate a park function on a *x3* and *x4* grid.
 
     Args:
@@ -45,7 +45,7 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **kwargs):
         for x3, x4 in zip(x3_vec, x4_vec):
             # Bound the arguments
             args = unit_bounding(x1, x2, x3, x4)
-            y, gradient = park_function(*args, gradient_bool=True, **kwargs)
+            y, gradient = park_function(*args, gradient_bool=True, **_kwargs)
             dy_dx1_vec.append(gradient[0])
             dy_dx2_vec.append(gradient[1])
             y_vec.append(y)
@@ -53,11 +53,11 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False, **kwargs):
     for x3, x4 in zip(x3_vec, x4_vec):
         # Bound the arguments
         args = unit_bounding(x1, x2, x3, x4)
-        y_vec.append(park_function(*args, **kwargs))
+        y_vec.append(park_function(*args, **_kwargs))
     return np.array(y_vec)
 
 
-def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
+def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **_kwargs):
     r"""Low-fidelity Park91a function.
 
     Simple four-dimensional benchmark function as proposed in [1] to mimic
@@ -116,7 +116,7 @@ def park91a_lofi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
     return y
 
 
-def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
+def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **_kwargs):
     r"""High-fidelity Park91a function.
 
      Simple four-dimensional benchmark function as proposed in [1] to mimic
@@ -214,7 +214,7 @@ def park91a_hifi(x1, x2, x3, x4, gradient_bool=False, **kwargs):
     return y
 
 
-def park91a_hifi_on_grid(x1, x2, **kwargs):
+def park91a_hifi_on_grid(x1, x2, **_kwargs):
     r"""High-fidelity Park91a function on *x3* and *x4* grid.
 
     Args:
@@ -224,11 +224,11 @@ def park91a_hifi_on_grid(x1, x2, **kwargs):
     Returns:
         np.ndarray: Value of the function at the parameters
     """
-    y = x3_x4_grid_eval(park91a_hifi, x1, x2, **kwargs)
+    y = x3_x4_grid_eval(park91a_hifi, x1, x2, **_kwargs)
     return y
 
 
-def park91a_hifi_on_grid_with_gradients(x1, x2, **kwargs):
+def park91a_hifi_on_grid_with_gradients(x1, x2, **_kwargs):
     r"""High-fidelity Park91a function on *x3* and *x4* grid with gradients.
 
     Args:
@@ -240,11 +240,11 @@ def park91a_hifi_on_grid_with_gradients(x1, x2, **kwargs):
         dy_dx1 (float): Gradient of the function w.r.t. *x1*
         dy_dx2 (float): Gradient of the function w.r.t. *x2*
     """
-    y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_hifi, x1, x2, gradient_bool=True, **kwargs)
+    y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_hifi, x1, x2, gradient_bool=True, **_kwargs)
     return y, (dy_dx1, dy_dx2)
 
 
-def park91a_lofi_on_grid(x1, x2, **kwargs):
+def park91a_lofi_on_grid(x1, x2, **_kwargs):
     r"""Low-fidelity Park91a function on fixed *x3* and *x4* grid.
 
     Args:
@@ -254,11 +254,11 @@ def park91a_lofi_on_grid(x1, x2, **kwargs):
     Returns:
         np.ndarray: Value of the function at the parameters
     """
-    y = x3_x4_grid_eval(park91a_lofi, x1, x2, **kwargs)
+    y = x3_x4_grid_eval(park91a_lofi, x1, x2, **_kwargs)
     return y
 
 
-def park91a_lofi_on_grid_with_gradients(x1, x2, **kwargs):
+def park91a_lofi_on_grid_with_gradients(x1, x2, **_kwargs):
     r"""Low-fidelity Park91a function on x3 and x4 grid with gradients.
 
     Args:
@@ -270,5 +270,5 @@ def park91a_lofi_on_grid_with_gradients(x1, x2, **kwargs):
         dy_dx1 (float): Gradient of the function w.r.t. x1
         dy_dx2 (float): Gradient of the function w.r.t. x2
     """
-    y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_lofi, x1, x2, gradient_bool=True, **kwargs)
+    y, (dy_dx1, dy_dx2) = x3_x4_grid_eval(park91a_lofi, x1, x2, gradient_bool=True, **_kwargs)
     return y, (dy_dx1, dy_dx2)

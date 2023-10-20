@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def perdikaris17_lofi(x, **kwargs):
+def perdikaris17_lofi(x, **_kwargs):
     r"""Low-fidelity version of simple 1D test function.
 
     Low-fidelity version of a simple 1-dimensional benchmark function as
@@ -31,7 +31,7 @@ def perdikaris17_lofi(x, **kwargs):
     return y
 
 
-def perdikaris17_hifi(x, **kwargs):
+def perdikaris17_hifi(x, **_kwargs):
     r"""High-fidelity version of simple 1D test function.
 
     High-fidelity version of simple 1-dimensional benchmark function as

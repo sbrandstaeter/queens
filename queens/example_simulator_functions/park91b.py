@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def park91b_lofi(x1, x2, x3, x4, **kwargs):
+def park91b_lofi(x1, x2, x3, x4, **_kwargs):
     r"""Low-fidelity version of the Park91b benchmark function.
 
     Simple four-dimensional benchmark function as proposed in [1], to mimic
@@ -36,7 +36,7 @@ def park91b_lofi(x1, x2, x3, x4, **kwargs):
     return y
 
 
-def park91b_hifi(x1, x2, x3, x4, **kwargs):
+def park91b_hifi(x1, x2, x3, x4, **_kwargs):
     r"""High-fidelity version of Park91b benchmark function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
