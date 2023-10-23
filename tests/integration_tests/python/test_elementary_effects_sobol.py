@@ -3,18 +3,16 @@
 import pickle
 
 import numpy as np
+import pytest
 
 from queens.main import run
+from queens.utils.input_to_script import create_script_from_input_file
+from queens.utils.run_subprocess import run_subprocess
 
 
-def test_elementary_effects_sobol(inputdir, tmp_path):
-    """Test case for elementary effects on Sobol's G-function."""
-    run(inputdir / 'elementary_effects_sobol.yml', tmp_path)
-
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
-
+@pytest.fixture(name="expected_result_mu")
+def fixture_expected_result_mu():
+    """Mu result fixture."""
     expected_result_mu = np.array(
         [
             25.8299150077341,
@@ -29,6 +27,12 @@ def test_elementary_effects_sobol(inputdir, tmp_path):
             -7.7664016980947075,
         ]
     )
+    return expected_result_mu
+
+
+@pytest.fixture(name="expected_result_mu_star")
+def fixture_expected_result_mu_star():
+    """Mu star result fixture."""
     expected_result_mu_star = np.array(
         [
             29.84594504725642,
@@ -43,6 +47,12 @@ def test_elementary_effects_sobol(inputdir, tmp_path):
             10.299932289624746,
         ]
     )
+    return expected_result_mu_star
+
+
+@pytest.fixture(name="expected_result_sigma")
+def fixture_expected_result_sigma():
+    """Sigma result fixture."""
     expected_result_sigma = np.array(
         [
             53.88783786787971,
@@ -57,6 +67,42 @@ def test_elementary_effects_sobol(inputdir, tmp_path):
             18.83046700807382,
         ]
     )
+    return expected_result_sigma
+
+
+def test_elementary_effects_sobol(
+    inputdir, tmp_path, expected_result_mu, expected_result_mu_star, expected_result_sigma
+):
+    """Test case for elementary effects on Sobol's G-function."""
+    run(inputdir / 'elementary_effects_sobol.yml', tmp_path)
+
+    result_file = tmp_path / 'xxx.pickle'
+    with open(result_file, 'rb') as handle:
+        results = pickle.load(handle)
+
+    np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
+    np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)
+    np.testing.assert_allclose(results["sensitivity_indices"]['sigma'], expected_result_sigma)
+
+
+def test_elementary_effects_sobol_from_script(
+    inputdir, tmp_path, expected_result_mu, expected_result_mu_star, expected_result_sigma
+):
+    """Test case for elementary effects using a script."""
+    input_file = inputdir / 'elementary_effects_sobol.yml'
+    script_path = tmp_path / "script.py"
+    create_script_from_input_file(input_file, tmp_path, script_path)
+
+    # Command to call the script
+    command = f"python {str(script_path.resolve())}"
+
+    # The False is needed due to the loading bars
+    run_subprocess(command, raise_error_on_subprocess_failure=False)
+
+    result_file = tmp_path / 'xxx.pickle'
+    with open(result_file, 'rb') as handle:
+        results = pickle.load(handle)
+
     np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
     np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)
     np.testing.assert_allclose(results["sensitivity_indices"]['sigma'], expected_result_sigma)
