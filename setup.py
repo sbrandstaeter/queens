@@ -67,7 +67,7 @@ setup(
     author="QUEENS developers",
     description=(QUEENS_DESCRIPTION),
     keywords=KEYWORDS,
-    packages=find_packages(exclude=["pqueens/tests"]),
+    packages=find_packages(exclude=["queens/tests"]),
     install_requires=read_requirements("requirements.txt"),
     extras_require={"develop": read_requirements("dev-requirements.txt")},
     long_description=read('README.md'),
@@ -75,13 +75,13 @@ setup(
     tests_require='pytest',
     entry_points={
         'console_scripts': [
-            'queens = pqueens.main:main',
-            'queens-inject-template = pqueens.utils.cli_utils:inject_template_cli',
-            'queens-print-pickle = pqueens.utils.cli_utils:print_pickle_data_cli',
+            'queens = queens.main:main',
+            'queens-inject-template = queens.utils.cli_utils:inject_template_cli',
+            'queens-print-pickle = queens.utils.cli_utils:print_pickle_data_cli',
             'queens-build-html-coverage-report = '
-            'pqueens.utils.cli_utils:build_html_coverage_report',
+            'queens.utils.cli_utils:build_html_coverage_report',
             'queens-remove-html-coverage-report = '
-            'pqueens.utils.cli_utils:remove_html_coverage_report',
+            'queens.utils.cli_utils:remove_html_coverage_report',
         ],
     },
 )
