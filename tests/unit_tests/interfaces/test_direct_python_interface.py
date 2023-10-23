@@ -6,6 +6,7 @@ import pytest
 from pathos.multiprocessing import ProcessingPool as Pool
 
 from queens.distributions.uniform import UniformDistribution
+from queens.example_simulator_functions import example_simulator_function_by_name
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.parameters.parameters import Parameters
 from queens.utils.path_utils import relative_path_from_source
@@ -16,10 +17,10 @@ _logger = logging.getLogger(__name__)
 @pytest.fixture(name="parameters", scope='module')
 def fixture_parameters():
     """Options dictionary to create variables."""
-    x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
-    x2 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
-    x3 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
-    return Parameters(x1=x1, x2=x2, x3=x3)
+    parameter_x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    parameter_x2 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    parameter_x3 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
+    return Parameters(x1=parameter_x1, x2=parameter_x2, x3=parameter_x3)
 
 
 @pytest.fixture(name="samples", scope='module')
@@ -54,6 +55,13 @@ def fixture_direct_python_interface_parallel(parameters):
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
 
 
+@pytest.fixture(name="direct_python_interface_function_passing", scope='module')
+def fixture_direct_python_interface_function_passing(parameters):
+    """Direct python interface with function in init."""
+    function = example_simulator_function_by_name("ishigami90")
+    return DirectPythonInterface(parameters=parameters, function=function, num_workers=1)
+
+
 @pytest.fixture(name="direct_python_interface_path", scope='module')
 def fixture_direct_python_interface_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
@@ -84,14 +92,14 @@ def test_map_parallel(samples, expected_results, direct_python_interface_paralle
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
-def test_init(parameters, direct_python_interface):
+def test_init(direct_python_interface):
     """Test init of DirectPythonInterface."""
     # ensure correct types
     assert direct_python_interface.pool is None
     assert isinstance(direct_python_interface, DirectPythonInterface)
 
 
-def test_create_from_config_parallel(parameters, direct_python_interface_parallel):
+def test_create_from_config_parallel(direct_python_interface_parallel):
     """Test DirectPythonInterface with parallel evaluation."""
     # ensure correct types
     assert isinstance(direct_python_interface_parallel.pool, Pool)
@@ -101,6 +109,16 @@ def test_create_from_config_parallel(parameters, direct_python_interface_paralle
 def test_function_keywords(samples, direct_python_interface_path, direct_python_interface):
     """Test interface by path and by name."""
     results_function_name = direct_python_interface_path.evaluate(samples)
+    results_path = direct_python_interface.evaluate(samples)
+
+    np.testing.assert_equal(results_function_name, results_path)
+
+
+def test_function_directly(
+    samples, direct_python_interface_function_passing, direct_python_interface
+):
+    """Test interface by passing a function directly."""
+    results_function_name = direct_python_interface_function_passing.evaluate(samples)
     results_path = direct_python_interface.evaluate(samples)
 
     np.testing.assert_equal(results_function_name, results_path)
