@@ -1538,32 +1538,19 @@ def split_array_by_chunk_sizes(array, chunk_sizes):
     Returns:
         list:  with the chunks
     """
-    is_1d = array.ndim == 1
-    array_copy = np.atleast_2d(array)
-    if len(array.shape) > 2:
+    if array.ndim > 2:
         raise ValueError(
-            f"Can only split 1d or 2d arrays but you provided ab array of dim {len(array.shape)}"
+            f"Can only split 1d or 2d arrays but you provided ab array of dim {array.ndim}"
         )
 
-    if np.sum(chunk_sizes) != array_copy.shape[1]:
+    total_dimension = np.atleast_2d(array).shape[1]
+    if np.sum(chunk_sizes) != total_dimension:
         raise ValueError(
-            f"The chunk sizes do not sum up ({np.sum(chunk_sizes)}) to the second dimension of the"
-            f"array { array_copy.shape[1]}!"
+            f"The chunk sizes do not sum up ({np.sum(chunk_sizes)}) to the dimension of the"
+            f" array {total_dimension}!"
         )
 
-    # sum up the dimensions
-    start_end_for_chunks = np.cumsum(chunk_sizes)
-
-    # add a zeroth element
-    start_end_for_chunks = np.insert(start_end_for_chunks, [0], 0).astype(int)
-
-    # create beginning and end of the chunks
-    start_end_for_chunks = list(zip(start_end_for_chunks, start_end_for_chunks[1:]))
-
-    chunked_array = [array_copy[:, chunk[0] : chunk[1]] for chunk in start_end_for_chunks]
-    if is_1d:
-        chunked_array = [chunk.flatten() for chunk in chunked_array]
-
+    chunked_array = np.split(array, np.cumsum(chunk_sizes)[:-1], axis=array.ndim - 1)
     return chunked_array
 
 
