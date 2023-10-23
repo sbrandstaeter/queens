@@ -63,6 +63,7 @@ tomli # TOML parser
 
 # Other Python stuff
 pathos # multiprocessing with more complex python objects
+black==22.3.0 # formatter, needed to format code created by QUEENS
 
 # needed for dev-requirements, check if still needed
 #charset_normalizer<3.0.0
