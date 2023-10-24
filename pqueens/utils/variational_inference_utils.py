@@ -1083,7 +1083,7 @@ class JointVariational(VariationalDistribution):
     is a generalization of the mean field distribution
 
     Attributes:
-        distributions (list): List of variational distribution objects for the different for the
+        distributions (list): List of variational distribution objects for the different
                               independent distributions.
         n_parameters (int): Total number of parameters used in the parameterization.
         distributions_n_parameters (np.ndarray): Number of parameters per distribution
@@ -1095,7 +1095,7 @@ class JointVariational(VariationalDistribution):
 
         Args:
             dimension (int): Dimension of the random variable
-            distributions (list): List of variational distribution objects for the different for the
+            distributions (list): List of variational distribution objects for the different
                                   independent distributions.
         """
         super().__init__(dimension)
