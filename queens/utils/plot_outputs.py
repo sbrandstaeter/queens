@@ -133,12 +133,3 @@ def plot_icdf(icdf_estimate, bayes=False):
 
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.plot(fig, filename='ICDF.html', auto_open=True)
-
-
-def plot_failprob(bayes=False):
-    """Create failure probability plot based on passed data.
-
-    Args:
-        bayes (bool):                  Do we want to plot confidence intervals
-    """
-    raise NotImplementedError

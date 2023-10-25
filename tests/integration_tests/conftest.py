@@ -18,11 +18,6 @@ THOUGHT_CLUSTER_TYPE = "thought"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
 CHARON_CLUSTER_TYPE = "charon"
 
-VALID_PBS_CLUSTER_TYPES = (THOUGHT_CLUSTER_TYPE,)
-VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
-
-VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
-
 
 @dataclass(frozen=True)
 class ClusterConfig:
@@ -232,7 +227,7 @@ def fixture_baci_example_expected_var():
 
 
 @pytest.fixture(name="baci_example_expected_output")
-def baci_example_expected_output_fixture():
+def fixture_baci_example_expected_output():
     """Expected outputs for the BACI example."""
     result = np.array(
         [

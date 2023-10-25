@@ -611,25 +611,6 @@ class BBVIIterator(VariationalInferenceIterator):
         weights = n_mixture / inv_weights
         return weights
 
-    def evaluate_variational_distribution_for_batch(self, samples):
-        """Evaluate logpdf and score function of the variational distribution.
-
-        Args:
-            samples (np.array): Samples (n_samples x n_dimension)
-        """
-        self.log_variational_mat = self.variational_distribution_obj.logpdf(
-            self.variational_params, samples
-        )
-
-        self.grad_params_log_variational_mat = self.variational_distribution_obj.grad_params_logpdf(
-            self.variational_params, samples
-        )
-
-        # Convert if NaNs to floats. For high dimensional RV floating point issues
-        # might be avoided this way
-        self.log_variational_mat = np.nan_to_num(self.log_variational_mat)
-        self.grad_params_log_variational_mat = np.nan_to_num(self.grad_params_log_variational_mat)
-
     def _filter_failed_simulations(self):
         """Filter samples failed simulations."""
         # Indices where the log joint is a nan

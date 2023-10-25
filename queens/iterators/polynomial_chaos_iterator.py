@@ -32,7 +32,6 @@ class PolynomialChaosIterator(Iterator):
         polynomial_chaos_approach (str): Approach for the polynomial chaos approach.
         distribution (cp.distribution): Joint input distribution.
         samples: TODO_doc
-        expansions: TODO_doc
         result_dict: TODO_doc
     """
 
@@ -108,7 +107,6 @@ class PolynomialChaosIterator(Iterator):
         self.polynomial_chaos_approach = approach
         self.distribution = create_chaospy_joint_distribution(self.parameters)
         self.samples = None
-        self.expansions = None
         self.result_dict = None
 
     def pre_run(self):

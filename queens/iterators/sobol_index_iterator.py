@@ -308,24 +308,3 @@ class SobolIndexIterator(Iterator):
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)
-
-    @staticmethod
-    def _get_sa_lib_distribution_name(distribution_name):
-        """Convert QUEENS distribution name to SALib distribution name.
-
-        Args:
-            distribution_name (string): distribution type
-
-        Returns:
-            sa_lib_distribution_name (string): name of distribution in SALib
-        """
-        if distribution_name == 'uniform':
-            sa_lib_distribution_name = 'unif'
-        elif distribution_name == 'normal':
-            sa_lib_distribution_name = 'norm'
-        elif distribution_name == 'lognormal':
-            sa_lib_distribution_name = 'lognorm'
-        else:
-            valid_dists = ['uniform', 'normal', 'lognormal']
-            raise ValueError(f'Distributions: choose one of {", ".join(valid_dists)}')
-        return sa_lib_distribution_name
