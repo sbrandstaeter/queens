@@ -18,8 +18,6 @@ babel==2.12.1
     # via sphinx
 beautifulsoup4==4.12.2
     # via nbconvert
-black==22.3.0
-    # via -r dev-requirements.in
 bleach==6.0.0
     # via nbconvert
 build==1.0.3
@@ -39,7 +37,6 @@ charset-normalizer==3.2.0
 click==8.1.7
     # via
     #   -c requirements.txt
-    #   black
     #   pip-tools
 colorama==0.4.6
     # via commitizen
@@ -117,8 +114,6 @@ mccabe==0.7.0
     # via pylint
 mistune==3.0.1
     # via nbconvert
-mypy-extensions==1.0.0
-    # via black
 nbclient==0.8.0
     # via nbconvert
 nbconvert==7.8.0
@@ -145,13 +140,13 @@ pandocfilters==1.5.0
     # via nbconvert
 pathspec==0.11.2
     # via
-    #   black
+    #   -c requirements.txt
     #   yamllint
 pip-tools==7.3.0
     # via -r dev-requirements.in
-platformdirs==3.10.0
+platformdirs==3.11.0
     # via
-    #   black
+    #   -c requirements.txt
     #   jupyter-core
     #   pylint
     #   virtualenv
@@ -252,7 +247,6 @@ toml==0.10.2
 tomli==2.0.1
     # via
     #   -c requirements.txt
-    #   black
     #   build
     #   pip-tools
     #   pre-commit-hooks

@@ -7,6 +7,7 @@ from pathlib import Path
 from queens.utils import ascii_art
 from queens.utils.exceptions import CLIError
 from queens.utils.injector import inject
+from queens.utils.input_to_script import create_script_from_input_file
 from queens.utils.logger_settings import reset_logging, setup_cli_logging
 from queens.utils.path_utils import PATH_TO_QUEENS
 from queens.utils.pickle_utils import print_pickled_data
@@ -102,6 +103,37 @@ def inject_template_cli():
     inject(injection_dict, template_path, output_path)
 
     _logger.info("Injection done, created file %s", output_path)
+
+
+@cli_logging
+def input_to_script_cli():
+    """Convert input to script."""
+    ascii_art.print_crown(60)
+    ascii_art.print_banner("QUEENS", 60)
+
+    parser = argparse.ArgumentParser(
+        description="QUEENS cli utils to create python script from input file."
+        " This does not work with jinja templates!"
+    )
+    parser.add_argument(
+        '--output_dir',
+        type=str,
+        help='Output directory for the QUEENS run',
+    )
+    parser.add_argument(
+        '--input',
+        type=str,
+        help='Input file to convert',
+    )
+    parser.add_argument(
+        '--script_path',
+        type=str,
+        help='Path of the converted script',
+    )
+
+    args = sys.argv[1:]
+    args = parser.parse_args(args)
+    create_script_from_input_file(args.input, args.output_dir, args.script_path)
 
 
 @cli_logging

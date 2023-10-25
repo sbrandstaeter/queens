@@ -78,6 +78,7 @@ setup(
             'queens = queens.main:main',
             'queens-inject-template = queens.utils.cli_utils:inject_template_cli',
             'queens-print-pickle = queens.utils.cli_utils:print_pickle_data_cli',
+            'queens-input-to-script = queens.utils.cli_utils:input_to_script_cli',
             'queens-build-html-coverage-report = '
             'queens.utils.cli_utils:build_html_coverage_report',
             'queens-remove-html-coverage-report = '
