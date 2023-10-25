@@ -19,7 +19,6 @@ from pathlib import Path
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
