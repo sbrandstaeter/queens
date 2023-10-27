@@ -3,12 +3,14 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+import scipy
 
 from queens.distributions.mixture import MixtureDistribution
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.particles import ParticleDiscreteDistribution
 from queens.utils.variational_inference_utils import (
     FullRankNormalVariational,
+    JointVariational,
     MeanFieldNormalVariational,
     MixtureModel,
     ParticleVariational,
@@ -44,7 +46,7 @@ ReferenceData = namedtuple(
 )
 
 # Distribution to be tested
-DISTRIBUTION_NAMES = ["mean_field", "fullrank", "particles", "mixture"]
+DISTRIBUTION_NAMES = ["mean_field", "fullrank", "particles", "mixture", "joint"]
 
 
 @pytest.fixture(name="mean_field_distribution")
@@ -69,6 +71,12 @@ def fixture_mixture_distribution(mean_field_distribution):
 def fixture_particles_distribution():
     """Particles distribution."""
     return ParticleVariational(1, [[1], [2]])
+
+
+@pytest.fixture(name="joint_distribution")
+def fixture_joint_distribution(mean_field_distribution, fullrank_distribution):
+    """Joint distribution."""
+    return JointVariational([mean_field_distribution, fullrank_distribution], 6)
 
 
 @pytest.fixture(name="mean_field_reference_data")
@@ -144,6 +152,75 @@ def fixture_fullrank_reference_data():
     return ReferenceData(
         distribution,
         (mean, cov),
+        variational_parameters,
+        input_samples,
+        default_variational_parameters,
+        score_function,
+        fisher_information_matrix,
+    )
+
+
+@pytest.fixture(name="joint_reference_data")
+def fixture_joint_reference_data(mean_field_reference_data, fullrank_reference_data):
+    """Reference data for the joint field distribution."""
+    # join mean values
+    mean = np.row_stack(
+        (
+            mean_field_reference_data.distribution_parameters[0],
+            fullrank_reference_data.distribution_parameters[0],
+        )
+    )
+
+    # construct covariance
+    cov = scipy.linalg.block_diag(
+        mean_field_reference_data.distribution_parameters[1],
+        fullrank_reference_data.distribution_parameters[1],
+    )
+    distribution = NormalDistribution(mean, cov)
+
+    # concatenate variational_parameters
+    variational_parameters = np.concatenate(
+        (
+            mean_field_reference_data.variational_parameters,
+            fullrank_reference_data.variational_parameters,
+        )
+    )
+
+    # concatenate default variational_parameters
+    default_variational_parameters = np.concatenate(
+        (
+            mean_field_reference_data.default_variational_parameters,
+            fullrank_reference_data.default_variational_parameters,
+        )
+    )
+
+    # stack input samples
+    input_samples = np.column_stack(
+        (
+            mean_field_reference_data.input_samples,
+            fullrank_reference_data.input_samples,
+        )
+    )
+
+    # stack score functions
+    score_function = np.row_stack(
+        (
+            mean_field_reference_data.grad_params_logpdf,
+            fullrank_reference_data.grad_params_logpdf,
+        )
+    )
+
+    fisher_information_matrix = scipy.linalg.block_diag(
+        mean_field_reference_data.fisher_information_matrix,
+        fullrank_reference_data.fisher_information_matrix,
+    )
+    distribution_parameters = [
+        mean_field_reference_data.distribution_parameters,
+        fullrank_reference_data.distribution_parameters,
+    ]
+    return ReferenceData(
+        distribution,
+        [distribution_parameters],
         variational_parameters,
         input_samples,
         default_variational_parameters,
