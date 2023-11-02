@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def currin88_lofi(x1, x2, **_kwargs):
+def currin88_lofi(x1, x2):
     r"""Low-fidelity version of the Currin88 benchmark function.
 
     Simple two-dimensional example which appears several
@@ -49,7 +49,7 @@ def currin88_lofi(x1, x2, **_kwargs):
     return y
 
 
-def currin88_hifi(x1, x2, **_kwargs):
+def currin88_hifi(x1, x2):
     r"""High-fidelity version of the Currin88 benchmark function.
 
     Simple two-dimensional example which appears several

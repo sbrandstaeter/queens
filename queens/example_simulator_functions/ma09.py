@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def ma09(x1, x2, **_kwargs):
+def ma09(x1, x2):
     r"""Ma09 function: Two dimensional benchmark for UQ defined in [1].
 
     :math:`f({\bf x}) = \frac{1}{|0.3-x_1^2 - x_2^2|+0.1}`
