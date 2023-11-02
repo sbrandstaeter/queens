@@ -7,6 +7,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 
 from queens.distributions.uniform import UniformDistribution
 from queens.example_simulator_functions import example_simulator_function_by_name
+from queens.example_simulator_functions.ishigami90 import ishigami90
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.parameters.parameters import Parameters
 from queens.utils.path_utils import relative_path_from_source
@@ -51,7 +52,7 @@ def fixture_direct_python_interface(parameters):
 
 @pytest.fixture(name="direct_python_interface_parallel", scope='module')
 def fixture_direct_python_interface_parallel(parameters):
-    """An instance of Variables class."""
+    """Direct python interface."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
 
 
@@ -62,6 +63,38 @@ def fixture_direct_python_interface_function_passing(parameters):
     return DirectPythonInterface(parameters=parameters, function=function, num_workers=1)
 
 
+@pytest.fixture(name="function_without_job_id")
+def fixture_function_without_job_id():
+    """Function without job_id argument."""
+
+    def function(x1, x2, x3):  # pylint: disable=invalid-name
+        return ishigami90(x1, x2, x3)
+
+    return function
+
+
+@pytest.fixture(name="function_with_job_id")
+def fixture_function_with_job_id():
+    """Function with job_id argument."""
+
+    def function(x1, x2, x3, job_id):  # pylint: disable=invalid-name,unused-argument
+        return ishigami90(x1, x2, x3)
+
+    return function
+
+
+@pytest.fixture(name="function_with_kwargs")
+def fixture_function_with_kwargs():
+    """Function with kwargs."""
+
+    def function(x1, x2, x3, **kwargs):  # pylint: disable=invalid-name,unused-argument
+        if "job_id" not in kwargs:
+            raise AttributeError("job_id was not passed in the kwargs")
+        return ishigami90(x1, x2, x3)
+
+    return function
+
+
 @pytest.fixture(name="direct_python_interface_path", scope='module')
 def fixture_direct_python_interface_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
@@ -70,6 +103,50 @@ def fixture_direct_python_interface_path(parameters):
     return DirectPythonInterface(
         parameters=parameters, function='ishigami90', external_python_module_function=path_to_file
     )
+
+
+@pytest.mark.parametrize(
+    "function_fixture,expected_function_requires_job_id",
+    [
+        ("function_with_job_id", True),
+        ("function_without_job_id", False),
+        ("function_with_kwargs", True),
+    ],
+)
+def test_function_requires_job_id(
+    parameters, function_fixture, expected_function_requires_job_id, request
+):
+    """Test function_requires_job_id is set properly."""
+    function = request.getfixturevalue(function_fixture)
+    interface = DirectPythonInterface(parameters=parameters, function=function)
+    assert interface.function_requires_job_id == expected_function_requires_job_id
+
+
+@pytest.mark.parametrize(
+    "function_fixture",
+    [
+        "function_with_job_id",
+        "function_without_job_id",
+        "function_with_kwargs",
+    ],
+)
+def test_evaluate_depending_on_function_requires_job_id(
+    parameters, function_fixture, expected_results, request, samples
+):
+    """Test if function is called properly."""
+    function = request.getfixturevalue(function_fixture)
+    interface = DirectPythonInterface(parameters=parameters, function=function)
+    np.testing.assert_equal(interface.evaluate(samples)["mean"], expected_results)
+
+
+@pytest.mark.parametrize("expected_called_with_job_id", [True, False])
+def test_create_samples_list(samples, expected_called_with_job_id, direct_python_interface):
+    """Test create_samples_list."""
+    samples_list = direct_python_interface.create_samples_list(
+        samples, add_job_id=expected_called_with_job_id
+    )
+    for sample in samples_list:
+        assert ("job_id" in sample) == expected_called_with_job_id
 
 
 def test_map(samples, expected_results, direct_python_interface):

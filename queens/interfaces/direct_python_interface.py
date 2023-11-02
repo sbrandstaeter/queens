@@ -1,5 +1,7 @@
 """Class for mapping input variables to responses using a python function."""
 
+import inspect
+
 import numpy as np
 from tqdm import tqdm
 
@@ -20,9 +22,10 @@ class DirectPythonInterface(Interface):
     this class is to be able to call the test examples in the said folder.
 
     Attributes:
-        function (function):    Function to evaluate.
-        pool (pathos pool):     Multiprocessing pool.
-        verbose (boolean):      Verbosity of evaluations.
+        function (function): Function to evaluate.
+        pool (pathos pool): Multiprocessing pool.
+        verbose (boolean): Verbosity of evaluations.
+        function_requires_job_id (bool): True if function requires job_id
     """
 
     def __init__(
@@ -55,6 +58,12 @@ class DirectPythonInterface(Interface):
 
         pool = create_pool(num_workers)
 
+        # if keywords or job_id in the function's signature pass the job_id
+        self.function_requires_job_id = bool(
+            inspect.getfullargspec(my_function).varkw
+            or "job_id" in inspect.getfullargspec(my_function).args
+        )
+
         # Wrap function to clean the output
         self.function = self.function_wrapper(my_function)
         self.pool = pool
@@ -74,7 +83,7 @@ class DirectPythonInterface(Interface):
                 |'mean'    | ndarray shape (samples size, shape_of_response)|
                 +----------+------------------------------------------------+
         """
-        samples_list = self.create_samples_list(samples)
+        samples_list = self.create_samples_list(samples, add_job_id=self.function_requires_job_id)
 
         # Pool or no pool
         if self.pool:
