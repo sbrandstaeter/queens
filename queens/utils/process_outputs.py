@@ -287,19 +287,6 @@ def estimate_icdf(output_data, bayesian):
     return icdf
 
 
-def estimate_failprob(output_data, bayesian):
-    """Compute estimate of failure probability plot based on passed data.
-
-    Args:
-        output_data (dict):            Dictionary with output data
-        bayesian (bool):               Compute confidence intervals etc.
-
-    Returns:
-        icdf: Dictionary with icdf estimates
-    """
-    raise NotImplementedError
-
-
 def estimate_pdf(output_data, support_points, bayesian):
     """Compute estimate of PDF based on provided sampling data.
 

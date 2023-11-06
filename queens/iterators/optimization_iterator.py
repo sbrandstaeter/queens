@@ -65,7 +65,6 @@ class OptimizationIterator(Iterator):
         output_column (int): Specifies the columns that belong to the *y_obs* in the experimental
                              data set (currently only scalar output possible but could be
                              extended to vector-valued output).
-        eval_jacobian: TODO_doc
         verbose_output (int): Integer encoding which kind of verbose information should be
                               printed by the optimizers (not applicable for LM).
         coordinate_labels: TODO_doc
@@ -149,11 +148,6 @@ class OptimizationIterator(Iterator):
         self.experimental_data_path_list = experimental_csv_data_base_dirs
         self.experimental_data_dict = None
         self.output_column = output_observation_column_in_csv
-
-        self.eval_jacobian = False
-        if self.algorithm in ['CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP', 'LSQ']:
-            self.eval_jacobian = True
-
         self.verbose_output = verbose_output
         self.coordinate_labels = coordinate_labels
         self.output_label = output_label

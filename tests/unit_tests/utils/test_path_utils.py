@@ -12,8 +12,6 @@ from queens.utils.path_utils import (
     relative_path_from_source,
 )
 
-pytestmark = pytest.mark.unit_tests
-
 
 @pytest.fixture(name="path_to_queens")
 def fixture_path_to_queens():

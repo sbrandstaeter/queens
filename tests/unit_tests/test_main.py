@@ -11,8 +11,6 @@ from queens.global_settings import GlobalSettings
 from queens.main import main, run
 from queens.utils.io_utils import load_input_file
 
-pytestmark = pytest.mark.unit_tests
-
 
 @pytest.fixture(name="input_file")
 def fixture_input_file(tmp_path):

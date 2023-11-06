@@ -10,8 +10,6 @@ import yaml
 from queens.utils.exceptions import FileTypeError
 from queens.utils.io_utils import load_input_file, write_to_csv
 
-pytestmark = pytest.mark.unit_tests
-
 
 @pytest.fixture(name="input_dict")
 def fixture_input_dict():

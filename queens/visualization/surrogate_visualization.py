@@ -19,12 +19,10 @@ from pathlib import Path
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
 matplotlib.use('agg')
-cycle_colors = sns.color_palette()
 style.use('seaborn')
 this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
@@ -71,7 +69,6 @@ class SurrogateVisualization:
        should_be_saved (dict): Dict of booleans to save plots or not.
        should_be_displayed (dict): Dict of booleans for determining whether individual plots
                                    should be displayed or not.
-       random_variables (dict): Random variables of the problem.
        parameter_names (list): List of parameter names as strings.
        figures (dict): Dict of visualization figures.
 
@@ -96,7 +93,6 @@ class SurrogateVisualization:
         self.saving_paths = saving_paths
         self.should_be_saved = save_plot
         self.should_be_displayed = display_plot
-        self.random_variables = None
         self.parameter_names = None
         self.figures = {}
 

@@ -6,7 +6,6 @@ import pytest
 from queens.utils.collection_utils import CollectionObject
 
 _logger = logging.getLogger(__name__)
-pytestmark = pytest.mark.unit_tests
 
 
 def test_initialization():
