@@ -1,4 +1,6 @@
 """Gaussian likelihood."""
+import warnings
+
 import numpy as np
 
 from queens.distributions.normal import NormalDistribution
@@ -61,7 +63,7 @@ class GaussianLikelihood(LikelihoodModel):
                 )
             y_obs = experimental_data_reader.get_experimental_data()[0]
         if y_obs is not None and experimental_data_reader is not None:
-            Warning(
+            warnings.warn(
                 "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
                 "Only provided 'y_obs' is used."
             )
