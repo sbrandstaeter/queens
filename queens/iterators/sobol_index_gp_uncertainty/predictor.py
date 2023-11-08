@@ -50,7 +50,7 @@ class Predictor:
         if number_gp_realizations == 1:
             _logger.info('Number of realizations = 1. Prediction is based on GP mean.')
         else:
-            _logger.info('Number of realizations = {}'.format(number_gp_realizations))
+            _logger.info('Number of realizations = %i', number_gp_realizations)
         return cls(
             gp_model=gp_model,
             number_gp_realizations=number_gp_realizations,
@@ -88,8 +88,8 @@ class Predictor:
 
         prediction.data = np.array(raw_prediction)
 
-        _logger.info(f'Time for prediction: {time.time() - start_prediction}')
-        _logger.debug(f'Prediction: {prediction.values}')
+        _logger.info('Time for prediction: %f', time.time() - start_prediction)
+        _logger.debug('Prediction %s', prediction.values)
         return prediction
 
     def _init_prediction(self, samples):
