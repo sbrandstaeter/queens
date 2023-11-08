@@ -88,10 +88,10 @@ class SobolIndexEstimator:
         number_gp_realizations = method_options['number_gp_realizations']
         number_bootstrap_samples = method_options['number_bootstrap_samples']
         seed_bootstrap_samples = method_options.get('seed_bootstrap_samples', 42)
-        _logger.info('Number of bootstrap samples = {}'.format(number_bootstrap_samples))
+        _logger.info('Number of bootstrap samples = %i', number_bootstrap_samples)
 
         first_order_estimator = method_options.get("first_order_estimator", 'Saltelli2010')
-        _logger.info('First-order estimator {}'.format(first_order_estimator))
+        _logger.info('First-order estimator %s', first_order_estimator)
 
         estimates_first_order, estimates_second_order, estimates_total_order = cls._init_dataset(
             number_gp_realizations,
@@ -147,12 +147,12 @@ class SobolIndexEstimator:
             # sort raw output from parallel processes
             self._sort_output(raw_output, parameter_name, cross_parameter_names)
 
-            _logger.info(f'Time for parameter {parameter_name}: {time.time() - start_time}')
+            _logger.info('Time for parameter %s: %f', parameter_name, time.time() - start_time)
 
         pool.close()
 
-        _logger.debug(f'First-order estimates: {self.estimates_first_order.values}')
-        _logger.debug(f"Total-order estimates: {self.estimates_total_order.values}")
+        _logger.debug('First-order estimates: %s', self.estimates_first_order.values)
+        _logger.debug('Total-order estimates: %s', self.estimates_total_order.values)
 
         estimates = {
             'first_order': self.estimates_first_order,
@@ -174,7 +174,7 @@ class SobolIndexEstimator:
             size=(self.number_bootstrap_samples - 1, self.number_monte_carlo_samples),
         )
         bootstrap_idx = np.concatenate((np.atleast_2d(base), random))
-        _logger.debug(f"Bootstrap indices: {bootstrap_idx}")
+        _logger.debug("Bootstrap indices: %s", bootstrap_idx)
         return bootstrap_idx
 
     @classmethod
@@ -272,7 +272,7 @@ class SobolIndexEstimator:
                 estimate_function = calculate_indices_second_order_gp_realizations
                 input_list = [
                     (
-                        prediction.loc[dict(gp_realization=k)].data,
+                        prediction.loc[{"gp_realization": k}].data,
                         bootstrap_idx,
                         input_dim,
                         self.number_bootstrap_samples,
@@ -285,7 +285,7 @@ class SobolIndexEstimator:
             estimate_function = calculate_indices_first_total_order
             input_list = [
                 (
-                    prediction.loc[dict(gp_realization=k)].data,
+                    prediction.loc[{"gp_realization": k}].data,
                     bootstrap_idx,
                     input_dim,
                     self.number_bootstrap_samples,
@@ -317,14 +317,19 @@ class SobolIndexEstimator:
             i (str): index for S_i, S_Ti
             j (list): list of all index for S_ij (interactions with all other parameters)
         """
-        for b in np.arange(self.number_bootstrap_samples):
-            output_index = dict(parameter=i, gp_realization=0, bootstrap=b)
-            self.estimates_first_order.loc[output_index] = raw_output[b][0]
-            self.estimates_total_order.loc[output_index] = raw_output[b][1]
+        for bootstrap_sample_id in np.arange(self.number_bootstrap_samples):
+            output_index = {"parameter": i, "gp_realization": 0, "bootstrap": bootstrap_sample_id}
+            self.estimates_first_order.loc[output_index] = raw_output[bootstrap_sample_id][0]
+            self.estimates_total_order.loc[output_index] = raw_output[bootstrap_sample_id][1]
 
             if self.calculate_second_order:
-                output_index = dict(parameter=i, gp_realization=0, bootstrap=b, crossparameter=j)
-                self.estimates_second_order.loc[output_index] = raw_output[b][2]
+                output_index = {
+                    "parameter": i,
+                    "gp_realization": 0,
+                    "bootstrap": bootstrap_sample_id,
+                    "crossparameter": j,
+                }
+                self.estimates_second_order.loc[output_index] = raw_output[bootstrap_sample_id][2]
 
     def _parallel_over_realizations(self, raw_output, i, j):
         """Output from parallelization over index k.
@@ -335,12 +340,12 @@ class SobolIndexEstimator:
             j (list): list of all index for S_ij (interactions with all other parameters)
         """
         for k in np.arange(self.number_gp_realizations):
-            output_index = dict(parameter=i, gp_realization=k)
+            output_index = {"parameter": i, "gp_realization": k}
             self.estimates_first_order.loc[output_index] = raw_output[k][0]
             self.estimates_total_order.loc[output_index] = raw_output[k][1]
 
             if self.calculate_second_order:
-                output_index = dict(parameter=i, gp_realization=k, crossparameter=j)
+                output_index = {"parameter": i, "gp_realization": k, "crossparameter": j}
                 self.estimates_second_order.loc[output_index] = raw_output[k][2]
 
 
@@ -395,8 +400,8 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
             seed_bootstrap_samples,
             first_order_estimator,
             estimates_first_order,
-            estimates_total_order,
             estimates_second_order,
+            estimates_total_order,
         )
         self.calculate_third_order = calculate_third_order
         self.third_order_parameters = third_order_parameters
@@ -477,7 +482,7 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
         # sort raw output from parallel processes
         self._sort_output(raw_output, '', [])
 
-        _logger.info(f'Time for third-order indices: {time.time() - start_time}')
+        _logger.info('Time for third-order indices: %f', time.time() - start_time)
 
         estimates = {
             'first_order': None,
@@ -526,7 +531,7 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
         estimate_function = calculate_indices_third_order
         input_list = [
             (
-                prediction.loc[dict(gp_realization=k)].data,
+                prediction.loc[{"gp_realization": k}].data,
                 bootstrap_idx,
                 self.number_bootstrap_samples,
                 len(self.third_order_parameters),
@@ -545,5 +550,4 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
             cross_parameter_names (list): cross-parameter names (for second-order indices)
         """
         for k in np.arange(self.number_gp_realizations):
-            output_index = dict(gp_realization=k)
-            self.estimates_third_order.loc[output_index] = raw_output[k]
+            self.estimates_third_order.loc[{"gp_realization": k}] = raw_output[k]
