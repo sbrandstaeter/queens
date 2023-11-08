@@ -72,7 +72,7 @@ class Sampler:
             sampler: Sampler object
         """
         number_monte_carlo_samples = method_options['number_monte_carlo_samples']
-        _logger.info('Number of Monte-Carlo samples = {}'.format(number_monte_carlo_samples))
+        _logger.info('Number of Monte-Carlo samples = %i', number_monte_carlo_samples)
 
         seed_monte_carlo = method_options.get('seed_monte_carlo', 42)
 
@@ -113,17 +113,17 @@ class Sampler:
         samples = self._init_samples()
 
         A, B = self._draw_base_samples()
-        samples.loc[dict(sample_matrix='A')] = A
-        samples.loc[dict(sample_matrix='B')] = B
+        samples.loc[{"sample_matrix": 'A'}] = A
+        samples.loc[{"sample_matrix": 'B'}] = B
 
         for i, parameter_name in enumerate(self.parameter_names):
             AB = A.copy()
             AB[:, i] = B[:, i].flatten()
-            samples.loc[dict(sample_matrix='AB_' + parameter_name)] = AB
+            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = AB
             if self.calculate_second_order:
                 BA = B.copy()
                 BA[:, i] = A[:, i].flatten()
-                samples.loc[dict(sample_matrix='BA_' + parameter_name)] = BA
+                samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = BA
 
         return samples
 
@@ -220,12 +220,12 @@ class Sampler:
         """
         if self.sampling_approach == "pseudo_random":
             return self._base_sample_pseudo_random
-        elif self.sampling_approach == "quasi_random":
+        if self.sampling_approach == "quasi_random":
             return self._base_sample_quasi_random
-        else:
-            raise ValueError(
-                "Unknown sampling approach. Valid approaches are pseudo_random or quasi_random."
-            )
+
+        raise ValueError(
+            "Unknown sampling approach. Valid approaches are pseudo_random or quasi_random."
+        )
 
     def _base_sample_quasi_random(self):
         """Sample with Sobol sequence.
@@ -332,7 +332,7 @@ class ThirdOrderSampler(Sampler):
             sampler: Sampler object
         """
         number_monte_carlo_samples = method_options['number_monte_carlo_samples']
-        _logger.info('Number of Monte-Carlo samples = {}'.format(number_monte_carlo_samples))
+        _logger.info('Number of Monte-Carlo samples = %i', number_monte_carlo_samples)
 
         seed_monte_carlo = method_options.get('seed_monte_carlo', 42)
 
@@ -381,28 +381,28 @@ class ThirdOrderSampler(Sampler):
         ]
 
         A, B = self._draw_base_samples()
-        samples.loc[dict(sample_matrix='A')] = A
-        samples.loc[dict(sample_matrix='B')] = B
+        samples.loc[{"sample_matrix": 'A'}] = A
+        samples.loc[{"sample_matrix": 'B'}] = B
 
         for i, parameter_name in enumerate(self.third_order_parameters):
             AB = A.copy()
             AB[:, third_order_parameter_indices[i]] = B[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[dict(sample_matrix='AB_' + parameter_name)] = AB
+            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = AB
 
             BA = B.copy()
             BA[:, third_order_parameter_indices[i]] = A[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[dict(sample_matrix='BA_' + parameter_name)] = BA
+            samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = BA
 
         # all columns from A except columns (i,j,k) for the third-order index interaction from B
         AB_ijk = A.copy()
         AB_ijk[:, third_order_parameter_indices] = B[:, third_order_parameter_indices]
 
         samples.loc[
-            dict(sample_matrix=['AB_' + '_'.join(self.third_order_parameters)])
+            {"sample_matrix": ['AB_' + '_'.join(self.third_order_parameters)]}
         ] = np.expand_dims(AB_ijk, axis=1)
 
         return samples
