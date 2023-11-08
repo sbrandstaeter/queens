@@ -258,11 +258,12 @@ class BMFGaussianModel(LikelihoodModel):
 
     def _adaptivity_trigger(self):
         """Triggers adaptive refinement for the m_f_likelihood."""
-        if self.likelihood_evals_for_refinement:
-            if self.likelihood_counter in self.likelihood_evals_for_refinement:
-                return True
-        else:
-            return False
+        if (
+            self.likelihood_evals_for_refinement
+            and self.likelihood_counter in self.likelihood_evals_for_refinement
+        ):
+            return True
+        return False
 
     def _refine_mf_likelihood(self, additional_x_train, additional_y_lf_train=None):
         """Refine multi-fidelity likelihood.

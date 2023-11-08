@@ -67,7 +67,7 @@ class StatisticsSobolIndexEstimates:
         """
         result = self._init_result()
         for current_parameter in self.parameter_names:
-            current_data = estimates.loc[dict(parameter=current_parameter)]
+            current_data = estimates.loc[{"parameter": current_parameter}]
 
             self._overall_mean(result, current_data, current_parameter)
             self._total_variance(result, current_data, current_parameter)
@@ -139,10 +139,9 @@ class StatisticsSobolIndexEstimates:
             result (DataFrame): Sobol index result
             conf_level (float): confidence level (default: 0.95)
         """
-        Z = norm.ppf(0.5 + conf_level / 2)
-        result.loc[:, ['conf_total', 'conf_gp', 'conf_monte_carlo']] = (
-            np.sqrt(result[['var_total', 'var_gp', 'var_monte_carlo']].values) * Z
-        )
+        result.loc[:, ['conf_total', 'conf_gp', 'conf_monte_carlo']] = np.sqrt(
+            result[['var_total', 'var_gp', 'var_monte_carlo']].values
+        ) * norm.ppf(0.5 + conf_level / 2)
 
     def _init_result(self):
         """Initialize the dataset.
@@ -175,10 +174,6 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
     including mean, variances and confidence intervals of the estimates.
     """
 
-    def __init__(self, **kwargs):
-        """Initialize."""
-        super().__init__(**kwargs)
-
     def evaluate(self, estimates, conf_level=0.95):
         """Evaluate statistics.
 
@@ -190,7 +185,7 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
         for current_parameter in self.parameter_names:
             for current_cross_parameter in self.parameter_names:
                 current_data = estimates.loc[
-                    dict(parameter=current_parameter, crossparameter=current_cross_parameter)
+                    {"parameter": current_parameter, "crossparameter": current_cross_parameter}
                 ]
                 if not np.any(np.isnan(current_data.values)):
                     parameter_pair = current_parameter + '#' + current_cross_parameter
@@ -215,7 +210,7 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
         for parameter in self.parameter_names:
             for crossparameter in self.parameter_names:
                 if parameter != crossparameter:
-                    if not (crossparameter + '#' + parameter) in parameter_pairs:
+                    if not crossparameter + '#' + parameter in parameter_pairs:
                         parameter_pairs.append(parameter + '#' + crossparameter)
 
         columns = [
