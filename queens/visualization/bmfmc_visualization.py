@@ -277,7 +277,7 @@ def _get_manifold_plotter(output):
     return None
 
 
-def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
+def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):  # pylint: disable=unused-argument
     r"""Plot the data manifold in three dimensions.
 
     Args:

@@ -8,7 +8,7 @@ from queens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 
 @pytest.fixture(name="default_qmc_iterator")
 def fixture_default_qmc_iterator(
-    dummy_global_settings, default_simulation_model, default_parameters_mixed
+    _initialize_global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Sobol sequence iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed

@@ -21,7 +21,7 @@ def fixture_result_description():
 
 
 @pytest.fixture(name="dummy_high_fidelity_model")
-def fixture_dummy_high_fidelity_model(parameters):
+def fixture_dummy_high_fidelity_model():
     """Create dummy high-fidelity model."""
     interface = 'my_dummy_interface'
     hf_model = SimulationModel(interface)
@@ -77,13 +77,6 @@ def fixture_approximation_name():
     return name
 
 
-@pytest.fixture(name="default_interface")
-def fixture_default_interface(config, approximation_name):
-    """Create default interface."""
-    interface = Mock()
-    return interface
-
-
 @pytest.fixture(name="settings_probab_mapping")
 def fixture_settings_probab_mapping(config, approximation_name):
     """Create settings for probability mapping."""
@@ -92,9 +85,7 @@ def fixture_settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture(name="default_bmfmc_model")
-def fixture_default_bmfmc_model(
-    dummy_global_settings, parameters, settings_probab_mapping, default_interface
-):
+def fixture_default_bmfmc_model(_initialize_global_settings, parameters, settings_probab_mapping):
     """Create default BMFMC model."""
     model = BMFMCModel(
         parameters=parameters,
@@ -123,7 +114,7 @@ def fixture_default_bmfmc_model(
 
 
 @pytest.fixture(name="default_data_iterator")
-def fixture_default_data_iterator(result_description, dummy_global_settings):
+def fixture_default_data_iterator(result_description, _initialize_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
     data_iterator = DataIterator(path_to_data, result_description)
@@ -145,7 +136,7 @@ def fixture_dummy_MC_data(parameters):
 
 
 # ------------ unit_tests -------------------------
-def test_init(dummy_global_settings, mocker, settings_probab_mapping, parameters):
+def test_init(_initialize_global_settings, mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 
@@ -519,7 +510,7 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
         'queens.models.bmfmc_model.StandardScaler.fit_transform', return_value=y_LFS_mc_stdized
     )
 
-    def linear_scale_dummy(a, b):
+    def linear_scale_dummy(a, b):  # pylint: disable=unused-argument
         return a
 
     with patch.object(bmfmc_model, 'linear_scale_a_to_b', linear_scale_dummy):
@@ -622,7 +613,7 @@ def test_project_samples_on_truncated_basis():
     np.testing.assert_array_almost_equal(coef_mat, expected_coef_mat, decimal=6)
 
 
-def test_update_model_variables(default_bmfmc_model):
+def test_update_model_variables(default_bmfmc_model):  # pylint: disable=unused-argument
     """Test update of model variables."""
     # np.random.seed(1)
     # Z_LFs_train = np.random.random((5, 2))

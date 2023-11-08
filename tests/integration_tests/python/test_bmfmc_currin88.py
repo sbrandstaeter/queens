@@ -50,7 +50,7 @@ def fixture_generate_HF_MC_data(generate_X_mc):
     return Y_LF_mc
 
 
-@pytest.fixture(name="write_LF_MC_data_to_pickle")
+@pytest.fixture(name="_write_LF_MC_data_to_pickle")
 def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
     file_name = 'LF_MC_data'
@@ -87,7 +87,7 @@ def fixture_design_method(request):
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     tmp_path,
     inputdir,
-    write_LF_MC_data_to_pickle,
+    _write_LF_MC_data_to_pickle,
     generate_HF_MC_data,
     generate_LF_MC_data,
     design_method,

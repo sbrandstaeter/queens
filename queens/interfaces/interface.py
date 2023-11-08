@@ -36,11 +36,12 @@ class Interface(metaclass=abc.ABCMeta):
             samples (list):  List of variables objects
         """
 
-    def create_samples_list(self, samples):
+    def create_samples_list(self, samples, add_job_id=True):
         """Create a list of sample dictionaries with job id.
 
         Args:
             samples (np.array): Samples of simulation input variables
+            add_job_id (bool): add the job_id to the samples if desired.
 
         Returns:
             samples_list (list): List of dicts containing samples and job ids
@@ -49,7 +50,8 @@ class Interface(metaclass=abc.ABCMeta):
         for sample in samples:
             self.latest_job_id += 1
             sample_dict = self.parameters.sample_as_dict(sample)
-            sample_dict['job_id'] = self.latest_job_id
+            if add_job_id:
+                sample_dict['job_id'] = self.latest_job_id
             samples_list.append(sample_dict)
 
         return samples_list

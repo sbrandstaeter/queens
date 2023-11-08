@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
+def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     r"""Low-fidelity version of Borehole benchmark function.
 
     Very simple and quick to evaluate eight dimensional function that models
@@ -56,7 +56,7 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
     return y
 
 
-def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
+def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     r"""High-fidelity version of Borehole benchmark function.
 
     Very simple and quick to evaluate eight dimensional function, that models

@@ -376,7 +376,6 @@ def test_check_if_in_desired_dat_section(default_geo_obj):
 
 
 def test_get_topology(
-    tmp_path,
     default_geo_obj,
     current_dat_sections,
     desired_sections,

@@ -8,7 +8,7 @@ optimization.
 import numpy as np
 
 
-def gardner14a(x1, x2, **kwargs):
+def gardner14a(x1, x2):
     r"""Gradner2014a function.
 
     Two-dimensional benchmark function for constraint Bayesian optimization [1]:

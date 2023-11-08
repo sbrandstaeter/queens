@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def sinus_test_fun(x1, **_kwargs):
+def sinus_test_fun(x1):
     """Evaluate standard sine as a test function.
 
     Args:
@@ -17,7 +17,7 @@ def sinus_test_fun(x1, **_kwargs):
     return result
 
 
-def gradient_sinus_test_fun(x1, **_kwargs):
+def gradient_sinus_test_fun(x1):
     """Evaluate sine and its gradient.
 
     Args:

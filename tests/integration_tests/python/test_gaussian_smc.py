@@ -14,7 +14,7 @@ from queens.main import run
 from queens.utils import injector
 
 
-def test_gaussian_smc(inputdir, tmp_path, dummy_data):
+def test_gaussian_smc(inputdir, tmp_path, _create_experimental_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     template = inputdir / "smc_gaussian.yml"
     experimental_data_path = tmp_path
@@ -39,7 +39,7 @@ def test_gaussian_smc(inputdir, tmp_path, dummy_data):
     np.testing.assert_almost_equal(results['var'], np.array([[0.72168334]]), decimal=7)
 
 
-def target_density(self, samples):
+def target_density(self, samples):  # pylint: disable=unused-argument
     """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
@@ -47,8 +47,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture(name="dummy_data")
-def fixture_dummy_data(tmp_path):
+@pytest.fixture(name="_create_experimental_data")
+def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()

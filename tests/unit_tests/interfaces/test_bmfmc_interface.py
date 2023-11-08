@@ -13,7 +13,7 @@ class FakeRegression:
         """Initialize FakeRegression."""
         self.map_output_dict = map_output_dict
 
-    def predict(self, *args, **kwargs):
+    def predict(self, *_args, **_kwargs):
         """Predict output."""
         output = self.map_output_dict
         return output
@@ -69,7 +69,7 @@ def fixture_approx_name():
 
 
 # --------- actual unit_tests ---------------------------
-def test_init(config, approx_name):
+def test_init():
     """Test initialization."""
     approx = "dummy_approx"
     interface = BmfmcInterface(approx)

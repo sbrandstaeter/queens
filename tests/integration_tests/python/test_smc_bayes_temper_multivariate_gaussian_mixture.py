@@ -18,7 +18,9 @@ from queens.main import run
 from queens.utils import injector
 
 
-def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmp_path, dummy_data):
+def test_smc_bayes_temper_multivariate_gaussian_mixture(
+    inputdir, tmp_path, _create_experimental_data
+):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.yml")
     experimental_data_path = tmp_path
@@ -63,7 +65,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmp_path, dumm
     )
 
 
-def target_density(self, samples):
+def target_density(self, samples):  # pylint: disable=unused-argument
     """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_mixture_4d_logpdf(samples).reshape(-1, 1)
@@ -71,8 +73,8 @@ def target_density(self, samples):
     return log_likelihood
 
 
-@pytest.fixture(name="dummy_data")
-def fixture_dummy_data(tmp_path):
+@pytest.fixture(name="_create_experimental_data")
+def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_component_1.draw(10)
@@ -83,5 +85,5 @@ def fixture_dummy_data(tmp_path):
     # write the data to a csv file in tmp_path
     data_dict = {'y_obs': pdf}
     experimental_data_path = tmp_path / 'experimental_data.csv'
-    df = pd.DataFrame.from_dict(data_dict)
-    df.to_csv(experimental_data_path, index=False)
+    dataframe = pd.DataFrame.from_dict(data_dict)
+    dataframe.to_csv(experimental_data_path, index=False)

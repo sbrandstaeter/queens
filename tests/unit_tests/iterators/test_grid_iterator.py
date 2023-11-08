@@ -93,7 +93,7 @@ def fixture_expected_samples_three():
 
 # fixtures for some objects
 @pytest.fixture(name="default_model")
-def fixture_default_model(parameters_two):
+def fixture_default_model():
     """TODO_doc."""
     interface = 'dummy_interface'
     model = SimulationModel(interface)
@@ -102,7 +102,7 @@ def fixture_default_model(parameters_two):
 
 @pytest.fixture(name="default_grid_iterator")
 def fixture_default_grid_iterator(
-    dummy_global_settings, grid_dict_two, parameters_two, default_model, result_description
+    _initialize_global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
     """TODO_doc."""
     # create iterator object
@@ -117,7 +117,12 @@ def fixture_default_grid_iterator(
 
 # -------------- actual unit_tests --------------------------------------------------
 def test_init(
-    mocker, dummy_global_settings, grid_dict_two, parameters_two, default_model, result_description
+    mocker,
+    _initialize_global_settings,
+    grid_dict_two,
+    parameters_two,
+    default_model,
+    result_description,
 ):
     """TODO_doc."""
     # some default input for testing
@@ -157,7 +162,7 @@ def test_pre_run_one(
     expected_samples_one,
     result_description,
     default_model,
-    dummy_global_settings,
+    _initialize_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(
@@ -173,10 +178,9 @@ def test_pre_run_one(
 def test_pre_run_two(
     grid_dict_two,
     parameters_two,
-    result_description,
     expected_samples_two,
     default_model,
-    dummy_global_settings,
+    _initialize_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(
@@ -195,7 +199,7 @@ def test_pre_run_three(
     expected_samples_three,
     result_description,
     default_model,
-    dummy_global_settings,
+    _initialize_global_settings,
 ):
     """TODO_doc."""
     grid_iterator = GridIterator(

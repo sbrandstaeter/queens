@@ -13,7 +13,7 @@ from queens.models.likelihood_models.gaussian_likelihood import GaussianLikeliho
 from queens.utils import injector
 
 
-def test_gaussian_nuts(inputdir, tmp_path, dummy_data):
+def test_gaussian_nuts(inputdir, tmp_path, _create_experimental_data):
     """Test case for nuts iterator."""
     template = inputdir / "nuts_gaussian.yml"
     experimental_data_path = tmp_path
@@ -33,7 +33,7 @@ def test_gaussian_nuts(inputdir, tmp_path, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
 
 
-def target_density(self, samples):
+def target_density(self, samples):  # pylint: disable=unused-argument
     """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()
@@ -45,8 +45,8 @@ def target_density(self, samples):
     return log_likelihood, gradient
 
 
-@pytest.fixture(name="dummy_data")
-def fixture_dummy_data(tmp_path):
+@pytest.fixture(name="_create_experimental_data")
+def fixture_create_experimental_data(tmp_path):
     """Generate 2 samples from the same gaussian."""
     samples = np.array([0, 0]).flatten()
 

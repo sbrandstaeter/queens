@@ -179,7 +179,7 @@ class GridIteratorVisualization:
             return self.plot_two_d
         raise NotImplementedError('Grid plot only possible up to 2 parameters')
 
-    def plot_one_d(self, output, samples, n_grid_p):
+    def plot_one_d(self, output, samples, n_grid_p):  # pylint: disable=unused-argument
         """Plotting method for one dimensional grid.
 
         Args:

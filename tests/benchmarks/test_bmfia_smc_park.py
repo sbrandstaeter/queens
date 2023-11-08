@@ -15,7 +15,7 @@ from queens.utils import injector
 def test_bmfia_park_hf_smc(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
+    _create_experimental_data_park91a_hifi_on_grid,
     expected_weights,
     expected_samples,
 ):
@@ -50,7 +50,7 @@ def test_bmfia_park_hf_smc(
     np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
 
 
-@pytest.fixture(name="create_experimental_data_park91a_hifi_on_grid")
+@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
 def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Fixture to write dummy observation data."""
     # Fix random seed

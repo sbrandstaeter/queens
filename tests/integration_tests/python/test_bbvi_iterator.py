@@ -16,8 +16,6 @@ from queens.utils.stochastic_optimizer import Adam
 
 def test_bbvi_density_match(
     mocker,
-    inputdir,
-    tmp_path,
     dummy_bbvi_instance,
 ):
     """Matching a Gaussian distribution."""
@@ -33,9 +31,9 @@ def test_bbvi_density_match(
     # actual main call of bbvi with patched density for posterior
     with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', target_density):
         variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
-        mu = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
+        mean = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
-        var_params = variational_distr_obj.construct_variational_parameters(mu, cov)
+        var_params = variational_distr_obj.construct_variational_parameters(mean, cov)
         dummy_bbvi_instance.variational_params = var_params
         dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
             dummy_bbvi_instance.get_gradient_function()
@@ -63,7 +61,7 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, _create_experimental_data_park91a_hifi_on_grid
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -171,7 +169,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
     return bbvi_instance
 
 
-def target_density(self, x=None, pdf=False):
+def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument, invalid-name
     """Create visualization module."""
     output_array = []
     mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(

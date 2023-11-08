@@ -12,10 +12,9 @@ from queens.utils import injector
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
+    _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
-    create_input_file_executable_park91a_hifi_on_grid,
+    _create_input_file_executable_park91a_hifi_on_grid,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -60,10 +59,9 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
 def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
+    _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
-    create_input_file_executable_park91a_hifi_on_grid,
+    _create_input_file_executable_park91a_hifi_on_grid,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -109,10 +107,9 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
 def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     inputdir,
     tmp_path,
-    create_experimental_data_park91a_hifi_on_grid,
-    third_party_inputs,
+    _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
-    create_input_file_executable_park91a_hifi_on_grid,
+    _create_input_file_executable_park91a_hifi_on_grid,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -161,7 +158,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
-@pytest.fixture(name="create_input_file_executable_park91a_hifi_on_grid")
+@pytest.fixture(name="_create_input_file_executable_park91a_hifi_on_grid")
 def fixture_create_input_file_executable_park91a_hifi_on_grid(tmp_path):
     """Write temporary input file for executable."""
     input_path = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"

@@ -8,7 +8,7 @@ from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterat
 
 @pytest.fixture(name="default_elementary_effects_iterator")
 def fixture_default_elementary_effects_iterator(
-    dummy_global_settings, default_simulation_model, default_parameters_uniform_3d
+    _initialize_global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default elementary effects iterator."""
     default_simulation_model.interface.parameters = default_parameters_uniform_3d

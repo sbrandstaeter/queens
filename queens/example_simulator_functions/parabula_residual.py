@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def parabula_residual(x1, **kwargs):
+def parabula_residual(x1):
     """Residual formulation of a parabula.
 
     Args:

@@ -2,7 +2,7 @@
 # pylint: disable=invalid-name
 
 
-def paraboloid(x1, x2, **kwargs):
+def paraboloid(x1, x2):
     """A paraboloid.
 
     See  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html

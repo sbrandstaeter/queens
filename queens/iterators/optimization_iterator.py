@@ -156,20 +156,13 @@ class OptimizationIterator(Iterator):
         self.precalculated_positions = {'position': [], 'output': []}
         self.solution = None
 
-    def objective_function(self, x_vec, coordinates=None):
+    def objective_function(self, x_vec):
         """Evaluate objective function at *x_vec*.
 
         Args:
             x_vec (np.array): Input vector for model/objective function. The variable *x_vec*
                               corresponds to the parameters that should be calibrated in an
                               inverse problem.
-            coordinates (np.array): Coordinates that specify where to evaluate the model response.
-                                    For inverse problems this corresponds to the input that is
-                                    not part of the parameters which should be calibrated, but
-                                    rather coordinates, e.g. in space and time.
-                                    We already preselect the to the coordinates corresponding
-                                    response vector of the model in the *data_processor*
-                                    class, to not have to store the entire model response.
 
         Returns:
             f_value (float): Response of objective function or model
@@ -239,9 +232,7 @@ class OptimizationIterator(Iterator):
                 ),
             )[0].T
             self.solution = curve_fit(
-                lambda coordinates, *x_vec: self.objective_function(
-                    x_vec=x_vec, coordinates=coordinates
-                ),
+                self.objective_function,
                 experimental_coordinates,
                 np.array(self.experimental_data_dict[self.output_label]).flatten(),
                 p0=self.initial_guess.tolist(),

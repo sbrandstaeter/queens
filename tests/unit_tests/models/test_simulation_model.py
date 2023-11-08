@@ -6,14 +6,6 @@ from mock import Mock
 from queens.models.simulation_model import SimulationModel
 
 
-# ------------------ some fixtures ------------------------------- #
-@pytest.fixture(name="dummy_config")
-def fixture_dummy_config():
-    """A dummy config dictionary."""
-    config = {"my_model": {"type": "simulation_model", "interface_name": "my_interface"}}
-    return config
-
-
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the simulation model."""
@@ -23,7 +15,7 @@ def test_init():
     assert model_obj.interface == interface
 
 
-def test_fcc(dummy_config):
+def test_fcc():
     """Test the fcc method."""
     interface = "dummy_interface"
 
