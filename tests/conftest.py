@@ -3,6 +3,7 @@ import getpass
 import logging
 import socket
 from pathlib import Path
+from time import perf_counter
 
 import pytest
 
@@ -13,6 +14,9 @@ from queens.utils.path_utils import relative_path_from_queens, relative_path_fro
 _logger = logging.getLogger(__name__)
 
 
+NAME_OF_HOST = socket.gethostname()
+
+
 def pytest_addoption(parser):
     """Add pytest options."""
     # default remote_user is same as local_user
@@ -20,6 +24,26 @@ def pytest_addoption(parser):
     parser.addoption("--remote-user", action="store", default=local_user)
     parser.addoption("--remote-python", action="store", default=None)
     parser.addoption("--remote-queens-repository", action="store", default="null")
+    parser.addoption(
+        "--time-tests",
+        action="store_true",
+        default=False,
+        help="Time tests. Raises timeout exception in case the selected tests take too long. To"
+        " change the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
+    )
+
+
+def check_item_for_marker(item, marker_name):
+    """Check if item is marked with marker_name.
+
+    Args:
+        item (pytest): pytest.item object
+        marker_name (str): Name of the marker to check
+
+    Returns:
+        bool: True if the test is marked
+    """
+    return marker_name in [mark.name for mark in item.own_markers]
 
 
 def pytest_collection_modifyitems(items):
@@ -29,13 +53,46 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.benchmark)
         elif "integration_tests/python/" in item.nodeid:
             item.add_marker(pytest.mark.integration_tests)
+
+            # Add default max_time_for_test if none was set
+            if not check_item_for_marker(item, "max_time_for_test"):
+                item.add_marker(pytest.mark.max_time_for_test(10))
         elif "integration_tests/baci/" in item.nodeid:
             item.add_marker(pytest.mark.integration_tests_baci)
+
+            # Add default max_time_for_test if none was set
+            if not check_item_for_marker(item, "max_time_for_test"):
+                item.add_marker(pytest.mark.max_time_for_test(10))
         elif "unit_tests/" in item.nodeid:
             item.add_marker(pytest.mark.unit_tests)
 
+            # Add default max_time_for_test if none was set
+            if not check_item_for_marker(item, "max_time_for_test"):
+                item.add_marker(pytest.mark.max_time_for_test(1))
 
-NAME_OF_HOST = socket.gethostname()
+
+@pytest.fixture(name="time_tests", autouse=True, scope="function")
+def fixture_time_tests(request):
+    """Time tests if desired."""
+    # Check if test timing is on
+    if request.config.getoption("--time-tests"):
+
+        # Measure time
+        start_time = perf_counter()
+        yield
+        total_time = perf_counter() - start_time
+
+        # Check if max_time is provided
+        if "max_time_for_test" in request.keywords:
+            max_time = request.keywords["max_time_for_test"].args[0]
+
+            if total_time > max_time:
+                raise TimeoutError(
+                    f"Test exceeded time constraint {total_time:.03f}s > {max_time}s"
+                )
+    else:
+        # Do nothing
+        yield
 
 
 @pytest.fixture(name="hostname", scope="session")
