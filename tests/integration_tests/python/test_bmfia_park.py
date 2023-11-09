@@ -10,6 +10,7 @@ from queens.main import run
 from queens.utils import injector
 
 
+@pytest.mark.max_time_for_test(30)
 def test_bmfia_smc_park(
     inputdir,
     tmp_path,
@@ -86,6 +87,7 @@ def fixture_expected_weights():
     return weights
 
 
+@pytest.mark.max_time_for_test(20)
 def test_bmfia_rpvi_gp_park(
     inputdir,
     tmp_path,

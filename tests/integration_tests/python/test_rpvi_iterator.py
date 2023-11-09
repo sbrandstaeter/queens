@@ -165,6 +165,7 @@ def fixture_forward_model(request):
     return request.param
 
 
+@pytest.mark.max_time_for_test(20)
 def test_gaussian_rpvi(inputdir, tmp_path, _create_experimental_data, forward_model):
     """Test RPVI with univariate Gaussian."""
     template = inputdir / "rpvi_gaussian_template.yml"

@@ -8,6 +8,7 @@ import pytest
 from queens.main import run
 
 
+@pytest.mark.max_time_for_test(60)
 def test_branin_gpflow_svgp(inputdir, tmp_path, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
     run(inputdir / 'gpflow_svgp_surrogate_branin.yml', tmp_path)

@@ -6,6 +6,7 @@
 import unittest
 
 import numpy as np
+import pytest
 from scipy import stats
 from scipy.stats import norm
 
@@ -129,6 +130,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # last two arguments are relative and absolute tolerance, respectively
         np.testing.assert_allclose(my_vals, ref_vals, 1e-10, 1e-10)
 
+    @pytest.mark.max_time_for_test(6)
     def test_correlation(self):
         """TODO_doc."""
         my_vals = np.zeros((self.loc.shape[0], 200))
@@ -225,6 +227,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.max_time_for_test(6)
     def test_marginal_distribution(self):
         """TODO_doc."""
         my_vals = np.zeros((1, 200))

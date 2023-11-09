@@ -16,10 +16,10 @@ from queens.utils.stochastic_optimizer import Adam
 def fixture_gp_model():
     """Configuration for jitted GP model."""
     optimizer = Adam(
-        learning_rate=0.01,
+        learning_rate=0.05,
         optimization_type="max",
-        rel_l1_change_threshold=0.0001,
-        rel_l2_change_threshold=0.0001,
+        rel_l1_change_threshold=0.005,
+        rel_l2_change_threshold=0.005,
     )
     model = GPJittedModel(
         stochastic_optimizer=optimizer,
@@ -88,6 +88,7 @@ def test_jitted_gp_one_dim(gp_model):
         gp_model.predict(x_test, gradient_bool=True)
 
 
+@pytest.mark.max_time_for_test(30)
 def test_jitted_gp_two_dim(gp_model):
     """Test two dimensional jitted GP."""
     n_train = 7

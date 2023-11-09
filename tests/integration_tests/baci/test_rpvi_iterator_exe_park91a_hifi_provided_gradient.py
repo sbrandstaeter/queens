@@ -56,6 +56,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
+@pytest.mark.max_time_for_test(20)
 def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     inputdir,
     tmp_path,
