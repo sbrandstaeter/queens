@@ -131,7 +131,7 @@ thought-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: 'thought'
+    REMOTE_ADDRESS: "thought"
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   tags:
     - lnm-build
@@ -140,7 +140,7 @@ charon-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   tags:
     - imcs-build
@@ -243,7 +243,7 @@ license_check:
   rules:
     - !reference [.default_test_conditions, rules]
   script:
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report --time-tests $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report
@@ -292,7 +292,7 @@ lnm-cluster_tests:
   extends:
     - .cluster_tests
   variables:
-    CLUSTER_MARKER: 'lnm_cluster'
+    CLUSTER_MARKER: "lnm_cluster"
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
@@ -486,7 +486,7 @@ thought-cluster-remove_conda_env:
   dependencies:
     - thought-build_conda_env
   variables:
-    REMOTE_ADDRESS: 'thought'
+    REMOTE_ADDRESS: "thought"
   tags:
     - lnm-build
 
@@ -496,6 +496,6 @@ charon-cluster-remove_conda_env:
   dependencies:
     - charon-build_conda_env
   variables:
-    REMOTE_ADDRESS: 'charon.bauv.unibw-muenchen.de'
+    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
   tags:
     - imcs-build

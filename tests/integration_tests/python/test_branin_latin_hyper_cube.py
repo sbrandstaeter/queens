@@ -7,6 +7,7 @@ import pytest
 from queens.main import run
 
 
+@pytest.mark.max_time_for_test(20)
 def test_branin_latin_hyper_cube(inputdir, tmp_path):
     """Test case for latin hyper cube iterator."""
     run(inputdir / 'latin_hyper_cube_branin.yml', tmp_path)

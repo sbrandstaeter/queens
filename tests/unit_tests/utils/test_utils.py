@@ -5,6 +5,7 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from queens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
 
@@ -20,6 +21,7 @@ class TestPDFEstimation(unittest.TestCase):
         self.samples = np.random.randn(100)
         self.bandwidth = 0.4
 
+    @pytest.mark.max_time_for_test(6)
     def test_compute_kernel_bandwidth(self):
         """Test computation of kernel bandwidth."""
         min_samples = -3

@@ -6,6 +6,7 @@
 import unittest
 
 import numpy as np
+import pytest
 from scipy import stats
 from scipy.stats import norm
 
@@ -55,6 +56,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
     # should trigger error because desired energy fraction not reached
+    @pytest.mark.max_time_for_test(6)
     def test_not_enough_fourier_terms(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
@@ -69,8 +71,9 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
                 total_terms=5000,
             )
 
-    # # should trigger error because number of phase angles do not match stochastic
-    # # dimension
+    # should trigger error because number of phase angles do not match stochastic
+    # dimension
+    @pytest.mark.max_time_for_test(6)
     def test_wrong_number_phase_angles(self):
         """TODO_doc."""
         with self.assertRaises(RuntimeError):
@@ -86,6 +89,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             )
             mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), np.array((4, 4)))
 
+    @pytest.mark.max_time_for_test(6)
     # # should trigger error because dimension of location is wrong
     def test_wrong_number_loc_dimensions(self):
         """TODO_doc."""
@@ -107,6 +111,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             mystuff.gen_sample_gauss_field(np.array(([4, 4], [4, 5], [4, 5])), xi)
 
+    @pytest.mark.max_time_for_test(6)
     def test_values_at_location(self):
         """TODO_doc."""
         np.random.seed(self.seed)
@@ -134,6 +139,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             1e-07,
         )
 
+    @pytest.mark.max_time_for_test(6)
     def test_correlation(self):
         """TODO_doc."""
         my_vals = np.zeros((self.loc.shape[0], 100))
@@ -242,6 +248,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.max_time_for_test(6)
     def test_marginal_distribution(self):
         """TODO_doc."""
         my_vals = np.zeros((1, 200))

@@ -8,6 +8,7 @@ import pytest
 from queens.main import run
 
 
+@pytest.mark.max_time_for_test(30)
 def test_branin_gpflow_heteroskedastic(inputdir, tmp_path, expected_mean, expected_var):
     """Test case for GPflow based heteroskedastic model."""
     run(inputdir / 'gp_heteroskedastic_surrogate_branin.yml', tmp_path)
