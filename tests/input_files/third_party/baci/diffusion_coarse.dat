@@ -83,11 +83,6 @@ MAT 10 MAT_scatra DIFFUSIVITY 1.00
 MAT 20 MAT_scatra_reaction NUMSCAL 1 STOICH 1 REACCOEFF 1.0 COUPLING by_function ROLE 1
 ----------------------------------------------------------------------FUNCT1
 VARFUNCTION 1/(pi*rho)*exp(-((x-x_s)^2+(y-y_s)^2)/(2*rho^2))*heaviside(0.3-t) NUMCONSTANTS 3 CONSTANTS rho 0.05 x_s {{ x_s }} y_s {{ y_s }}
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  0
-NDVOL   0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
