@@ -7,7 +7,8 @@
 // - solution of saddle point system
 // - Statics time integration
 
-BACI git SHA1: 53abb9c91f90c909e559c8239f12757885dd81e3
+BACI git SHA1: 8c6b750a15845d2a094f0de90f209d811fab6391
+
 Injected parameter:
 - young: {{ young }}
 - nue: {{ nue }}
@@ -67,11 +68,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG {{ young }} NUE {{ nue }}
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 1
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         9
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          5
 //                              node_force_z_1

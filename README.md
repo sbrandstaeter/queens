@@ -218,7 +218,7 @@ ln -s <your/path/to/baci-release> <QUEENS_BaseDir>/config/baci-release
 ln -s <your/path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight
 ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
-> **NOTE**: The workflows with BACI are tested with the BACI version [53abb9c91f90c909e559c8239f12757885dd81e3](https://gitlab.lrz.de/baci/baci/-/commit/53abb9c91f90c909e559c8239f12757885dd81e3)
+> **NOTE**: The workflows with BACI are tested with the BACI version [8c6b750a15845d2a094f0de90f209d811fab6391](https://gitlab.lrz.de/baci/baci/-/commit/8c6b750a15845d2a094f0de90f209d811fab6391)
 
 The testing strategy is more closely described in [TESTING.md](tests/README.md)
 To run the test suite type:

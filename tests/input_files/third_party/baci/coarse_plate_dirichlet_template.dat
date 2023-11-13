@@ -4,7 +4,7 @@
 -------------------------------------------------------------TITLE
 created by pre_exodus
 
-BACI git SHA1: 53abb9c91f90c909e559c8239f12757885dd81e3
+BACI git SHA1: 8c6b750a15845d2a094f0de90f209d811fab6391
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121
@@ -56,12 +56,6 @@ VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME l
 VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 0  2.5
-
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  4
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // dirich-point-fix-xyz

@@ -30,8 +30,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
         nodes_of_interest (lst): List that contains all (mesh) nodes that are part of a desired
                                  geometric component.
         new_nodes_lst (lst): List of new nodes that should be written in dnode topology.
-        design_description (dict): First section of the dat-file as dictionary to summarize the
-                                   *external_geometry_obj* components.
         node_topology (lst): List with topology dicts of edges/nodes (here: mesh nodes not FEM
                              nodes) for each geometric set of this category.
         line_topology (lst): List with topology dicts of line components for each geometric set
@@ -121,17 +119,17 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.coords_dict = {}
         self.list_geometric_sets = list_geometric_sets
         self.current_dat_section = None
-        self.desired_dat_sections = {}
+        self.desired_dat_sections = {"DNODE-NODE TOPOLOGY": []}
         self.nodes_of_interest = None
         self.new_nodes_lst = None
 
         # topology
-        self.design_description = {}
         self.node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
         self.line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
         self.surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
         self.volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
         self.node_coordinates = {"node_mesh": [], "coordinates": []}
+        self.nodeset_names = set()
 
         # material specific attributes
         self.element_centers = []
@@ -180,7 +178,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 ):
                     pass
                 else:
-                    self.get_design_description(line)
                     self.get_only_desired_topology(line)
                     self.get_only_desired_coordinates(line)
                     self.get_materials(line)
@@ -315,6 +312,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         node_list = line.split()
         # get edges
         if self.current_dat_section == 'DNODE-NODE TOPOLOGY':
+            self.nodeset_names.add(int(line.split("DNODE ")[-1]))
             if topology_name in self.desired_dat_sections['DNODE-NODE TOPOLOGY']:
                 if (self.node_topology[-1]['topology_name'] == "") or (
                     self.node_topology[-1]['topology_name'] == topology_name
@@ -384,26 +382,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
                         'topology_name': topology_name,
                     }
                     self.volume_topology.extend(new_volume_topology_dict)
-
-    def get_design_description(self, line):
-        """Extract a short geometric description from the dat-file.
-
-        Args:
-            line (str): Current line of the dat-file
-        """
-        # get the overall design description of the problem at hand
-        if self.current_dat_section == 'DESIGN DESCRIPTION':
-            design_list = line.split()
-            if len(design_list) != 2:
-                raise IndexError(
-                    "Unexpected number of list entries in design "
-                    "description! The "
-                    "returned list should have length 2 but the returned "
-                    f"list was {design_list}. "
-                    "Abort..."
-                )
-
-            self.design_description[design_list[0]] = design_list[1]
 
     def get_only_desired_topology(self, line):
         """Check if the current line contains desired geometric sets.
@@ -521,15 +499,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 if line[0:2] == '//' or match_bool or line.isspace() or line == "":
                     print(old_line, end='')
                 else:
-                    # check if in design description and if so extend it
-                    if self.current_dat_section == 'DESIGN DESCRIPTION':
-                        self._write_update_design_description(old_line, self.random_fields)
-
                     # check if in sec. DNODE-NODE topology and if so adjust this section in case
                     # of random BCs; write this only once
-                    elif (
-                        self.current_dat_section == 'DNODE-NODE TOPOLOGY' and not self.nodes_written
-                    ):
+                    if self.current_dat_section == 'DNODE-NODE TOPOLOGY' and not self.nodes_written:
                         self._write_new_node_sets()
                         self.nodes_written = True
                         # print the current line that was overwritten
@@ -841,55 +813,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
             # TODO key field realization prob wrong
 
         return line_new
-
-    # ---- write new random boundary conditions (point wise) -----------------------------------
-    def _write_update_design_description(self, old_line, random_fields_lst):
-        """Overwrite the design description in the dat-file.
-
-        Args:
-            old_line (str): Current/former line in the dat-file
-            random_fields_lst: List containing descriptions of random fields
-        """
-        # Some clean-up of the line string
-        line = old_line.strip()
-        line_lst = line.split()
-        additional_nodes = 0
-
-        if line_lst[0] == "NDPOINT":
-            # get random fields that are either Dirichlet or Neumann BCs
-            for random_field in random_fields_lst:
-                if (
-                    (random_field["type"] == "dirichlet")
-                    or (random_field["type"] == "neumann")
-                    or (random_field["type"] == "transport_dirichlet")
-                ):
-                    geometric_set_name = random_field["external_instance"]
-                    geo_set_name_type = geometric_set_name.split()[0]
-
-                    my_topology = self._get_my_topology(geo_set_name_type)
-
-                    # find set name in list of node topology and return number of nodes
-                    if my_topology is not None:
-                        set_nodes = np.sum(
-                            [
-                                len(node_set["node_mesh"])
-                                for node_set in my_topology
-                                if node_set['topology_name'] == geometric_set_name
-                            ]
-                        )
-                    else:
-                        raise ValueError(f"The topology '{my_topology}' is unknown. Abort...")
-
-                    additional_nodes += set_nodes
-
-            # add the nodes to the existing NDPOINTS
-            number_string = str(int(line_lst[1]) + int(additional_nodes))
-
-            # overwrite the dat entry
-            print(f"NDPOINT                         {number_string}")
-
-        else:
-            print(old_line, end='')
 
     def _write_design_point_dirichlet_transport_conditions(self):
         pass
@@ -1265,12 +1188,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 ]
             )
 
-        # create the corresponding point geometric set and save the mapping in a list/dict per rf
-        # check the highest dnode and start after that one
-        if int(self.design_description['NDPOINT']) > 0:
-            ndnode_min = int(self.design_description['NDPOINT']) + 1
-        else:
-            ndnode_min = 1
+        ndnode_min = len(self.nodeset_names)
 
         for num, _ in enumerate(nodes_mesh_lst):
             if num == 0:
