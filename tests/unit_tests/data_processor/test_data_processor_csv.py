@@ -29,7 +29,7 @@ def fixture_dummy_csv_file(tmp_path_factory):
         10    2.000000e-01    8.600778e-02    3.102564e+00    0.000000e+00"""
     tmp_dir = tmp_path_factory.mktemp("data")
     dummy_data_processor_path = tmp_dir / 'dummy_csvfile.csv'
-    with open(dummy_data_processor_path, 'w') as csv_file:
+    with open(dummy_data_processor_path, 'w', encoding='utf-8') as csv_file:
         csv_file.write(dummy_data)
 
     return dummy_data_processor_path
@@ -99,15 +99,18 @@ def fixture_default_data_processor(mocker):
     }
 
     mocker.patch(
-        'queens.data_processor.data_processor_csv.DataProcessorCsv.' '_check_valid_filter_options',
+        (
+            'queens.data_processor.data_processor_csv.DataProcessorCsv.'
+            '_check_valid_filter_options'
+        ),
         return_value=None,
     )
-    pp = DataProcessorCsv(
+    data_processor_csv_instance = DataProcessorCsv(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
     )
-    return pp
+    return data_processor_csv_instance
 
 
 def test_init(mocker):
@@ -141,7 +144,10 @@ def test_init(mocker):
     }
 
     mp = mocker.patch(
-        'queens.data_processor.data_processor_csv.DataProcessorCsv.' '_check_valid_filter_options',
+        (
+            'queens.data_processor.data_processor_csv.DataProcessorCsv.'
+            '_check_valid_filter_options'
+        ),
         return_value=None,
     )
 
