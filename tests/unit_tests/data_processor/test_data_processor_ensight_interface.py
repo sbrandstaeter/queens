@@ -35,11 +35,13 @@ def fixture_default_data_processor(mocker):
         'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value='None',
     )
+    # pylint: disable=line-too-long
     pp = queens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
     )
+    # pylint: enable=line-too-long
     return pp
 
 
@@ -60,8 +62,8 @@ def fixture_vtkUnstructuredGridExample2d():
 
     vtkpoints = vtk.vtkPoints()
 
-    for i in range(0, len(node_coords)):
-        vtkpoints.InsertPoint(i, node_coords[i])
+    for i, node_coords in enumerate(node_coords):
+        vtkpoints.InsertPoint(i, node_coords)
 
     grid.InsertNextCell(vtk.VTK_QUAD, 4, [0, 1, 4, 3])
     grid.InsertNextCell(vtk.VTK_QUAD, 4, [1, 2, 6, 5])
@@ -93,8 +95,8 @@ def fixture_vtkUnstructuredGridExample3d():
 
     vtkpoints = vtk.vtkPoints()
 
-    for i in range(0, len(node_coords)):
-        vtkpoints.InsertPoint(i, node_coords[i])
+    for i, node_coords in enumerate(node_coords):
+        vtkpoints.InsertPoint(i, node_coords)
 
     grid.InsertNextCell(vtk.VTK_HEXAHEDRON, 8, [0, 1, 2, 3, 5, 6, 7, 8])
     grid.InsertNextCell(vtk.VTK_WEDGE, 6, [3, 2, 4, 8, 7, 9])
