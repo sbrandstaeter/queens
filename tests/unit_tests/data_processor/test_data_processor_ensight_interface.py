@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 import vtk
 
-import queens.data_processor.data_processor_ensight_interface
 from queens.data_processor.data_processor_ensight_interface import (
     DataProcessorEnsightInterfaceDiscrepancy,
 )
@@ -35,13 +34,11 @@ def fixture_default_data_processor(mocker):
         'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value='None',
     )
-    # pylint: disable=line-too-long
-    pp = queens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
+    pp = DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
     )
-    # pylint: enable=line-too-long
     return pp
 
 
