@@ -29,7 +29,8 @@ def fixture_dummy_csv_file(tmp_path_factory):
         10    2.000000e-01    8.600778e-02    3.102564e+00    0.000000e+00"""
     tmp_dir = tmp_path_factory.mktemp("data")
     dummy_data_processor_path = tmp_dir / 'dummy_csvfile.csv'
-    with open(dummy_data_processor_path, 'w') as csv_file:
+
+    with open(dummy_data_processor_path, 'w', encoding='utf-8') as csv_file:
         csv_file.write(dummy_data)
 
     return dummy_data_processor_path
