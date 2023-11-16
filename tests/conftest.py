@@ -32,19 +32,6 @@ def pytest_addoption(parser):
         " change the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
     )
     parser.addoption(
-        "--gateway-host",
-        action="store",
-        default=None,
-        help="host of gateway connection (proxyjump) for remote connection",
-    )
-    parser.addoption(
-        "--gateway-user",
-        action="store",
-        default=None,
-        help="user for gateway connection (proxyjump) for remote connection",
-    )
-
-    parser.addoption(
         "--gateway",
         action="store",
         default=None,
