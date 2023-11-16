@@ -28,7 +28,7 @@ def run(input_file, output_dir, debug=False):
     config = load_input_file(input_file)
 
     experiment_name = config.pop('experiment_name')
-    remote_connection_config = config.pop("remote_connection")
+    remote_connection_config = config.pop("remote_connection", None)
     remote_connection = (
         None if remote_connection_config is None else RemoteConnection(**remote_connection_config)
     )
