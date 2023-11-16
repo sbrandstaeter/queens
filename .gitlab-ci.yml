@@ -110,7 +110,7 @@ imcs-build_conda_env:
     - if: $CLUSTER_TESTS == "1"
   script:
     - ENV_PREFIX=queens-$CI_PIPELINE_ID
-    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10
+    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10 cloudpickle fabric
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
     - python queens/utils/remote_build.py
