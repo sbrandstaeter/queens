@@ -1,6 +1,6 @@
 """Collect fixtures used by the integration tests."""
-import ast
 import getpass
+import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -111,18 +111,8 @@ def fixture_remote_user(pytestconfig):
 def fixture_gateway(pytestconfig):
     """String of a dictionary that defines gateway connection (proxyjump)."""
     gateway = pytestconfig.getoption("gateway")
-
     if isinstance(gateway, str):
-        # Parse the string as an abstract syntax tree
-        ast_tree = ast.literal_eval(gateway)
-
-        # Check if the result is a dictionary
-        if isinstance(ast_tree, dict):
-            gateway_dict = ast_tree
-            _logger.debug("Successfully converted string to dictionary: %s", gateway_dict)
-        else:
-            _logger.debug("The string '%s' does not represent a dictionary.", gateway)
-        return gateway_dict
+        gateway = json.loads(gateway)
     return gateway
 
 
