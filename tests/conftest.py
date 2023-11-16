@@ -35,7 +35,10 @@ def pytest_addoption(parser):
         "--gateway",
         action="store",
         default=None,
-        help="user for gateway connection (proxyjump) for remote connection",
+        help=(
+            "gateway connection (proxyjump) for remote connection in json format,"
+            " e.g. '{\"host\": \"user@host\"}'"
+        ),
     )
 
 

@@ -114,7 +114,7 @@ imcs-build_conda_env:
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
     - python queens/utils/remote_build.py
-      --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
+      --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
       $PYTHON_PACKAGE_MANAGER
 
