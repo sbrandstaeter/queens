@@ -29,10 +29,9 @@ def run(input_file, output_dir, debug=False):
 
     experiment_name = config.pop('experiment_name')
     remote_connection_config = config.pop("remote_connection")
-    remote_connection = None
-
-    if remote_connection_config is not None:
-        remote_connection = RemoteConnection(**remote_connection_config)
+    remote_connection = (
+        None if remote_connection_config is None else RemoteConnection(**remote_connection_config)
+    )
 
     with GlobalSettings(
         experiment_name=experiment_name,

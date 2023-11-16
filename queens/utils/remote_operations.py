@@ -26,10 +26,9 @@ class RemoteConnection(Connection):
     """This is class wrapper around the Connection class of fabric.
 
     Attributes:
-        func_file_name (str): Filename of temporary pickle file for the deployed function
-        output_file_name (str): Filename of temporary pickle file for the output
-        remote_python (str): Path to remote python
-        python_cmd (str): Command that is executed on remote machine to run python function
+        remote_python (str): Path to Python with installed (editable) QUEENS
+                            (see remote_queens_repository)
+        remote_queens_repository (str, Path): Path to the QUEENS source code on the remote host
     """
 
     def __init__(self, host, remote_python, remote_queens_repository, user=None, gateway=None):
@@ -37,8 +36,9 @@ class RemoteConnection(Connection):
 
         Args:
             host (str): address of remote host
-            remote_python (str): Path to remote python
-            remote_queens_repository (str): Path to queens repository on remote host
+            remote_python (str, Path): Path to Python with installed (editable) QUEENS
+                            (see remote_queens_repository)
+            remote_queens_repository (str, Path): Path to the QUEENS source code on the remote host
             user (str): Username on remote machine
             gateway (dict,Connection,None): An object to use as a proxy or gateway for this
                                             connection. See docs of Fabric's Connection object for
@@ -205,7 +205,6 @@ class RemoteConnection(Connection):
         """Build remote QUEENS environment.
 
         Args:
-            remote_python (str): Path to Python environment on remote host
             package_manager(str, optional): Package manager used for the creation of the environment
                                             ("mamba" or "conda")
         """

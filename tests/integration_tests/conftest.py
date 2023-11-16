@@ -109,7 +109,7 @@ def fixture_remote_user(pytestconfig):
 
 @pytest.fixture(name="gateway", scope="session")
 def fixture_gateway(pytestconfig):
-    """Host and user for gateway connection (proxyjump)."""
+    """String of a dictionary that defines gateway connection (proxyjump)."""
     gateway = pytestconfig.getoption("gateway")
 
     if isinstance(gateway, str):
@@ -124,17 +124,6 @@ def fixture_gateway(pytestconfig):
             _logger.debug("The string '%s' does not represent a dictionary.", gateway)
         return gateway_dict
     return gateway
-
-    # gateway_host = pytestconfig.getoption("gateway_host")
-    # gateway_user = pytestconfig.getoption("gateway_user")
-    # if (gateway_host is None and gateway_user is not None) or (
-    #    gateway_host is not None and gateway_user is None
-    # ):
-    #    raise ValueError(
-    #        f"'gateway_host={gateway_host}' and 'gateway_user={gateway_user}'. "
-    #        "Either both are 'None' or none are 'None'."
-    #    )
-    # return {"host": gateway_host, "user": gateway_user}
 
 
 @pytest.fixture(name="cluster", scope="session")
@@ -156,23 +145,10 @@ def fixture_cluster_settings(
     _logger.debug("raw cluster config: %s", settings)
     settings["cluster"] = cluster
     settings["user"] = remote_user
-    settings["connect_to_resource"] = remote_user + '@' + settings["host"]
-    # gateway_host = gateway_settings["host"]
-    # # the settings dictionary serves to write the value into the yaml input file thus
-    # # convert the None value to a yaml equivalent "null" value
-    # settings["gateway_host"] = gateway_host if gateway_host is not None else "null"
-
-    # gateway_user = gateway_settings["user"]
-    # # the settings dictionary serves to write the value into the yaml input file thus
-    # # convert the None value to a yaml equivalent "null" value
-    # settings["gateway_user"] = gateway_user if gateway_user is not None else "null"
-
-    # gateway_connection = (
-    #     None if gateway_host is None else Connection(host=gateway_host, user=gateway_user)
-    # )
 
     # save the settings for the remote connection in string of yaml format to make it more flexible
     # for parsing it into the yaml input file
+    # in the yaml file this dict is already one level indented -> add two spaces before each line
     settings["remote_connection"] = "  " + yaml.dump(
         {
             "host": settings["host"],
@@ -182,26 +158,13 @@ def fixture_cluster_settings(
             "remote_queens_repository": remote_queens_repository,
         }
     ).replace("\n", "\n  ")
-
-    #     Connection(
-    #     host=settings["host"], user=remote_user, gateway=gateway_connection
-    # )
     return settings
-
-
-@pytest.fixture(name="connect_to_resource", scope="session")
-def fixture_connect_to_resource(cluster_settings):
-    """Use for ssh connect to the cluster."""
-    return cluster_settings["connect_to_resource"]
 
 
 @pytest.fixture(name="remote_python", scope="session")
 def fixture_remote_python(pytestconfig):
     """Path to Python environment on remote host."""
     return pytestconfig.getoption("remote_python")
-
-
-#    return pytestconfig.getoption("remote_python", default=cluster_settings["default_python_path"])
 
 
 @pytest.fixture(name="remote_connection", scope="session")

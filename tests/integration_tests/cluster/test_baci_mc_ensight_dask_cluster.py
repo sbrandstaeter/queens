@@ -36,7 +36,7 @@ class TestDaskCluster:
         self,
         tmp_path_factory,
         monkeypatch,
-        connect_to_resource,
+        cluster_settings,
     ):
         """Mock the experiment directory on the cluster.
 
@@ -64,11 +64,12 @@ class TestDaskCluster:
         monkeypatch.setattr(config_directories, "experiment_directory", patch_experiments_directory)
         _logger.debug("Mocking of dask experiment_directory  was successful.")
         _logger.debug(
-            "dask experiment_directory is mocked to '$HOME/%s/%s/%s/<experiment_name>' on %s",
+            "dask experiment_directory is mocked to '$HOME/%s/%s/%s/<experiment_name>' on %s@%s",
             config_directories.BASE_DATA_DIR,
             config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
             pytest_basename,
-            connect_to_resource,
+            cluster_settings["user"],
+            cluster_settings["host"],
         )
 
     def test_baci_mc_ensight_cluster(
