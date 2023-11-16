@@ -141,8 +141,6 @@ class ClusterScheduler(Scheduler):
         local_port = queens.global_settings.GLOBAL_SETTINGS.local_port
         local_port_dashboard = queens.global_settings.GLOBAL_SETTINGS.local_port_dashboard
 
-        # connection.open_port_forwarding(local_port, remote_port)
-        # connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
             try:
