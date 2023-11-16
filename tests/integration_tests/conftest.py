@@ -153,6 +153,7 @@ def fixture_cluster_settings(
         {
             "host": settings["host"],
             "user": remote_user,
+            "type": "remote_connection",
             "gateway": gateway,
             "remote_python": remote_python,
             "remote_queens_repository": remote_queens_repository,
@@ -172,6 +173,7 @@ def fixture_remote_connection(cluster_settings):
     """Fabric connection to remote."""
     # reconstruct the dict from the yaml
     remote_connection_config = yaml.safe_load(cluster_settings["remote_connection"])
+    remote_connection_config.pop("type")
     remote_connection = RemoteConnection(**remote_connection_config)
     return remote_connection
 

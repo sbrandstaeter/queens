@@ -3,6 +3,7 @@ import atexit
 import json
 import logging
 import pickle
+import socket
 import time
 import uuid
 from functools import partial
@@ -20,6 +21,10 @@ _logger = logging.getLogger(__name__)
 DEFAULT_PACKAGE_MANAGER = "mamba"
 FALLBACK_PACKAGE_MANAGER = "conda"
 SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
+
+VALID_CONNECTION_TYPES = {
+    "remote_connection": ["queens.utils.remote_operations", "RemoteConnection"],
+}
 
 
 class RemoteConnection(Connection):
@@ -53,6 +58,11 @@ class RemoteConnection(Connection):
 
         self.remote_queens_repository = remote_queens_repository
         _logger.debug("remote queens repository: %s", self.remote_queens_repository)
+
+    def open(self):
+        """Initiate the SSH connection."""
+        super().open()
+        atexit.register(self.close)
 
     def start_cluster(
         self,
@@ -155,6 +165,8 @@ class RemoteConnection(Connection):
             f"ssh {proxyjump} -f -N -L {local_port}:{self.host}:{remote_port} "
             f"{self.user}@{self.host}"
         )
+        _logger.debug("\nOpening port-forwarding '%s'\n", cmd)
+
         start_subprocess(cmd)
         _logger.debug("Port-forwarding opened successfully.")
 
@@ -256,3 +268,22 @@ class RemoteConnection(Connection):
         _logger.debug(result.stdout)
         _logger.info("Build of remote queens environment was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
+
+    def get_local_port(self):
+        """Get a free port on localhost."""
+        return get_port()
+
+    def get_remote_port(self):
+        """Get a free port on remote host."""
+        return self.run_function(get_port)
+
+
+def get_port():
+    """Get free port.
+
+    Returns:
+        int: free port
+    """
+    sock = socket.socket()
+    sock.bind(('', 0))
+    return int(sock.getsockname()[1])
