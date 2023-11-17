@@ -1,10 +1,15 @@
 """LogNormal Distribution."""
+import logging
+
 import numpy as np
 import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distributions import ContinuousDistribution
 from queens.distributions.normal import NormalDistribution
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class LogNormalDistribution(ContinuousDistribution):
@@ -18,6 +23,7 @@ class LogNormalDistribution(ContinuousDistribution):
         normal_distribution (obj): underlying normal distribution
     """
 
+    @log_init_args(_logger)
     def __init__(self, normal_mean, normal_covariance):
         """Initialize lognormal distribution.
 

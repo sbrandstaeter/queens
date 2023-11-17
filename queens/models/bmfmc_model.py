@@ -13,6 +13,7 @@ from queens.interfaces.bmfmc_interface import BmfmcInterface
 from queens.iterators.data_iterator import DataIterator
 from queens.models.model import Model
 from queens.parameters.fields.random_fields import RandomField
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -139,6 +140,7 @@ class BMFMCModel(Model):
             Propagation in Complex Physical Simulations", arXiv:2001.02892
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         parameters,

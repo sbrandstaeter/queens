@@ -1,6 +1,11 @@
 """Free Variable."""
 
+import logging
+
 from queens.distributions.distributions import ContinuousDistribution
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class FreeVariable(ContinuousDistribution):
@@ -10,6 +15,7 @@ class FreeVariable(ContinuousDistribution):
     with no underlying distribution.
     """
 
+    @log_init_args(_logger)
     def __init__(self, dimension):
         """Initialize FreeVariable object.
 

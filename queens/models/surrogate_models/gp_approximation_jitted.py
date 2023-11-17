@@ -7,6 +7,7 @@ from scipy.linalg import cho_solve
 
 import queens.models.surrogate_models.utils.kernel_utils_jitted as utils_jitted
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.valid_options_utils import get_option
 
@@ -67,6 +68,7 @@ class GPJittedModel(SurrogateModel):
         ),
     }
 
+    @log_init_args(_logger)
     def __init__(
         self,
         stochastic_optimizer,

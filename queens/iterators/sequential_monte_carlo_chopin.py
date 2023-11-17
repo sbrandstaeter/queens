@@ -13,6 +13,7 @@ from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
 from queens.iterators.iterator import Iterator
 from queens.utils import smc_utils
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         waste_free (bool): If *True*, all intermediate Markov steps are kept.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

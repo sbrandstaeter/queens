@@ -11,6 +11,7 @@ from gpflow.utilities import print_summary
 from sklearn.cluster import KMeans
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.utils.logger_settings import log_init_args
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 _logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ class HeteroskedasticGPModel(SurrogateModel):
              arXiv preprint arXiv:1309.6835.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         training_iterator=None,

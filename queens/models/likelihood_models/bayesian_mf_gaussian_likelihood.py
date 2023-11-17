@@ -9,6 +9,7 @@ from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
 from queens.interfaces.bmfia_interface import BmfiaInterface
 from queens.models.likelihood_models.likelihood_model import LikelihoodModel
 from queens.utils.ascii_art import print_bmfia_acceleration
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class BMFGaussianModel(LikelihoodModel):
             inverse problems in computationally demanding simulations", unpublished internal report
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         forward_model,

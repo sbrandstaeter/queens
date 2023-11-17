@@ -10,6 +10,7 @@ from SALib.sample import saltelli
 
 from queens.distributions import lognormal, normal, uniform
 from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class SobolIndexIterator(Iterator):
         sensitivity_indices (dict): Dictionary with sensitivity indices.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

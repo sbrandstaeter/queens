@@ -4,6 +4,7 @@ from pathlib import Path
 
 from queens.drivers.driver import Driver
 from queens.utils.injector import inject_in_template, read_file
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class JobscriptDriver(Driver):
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         input_template,

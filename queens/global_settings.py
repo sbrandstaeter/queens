@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from queens.schedulers.scheduler import SHUTDOWN_CLIENTS
+from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.logger_settings import reset_logging, setup_basic_logging
 from queens.utils.path_utils import PATH_TO_QUEENS
 from queens.utils.print_utils import get_str_table
@@ -108,6 +109,7 @@ class GlobalSettings:
         Returns:
             self
         """
+        print_banner_and_description()
         global GLOBAL_SETTINGS  # pylint: disable=global-statement
         GLOBAL_SETTINGS = self
 

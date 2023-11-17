@@ -15,7 +15,7 @@ def get_str_table(name, print_dict):
         str: Table to print
     """
     column_name = [str(k) for k in print_dict.keys()]
-    column_value = [str(v).replace("\n", " ") for v in print_dict.values()]
+    column_value = [repr(v).replace("\n", " ") for v in print_dict.values()]
     column_width_name = max(len(s) for s in column_name)
     column_width_value = max(len(s) for s in column_value)
 

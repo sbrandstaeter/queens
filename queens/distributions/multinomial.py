@@ -1,13 +1,19 @@
 """Multinomial distribution."""
+import logging
+
 import numpy as np
 from scipy.stats import multinomial
 
 from queens.distributions.distributions import DiscreteDistribution
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class MultinomialDistribution(DiscreteDistribution):
     """Multinomial distribution."""
 
+    @log_init_args(_logger)
     def __init__(self, n_trials, probabilities):
         """Initialize discrete uniform distribution.
 

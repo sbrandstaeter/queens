@@ -1,7 +1,12 @@
 """Exponential distribution."""
+import logging
+
 import numpy as np
 
 from queens.distributions.distributions import ContinuousDistribution
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class ExponentialDistribution(ContinuousDistribution):
@@ -17,6 +22,7 @@ class ExponentialDistribution(ContinuousDistribution):
         logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
+    @log_init_args(_logger)
     def __init__(self, rate):
         """Initialize exponential distribution.
 

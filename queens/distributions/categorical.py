@@ -9,6 +9,7 @@ import logging
 import numpy as np
 
 from queens.distributions.distributions import Distribution
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class CategoricalDistribution(Distribution):
         categories (np.ndarray): Categories
     """
 
+    @log_init_args(_logger)
     def __init__(self, probabilities, categories):
         """Initialize categorical distribution.
 

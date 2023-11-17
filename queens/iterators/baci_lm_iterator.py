@@ -8,6 +8,7 @@ import plotly.express as px
 
 from queens.iterators.iterator import Iterator
 from queens.utils.fd_jacobian import fd_jacobian
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class BaciLMIterator(Iterator):
         solution (np.array): The solution achieved by the optimization process.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

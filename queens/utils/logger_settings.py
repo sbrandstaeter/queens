@@ -378,7 +378,13 @@ def log_init_args(logger):
             all_keys = list(signature.parameters.keys())
             args_as_kwargs = {all_keys[i]: args[i] for i in range(len(args))}
             all_kwargs = dict(default_kwargs, **args_as_kwargs, **kwargs)
-            all_kwargs = dict(sorted(all_kwargs.items(), key=lambda pair: all_keys.index(pair[0])))
+
+            def key_fun(pair):
+                if pair[0] in all_keys:
+                    return all_keys.index(pair[0])
+                return len(all_keys)
+
+            all_kwargs = dict(sorted(all_kwargs.items(), key=key_fun))
 
             logger.info(get_str_table(args[0].__class__.__name__, all_kwargs))
             method(*args, **kwargs)

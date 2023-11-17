@@ -1,10 +1,14 @@
 """Grid Iterator."""
+import logging
+
 import numpy as np
 
 import queens.visualization.grid_iterator_visualization as qvis
+from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 
-from .iterator import Iterator
+_logger = logging.getLogger(__name__)
 
 
 class GridIterator(Iterator):
@@ -22,6 +26,7 @@ class GridIterator(Iterator):
         scale_type (list): List with string entries denoting scaling type for each grid axis.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

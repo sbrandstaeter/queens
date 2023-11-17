@@ -8,6 +8,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.valid_options_utils import get_option
 from queens.visualization.gaussian_neural_network_vis import plot_loss
@@ -59,6 +60,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         nugget_std (float): Nugget standard deviation for robustness
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         num_epochs=None,

@@ -1,10 +1,15 @@
 """Classifiers for use in convergence classification."""
+import logging
 import pickle
 from pathlib import Path
 
 import numpy as np
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
+
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 VALID_CLASSIFIER_LEARNING_TYPES = {
     "passive_learning": ["queens.utils.classifier", "Classifier"],
@@ -93,6 +98,7 @@ class ActiveLearningClassifier(Classifier):
 
     is_active = True
 
+    @log_init_args(_logger)
     def __init__(self, n_params, classifier_obj, batch_size, active_sampler_obj=None):
         """Initialise active learning classifier.
 

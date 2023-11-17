@@ -1,5 +1,6 @@
 """Data processor module for vtk ensight boundary data."""
 
+import logging
 import re
 from pathlib import Path
 
@@ -7,7 +8,10 @@ import numpy as np
 import vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
 
-from .data_processor import DataProcessor
+from queens.data_processor.data_processor import DataProcessor
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
@@ -25,6 +29,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                                           discrepancy measure is computed.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         file_name_identifier=None,

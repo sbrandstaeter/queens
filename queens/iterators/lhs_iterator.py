@@ -6,6 +6,7 @@ import numpy as np
 from pyDOE import lhs
 
 from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ class LHSIterator(Iterator):
         output (np.array):   Array with all model outputs.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

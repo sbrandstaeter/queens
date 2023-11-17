@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from queens.drivers.driver import Driver
+from queens.utils.logger_settings import log_init_args
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class MpiDriver(Driver):
         mpi_cmd (str): mpi command
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         input_template,

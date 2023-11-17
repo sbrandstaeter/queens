@@ -8,6 +8,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
                                                the Bayesian Neural Network
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         training_iterator=None,

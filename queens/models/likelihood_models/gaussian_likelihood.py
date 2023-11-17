@@ -1,4 +1,5 @@
 """Gaussian likelihood."""
+import logging
 import warnings
 
 import numpy as np
@@ -6,7 +7,10 @@ import numpy as np
 from queens.distributions.normal import NormalDistribution
 from queens.models.likelihood_models.likelihood_model import LikelihoodModel
 from queens.utils.exceptions import InvalidOptionError
+from queens.utils.logger_settings import log_init_args
 from queens.utils.numpy_utils import add_nugget_to_diagonal
+
+_logger = logging.getLogger(__name__)
 
 
 class GaussianLikelihood(LikelihoodModel):
@@ -33,6 +37,7 @@ class GaussianLikelihood(LikelihoodModel):
         Instance of GaussianLikelihood Class
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         forward_model,

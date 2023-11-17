@@ -6,6 +6,7 @@ from scipy.stats import multivariate_normal as mvn
 
 from queens.iterators.variational_inference import VALID_EXPORT_FIELDS, VariationalInferenceIterator
 from queens.utils.collection_utils import CollectionObject
+from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class RPVIIterator(VariationalInferenceIterator):
         rpvi_obj (obj): Instance of the RPVIIterator
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

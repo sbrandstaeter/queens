@@ -12,6 +12,7 @@ from queens.iterators.sobol_index_gp_uncertainty.utils_estimate_indices import (
     calculate_indices_second_order_gp_realizations,
     calculate_indices_third_order,
 )
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class SobolIndexEstimator:
         seed_bootstrap_samples (int): seed for bootstrap samples
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         parameter_names,

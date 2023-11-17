@@ -10,6 +10,7 @@ import logging
 import pymc as pm
 
 from queens.iterators.pymc_iterator import PyMCIterator
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class NUTSIterator(PyMCIterator):
         nuts_iterator (obj): Instance of NUTS Iterator
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         model,

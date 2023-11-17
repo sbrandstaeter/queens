@@ -1,5 +1,10 @@
 """Interface for grouping outputs with inputs."""
+import logging
+
 from queens.interfaces.interface import Interface
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class BmfmcInterface(Interface):
@@ -19,6 +24,7 @@ class BmfmcInterface(Interface):
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
+    @log_init_args(_logger)
     def __init__(self, probabilistic_mapping):
         """Initialize the interface.
 

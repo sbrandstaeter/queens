@@ -2,6 +2,7 @@
 # pylint: disable=too-many-lines
 import copy
 import fileinput
+import logging
 import os
 import re
 import shutil
@@ -9,6 +10,9 @@ import shutil
 import numpy as np
 
 from queens.external_geometry.external_geometry import ExternalGeometry
+from queens.utils.logger_settings import log_init_args
+
+_logger = logging.getLogger(__name__)
 
 
 class BaciDatExternalGeometry(ExternalGeometry):
@@ -92,6 +96,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         "DVOL": "DVOL-NODE TOPOLOGY",
     }
 
+    @log_init_args(_logger)
     def __init__(
         self,
         input_template,

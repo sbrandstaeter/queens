@@ -5,6 +5,7 @@ import logging
 from queens.models.simulation_model import SimulationModel
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io_utils import write_to_csv
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         gradient_interface (obj): Interface object for the adjoint simulation run.
     """
 
+    @log_init_args(_logger)
     def __init__(
         self,
         interface,
