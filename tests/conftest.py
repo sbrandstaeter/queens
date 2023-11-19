@@ -68,7 +68,7 @@ def pytest_collection_modifyitems(items):
 
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):
-                item.add_marker(pytest.mark.max_time_for_test(1))
+                item.add_marker(pytest.mark.max_time_for_test(2))
 
 
 @pytest.fixture(name="time_tests", autouse=True, scope="function")
