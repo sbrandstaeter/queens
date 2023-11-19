@@ -258,7 +258,7 @@ license_check:
   rules:
     - !reference [.default_test_conditions, rules]
   script:
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report
@@ -302,6 +302,7 @@ imcs-ubuntu_full_test_suite:
       --remote-user=queens
       --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --color=yes
 
 lnm-cluster_tests:
   extends:
@@ -337,7 +338,7 @@ benchmarks:
   rules:
     - if: $BENCHMARKS == "1"
   script:
-    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS --color=yes
   needs:
     - lnm-build_conda_env
 
