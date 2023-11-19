@@ -25,11 +25,11 @@ def pytest_addoption(parser):
     parser.addoption("--remote-python", action="store", default=None)
     parser.addoption("--remote-queens-repository", action="store", default="null")
     parser.addoption(
-        "--time-tests",
+        "--no-test-timing",
         action="store_true",
         default=False,
-        help="Time tests. Raises timeout exception in case the selected tests take too long. To"
-        " change the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
+        help="Turn off test timing, so no exceptions are raised if tests are too slow. To change "
+        "the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
     )
 
 
@@ -75,8 +75,7 @@ def pytest_collection_modifyitems(items):
 def fixture_time_tests(request):
     """Time tests if desired."""
     # Check if test timing is on
-    if request.config.getoption("--time-tests"):
-
+    if not request.config.getoption("--no-test-timing"):
         # Measure time
         start_time = perf_counter()
         yield
