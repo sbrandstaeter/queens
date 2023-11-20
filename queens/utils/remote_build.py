@@ -59,4 +59,3 @@ if __name__ == '__main__':
     remote_connection.open()
     remote_connection.sync_remote_repository()
     remote_connection.build_remote_environment(package_manager=args.package_manager)
-    sys.exit()
