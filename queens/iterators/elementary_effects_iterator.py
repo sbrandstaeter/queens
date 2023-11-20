@@ -45,7 +45,7 @@ class ElementaryEffectsIterator(Iterator):
         si (dict): Dictionary with all sensitivity indices.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

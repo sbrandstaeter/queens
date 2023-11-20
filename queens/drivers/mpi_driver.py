@@ -21,7 +21,7 @@ class MpiDriver(Driver):
         mpi_cmd (str): mpi command
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         input_template,

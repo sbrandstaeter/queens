@@ -47,7 +47,7 @@ class DataProcessorCsv(DataProcessor):
     }
     expected_filter_by_range = {'type': 'by_range', 'range': [1.0, 2.0], 'tolerance': 0.0}
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

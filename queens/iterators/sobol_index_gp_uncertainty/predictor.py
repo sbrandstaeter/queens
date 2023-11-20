@@ -24,7 +24,7 @@ class Predictor:
         seed_posterior_samples (int): seed for posterior samples
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, gp_model, number_gp_realizations, seed_posterior_samples):
         """Initialize.
 

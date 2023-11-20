@@ -42,7 +42,7 @@ class GPFlowRegressionModel(SurrogateModel):
         scaler_y (sklearn scaler object): Scaler for outputs.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         training_iterator=None,

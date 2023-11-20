@@ -72,7 +72,7 @@ class BMFMCIterator(Iterator):
        BMFMCIterator (obj): Instance of the BMFMCIterator
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

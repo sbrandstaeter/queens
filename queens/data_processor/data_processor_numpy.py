@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 class DataProcessorNumpy(DataProcessor):
     """Class for extracting data from numpy binaries."""
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

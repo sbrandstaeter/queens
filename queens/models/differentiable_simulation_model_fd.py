@@ -32,7 +32,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
                            of function evaluation.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, interface, finite_difference_method, step_size=1e-5, bounds=None):
         """Initialize model.
 

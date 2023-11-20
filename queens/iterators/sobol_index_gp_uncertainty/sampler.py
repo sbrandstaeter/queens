@@ -34,7 +34,7 @@ class Sampler:
         seed_monte_carlo (int): seed for random samples
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         parameter_names,

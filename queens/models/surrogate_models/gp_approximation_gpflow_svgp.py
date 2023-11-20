@@ -44,7 +44,7 @@ class GPflowSVGPModel(SurrogateModel):
         train_likelihood_variance (bool): if true, likelihood variance is trained
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         training_iterator=None,

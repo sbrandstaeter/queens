@@ -1,6 +1,4 @@
 """Normal distribution."""
-import logging
-
 import numpy as np
 import scipy.linalg
 import scipy.stats
@@ -8,8 +6,6 @@ import scipy.stats
 from queens.distributions.distributions import ContinuousDistribution
 from queens.utils import numpy_utils
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class NormalDistribution(ContinuousDistribution):
@@ -21,7 +17,7 @@ class NormalDistribution(ContinuousDistribution):
         logpdf_const (float): Constant for evaluation of log pdf.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, mean, covariance):
         """Initialize normal distribution.
 

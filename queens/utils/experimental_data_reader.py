@@ -1,14 +1,11 @@
 """Module to read experimental data."""
 
-import logging
 from pathlib import Path
 
 import numpy as np
 
 from queens.data_processor.data_processor_csv import DataProcessorCsv
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 VALID_TYPES = {
     "experimental_data_reader": ['queens.utils.experimental_data_reader', 'ExperimentalDataReader']
@@ -27,7 +24,7 @@ class ExperimentalDataReader:
         data_processor (DataProcessor): data processor for experimental data
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         data_processor=None,

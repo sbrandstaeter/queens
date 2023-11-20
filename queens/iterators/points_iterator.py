@@ -23,7 +23,7 @@ class PointsIterator(Iterator):
         points_array (np.ndarray): Array with all samples
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, model, parameters, points, result_description):
         """Initialise Iterator.
 

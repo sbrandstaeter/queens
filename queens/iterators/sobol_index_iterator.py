@@ -38,7 +38,7 @@ class SobolIndexIterator(Iterator):
         sensitivity_indices (dict): Dictionary with sensitivity indices.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

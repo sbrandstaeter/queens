@@ -21,7 +21,7 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, path_to_data, result_description, parameters=None):
         """Initialise data iterator.
 

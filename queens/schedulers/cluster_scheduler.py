@@ -55,7 +55,7 @@ def timedelta_to_str(timedelta_obj):
 class ClusterScheduler(Scheduler):
     """Cluster scheduler for QUEENS."""
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         workload_manager,

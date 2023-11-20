@@ -48,7 +48,7 @@ class ClassificationIterator(Iterator):
         classified_outputs (np.array): classified output of evaluated at samples
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 class LocalScheduler(Scheduler):
     """Local scheduler class for QUEENS."""
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, max_concurrent=1, num_procs=1, num_procs_post=1, restart_workers=False):
         """Initialize local scheduler.
 

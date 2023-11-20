@@ -29,7 +29,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         metropolis_hastings_iterator (obj): Instance of Metropolis-Hastings Iterator
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

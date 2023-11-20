@@ -33,7 +33,7 @@ class HMCIterator(PyMCIterator):
         hmc_iterator (obj): Instance of HMC Iterator
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

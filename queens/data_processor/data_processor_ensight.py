@@ -35,7 +35,7 @@ class DataProcessorEnsight(DataProcessor):
         geometric_set_data (dict): Dictionary describing the topology of the geometry
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

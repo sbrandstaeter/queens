@@ -47,7 +47,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         waste_free (bool): If *True*, all intermediate Markov steps are kept.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

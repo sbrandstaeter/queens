@@ -19,7 +19,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         gradient_interface (obj): Interface object for the adjoint simulation run.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         interface,

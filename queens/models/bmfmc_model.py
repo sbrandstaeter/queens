@@ -140,7 +140,7 @@ class BMFMCModel(Model):
             Propagation in Complex Physical Simulations", arXiv:2001.02892
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         parameters,

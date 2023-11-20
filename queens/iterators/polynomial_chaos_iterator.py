@@ -36,7 +36,7 @@ class PolynomialChaosIterator(Iterator):
         result_dict: TODO_doc
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

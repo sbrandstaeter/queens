@@ -60,7 +60,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         nugget_std (float): Nugget standard deviation for robustness
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         num_epochs=None,

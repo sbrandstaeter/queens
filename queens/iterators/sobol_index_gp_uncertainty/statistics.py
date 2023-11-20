@@ -28,7 +28,7 @@ class StatisticsSobolIndexEstimates:
         parameter_names (list): list of parameter names
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, parameter_names, number_gp_realizations, number_bootstrap_samples):
         """Initialize.
 

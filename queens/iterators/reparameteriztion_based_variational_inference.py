@@ -48,7 +48,7 @@ class RPVIIterator(VariationalInferenceIterator):
         rpvi_obj (obj): Instance of the RPVIIterator
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

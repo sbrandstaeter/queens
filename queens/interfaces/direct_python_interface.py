@@ -1,7 +1,6 @@
 """Class for mapping input variables to responses using a python function."""
 
 import inspect
-import logging
 
 import numpy as np
 from tqdm import tqdm
@@ -11,8 +10,6 @@ from queens.interfaces.interface import Interface
 from queens.utils.import_utils import get_module_attribute
 from queens.utils.logger_settings import log_init_args
 from queens.utils.pool_utils import create_pool
-
-_logger = logging.getLogger(__name__)
 
 
 class DirectPythonInterface(Interface):
@@ -32,7 +29,7 @@ class DirectPythonInterface(Interface):
         function_requires_job_id (bool): True if function requires job_id
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         parameters,

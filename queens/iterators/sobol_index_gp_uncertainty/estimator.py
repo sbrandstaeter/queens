@@ -34,7 +34,7 @@ class SobolIndexEstimator:
         seed_bootstrap_samples (int): seed for bootstrap samples
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         parameter_names,

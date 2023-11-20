@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 class MixtureDistribution(ContinuousDistribution):
     """Mixture models."""
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, weights, component_distributions):
         """Initialize mixture model.
 

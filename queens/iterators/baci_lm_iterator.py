@@ -42,7 +42,7 @@ class BaciLMIterator(Iterator):
         solution (np.array): The solution achieved by the optimization process.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

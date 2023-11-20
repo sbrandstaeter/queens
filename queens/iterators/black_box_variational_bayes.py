@@ -65,7 +65,7 @@ class BBVIIterator(VariationalInferenceIterator):
                                  not needed in other VI methods.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

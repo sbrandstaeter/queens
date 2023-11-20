@@ -74,7 +74,7 @@ class Parameters:
         names (list): Parameter names.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, **parameters):
         """Initialize Parameters object.
 

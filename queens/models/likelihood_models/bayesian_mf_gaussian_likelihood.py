@@ -52,7 +52,7 @@ class BMFGaussianModel(LikelihoodModel):
             inverse problems in computationally demanding simulations", unpublished internal report
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         forward_model,

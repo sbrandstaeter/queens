@@ -1,14 +1,10 @@
 """Uniform distribution."""
-import logging
-
 import numpy as np
 import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distributions import ContinuousDistribution
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class UniformDistribution(ContinuousDistribution):
@@ -22,7 +18,7 @@ class UniformDistribution(ContinuousDistribution):
         logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(self, lower_bound, upper_bound):
         """Initialize uniform distribution.
 

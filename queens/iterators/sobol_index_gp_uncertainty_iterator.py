@@ -19,9 +19,8 @@ from queens.utils.process_outputs import write_results
 
 from .iterator import Iterator
 
-_logger = logging.getLogger(__name__)
-
 logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+_logger = logging.getLogger(__name__)
 
 
 class SobolIndexGPUncertaintyIterator(Iterator):
@@ -63,7 +62,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         results (dict): Dictionary for results.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

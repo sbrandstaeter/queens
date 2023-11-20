@@ -71,7 +71,7 @@ class SequentialMonteCarloIterator(Iterator):
                    of the MCMC kernel.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

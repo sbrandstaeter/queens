@@ -80,7 +80,7 @@ class OptimizationIterator(Iterator):
         OptimizationIterator (obj): Instance of the OptimizationIterator
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         model,

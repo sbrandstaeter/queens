@@ -54,7 +54,7 @@ class HeteroskedasticGPModel(SurrogateModel):
              arXiv preprint arXiv:1309.6835.
     """
 
-    @log_init_args(_logger)
+    @log_init_args
     def __init__(
         self,
         training_iterator=None,
