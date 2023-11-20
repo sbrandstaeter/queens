@@ -386,7 +386,7 @@ def log_init_args(logger):
 
             all_kwargs = dict(sorted(all_kwargs.items(), key=key_fun))
 
-            logger.info(get_str_table(args[0].__class__.__name__, all_kwargs))
+            logger.info(get_str_table(args[0].__class__.__name__, all_kwargs, use_repr=True))
             method(*args, **kwargs)
 
         return wrapper
