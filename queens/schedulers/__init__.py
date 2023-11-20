@@ -5,7 +5,10 @@ compute jobs either through a job-scheduling software or through a
 system call.
 """
 
+from queens.schedulers.cluster_scheduler import ClusterScheduler
+from queens.schedulers.local_scheduler import LocalScheduler
+
 VALID_TYPES = {
-    'local': ['queens.schedulers.local_scheduler', 'LocalScheduler'],
-    'cluster': ['queens.schedulers.cluster_scheduler', 'ClusterScheduler'],
+    'local': LocalScheduler,
+    'cluster': ClusterScheduler,
 }
