@@ -135,20 +135,24 @@ def fixture_cluster_settings(
     _logger.debug("raw cluster config: %s", settings)
     settings["cluster"] = cluster
     settings["user"] = remote_user
+    settings["remote_python"] = remote_python
+    settings["remote_queens_repository"] = remote_queens_repository
 
-    # save the settings for the remote connection in string of yaml format to make it more flexible
-    # for parsing it into the yaml input file
-    # in the yaml file this dict is already one level indented -> add two spaces before each line
-    settings["remote_connection"] = "  " + yaml.dump(
-        {
-            "host": settings["host"],
-            "user": remote_user,
-            "type": "remote_connection",
-            "gateway": gateway,
-            "remote_python": remote_python,
-            "remote_queens_repository": remote_queens_repository,
-        }
-    ).replace("\n", "\n  ")
+    if gateway is None:
+        # None is equal to null in yaml
+        settings["gateway"] = "null"
+    elif isinstance(gateway, dict):
+        # the gateway settings should be supplied via a dict:
+        # save the settings in string of yaml format to make it more flexible for parsing it into
+        # the yaml input file (we don't know which keywords the user used to supply the settings)
+
+        # in the yaml file this dict is already two level indented: add four spaces before each line
+        indentation = 4 * " "
+        settings["gateway"] = (
+            "\n" + indentation + yaml.dump(gateway).replace("\n", "\n" + indentation)
+        )
+    else:
+        raise ValueError(f"Cannot handel gateway information {gateway} of type {type(gateway)}.")
     return settings
 
 
@@ -159,13 +163,15 @@ def fixture_remote_python(pytestconfig):
 
 
 @pytest.fixture(name="remote_connection", scope="session")
-def fixture_remote_connection(cluster_settings):
+def fixture_remote_connection(cluster_settings, gateway):
     """Fabric connection to remote."""
-    # reconstruct the dict from the yaml
-    remote_connection_config = yaml.safe_load(cluster_settings["remote_connection"])
-    remote_connection_config.pop("type")
-    remote_connection = RemoteConnection(**remote_connection_config)
-    return remote_connection
+    return RemoteConnection(
+        host=cluster_settings["host"],
+        user=cluster_settings["user"],
+        remote_python=cluster_settings["remote_python"],
+        remote_queens_repository=cluster_settings["remote_queens_repository"],
+        gateway=gateway,
+    )
 
 
 @pytest.fixture(name="remote_queens_repository", scope="session")
