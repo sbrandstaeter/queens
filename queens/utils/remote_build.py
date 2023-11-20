@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--host', type=str, required=True, help='hostname or ip address of remote host'
     )
-    parser.add_argument('--user', type=str, required=True, help='remote username')
+    parser.add_argument('--user', type=str, default=None, required=False, help='remote username')
     parser.add_argument(
         '--remote-python', type=str, required=True, help='path to python environment on remote host'
     )
