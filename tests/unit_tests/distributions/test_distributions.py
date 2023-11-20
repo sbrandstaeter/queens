@@ -1,10 +1,8 @@
 """Test-module for distributions."""
 
 import numpy as np
-import pytest
 
 from queens.distributions.normal import NormalDistribution
-from queens.utils.valid_options_utils import InvalidOptionError
 
 
 def test_create_export_dict():

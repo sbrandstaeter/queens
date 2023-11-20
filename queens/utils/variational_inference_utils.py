@@ -310,13 +310,9 @@ class MeanFieldNormalVariational(VariationalDistribution):
             keep slices two dimensional.)
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
-        mean = mean.flatten()
-        cov = np.diag(cov)
-        gradient_lst = []
-        for sample in sample_batch:
-            gradient_lst.append((-(sample - mean) / cov).reshape(-1, 1))
-
-        gradients_batch = np.array(gradient_lst)
+        gradients_batch = -(sample_batch - mean.reshape(1, self.dimension)) / np.diag(cov).reshape(
+            1, self.dimension
+        )
         return gradients_batch
 
     def fisher_information_matrix(self, variational_parameters):
@@ -371,8 +367,8 @@ class MeanFieldNormalVariational(VariationalDistribution):
 
         return samples_mat, standard_normal_sample_batch
 
-    def jacobi_variational_parameters_reparameterization(
-        self, standard_normal_sample_batch, variational_parameters
+    def grad_variational_parameters_reparameterization(
+        self, standard_normal_sample_batch, variational_parameters, upstream_gradient
     ):
         r"""Calculate the gradient of the reparameterization.
 
@@ -380,12 +376,11 @@ class MeanFieldNormalVariational(VariationalDistribution):
             standard_normal_sample_batch (np.ndarray): Standard normal distributed sample
                                                     batch
             variational_parameters (np.ndarray): Variational parameters
+            upstream_gradient (np.array): Upstream gradient
 
         Returns:
-            jacobi_reparameterization_batch (np.ndarray): Tensor with Jacobi matrices
-            for the reparameterization trick. The first dimension loops over the
-            individual samples, the second dimension over variational parameters and
-            the last dimension over the dimensions within one sample.
+            gradient (np.ndarray): Gradient of the upstream function w.r.t. the variational
+                                   parameters.
 
         Note:
             We assume that *grad_reconstruct_params* is a row-vector containing the partial
@@ -398,17 +393,14 @@ class MeanFieldNormalVariational(VariationalDistribution):
             parameters in different rows and different output dimensions of the sample per
             column.
         """
-        jacobi_reparameterization_lst = []
         grad_reconstruct_params = self._grad_reconstruct_distribution_parameters(
             variational_parameters
         )
-        for sample in standard_normal_sample_batch:
-            jacobi_parameters = np.vstack((np.eye(self.dimension), np.diag(sample)))
-            jacobi_reparameterization = jacobi_parameters * grad_reconstruct_params.T
-            jacobi_reparameterization_lst.append(jacobi_reparameterization)
-
-        jacobi_reparameterization_batch = np.array(jacobi_reparameterization_lst)
-        return jacobi_reparameterization_batch
+        gradient = (
+            np.hstack((upstream_gradient, upstream_gradient * standard_normal_sample_batch))
+            * grad_reconstruct_params
+        )
+        return gradient
 
 
 class FullRankNormalVariational(VariationalDistribution):
@@ -528,9 +520,7 @@ class FullRankNormalVariational(VariationalDistribution):
             grad_reconstruct_params (np.ndarray): Gradient vector of the reconstruction
                                                 w.r.t. the variational parameters
         """
-        grad_mean = np.ones((1, self.dimension))
-        grad_cholesky = np.ones((1, self.n_parameters - self.dimension))
-        grad_reconstruct_params = np.hstack((grad_mean, grad_cholesky))
+        grad_reconstruct_params = np.ones((1, self.n_parameters))
         return grad_reconstruct_params
 
     def draw(self, variational_parameters, n_draws=1):
@@ -651,7 +641,7 @@ class FullRankNormalVariational(VariationalDistribution):
             )
 
         gradients_batch = np.array(gradient_lst)
-        return gradients_batch
+        return gradients_batch.reshape(sample_batch.shape)
 
     def fisher_information_matrix(self, variational_parameters):
         """Compute the Fisher information matrix analytically.
@@ -734,8 +724,8 @@ class FullRankNormalVariational(VariationalDistribution):
 
         return samples_mat.T, standard_normal_sample_batch
 
-    def jacobi_variational_parameters_reparameterization(
-        self, standard_normal_sample_batch, variational_parameters
+    def grad_variational_parameters_reparameterization(
+        self, standard_normal_sample_batch, variational_parameters, upstream_gradient
     ):
         r"""Calculate the gradient of the reparameterization.
 
@@ -743,13 +733,11 @@ class FullRankNormalVariational(VariationalDistribution):
             standard_normal_sample_batch (np.ndarray): Standard normal distributed sample
                                                     batch
             variational_parameters (np.ndarray): Variational parameters
+            upstream_gradient (np.array): Upstream gradient
 
         Returns:
-            jacobi_reparameterization_batch (np.ndarray): Tensor with Jacobi matrices for the
-            reparameterization trick. The first dimension
-            loops over the individual samples, the second
-            dimension over variational parameters and the last
-            dimension over the dimensions within one sample
+            gradient (np.ndarray): Gradient of the upstream function w.r.t. the variational
+                                   parameters.
 
         **Note:**
             We assume that *grad_reconstruct_params* is a row-vector containing the partial
@@ -762,17 +750,22 @@ class FullRankNormalVariational(VariationalDistribution):
             parameters in different rows and different output dimensions of the sample per
             column.
         """
-        jacobi_reparameterization_lst = []
+        # pylint: disable=unused-argument
         grad_reconstruct_params = self._grad_reconstruct_distribution_parameters()
-        for sample in standard_normal_sample_batch:
-            jacobi_mean = np.eye(self.dimension)
-            jacobi_cholesky = np.tile(sample, (variational_parameters.size - self.dimension, 1))
-            jacobi_cholesky[0, -1] = 0
-            jacobi_parameters = np.vstack((jacobi_mean, jacobi_cholesky))
-            jacobi_reparameterization_lst.append(jacobi_parameters * grad_reconstruct_params.T)
 
-        jacobi_reparameterization_batch = np.array(jacobi_reparameterization_lst)
-        return jacobi_reparameterization_batch
+        indices_1, indices_2 = np.tril_indices(self.dimension)
+
+        gradient = (
+            np.hstack(
+                (
+                    upstream_gradient,
+                    upstream_gradient[:, indices_1] * standard_normal_sample_batch[:, indices_2],
+                )
+            )
+            * grad_reconstruct_params
+        )
+
+        return gradient
 
 
 class MixtureModel(VariationalDistribution):
