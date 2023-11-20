@@ -152,7 +152,7 @@ def fixture_cluster_settings(
             "\n" + indentation + yaml.dump(gateway).replace("\n", "\n" + indentation)
         )
     else:
-        raise ValueError(f"Cannot handel gateway information {gateway} of type {type(gateway)}.")
+        raise ValueError(f"Cannot handle gateway information {gateway} of type {type(gateway)}.")
     return settings
 
 
