@@ -1,5 +1,6 @@
 """Logging in QUEENS."""
 
+import functools
 import inspect
 import io
 import logging
@@ -367,6 +368,7 @@ def log_init_args(logger):
     """
 
     def decorator(method):
+        @functools.wraps(method)
         def wrapper(*args, **kwargs):
             signature = inspect.signature(method)
             default_kwargs = {
