@@ -151,13 +151,29 @@ class RemoteConnection(Connection):
 
         return return_value
 
-    def open_port_forwarding(self, local_port, remote_port):
+    def get_free_local_port(self):
+        """Get a free port on localhost."""
+        return get_port()
+
+    def get_free_remote_port(self):
+        """Get a free port on remote host."""
+        return self.run_function(get_port)
+
+    def open_port_forwarding(self, local_port=None, remote_port=None):
         """Open port forwarding.
 
         Args:
-            local_port (int): Local port
-            remote_port (int): Remote port
+            local_port (int): free local port
+            remote_port (int): free remote port
+        Returns:
+            local_port (int): used local port
+            remote_port (int): used remote port
         """
+        if local_port is None:
+            local_port = self.get_free_local_port()
+        if remote_port is None:
+            remote_port = self.get_free_remote_port()
+
         proxyjump = ""
         if self.gateway is not None:
             proxyjump = f"-J {self.gateway.user}@{self.gateway.host}:{self.gateway.port}"
@@ -172,6 +188,8 @@ class RemoteConnection(Connection):
 
         kill_cmd = f'pkill -f "{cmd}"'
         atexit.register(start_subprocess, kill_cmd)
+
+        return local_port, remote_port
 
     def create_remote_directory(self, remote_directory):
         """Make a directory (including parents) on the remote host.
@@ -268,14 +286,6 @@ class RemoteConnection(Connection):
         _logger.debug(result.stdout)
         _logger.info("Build of remote queens environment was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
-
-    def get_local_port(self):
-        """Get a free port on localhost."""
-        return get_port()
-
-    def get_remote_port(self):
-        """Get a free port on remote host."""
-        return self.run_function(get_port)
 
 
 def get_port():

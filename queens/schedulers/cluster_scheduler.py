@@ -122,8 +122,8 @@ class ClusterScheduler(Scheduler):
         # dask worker lifetime = walltime - 3m +/- 2m
         worker_lifetime = str(int((walltime_delta + timedelta(minutes=2)).total_seconds())) + "s"
 
-        remote_port = self.remote_connection.get_remote_port()
-        remote_port_dashboard = self.remote_connection.get_remote_port()
+        local_port, remote_port = self.remote_connection.open_port_forwarding()
+        local_port_dashboard, remote_port_dashboard = self.remote_connection.open_port_forwarding()
 
         scheduler_options = {
             "port": remote_port,
@@ -158,12 +158,6 @@ class ClusterScheduler(Scheduler):
         )
         _logger.debug(stdout)
         _logger.debug(stderr)
-
-        local_port = self.remote_connection.get_local_port()
-        local_port_dashboard = self.remote_connection.get_local_port()
-
-        self.remote_connection.open_port_forwarding(local_port, remote_port)
-        self.remote_connection.open_port_forwarding(local_port_dashboard, remote_port_dashboard)
 
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
