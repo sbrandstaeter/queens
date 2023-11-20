@@ -28,7 +28,11 @@ def run(input_file, output_dir, debug=False):
 
     experiment_name = config.pop('experiment_name')
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=debug):
+    with GlobalSettings(
+        experiment_name=experiment_name,
+        output_dir=output_dir,
+        debug=debug,
+    ):
         # create iterator
         my_iterator = from_config_create_iterator(config)
 

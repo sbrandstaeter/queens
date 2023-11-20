@@ -31,6 +31,15 @@ def pytest_addoption(parser):
         help="Turn off test timing, so no exceptions are raised if tests are too slow. To change "
         "the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
     )
+    parser.addoption(
+        "--gateway",
+        action="store",
+        default=None,
+        help=(
+            "gateway connection (proxyjump) for remote connection in json format,"
+            " e.g. '{\"host\": \"user@host\"}'"
+        ),
+    )
 
 
 def check_item_for_marker(item, marker_name):

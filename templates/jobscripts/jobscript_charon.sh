@@ -3,7 +3,7 @@
 echo $HOME
 cd $HOME
 source /etc/profile.d/modules.sh
-source /home/opt/cluster_tools/core/load_baci_environment_23_06.sh
+source /home/opt/cluster_tools/core/load_baci_environment.sh
 
 module list
 ##########################################
