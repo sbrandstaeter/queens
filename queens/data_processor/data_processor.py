@@ -46,7 +46,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                                  The paths can contain regex expressions.
         """
         if not file_name_identifier:
-            raise IOError(
+            raise ValueError(
                 f"No option 'file_name_identifier' was provided in '{self.__class__.__name__}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
@@ -57,7 +57,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             )
 
         if file_options_dict is None:
-            raise IOError(
+            raise ValueError(
                 f"No option 'file_options_dict' was provided in '{self.__class__.__name__}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
