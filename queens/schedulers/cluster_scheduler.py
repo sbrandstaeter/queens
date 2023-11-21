@@ -135,7 +135,6 @@ class ClusterScheduler(Scheduler):
         dask_cluster_kwargs = {
             "job_name": experiment_name,
             "queue": queue,
-            "cores": num_cores,
             "memory": '10TB',
             "scheduler_options": scheduler_options,
             "walltime": walltime,
@@ -143,6 +142,12 @@ class ClusterScheduler(Scheduler):
             "job_directives_skip": job_directives_skip,
             "job_extra_directives": [job_extra_directives],
             "worker_extra_args": ["--lifetime", worker_lifetime, "--lifetime-stagger", "2m"],
+            # keep this hardcoded to 1, the number of threads for the mpi run is handled by
+            # job_extra_directives. Note that the number of workers is not the number of parallel
+            # simulations!
+            "cores": 1,
+            "processes": 1,
+            "n_workers": 1,
         }
         dask_cluster_adapt_kwargs = {
             "minimum_jobs": min_jobs,
