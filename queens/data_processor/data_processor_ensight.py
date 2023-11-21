@@ -217,6 +217,7 @@ class DataProcessorEnsight(DataProcessor):
 
         # loop over different time-steps here.
         time_lst = sorted(time_lst)
+        processed_data = []
         for time_value in time_lst:
             vtk_data_per_time_step = self._vtk_from_ensight(raw_data, time_value)
 
@@ -229,8 +230,9 @@ class DataProcessorEnsight(DataProcessor):
                 vtk_data_per_time_step,
                 time_value,
             )
+            processed_data.append(processed_data_per_time_step_interpolated)
 
-            return processed_data_per_time_step_interpolated
+        return np.hstack(processed_data)
 
     def _get_field_values_by_coordinates(
         self,
