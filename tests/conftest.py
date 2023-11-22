@@ -25,11 +25,20 @@ def pytest_addoption(parser):
     parser.addoption("--remote-python", action="store", default=None)
     parser.addoption("--remote-queens-repository", action="store", default="null")
     parser.addoption(
-        "--time-tests",
+        "--no-test-timing",
         action="store_true",
         default=False,
-        help="Time tests. Raises timeout exception in case the selected tests take too long. To"
-        " change the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
+        help="Turn off test timing, so no exceptions are raised if tests are too slow. To change "
+        "the maximum test time use @pytest.marker.max_time_for_test(time_in_seconds)",
+    )
+    parser.addoption(
+        "--gateway",
+        action="store",
+        default=None,
+        help=(
+            "gateway connection (proxyjump) for remote connection in json format,"
+            " e.g. '{\"host\": \"user@host\"}'"
+        ),
     )
 
 
@@ -68,15 +77,14 @@ def pytest_collection_modifyitems(items):
 
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):
-                item.add_marker(pytest.mark.max_time_for_test(1))
+                item.add_marker(pytest.mark.max_time_for_test(2))
 
 
 @pytest.fixture(name="time_tests", autouse=True, scope="function")
 def fixture_time_tests(request):
     """Time tests if desired."""
     # Check if test timing is on
-    if request.config.getoption("--time-tests"):
-
+    if not request.config.getoption("--no-test-timing"):
         # Measure time
         start_time = perf_counter()
         yield

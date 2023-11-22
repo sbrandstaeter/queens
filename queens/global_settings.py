@@ -1,5 +1,4 @@
 """Global Settings module."""
-
 import logging
 from pathlib import Path
 
@@ -40,7 +39,7 @@ class GlobalSettings:
             raise ValueError("Experiment name can not contain spaces!")
 
         self.experiment_name = experiment_name
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir)
         self.debug = debug
 
         # set up logging

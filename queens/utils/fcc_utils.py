@@ -22,6 +22,7 @@ from queens.utils.experimental_data_reader import (
 )
 from queens.utils.import_utils import get_module_class
 from queens.utils.iterative_averaging_utils import VALID_TYPES as VALID_ITERATIVE_AVERAGING_TYPES
+from queens.utils.remote_operations import VALID_CONNECTION_TYPES
 from queens.utils.stochastic_optimizer import VALID_TYPES as VALID_STOCHASTIC_OPTIMIZER_TYPES
 
 _logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ _logger = logging.getLogger(__name__)
 VALID_TYPES = {
     **VALID_CLASSIFIER_LEARNING_TYPES,
     **VALID_CLASSIFIER_TYPES,
+    **VALID_CONNECTION_TYPES,
     **VALID_DATA_PROCESSOR_TYPES,
     **VALID_DISTRIBUTION_TYPES,
     **VALID_DRIVER_TYPES,
