@@ -7,6 +7,7 @@ import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.utils.ascii_art import print_points_iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class PointsIterator(Iterator):
         points_array (np.ndarray): Array with all samples
     """
 
+    @log_init_args
     def __init__(self, model, parameters, points, result_description):
         """Initialise Iterator.
 

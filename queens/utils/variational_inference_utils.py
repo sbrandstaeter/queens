@@ -9,6 +9,7 @@ import scipy
 from numba import njit
 
 from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class VariationalDistribution:
@@ -129,6 +130,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         n_parameters (int): Number of parameters used in the parameterization.
     """
 
+    @log_init_args
     def __init__(self, dimension):
         """Initialize variational distribution.
 
@@ -421,6 +423,7 @@ class FullRankNormalVariational(VariationalDistribution):
         n_parameters (int): Number of parameters used in the parameterization.
     """
 
+    @log_init_args
     def __init__(self, dimension):
         """Initialize variational distribution.
 

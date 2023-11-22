@@ -5,6 +5,8 @@ import time
 import numpy as np
 import xarray as xr
 
+from queens.utils.logger_settings import log_init_args
+
 _logger = logging.getLogger(__name__)
 
 
@@ -22,6 +24,7 @@ class Predictor:
         seed_posterior_samples (int): seed for posterior samples
     """
 
+    @log_init_args
     def __init__(self, gp_model, number_gp_realizations, seed_posterior_samples):
         """Initialize.
 

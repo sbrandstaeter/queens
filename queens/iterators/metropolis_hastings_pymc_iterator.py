@@ -10,6 +10,7 @@ import numpy as np
 import pymc as pm
 
 from queens.iterators.pymc_iterator import PyMCIterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         metropolis_hastings_iterator (obj): Instance of Metropolis-Hastings Iterator
     """
 
+    @log_init_args
     def __init__(
         self,
         model,

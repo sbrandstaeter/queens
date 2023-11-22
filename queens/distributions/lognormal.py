@@ -5,6 +5,7 @@ import scipy.stats
 
 from queens.distributions.distributions import ContinuousDistribution
 from queens.distributions.normal import NormalDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class LogNormalDistribution(ContinuousDistribution):
@@ -18,6 +19,7 @@ class LogNormalDistribution(ContinuousDistribution):
         normal_distribution (obj): underlying normal distribution
     """
 
+    @log_init_args
     def __init__(self, normal_mean, normal_covariance):
         """Initialize lognormal distribution.
 

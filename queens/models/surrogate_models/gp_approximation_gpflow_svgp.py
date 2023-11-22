@@ -11,6 +11,7 @@ from gpflow.utilities import print_summary, set_trainable
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
+from queens.utils.logger_settings import log_init_args
 
 # suppress tensorflow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -43,6 +44,7 @@ class GPflowSVGPModel(SurrogateModel):
         train_likelihood_variance (bool): if true, likelihood variance is trained
     """
 
+    @log_init_args
     def __init__(
         self,
         training_iterator=None,

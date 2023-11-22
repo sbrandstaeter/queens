@@ -6,6 +6,7 @@ from dask.distributed import Client, LocalCluster
 import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -13,6 +14,7 @@ _logger = logging.getLogger(__name__)
 class LocalScheduler(Scheduler):
     """Local scheduler class for QUEENS."""
 
+    @log_init_args
     def __init__(self, max_concurrent=1, num_procs=1, num_procs_post=1, restart_workers=False):
         """Initialize local scheduler.
 

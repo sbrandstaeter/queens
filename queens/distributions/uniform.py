@@ -4,6 +4,7 @@ import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distributions import ContinuousDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class UniformDistribution(ContinuousDistribution):
@@ -17,6 +18,7 @@ class UniformDistribution(ContinuousDistribution):
         logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
+    @log_init_args
     def __init__(self, lower_bound, upper_bound):
         """Initialize uniform distribution.
 

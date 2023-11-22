@@ -7,6 +7,7 @@ from scipy.special import logsumexp
 from queens.distributions import VALID_TYPES
 from queens.distributions.distributions import ContinuousDistribution
 from queens.utils.import_utils import get_module_class
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ _logger = logging.getLogger(__name__)
 class MixtureDistribution(ContinuousDistribution):
     """Mixture models."""
 
+    @log_init_args
     def __init__(self, weights, component_distributions):
         """Initialize mixture model.
 

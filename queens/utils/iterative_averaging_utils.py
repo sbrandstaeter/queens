@@ -3,6 +3,7 @@ import abc
 
 import numpy as np
 
+from queens.utils.logger_settings import log_init_args
 from queens.utils.print_utils import get_str_table
 
 VALID_TYPES = {
@@ -93,6 +94,7 @@ class MovingAveraging(IterativeAveraging):
 
     _name = "Moving Averaging"
 
+    @log_init_args
     def __init__(self, num_iter_for_avg):
         """Initialize moving averaging object.
 
@@ -144,6 +146,7 @@ class PolyakAveraging(IterativeAveraging):
 
     _name = "Polyak Averaging"
 
+    @log_init_args
     def __init__(self):
         """Initialize Polyak averaging object."""
         super().__init__()
@@ -192,6 +195,7 @@ class ExponentialAveraging(IterativeAveraging):
 
     _name = "Exponential Averaging"
 
+    @log_init_args
     def __init__(self, coefficient):
         """Initialize exponential averaging object.
 

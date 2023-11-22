@@ -2,11 +2,13 @@
 import numpy as np
 
 from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class BernoulliDistribution(ParticleDiscreteDistribution):
     """Bernoulli distribution."""
 
+    @log_init_args
     def __init__(self, success_probability):
         """Initialize Bernoulli distribution.
 

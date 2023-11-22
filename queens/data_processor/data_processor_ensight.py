@@ -7,6 +7,7 @@ import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 from queens.data_processor.data_processor import DataProcessor
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class DataProcessorEnsight(DataProcessor):
         geometric_set_data (dict): Dictionary describing the topology of the geometry
     """
 
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

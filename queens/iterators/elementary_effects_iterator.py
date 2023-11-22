@@ -14,6 +14,7 @@ from SALib.sample import morris
 import queens.visualization.sa_visualization as qvis
 from queens.distributions.uniform import UniformDistribution
 from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 if not mpl.get_backend().lower() == 'agg':
@@ -44,6 +45,7 @@ class ElementaryEffectsIterator(Iterator):
         si (dict): Dictionary with all sensitivity indices.
     """
 
+    @log_init_args
     def __init__(
         self,
         model,

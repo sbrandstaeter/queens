@@ -1,6 +1,7 @@
 """Job interface class."""
 
 from queens.interfaces.interface import Interface
+from queens.utils.logger_settings import log_init_args
 
 
 class JobInterface(Interface):
@@ -11,6 +12,7 @@ class JobInterface(Interface):
         driver (Driver):            driver for the simulations
     """
 
+    @log_init_args
     def __init__(self, parameters, scheduler, driver):
         """Create JobInterface.
 

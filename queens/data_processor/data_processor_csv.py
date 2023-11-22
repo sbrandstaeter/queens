@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from queens.data_processor.data_processor import DataProcessor
+from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ class DataProcessorCsv(DataProcessor):
     }
     expected_filter_by_range = {'type': 'by_range', 'range': [1.0, 2.0], 'tolerance': 0.0}
 
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

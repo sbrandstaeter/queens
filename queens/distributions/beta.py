@@ -4,6 +4,7 @@ import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distributions import ContinuousDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class BetaDistribution(ContinuousDistribution):
@@ -21,6 +22,7 @@ class BetaDistribution(ContinuousDistribution):
         scipy_beta (scipy.stats.beta): Scipy beta distribution object.
     """
 
+    @log_init_args
     def __init__(self, lower_bound, upper_bound, a, b):
         """Initialize Beta distribution.
 

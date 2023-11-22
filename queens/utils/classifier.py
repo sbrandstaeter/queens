@@ -6,6 +6,8 @@ import numpy as np
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
 
+from queens.utils.logger_settings import log_init_args
+
 VALID_CLASSIFIER_LEARNING_TYPES = {
     "passive_learning": ["queens.utils.classifier", "Classifier"],
     "active_learning": ["queens.utils.classifier", "ActiveLearningClassifier"],
@@ -93,6 +95,7 @@ class ActiveLearningClassifier(Classifier):
 
     is_active = True
 
+    @log_init_args
     def __init__(self, n_params, classifier_obj, batch_size, active_sampler_obj=None):
         """Initialise active learning classifier.
 

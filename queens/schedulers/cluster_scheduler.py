@@ -10,6 +10,7 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory
+from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ def timedelta_to_str(timedelta_obj):
 class ClusterScheduler(Scheduler):
     """Cluster scheduler for QUEENS."""
 
+    @log_init_args
     def __init__(
         self,
         workload_manager,

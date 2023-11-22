@@ -4,6 +4,7 @@ import scipy.stats
 from scipy.special import erf  # pylint:disable=no-name-in-module
 
 from queens.distributions.distributions import ContinuousDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class MeanFieldNormalDistribution(ContinuousDistribution):
@@ -13,6 +14,7 @@ class MeanFieldNormalDistribution(ContinuousDistribution):
         standard_deviation (np.ndarray): standard deviation vector
     """
 
+    @log_init_args
     def __init__(self, mean, variance, dimension):
         """Initialize normal distribution.
 
