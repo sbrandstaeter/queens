@@ -189,7 +189,7 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)
-        log_likelihood = self.model.evaluate(samples)
+        log_likelihood = self.model.evaluate(samples)['result']
 
         return log_likelihood.flatten()
 

@@ -58,7 +58,7 @@ def fixture_my_lik_model():
 
     nugget_noise_variance = 1e-6
     noise_value = 1e-3
-    forward_model = forward_model_dummy(lambda x: {"mean": x + 1})
+    forward_model = forward_model_dummy(lambda x: {"result": x + 1})
     noise_type = "fixed_variance"
     y_obs = np.array([[3.0]])
 
@@ -106,7 +106,7 @@ def test_evaluate(mocker, my_lik_model):
     """Test for the evaluate method."""
     samples = np.array([[1.0]])
     # test working evaluation
-    response = my_lik_model.evaluate(samples)
+    response = my_lik_model.evaluate(samples)['result']
     assert response == 4
 
     # test update of covariance for MAP
@@ -115,7 +115,7 @@ def test_evaluate(mocker, my_lik_model):
         "queens.models.likelihood_models.gaussian_likelihood."
         "GaussianLikelihood.update_covariance"
     )
-    response = my_lik_model.evaluate(samples)
+    response = my_lik_model.evaluate(samples)['result']
     assert m1.called_once_with(3.0)
 
 

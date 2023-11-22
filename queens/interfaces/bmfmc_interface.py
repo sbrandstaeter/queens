@@ -66,7 +66,7 @@ class BmfmcInterface(Interface):
             )
 
         output = self.probabilistic_mapping.predict(samples, support=support, full_cov=full_cov)
-        mean_Y_HF_given_Z_LF = output["mean"]
+        mean_Y_HF_given_Z_LF = output['result']
         var_Y_HF_given_Z_LF = output["variance"]
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 

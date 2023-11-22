@@ -82,12 +82,12 @@ class Scheduler(metaclass=abc.ABCMeta):
                     worker = list(self.client.who_has(future).values())[0]
                     self.restart_worker(worker)
 
-        result_dict = {'mean': [], 'gradient': []}
+        result_dict = {'result': [], 'gradient': []}
         for result in results.values():
             # We should remove this squeeze! It is only introduced for consistency with old test.
-            result_dict['mean'].append(np.atleast_1d(np.array(result[0]).squeeze()))
+            result_dict['result'].append(np.atleast_1d(np.array(result[0]).squeeze()))
             result_dict['gradient'].append(result[1])
-        result_dict['mean'] = np.array(result_dict['mean'])
+        result_dict['result'] = np.array(result_dict['result'])
         result_dict['gradient'] = np.array(result_dict['gradient'])
         return result_dict
 

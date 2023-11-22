@@ -72,4 +72,6 @@ def test_correct_results(default_lhs_iterator):
         ]
     )
 
-    np.testing.assert_allclose(default_lhs_iterator.output["mean"][0:10], ref_results, 1e-09, 1e-09)
+    np.testing.assert_allclose(
+        default_lhs_iterator.output["result"][0:10], ref_results, 1e-09, 1e-09
+    )

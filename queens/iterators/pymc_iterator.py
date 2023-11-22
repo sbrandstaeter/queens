@@ -312,7 +312,7 @@ class PyMCIterator(Iterator):
         # process output takes a dict as input with key 'mean'
         results_dict = az.convert_to_inference_data(inference_data_dict)
         results = process_outputs(
-            {'sample_stats': sample_stats, 'mean': self.chains, 'inference_data': results_dict},
+            {'sample_stats': sample_stats, 'result': self.chains, 'inference_data': results_dict},
             self.result_description,
         )
         if self.result_description["write_results"]:

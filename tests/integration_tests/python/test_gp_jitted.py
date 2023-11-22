@@ -50,7 +50,7 @@ def test_jitted_gp_one_dim(gp_model):
     my_model.train()
 
     output = my_model.predict(x_test)
-    mean = output['mean']
+    mean = output['result']
     variance = output['variance']
 
     np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
@@ -58,7 +58,7 @@ def test_jitted_gp_one_dim(gp_model):
 
     # -- now call the gradient function of the model---
     output = my_model.predict(x_test, gradient_bool=True)
-    mean = output['mean']
+    mean = output['result']
     variance = output['variance']
     gradient_mean = output['grad_mean']
     gradient_variance = output['grad_var']
@@ -77,7 +77,7 @@ def test_jitted_gp_one_dim(gp_model):
     gp_model.train()
 
     output = gp_model.predict(x_test)
-    mean = output['mean']
+    mean = output['result']
     variance = output['variance']
 
     np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
@@ -121,7 +121,7 @@ def test_jitted_gp_two_dim(gp_model):
 
     # --- get the mean and variance of the model (no gradient call here) ---
     output = gp_model.predict(x_test)
-    mean = output['mean']
+    mean = output['result']
     variance = output['variance']
 
     np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
@@ -129,7 +129,7 @@ def test_jitted_gp_two_dim(gp_model):
 
     # -- now call the gradient function of the model---
     output = gp_model.predict(x_test, gradient_bool=True)
-    mean = output['mean']
+    mean = output['result']
     variance = output['variance']
     gradient_mean = output['grad_mean']
     gradient_variance = output['grad_var']

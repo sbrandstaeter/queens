@@ -178,7 +178,7 @@ class BmfiaInterface(Interface):
                 gradient_bool=False,
             )
 
-            mean_y_hf_given_z_lf.append(output["mean"].squeeze())
+            mean_y_hf_given_z_lf.append(output['result'].squeeze())
             var_y_hf_given_z_lf.append(output["variance"].squeeze())
 
         mean = np.atleast_2d(np.array(mean_y_hf_given_z_lf)).T
@@ -315,7 +315,7 @@ class BmfiaInterface(Interface):
                 z_test_per_coordinate, support=support, gradient_bool=True
             )
 
-            mean_Y_HF_given_Z_LF.append(output["mean"].squeeze())
+            mean_Y_HF_given_Z_LF.append(output['result'].squeeze())
             var_Y_HF_given_Z_LF.append(output["variance"].squeeze())
 
             grad_mean.append(output["grad_mean"].squeeze().T)
@@ -878,7 +878,7 @@ class BmfiaInterface(Interface):
             output = probabilistic_mapping_obj.predict(
                 z_test_per_time_step, support=support, gradient_bool=gradient_bool
             )
-            mean_y_hf_given_z_lf.append(output["mean"].flatten())
+            mean_y_hf_given_z_lf.append(output['result'].flatten())
             var_y_hf_given_z_lf.append(output["variance"].flatten())
 
             if gradient_bool:

@@ -69,7 +69,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
             samples (np.ndarray): Input samples
 
         Returns:
-            self.response (np.array): Response of the underlying model at input samples
+            response (dict): Response of the underlying model at input samples
         """
         if not self.evaluate_and_gradient_bool:
             self.response = self.interface.evaluate(samples)
@@ -127,7 +127,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.interface.evaluate(combined_samples)['mean'].reshape(
+        all_responses = self.interface.evaluate(combined_samples)['result'].reshape(
             combined_samples.shape[0], -1
         )
 
@@ -151,4 +151,4 @@ class DifferentiableSimulationModelFD(SimulationModel):
 
         gradient_response = np.array(model_gradients_lst)
 
-        return {'mean': response, 'gradient': gradient_response}
+        return {'result': response, 'gradient': gradient_response}

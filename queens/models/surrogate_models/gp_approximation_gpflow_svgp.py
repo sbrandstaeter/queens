@@ -158,7 +158,7 @@ class GPflowSVGPModel(SurrogateModel):
         x_test = self.scaler_x.transform(x_test)
 
         output = {
-            'mean': [],
+            'result': [],
             'variance': [],
             'variance_diagonal': [],
             'x_test': x_test,
@@ -174,11 +174,11 @@ class GPflowSVGPModel(SurrogateModel):
             mean = self.scaler_y.inverse_transform(mean.numpy()).reshape((number_test_samples, -1))
             var = var.numpy() * self.scaler_y.var_[i]
 
-            output['mean'].append(mean)
+            output['result'].append(mean)
             if support == 'f' and full_cov is True:
                 output['variance'].append(np.squeeze(var, axis=0))
                 output['variance_diagonal'].append(
-                    extract_block_diag(np.squeeze(var, axis=0), output['mean'][-1].shape[1])
+                    extract_block_diag(np.squeeze(var, axis=0), output['result'][-1].shape[1])
                 )
             else:
                 output['variance'].append(var)
@@ -290,7 +290,7 @@ class GPflowSVGPModel(SurrogateModel):
             if output[key]:
                 output[key] = np.squeeze(np.moveaxis(np.array(output[key]), 0, 1), axis=1)
 
-        for current_key in ['mean', 'variance', 'variance_diagonal', 'post_samples']:
+        for current_key in ['result', 'variance', 'variance_diagonal', 'post_samples']:
             _squeeze_array(current_key)
 
         return output

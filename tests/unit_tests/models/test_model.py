@@ -36,7 +36,7 @@ def test_evaluate_and_gradient(model):
 
     def model_eval(self, x):
         assert self.evaluate_and_gradient_bool is True
-        return np.sum(x**2, axis=1, keepdims=True)
+        return {'result': np.sum(x**2, axis=1, keepdims=True)}
 
     model.grad = Mock(
         side_effect=lambda x, upstream_gradient: np.sum(

@@ -156,7 +156,7 @@ def test_residual(default_baci_lm_iterator, mocker):
         return_value=None,
     )
 
-    default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
+    default_baci_lm_iterator.model.response = {'result': np.array([[3.0, 4.2], [99.9, 99.9]])}
 
     _, result = default_baci_lm_iterator.jacobian_and_residual(np.array([1.0, 2.2]))
 
@@ -179,7 +179,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
         return_value=None,
     )
 
-    default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
+    default_baci_lm_iterator.model.response = {'result': np.array([[3.0, 4.2], [99.9, 99.9]])}
 
     m5 = mocker.patch(
         'queens.iterators.baci_lm_iterator.fd_jacobian',

@@ -91,5 +91,5 @@ class LHSIterator(Iterator):
 
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)
-        _logger.info("Size of outputs %s", self.output['mean'].shape)
-        _logger.debug("Outputs %s", self.output['mean'])
+        _logger.info("Size of outputs %s", self.output['result'].shape)
+        _logger.debug("Outputs %s", self.output['result'])

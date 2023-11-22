@@ -76,12 +76,12 @@ class Predictor:
         gp_output = self.gp_model.predict(inputs, support='f')
 
         if self.number_gp_realizations == 1:
-            raw_prediction = gp_output['mean'].reshape(*samples.shape[:2], 1)
+            raw_prediction = gp_output['result'].reshape(*samples.shape[:2], 1)
         else:
             if self.seed_posterior_samples:
                 np.random.seed(self.seed_posterior_samples)
             raw_prediction = (
-                gp_output['mean']
+                gp_output['result']
                 + np.random.randn(inputs.shape[0], self.number_gp_realizations)
                 * np.sqrt(gp_output['variance'])
             ).reshape(*samples.shape[:2], self.number_gp_realizations)

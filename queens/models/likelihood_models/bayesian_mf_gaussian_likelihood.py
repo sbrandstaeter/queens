@@ -137,7 +137,7 @@ class BMFGaussianModel(LikelihoodModel):
             samples (np.ndarray): Evaluated samples
 
         Returns:
-            mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
+            dict: Vector of log-likelihood values per model input.
         """
         # reshape the model output according to the number of coordinates
         num_coordinates = self.coords_mat.shape[0]
@@ -145,7 +145,7 @@ class BMFGaussianModel(LikelihoodModel):
 
         # we explicitly cut the array at the variable size as within one batch several chains
         # e.g., in MCMC might be calculated; we only want the last chain here
-        forward_model_output = self.forward_model.evaluate(samples)['mean'].reshape(
+        forward_model_output = self.forward_model.evaluate(samples)['result'].reshape(
             -1, num_coordinates
         )[:num_samples, :]
 
@@ -155,7 +155,7 @@ class BMFGaussianModel(LikelihoodModel):
             'mf_log_likelihood': mf_log_likelihood,
         }
 
-        return mf_log_likelihood
+        return {'result': mf_log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.

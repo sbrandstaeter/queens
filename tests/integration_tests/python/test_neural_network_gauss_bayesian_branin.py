@@ -17,7 +17,7 @@ def test_neural_network_gauss_bayesian_branin(inputdir, tmp_path, expected_mean,
         results = pickle.load(handle)
 
     np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["mean"], expected_mean, decimal=4
+        results["raw_output_data"]["result"], expected_mean, decimal=4
     )
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["variance"], expected_var, decimal=2

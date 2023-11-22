@@ -41,6 +41,9 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
 
         Args:
             samples (np.ndarray): Input samples
+
+        Returns:
+            response (dict): Response of the underlying model at input samples
         """
         self.response = self.interface.evaluate(samples)
         return self.response
@@ -75,5 +78,5 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
-        gradient = self.gradient_interface.evaluate(samples)['mean']
+        gradient = self.gradient_interface.evaluate(samples)['result']
         return gradient

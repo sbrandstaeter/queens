@@ -195,7 +195,7 @@ class HeteroskedasticGPModel(SurrogateModel):
             self.posterior_cov_mat_y = np.cov(posterior_samples_y.T)
             variance = self.posterior_cov_mat_y
 
-        output["mean"] = mean
+        output['result'] = mean
         output["variance"] = variance
 
         if self.num_posterior_samples:

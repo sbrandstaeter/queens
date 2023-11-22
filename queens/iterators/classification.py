@@ -187,7 +187,7 @@ class ClassificationIterator(Iterator):
         Returns:
             np.array: model output
         """
-        output = self.model.evaluate(samples)["mean"]
+        output = self.model.evaluate(samples)["result"]
         self.samples = np.row_stack((self.samples, samples))
         return output
 

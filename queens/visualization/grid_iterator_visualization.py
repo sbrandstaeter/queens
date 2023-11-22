@@ -191,9 +191,9 @@ class GridIteratorVisualization:
 
         # get axes
         x = samples
-        y = output['mean']
-        min_y = min(output['mean'])
-        max_y = max(output['mean'])
+        y = output['result']
+        min_y = min(output['result'])
+        max_y = max(output['result'])
         min_x = min(samples)
         max_x = max(samples)
 
@@ -224,9 +224,9 @@ class GridIteratorVisualization:
         # get axes
         x = samples[:, 0].reshape(n_grid_p[0], n_grid_p[1])
         y = samples[:, 1].reshape(n_grid_p[0], n_grid_p[1])
-        z = output['mean'].reshape(n_grid_p[0], n_grid_p[1])
-        min_z = min(output['mean'])
-        max_z = max(output['mean'])
+        z = output['result'].reshape(n_grid_p[0], n_grid_p[1])
+        min_z = min(output['result'])
+        max_z = max(output['result'])
 
         # --------------------- plot QoI over samples ---------------------
         surf = ax.plot_surface(np.log10(x), y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)

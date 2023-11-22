@@ -43,10 +43,10 @@ def test_init():
 
 def test_evaluate(default_adjoint_model):
     """Test the evaluation method."""
-    default_adjoint_model.interface.evaluate = lambda x: {"mean": x**2, "gradient": 2 * x}
+    default_adjoint_model.interface.evaluate = lambda x: {"result": x**2, "gradient": 2 * x}
     samples = np.array([[2.0]])
     response = default_adjoint_model.evaluate(samples)
-    expected_response = {"mean": samples**2, "gradient": 2 * samples}
+    expected_response = {"result": samples**2, "gradient": 2 * samples}
     assert response == expected_response
     assert default_adjoint_model.response == expected_response
 
@@ -57,13 +57,13 @@ def test_grad(default_adjoint_model):
     differentiable_simulation_model_adjoint.write_to_csv = Mock()
     default_adjoint_model.interface.latest_job_id = 6
     default_adjoint_model.gradient_interface.scheduler.experiment_dir = experiment_dir
-    default_adjoint_model.gradient_interface.evaluate = lambda x: {'mean': x**2}
+    default_adjoint_model.gradient_interface.evaluate = lambda x: {'result': x**2}
 
     np.random.seed(42)
     samples = np.random.random((2, 3))
     upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))
-    default_adjoint_model.response = {"mean": None, "gradient": gradient}
+    default_adjoint_model.response = {"result": None, "gradient": gradient}
     grad_out = default_adjoint_model.grad(samples, upstream_gradient=upstream_gradient)
 
     expected_grad = samples**2

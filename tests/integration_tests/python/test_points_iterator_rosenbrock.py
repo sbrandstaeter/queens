@@ -25,7 +25,7 @@ def test_points_iterator(inputdir, tmp_path, inputs, expected_results):
         results = pickle.load(handle)
 
     np.testing.assert_array_equal(
-        results["output"]["mean"],
+        results["output"]["result"],
         expected_results,
     )
 

@@ -236,13 +236,13 @@ class BMFIAIterator(Iterator):
         if additional_y_lf_train is None:
             _logger.info("Starting to compute additional Y_LF_train...")
             num_coords = self.coords_experimental_data.shape[0]
-            additional_y_lf_train = self.lf_model.evaluate(additional_x_train)['mean'].reshape(
+            additional_y_lf_train = self.lf_model.evaluate(additional_x_train)['result'].reshape(
                 -1, num_coords
             )
             _logger.info("Additional Y_LF_train were successfully computed!")
 
         _logger.info("Starting to compute additional Y_LF_train...")
-        additional_y_hf_train = self.hf_model.evaluate(additional_x_train)['mean'].reshape(
+        additional_y_hf_train = self.hf_model.evaluate(additional_x_train)['result'].reshape(
             -1, num_coords
         )
         _logger.info("Additional Y_HF_train were successfully computed!")
@@ -262,13 +262,13 @@ class BMFIAIterator(Iterator):
         """Evaluate the low-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_LF_train = self.lf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
+        self.Y_LF_train = self.lf_model.evaluate(self.X_train)['result'].reshape(-1, num_coords)
 
     def evaluate_HF_model_for_X_train(self):
         """Evaluate the high-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_HF_train = self.hf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
+        self.Y_HF_train = self.hf_model.evaluate(self.X_train)['result'].reshape(-1, num_coords)
 
     def set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
         """Get the low-fidelity feature matrix.

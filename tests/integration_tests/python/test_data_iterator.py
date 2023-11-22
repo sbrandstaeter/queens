@@ -11,7 +11,7 @@ from queens.main import run
 def test_branin_data_iterator(inputdir, tmp_path, mocker):
     """Test case for data iterator."""
     output = {}
-    output['mean'] = np.array(
+    output['result'] = np.array(
         [
             [1.7868040337],
             [-13.8624183835],

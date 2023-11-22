@@ -18,7 +18,7 @@ def test_branin_gpflow_heteroskedastic(inputdir, tmp_path, expected_mean, expect
         results = pickle.load(handle)
 
     np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["mean"], expected_mean, decimal=2
+        results["raw_output_data"]["result"], expected_mean, decimal=2
     )
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["variance"], expected_var, decimal=2

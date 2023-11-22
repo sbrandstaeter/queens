@@ -136,7 +136,7 @@ def test_evaluate_depending_on_function_requires_job_id(
     """Test if function is called properly."""
     function = request.getfixturevalue(function_fixture)
     interface = DirectPythonInterface(parameters=parameters, function=function)
-    np.testing.assert_equal(interface.evaluate(samples)["mean"], expected_results)
+    np.testing.assert_equal(interface.evaluate(samples)["result"], expected_results)
 
 
 @pytest.mark.parametrize("expected_called_with_job_id", [True, False])
@@ -154,7 +154,7 @@ def test_map(samples, expected_results, direct_python_interface):
     output = direct_python_interface.evaluate(samples)
 
     assert direct_python_interface.pool is None
-    np.testing.assert_allclose(output["mean"], expected_results)
+    np.testing.assert_allclose(output["result"], expected_results)
 
 
 def test_map_parallel(samples, expected_results, direct_python_interface_parallel):
@@ -166,7 +166,7 @@ def test_map_parallel(samples, expected_results, direct_python_interface_paralle
     output = direct_python_interface_parallel.evaluate(samples)
 
     assert isinstance(direct_python_interface_parallel.pool, Pool)
-    np.testing.assert_allclose(output["mean"], expected_results)
+    np.testing.assert_allclose(output["result"], expected_results)
 
 
 def test_init(direct_python_interface):
