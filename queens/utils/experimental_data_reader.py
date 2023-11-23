@@ -7,10 +7,6 @@ import numpy as np
 from queens.data_processor.data_processor_csv import DataProcessorCsv
 from queens.utils.logger_settings import log_init_args
 
-VALID_TYPES = {
-    "experimental_data_reader": ['queens.utils.experimental_data_reader', 'ExperimentalDataReader']
-}
-
 
 class ExperimentalDataReader:
     """Reader for experimental data.
@@ -104,3 +100,6 @@ class ExperimentalDataReader:
             self.coordinate_labels,
             self.output_label,
         )
+
+
+VALID_TYPES = {"experimental_data_reader": ExperimentalDataReader}

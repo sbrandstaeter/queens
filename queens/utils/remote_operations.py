@@ -22,10 +22,6 @@ DEFAULT_PACKAGE_MANAGER = "mamba"
 FALLBACK_PACKAGE_MANAGER = "conda"
 SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
 
-VALID_CONNECTION_TYPES = {
-    "remote_connection": ["queens.utils.remote_operations", "RemoteConnection"],
-}
-
 
 class RemoteConnection(Connection):
     """This is class wrapper around the Connection class of fabric.
@@ -297,3 +293,6 @@ def get_port():
     sock = socket.socket()
     sock.bind(('', 0))
     return int(sock.getsockname()[1])
+
+
+VALID_CONNECTION_TYPES = {"remote_connection": RemoteConnection}

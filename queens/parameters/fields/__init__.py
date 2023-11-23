@@ -1,3 +1,5 @@
 """Random Fields."""
 
-VALID_TYPES = {'random_field': ["queens.parameters.fields.random_fields", "RandomField"]}
+from queens.parameters.fields.random_fields import RandomField
+
+VALID_TYPES = {'random_field': RandomField}

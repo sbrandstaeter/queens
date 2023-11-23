@@ -2,7 +2,6 @@
 import importlib.util
 import logging
 import sys
-from importlib import import_module
 from pathlib import Path
 
 from queens.utils.path_utils import check_if_path_exists
@@ -74,7 +73,6 @@ def get_module_class(module_options, valid_types, module_type_specifier='type'):
         module_path = module_options.pop("external_python_module")
         module_class = get_module_attribute(module_path, module_type)
     else:
-        module_path, module_attribute = get_option(valid_types, module_type)
-        module_class = getattr(import_module(module_path), module_attribute)
+        module_class = get_option(valid_types, module_type)
 
     return module_class
