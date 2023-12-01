@@ -204,7 +204,9 @@ class MixtureDistribution(ContinuousDistribution):
                 )
                 data_component_i.append(log_ratio)
             inv_log_responsibility.append(data_component_i)
-        inv_log_responsibility = -logsumexp(inv_log_responsibility, axis=1)  # pylint: disable=E1130
+        inv_log_responsibility = -logsumexp(
+            inv_log_responsibility, axis=1
+        )  # pylint: disable=invalid-unary-operand-type
         return np.exp(inv_log_responsibility).T
 
     def export_dict(self):
