@@ -365,7 +365,7 @@ def get_module_class(module_options, valid_types, code, module_type_specifier="t
     else:
         module_class = get_option(valid_types, module_type)
         module_attribute = module_class.__name__
-        module_path = '.'.join(module_class.__module__.split('.')[:-1])
+        module_path = module_class.__module__
         code.imports.append(f"from {module_path} import {module_attribute}")
     return module_class, module_attribute
 
