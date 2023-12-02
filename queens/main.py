@@ -85,3 +85,7 @@ def main():
     else:
         # print some infos
         print_greeting_message()
+
+
+if __name__ == '__main__':
+    main()
