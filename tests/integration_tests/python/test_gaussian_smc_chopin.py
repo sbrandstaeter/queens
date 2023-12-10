@@ -20,7 +20,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmp_path, _create_expe
     """Test Sequential Monte Carlo with univariate Gaussian."""
     template = inputdir / "smc_chopin_gaussian.yml"
     experimental_data_path = tmp_path
-    dir_dict = {"experimental_data_path": experimental_data_path, "fk_method": "adaptive_tempering"}
+    dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = tmp_path / "gaussian_smc_realiz.yml"
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
@@ -40,7 +40,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmp_path, _create_expe
     assert np.abs(results['raw_output_data']['var'] - 0.5) < 0.2
 
 
-def target_density(self, samples): #pylint: disable=unused-argument
+def target_density(self, samples):  # pylint: disable=unused-argument
     """Target posterior density."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
