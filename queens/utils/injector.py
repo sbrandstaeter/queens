@@ -6,39 +6,60 @@ text file.
 
 from pathlib import Path
 
-from jinja2 import Template
+from jinja2 import Environment, Template, meta
+
+from queens.utils.exceptions import InjectionError
 
 
-def read_file(file_path):
-    """Function to read in a file.
-
-    Args:
-        file_path (str, Path): Path to file
-    Returns:
-        file (str): read in file as string
-    """
-    file = Path(file_path).read_text(encoding='utf-8')
-    return file
-
-
-def inject_in_template(params, template, output_file):
+def render_template(params, template, strict=True):
     """Function to insert parameters into a template.
 
     Args:
-        params (dict):          Dict with parameters to inject
-        template (str):         Template file as string
-        output_file (str, Path):      Name of output file with injected parameters
+        params (dict): Dict with parameters to inject
+        template (str): Template file as string
+        output_file (str, Path): Name of output file with injected parameters
+        strict (bool): Raises exception if mismatch between provided and required parameters
+
+    Returns:
+        str: injected template
     """
-    Path(output_file).write_text(Template(template).render(**params), encoding='utf-8')
+    if strict:
+        # Get the required parameters
+        template_obj = Environment().parse(template)
+        required_parameters_in_template = meta.find_undeclared_variables(template_obj)
+
+        # Get the parameters to be injected
+        provided_parameters = set(params.keys())
+
+        # In case of mismatch raise Exception
+        if required_parameters_in_template.symmetric_difference(provided_parameters):
+            raise InjectionError.construct_error(
+                required_parameters_in_template, provided_parameters
+            )
+    return Template(template).render(**params)
 
 
-def inject(params, file_template, output_file):
-    """Function to insert parameters into file templates.
+def inject_in_template(params, template, output_file, strict=True):
+    """Function to insert parameters into file template and write to file.
 
     Args:
-        params (dict):              Dict with parameters to inject
-        file_template (str, Path):  File name including path to template
+        params (dict): Dict with parameters to inject
+        template (str): Template (str)
         output_file (str, Path):    Name of output file with injected parameters
+        strict (bool): Raises exception if mismatch between provided and required parameters
     """
-    template = read_file(file_template)
-    inject_in_template(params, template, output_file)
+    injected_template = render_template(params, template, strict)
+    Path(output_file).write_text(injected_template, encoding='utf-8')
+
+
+def inject(params, template_path, output_file, strict=True):
+    """Function to insert parameters into file template and write to file.
+
+    Args:
+        params (dict): Dict with parameters to inject
+        template_path (str, Path): Path to template
+        output_file (str, Path):    Name of output file with injected parameters
+        strict (bool): Raises exception if mismatch between provided and required parameters
+    """
+    template = Path(template_path).read_text(encoding='utf-8')
+    inject_in_template(params, template, output_file, strict)
