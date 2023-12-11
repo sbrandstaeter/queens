@@ -9,6 +9,7 @@ from pathlib import Path
 from jinja2 import Environment, Template, meta
 
 from queens.utils.exceptions import InjectionError
+from queens.utils.io_utils import read_file
 
 
 def render_template(params, template, strict=True):
@@ -61,5 +62,5 @@ def inject(params, template_path, output_file, strict=True):
         output_file (str, Path):    Name of output file with injected parameters
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
-    template = Path(template_path).read_text(encoding='utf-8')
+    template = read_file(template_path)
     inject_in_template(params, template, output_file, strict)
