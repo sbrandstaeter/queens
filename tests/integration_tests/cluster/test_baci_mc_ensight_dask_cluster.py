@@ -120,7 +120,9 @@ class TestDaskCluster:
         }
         queens_input_file_template = inputdir / "baci_mc_ensight_cluster_template.yml"
         queens_input_file = tmp_path / f"baci_mc_ensight_cluster_{cluster_name}.yml"
-        injector.inject(template_options, queens_input_file_template, queens_input_file)
+        injector.inject(
+            template_options, queens_input_file_template, queens_input_file, strict=False
+        )
 
         # get json file as config dictionary
         run(queens_input_file, tmp_path)

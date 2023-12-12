@@ -25,7 +25,7 @@ def test_classification_iterator(inputdir, tmp_path):
             "classification_function_name": classification_function_name,
             "external_module_path": str(classification_function_path),
         },
-        file_template=input_template,
+        template_path=input_template,
         output_file=input_path,
     )
     run(input_path, tmp_path)

@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
-from queens.utils.injector import read_file
+from queens.utils.io_utils import read_file
 
 _logger = logging.getLogger(__name__)
 
