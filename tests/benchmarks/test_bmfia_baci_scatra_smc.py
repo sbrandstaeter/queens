@@ -19,6 +19,8 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     # generate yaml input file from template
     third_party_input_file_hf = third_party_inputs / "baci" / "diffusion_coarse.dat"
     third_party_input_file_lf = third_party_inputs / "baci" / "diffusion_very_coarse.dat"
+    expected_weights = []
+    expected_samples = []
 
     baci_release = config_dir / "baci-release"
     post_ensight = config_dir / "post_ensight"
