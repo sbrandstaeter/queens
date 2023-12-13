@@ -192,24 +192,21 @@ class MixtureDistribution(ContinuousDistribution):
         """
         log_weights = np.log(self.weights)
         inv_log_responsibility = []
-
-        for log_weight_i, component_i in zip(log_weights, self.component_distributions):
+        for log_weight_i, component_i in zip(
+            log_weights, self.component_distributions, strict=True
+        ):
             data_component_i = []
-
-            for log_weight_j, component_j in zip(log_weights, self.component_distributions):
+            for log_weight_j, component_j in zip(
+                log_weights, self.component_distributions, strict=True
+            ):
                 log_ratio = (
                     -log_weight_i - component_i.logpdf(x) + log_weight_j + component_j.logpdf(x)
                 )
                 data_component_i.append(log_ratio)
-
             inv_log_responsibility.append(data_component_i)
-
-        inv_log_responsibility = np.array(inv_log_responsibility)
-        max_log = np.max(inv_log_responsibility, axis=2, keepdims=True)
-        inv_log_responsibility = max_log + np.log(
-            np.sum(np.exp(inv_log_responsibility - max_log), axis=2, keepdims=True)
-        )
-
+        inv_log_responsibility = -logsumexp(
+            inv_log_responsibility, axis=1
+        )  # pylint: disable=invalid-unary-operand-type
         return np.exp(inv_log_responsibility).T
 
     def export_dict(self):
