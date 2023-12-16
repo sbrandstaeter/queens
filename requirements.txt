@@ -19,7 +19,7 @@ astunparse==1.6.3
     # via tensorflow
 autograd==1.6.2
     # via -r requirements.in
-bcrypt==4.0.1
+bcrypt==4.1.2
     # via paramiko
 black==22.3.0
     # via -r requirements.in
@@ -29,7 +29,7 @@ cachetools==5.3.2
     # via
     #   google-auth
     #   pymc
-certifi==2023.7.22
+certifi==2023.11.17
     # via requests
 cffi==1.16.0
     # via
@@ -61,17 +61,17 @@ cons==0.4.6
     #   pytensor
 contourpy==1.2.0
     # via matplotlib
-coverage[toml]==7.3.2
+coverage[toml]==7.3.3
     # via
     #   coverage
     #   pytest-cov
-cryptography==41.0.5
+cryptography==41.0.7
     # via paramiko
 cycler==0.12.1
     # via matplotlib
 cython==0.29.35
     # via -r requirements.in
-dask==2023.11.0
+dask==2023.12.1
     # via
     #   -r requirements.in
     #   dask-jobqueue
@@ -90,7 +90,7 @@ dill==0.3.7
     # via
     #   multiprocess
     #   pathos
-distributed==2023.11.0
+distributed==2023.12.1
     # via
     #   -r requirements.in
     #   dask-jobqueue
@@ -106,7 +106,7 @@ etuples==0.3.9
     # via
     #   minikanren
     #   pytensor
-exceptiongroup==1.1.3
+exceptiongroup==1.2.0
     # via pytest
 execnet==2.0.2
     # via pytest-xdist
@@ -118,9 +118,9 @@ filelock==3.13.1
     # via pytensor
 flatbuffers==23.5.26
     # via tensorflow
-fonttools==4.44.3
+fonttools==4.46.0
     # via matplotlib
-fsspec==2023.10.0
+fsspec==2023.12.2
     # via dask
 future==0.18.3
     # via autograd
@@ -130,7 +130,7 @@ gast==0.4.0
     #   tensorflow-probability
 gnuplotlib==0.40
     # via -r requirements.in
-google-auth==2.23.4
+google-auth==2.25.2
     # via
     #   google-auth-oauthlib
     #   tensorboard
@@ -140,7 +140,7 @@ google-pasta==0.2.0
     # via tensorflow
 gpflow==2.9.0
     # via -r requirements.in
-grpcio==1.59.2
+grpcio==1.60.0
     # via
     #   tensorboard
     #   tensorflow
@@ -150,9 +150,9 @@ h5py==3.10.0
     # via
     #   h5netcdf
     #   tensorflow
-idna==3.4
+idna==3.6
     # via requests
-importlib-metadata==6.8.0
+importlib-metadata==7.0.0
     # via
     #   chaospy
     #   dask
@@ -163,12 +163,12 @@ invoke==2.2.0
     # via fabric
 iteration-utilities==0.11.0
     # via scikit-activeml
-jax[cpu]==0.4.20
+jax[cpu]==0.4.23
     # via
     #   -r requirements.in
     #   chex
     #   optax
-jaxlib==0.4.20
+jaxlib==0.4.23
     # via
     #   chex
     #   jax
@@ -210,7 +210,7 @@ markupsafe==2.1.3
     # via
     #   jinja2
     #   werkzeug
-matplotlib==3.7.3
+matplotlib==3.7.4
     # via
     #   -r requirements.in
     #   arviz
@@ -323,13 +323,13 @@ particles==0.4
     # via -r requirements.in
 pathos==0.3.1
     # via -r requirements.in
-pathspec==0.11.2
+pathspec==0.12.1
     # via black
 pillow==10.1.0
     # via
     #   bokeh
     #   matplotlib
-platformdirs==4.0.0
+platformdirs==4.1.0
     # via black
 plotly==5.18.0
     # via -r requirements.in
@@ -347,7 +347,7 @@ psutil==5.9.6
     # via distributed
 py==1.11.0
     # via -r requirements.in
-pyasn1==0.5.0
+pyasn1==0.5.1
     # via
     #   pyasn1-modules
     #   rsa
@@ -382,7 +382,7 @@ pytest-cov==4.1.0
     # via -r requirements.in
 pytest-mock==3.12.0
     # via -r requirements.in
-pytest-xdist==3.4.0
+pytest-xdist==3.5.0
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
@@ -466,7 +466,7 @@ tensorflow-probability==0.18.0
     # via
     #   -r requirements.in
     #   gpflow
-termcolor==2.3.0
+termcolor==2.4.0
     # via tensorflow
 threadpoolctl==3.2.0
     # via scikit-learn
@@ -484,13 +484,13 @@ toolz==0.12.0
     #   logical-unification
     #   minikanren
     #   partd
-tornado==6.3.3
+tornado==6.4
     # via
     #   bokeh
     #   distributed
 tqdm==4.66.1
     # via -r requirements.in
-typing-extensions==4.8.0
+typing-extensions==4.9.0
     # via
     #   arviz
     #   bokeh
@@ -507,7 +507,7 @@ vtk==9.3.0
     # via -r requirements.in
 werkzeug==3.0.1
     # via tensorboard
-wheel==0.41.3
+wheel==0.42.0
     # via
     #   astunparse
     #   tensorboard
@@ -515,7 +515,7 @@ wrapt==1.16.0
     # via
     #   deprecated
     #   tensorflow
-xarray==2023.10.1
+xarray==2023.12.0
     # via
     #   -r requirements.in
     #   arviz
