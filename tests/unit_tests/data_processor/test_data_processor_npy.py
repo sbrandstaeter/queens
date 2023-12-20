@@ -40,7 +40,7 @@ def fixture_write_dummy_data(data_path, dummy_data):
 @pytest.fixture(name="write_wrong_dummy_data")
 def fixture_write_wrong_dummy_data(wrong_data_path, dummy_data):
     """Write the wrong dummy data."""
-    with open(wrong_data_path, "w") as f:
+    with open(wrong_data_path, "w", encoding="utf-8") as f:
         np.savetxt(f, dummy_data)
 
 
