@@ -300,6 +300,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """
         if self.current_dat_section == "MATERIALS":
             self.original_materials_in_dat.append(int(line.split()[1]))
+        # pylint: disable=too-many-branches
 
     def get_topology(self, line):
         """Get the geometric topology by extracting and grouping (mesh) nodes.
@@ -313,6 +314,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         topology_name = ' '.join(line.split()[2:4])
         node_list = line.split()
         # get edges
+
         if self.current_dat_section == 'DNODE-NODE TOPOLOGY':
             self.nodeset_names.add(int(line.split("DNODE ")[-1]))
             if topology_name in self.desired_dat_sections['DNODE-NODE TOPOLOGY']:
@@ -472,6 +474,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.node_coordinates['node_mesh'] = sorted(self.node_coordinates['node_mesh'])
 
     # -------------- write random fields to dat file ----------------------------------------------
+    # pylint: disable=too-many-branches
     def write_random_fields_to_dat(self):
         """Write placeholders for random fields to the dat file."""
         # copy the dat file and rename it for the current simulation
@@ -584,6 +587,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                         print(old_line, end='')
 
         os.chown(self.path_to_preprocessed_dat_file, uid, gid)
+        # pylint: enable=too-many-branches
 
     # ------ write random material fields -----------------------------------------------
     def _organize_new_material_definitions(self):
