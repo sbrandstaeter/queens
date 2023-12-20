@@ -10,7 +10,9 @@ from queens.main import run
 from queens.utils import injector
 
 
-def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_dir):
+def test_bmfia_baci_scatra_smc(
+    inputdir, tmp_path, third_party_inputs, config_dir, expected_weights, expected_samples
+):
     """TODO_doc: add a one-line description.
 
     Integration test for smc with a simple diffusion problem (scatra) in
