@@ -272,11 +272,14 @@ def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
-        LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
+        LogNormalDistribution(normal_mean=np.zeros(2), normal_covariance=covariance)
 
 
-def test_init_lognormal_not_symmetric():
-    """Test ValueError of init method of LogNormal Distribution class."""
+def test_init_lognormal_nonmatching_dimension():
+    """Nonmatching dimension of mean and covariance raises ValueError during.
+
+    init of LogNormalDistribution.
+    """
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
     with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
