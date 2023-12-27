@@ -6,6 +6,7 @@ from queens.drivers.driver import Driver
 from queens.utils.injector import inject_in_template
 from queens.utils.io_utils import read_file
 from queens.utils.logger_settings import log_init_args
+from queens.utils.metadata import SimulationMetadata
 
 _logger = logging.getLogger(__name__)
 
@@ -87,7 +88,10 @@ class JobscriptDriver(Driver):
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
 
-        self.prepare_input_files(sample_dict, experiment_dir, input_file)
+        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
+
+        with metadata.time_code("prepare_input_files"):
+            self.prepare_input_files(sample_dict, experiment_dir, input_file)
 
         final_jobscript_options = {
             **self.jobscript_options,
@@ -101,7 +105,14 @@ class JobscriptDriver(Driver):
             final_jobscript_options, self.jobscript_template, str(jobscript_file), strict=False
         )
 
-        execute_cmd = 'bash ' + str(jobscript_file)
-        self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
+        with metadata.time_code("run_executable_and_postprocessing"):
+            execute_cmd = 'bash ' + str(jobscript_file)
+            self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
 
-        return self._get_results(output_dir)
+        results = None
+        if self.data_processor:
+            with metadata.time_code("data_processing"):
+                results = self._get_results(output_dir)
+                metadata.outputs = results
+
+        return results

@@ -83,6 +83,7 @@ setup(
             'queens.utils.cli_utils:build_html_coverage_report',
             'queens-remove-html-coverage-report = '
             'queens.utils.cli_utils:remove_html_coverage_report',
+            'queens-export-metadata = queens.utils.cli_utils:gather_metadata_and_write_to_csv',
         ],
     },
 )

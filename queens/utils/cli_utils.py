@@ -9,6 +9,7 @@ from queens.utils.exceptions import CLIError
 from queens.utils.injector import inject
 from queens.utils.input_to_script import create_script_from_input_file
 from queens.utils.logger_settings import reset_logging, setup_cli_logging
+from queens.utils.metadata import write_metadata_to_csv
 from queens.utils.path_utils import PATH_TO_QUEENS
 from queens.utils.pickle_utils import print_pickled_data
 from queens.utils.print_utils import get_str_table
@@ -147,6 +148,34 @@ def print_pickle_data_cli():
     else:
         file_path = args[0]
         print_pickled_data(Path(file_path))
+
+
+@cli_logging
+def gather_metadata_and_write_to_csv():
+    """Gather metadata and write them to csv."""
+    ascii_art.print_crown(60)
+    ascii_art.print_banner("QUEENS", 60)
+
+    parser = argparse.ArgumentParser(
+        description="QUEENS cli util to create csv file for experiment simulation metadata."
+    )
+    parser.add_argument(
+        '--experiment_dir',
+        type=str,
+        help='Experiment dir to simulation folders',
+    )
+    parser.add_argument(
+        '--csv_path', type=str, help='Path to export metadata csv file', default=None
+    )
+
+    args = sys.argv[1:]
+    args = parser.parse_args(args)
+    _logger.info("Gathering metadata and exporting to csv.")
+    write_metadata_to_csv(
+        experiment_dir=args.experiment_dir,
+        csv_path=args.csv_path,
+    )
+    _logger.info("Done.")
 
 
 def build_html_coverage_report():
