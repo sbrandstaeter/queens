@@ -5,7 +5,10 @@ variables:
     value: "1"
     description: "Run integration and unit tests on Ubuntu machines"
   TEST_TIMING_OPTION:
-    value: "--no-test-timing"
+    value: ""
+    options:
+      - ""
+      - "--test-timing"
     description: "Set the option if local test should be timed or not. Default is off."
   CLUSTER_TESTS:
     value: "1"
