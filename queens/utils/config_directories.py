@@ -27,7 +27,11 @@ def experiments_base_directory():
 
 
 def experiment_directory(experiment_name):
-    """Directory for data of a specific experiment on the computing machine."""
+    """Directory for data of a specific experiment on the computing machine.
+
+    Args:
+        experiment_name (str): Experiment name
+    """
     experiments_base_dir = experiments_base_directory()
     experiment_dir = experiments_base_dir / experiment_name
     create_directory(experiment_dir)
@@ -52,3 +56,22 @@ def current_job_directory(experiment_dir, job_id):
     """
     job_dir = experiment_dir / str(job_id)
     return job_dir
+
+
+def job_dirs_in_experiment_dir(experiment_dir):
+    """Get job directories in experiment_dir.
+
+    Args:
+        experiment_dir (pathlib.Path, str): Path with the job dirs
+
+    Returns:
+        job_directories (list): List with job_dir paths
+    """
+    experiment_dir = Path(experiment_dir)
+    job_directories = []
+    for job_directory in experiment_dir.iterdir():
+        if job_directory.is_dir() and job_directory.name.isdigit():
+            job_directories.append(job_directory)
+
+    # Sort the jobs directories
+    return sorted(job_directories, key=lambda x: int(x.name))
