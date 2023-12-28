@@ -24,7 +24,7 @@ class JobInterface(Interface):
         super().__init__(parameters)
         self.scheduler = scheduler
         self.driver = driver
-        self.scheduler.copy_file(self.driver.simulation_input_template)
+        self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
 
     def evaluate(self, samples):
         """Evaluate.
