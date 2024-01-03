@@ -4,6 +4,7 @@ import logging
 import os
 
 import gpflow as gpf
+import keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -116,7 +117,7 @@ class GPflowSVGPModel(SurrogateModel):
 
     def train(self):
         """Train the GP."""
-        optimizer = tf.optimizers.Adam()
+        optimizer = keras.optimizers.Adam()
         for i in range(self.dimension_output):
             training_iterations = iter(self.training_data[i].batch(self.mini_batch_size))
             training_loss = self.model[i].training_loss_closure(training_iterations, compile=True)

@@ -3,6 +3,7 @@
 import logging
 import os
 
+import keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -15,8 +16,8 @@ from queens.visualization.gaussian_neural_network_vis import plot_loss
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tfd = tfp.distributions
-Dense = tf.keras.layers.Dense
-tf.keras.backend.set_floatx('float64')
+Dense = keras.layers.Dense
+keras.backend.set_floatx('float64')
 _logger = logging.getLogger(__name__)
 
 # Use GPU acceleration if possible
@@ -176,10 +177,10 @@ class GaussianNeuralNetworkModel(SurrogateModel):
             ),
         ]
         dense_architecture.extend(output_layer)
-        model = tf.keras.Sequential(dense_architecture)
+        model = keras.Sequential(dense_architecture)
 
         # compile the Tensorflow model
-        optimizer = tf.optimizers.Adamax(learning_rate=self.adams_training_rate)
+        optimizer = keras.optimizers.Adamax(learning_rate=self.adams_training_rate)
 
         model.compile(
             optimizer=optimizer,
@@ -247,7 +248,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         self.num_refinements += 1
 
         # set the random seeds for optimization/training
-        tf.keras.utils.set_random_seed(self.optimizer_seed)
+        keras.utils.set_random_seed(self.optimizer_seed)
         history = self.nn_model.fit(
             self.x_train,
             self.y_train,

@@ -4,6 +4,7 @@ import logging
 import os
 
 import gpflow as gpf
+import keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -282,7 +283,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         natgrad_opt = gpf.optimizers.NaturalGradient(gamma=0.1)
 
         adam_vars = self.model.trainable_variables
-        adam_opt = tf.optimizers.Adam(self.adams_training_rate)
+        adam_opt = keras.optimizers.Adam(self.adams_training_rate)
 
         # here we conduct a two step optimization
         @tf.function

@@ -33,12 +33,12 @@ jinja2
 arviz # Bayesian visualization
 gpflow # LV and variational GPs
 optax # google jax based optimizer
-tensorflow<2.11.0
-tensorflow-probability<0.19
+tensorflow
+tensorflow-probability
 jax[cpu]
 jax
 scikit-activeml>=0.4.1
-pymc==5.0.2
+pymc
 
 # making fancy plots
 matplotlib
