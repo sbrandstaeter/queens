@@ -40,7 +40,7 @@ def at_least_3d(arr):
     return arr
 
 
-def safe_cholesky(matrix):
+def safe_cholesky(matrix, jitter_start_value=1e-10):
     """Numerically stable Cholesky decomposition.
 
     Compute the Cholesky decomposition of a matrix. Numeric stability is increased by
@@ -48,6 +48,7 @@ def safe_cholesky(matrix):
 
     Args:
         matrix (np.ndarray): Matrix to be decomposed
+        jitter_start_value (float): Starting value to be added to the diagonal
 
     Returns:
         low_cholesky (np.ndarray): Lower-triangular Cholesky factor of matrix
@@ -56,9 +57,8 @@ def safe_cholesky(matrix):
         low_cholesky = np.linalg.cholesky(matrix)
         return low_cholesky
     except np.linalg.LinAlgError as linalg_error:
-        matrix_max = np.max(matrix)
         for i in range(5):
-            jitter = matrix_max * 1e-10 * 10**i
+            jitter = jitter_start_value * 10**i
             matrix_ = matrix + np.eye(matrix.shape[0]) * jitter
             _logger.warning(
                 'Added %.2e to diagonal of matrix for numerical stability '
