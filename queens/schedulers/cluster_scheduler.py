@@ -1,6 +1,5 @@
 """Cluster scheduler for QUEENS runs."""
 import logging
-import subprocess
 import time
 from datetime import timedelta
 
@@ -68,7 +67,7 @@ class ClusterScheduler(Scheduler):
         num_nodes=1,
         queue=None,
         cluster_internal_address=None,
-        restart_workers=True,
+        restart_workers=False,
         allowed_failures=5,
     ):
         """Init method for the cluster scheduler.
@@ -199,15 +198,10 @@ class ClusterScheduler(Scheduler):
     def restart_worker(self, worker):
         """Restart a worker.
 
-        This method cancels the job in the queue of the HPC system. The Client.adapt method of dask
-        will subsequently submit new jobs to the queue. Warning: Currently only slurm is supported.
+        This method retires a dask worker. The Client.adapt method of dask takes cares of submitting
+        new workers subsequently.
 
         Args:
             worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
         """
-        job_id = self.client.run(
-            lambda: subprocess.check_output('echo $SLURM_JOB_ID', shell=True),
-            workers=list(worker),
-        )
-        cancel_cmd = f'scancel {str(list(job_id.values())[0])[2:-3]}'
-        self.client.run_on_scheduler(lambda: subprocess.run(cancel_cmd, check=False, shell=True))
+        self.client.retire_workers(workers=list(worker))
