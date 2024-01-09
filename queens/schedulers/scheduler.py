@@ -1,6 +1,7 @@
 """QUEENS scheduler parent class."""
 import abc
 import logging
+import time
 
 import numpy as np
 import tqdm
@@ -63,8 +64,18 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             result_dict (dict): Dictionary containing results
         """
+        if self.restart_workers:
+            # This is necessary, because the subprocess in the driver does not get killed
+            # sometimes when the worker is restarted.
+            def run_driver(*args, **kwargs):
+                time.sleep(5)
+                return driver.run(*args, **kwargs)
+
+        else:
+            run_driver = driver.run
+
         futures = self.client.map(
-            driver.run,
+            run_driver,
             samples_list,
             pure=False,
             num_procs=self.num_procs,
