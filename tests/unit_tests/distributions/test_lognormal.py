@@ -10,8 +10,8 @@ from queens.distributions.lognormal import LogNormalDistribution
 
 
 # ------------- univariate --------------
-@pytest.fixture(params=[1.0, [5.0, 0.0, -1.0, 2.0]])
-def sample_pos_1d(request):
+@pytest.fixture(name="sample_pos_1d", params=[1.0, [5.0, 0.0, -1.0, 2.0]])
+def fixture_sample_pos_1d(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 
@@ -43,9 +43,10 @@ def fixture_uncorrelated_vector_1d(num_draws):
 
 # ------------- multivariate --------------
 @pytest.fixture(
-    params=[[1.0, 2.0], [[2.0, -1.0], [1.0, 0.5], [2.0, -1.0], [0.0, -1.0], [-2.0, -1.0]]]
+    name="sample_pos_2d",
+    params=[[1.0, 2.0], [[2.0, -1.0], [1.0, 0.5], [2.0, -1.0], [0.0, -1.0], [-2.0, -1.0]]],
 )
-def sample_pos_2d(request):
+def fixture_sample_pos_2d(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 

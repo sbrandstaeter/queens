@@ -7,8 +7,8 @@ import scipy.stats
 from queens.distributions.beta import BetaDistribution
 
 
-@pytest.fixture(params=[0.5, [-1.0, 0.0, 1.0, 2.0]])
-def sample_pos(request):
+@pytest.fixture(name="sample_pos", params=[0.5, [-1.0, 0.0, 1.0, 2.0]])
+def fixture_sample_pos(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 

@@ -8,8 +8,8 @@ from queens.distributions.uniform import UniformDistribution
 
 
 # ------------- univariate --------------
-@pytest.fixture(params=[-2.0, [-1.0, 0.0, 1.0, 2.0]])
-def sample_pos_1d(request):
+@pytest.fixture(name="sample_pos_1d", params=[-2.0, [-1.0, 0.0, 1.0, 2.0]])
+def fixture_sample_pos_1d(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 
@@ -34,12 +34,13 @@ def fixture_uniform_1d(lower_bound_1d, upper_bound_1d):
 
 # ------------- multivariate --------------
 @pytest.fixture(
+    name="sample_pos_2d",
     params=[
         [-2.0, -1.0],
         [[-1.0, -3.0], [-1.0, -1.0], [0.0, 0.0], [0.0, 2.0], [1.0, 2.0], [1.0, 3.0], [2.0, 3.0]],
-    ]
+    ],
 )
-def sample_pos_2d(request):
+def fixture_sample_pos_2d(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 
