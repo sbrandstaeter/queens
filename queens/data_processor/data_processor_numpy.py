@@ -39,7 +39,7 @@ class DataProcessorNumpy(DataProcessor):
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
-    def _get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path):
         """Get the raw data from the files of interest.
 
         This method loads the numpy binary data from the file.
@@ -70,7 +70,7 @@ class DataProcessorNumpy(DataProcessor):
             )
         return None
 
-    def _filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data):
         """Filter and manipulate the raw data.
 
         In this case we want the raw data as it is. Of course this

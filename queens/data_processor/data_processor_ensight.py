@@ -186,7 +186,7 @@ class DataProcessorEnsight(DataProcessor):
                 f"{file_options_dict['physical_field_dict'].keys()}"
             )
 
-    def _get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path):
         """Read-in EnSight files using the vtkEnsightGoldBinaryReader.
 
         Args:
@@ -201,7 +201,7 @@ class DataProcessorEnsight(DataProcessor):
         raw_data.Update()
         return raw_data
 
-    def _filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data):
         """Filter the ensight raw data for desired time steps.
 
         Args:

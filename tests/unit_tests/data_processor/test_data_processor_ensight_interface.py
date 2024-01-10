@@ -244,7 +244,7 @@ steps 2 npoints 4
 
 def test_stretch_vector(default_data_processor):
     """Test for stretch vector helpre method."""
-    assert default_data_processor._stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
+    assert default_data_processor.stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
         [-1, -2, -3],
         [4, 8, 12],
     ]
@@ -252,6 +252,6 @@ def test_stretch_vector(default_data_processor):
 
 def test_compute_distance(default_data_processor):
     """Test for distance computation."""
-    assert default_data_processor._compute_distance(
+    assert default_data_processor.compute_distance(
         [[2, 4, 6], [1, 2, 3], [3, 6, 9]], [[0, 0, 0], [0.1, 0.2, 0.3]]
     ) == pytest.approx(np.sqrt(14), abs=10e-12)

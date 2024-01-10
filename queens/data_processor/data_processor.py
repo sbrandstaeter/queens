@@ -102,8 +102,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_path = self._check_file_exist_and_is_unique(base_dir_file)
         processed_data = None
         if file_path:
-            raw_data = self._get_raw_data_from_file(file_path)
-            filtered_data = self._filter_and_manipulate_raw_data(raw_data)
+            raw_data = self.get_raw_data_from_file(file_path)
+            filtered_data = self.filter_and_manipulate_raw_data(raw_data)
             processed_data = self._subsequent_data_manipulation(filtered_data)
 
         self._clean_up(base_dir_file)
@@ -138,7 +138,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         return file_path
 
     @abc.abstractmethod
-    def _get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path):
         """Get the raw data from the files of interest.
 
         Args:
@@ -149,7 +149,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def _filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data):
         """Filter or clean the raw data for given criteria.
 
         Args:
