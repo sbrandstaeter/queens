@@ -13,6 +13,7 @@ from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_loca
 
 from queens.distributions import beta, lognormal, normal, uniform
 from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 from queens.utils.valid_options_utils import get_option
 
@@ -35,6 +36,7 @@ class PolynomialChaosIterator(Iterator):
         result_dict: TODO_doc
     """
 
+    @log_init_args
     def __init__(
         self,
         model,

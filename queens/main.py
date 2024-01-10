@@ -5,7 +5,6 @@ import time
 
 import queens.global_settings
 from queens.global_settings import GlobalSettings
-from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.cli_utils import get_cli_options, print_greeting_message
 from queens.utils.fcc_utils import from_config_create_iterator
 from queens.utils.io_utils import load_input_file
@@ -28,7 +27,11 @@ def run(input_file, output_dir, debug=False):
 
     experiment_name = config.pop('experiment_name')
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=debug):
+    with GlobalSettings(
+        experiment_name=experiment_name,
+        output_dir=output_dir,
+        debug=debug,
+    ):
         # create iterator
         my_iterator = from_config_create_iterator(config)
 
@@ -48,7 +51,6 @@ def run_iterator(iterator):
     Args:
         iterator (Iterator): Main queens iterator
     """
-    print_banner_and_description()
     queens.global_settings.GLOBAL_SETTINGS.print_git_information()
 
     start_time_calc = time.time()
@@ -86,4 +88,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

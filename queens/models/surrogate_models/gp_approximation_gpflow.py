@@ -11,6 +11,7 @@ from gpflow.utilities import print_summary, set_trainable
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
@@ -41,6 +42,7 @@ class GPFlowRegressionModel(SurrogateModel):
         scaler_y (sklearn scaler object): Scaler for outputs.
     """
 
+    @log_init_args
     def __init__(
         self,
         training_iterator=None,

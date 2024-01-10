@@ -7,6 +7,7 @@ import numpy as np
 from queens.iterators.iterator import Iterator
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.iterators.sobol_sequence_iterator import SobolSequenceIterator
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class BMFIAIterator(Iterator):
        BMFIAIterator (obj): Instance of the BMFIAIterator
     """
 
+    @log_init_args
     def __init__(
         self,
         parameters,

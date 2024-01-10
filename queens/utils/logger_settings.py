@@ -1,10 +1,14 @@
 """Logging in QUEENS."""
 
+import functools
+import inspect
 import io
 import logging
 import re
 import sys
 import time
+
+from queens.utils.print_utils import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
 
@@ -352,3 +356,39 @@ def reset_logging():
                 finally:
                     handler.release()
                 logger.removeHandler(handler)
+
+
+def log_init_args(method):
+    """Log arguments of __init__ method.
+
+    Args:
+        method (obj): __init__ method
+    Returns:
+        wrapper (func): Decorated __init__ method
+    """
+
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        signature = inspect.signature(method)
+        default_kwargs = {
+            k: v.default
+            for k, v in signature.parameters.items()
+            if v.default is not inspect.Parameter.empty
+        }
+
+        all_keys = list(signature.parameters.keys())
+        args_as_kwargs = {all_keys[i]: args[i] for i in range(len(args))}
+        all_kwargs = dict(default_kwargs, **args_as_kwargs, **kwargs)
+
+        def key_fun(pair):
+            if pair[0] in all_keys:
+                return all_keys.index(pair[0])
+            return len(all_keys)
+
+        all_kwargs = dict(sorted(all_kwargs.items(), key=key_fun))
+
+        _logger = logging.getLogger(args[0].__module__)
+        _logger.info(get_str_table(args[0].__class__.__name__, all_kwargs, use_repr=True))
+        method(*args, **kwargs)
+
+    return wrapper

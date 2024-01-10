@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from queens.utils.logger_settings import log_init_args
+
 
 class RandomField:
     """RandomField class.
@@ -26,6 +28,7 @@ class RandomField:
                                                            eigenvalue matrix.
     """
 
+    @log_init_args
     def __init__(
         self,
         coords,

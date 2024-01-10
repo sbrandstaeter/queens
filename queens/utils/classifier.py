@@ -5,16 +5,16 @@ from pathlib import Path
 import numpy as np
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 
-VALID_CLASSIFIER_LEARNING_TYPES = {
-    "passive_learning": ["queens.utils.classifier", "Classifier"],
-    "active_learning": ["queens.utils.classifier", "ActiveLearningClassifier"],
-}
+from queens.utils.logger_settings import log_init_args
 
 VALID_CLASSIFIER_TYPES = {
-    "nn": ["sklearn.neural_network", "MLPClassifier"],
-    "gp": ["sklearn.gaussian_process", "GaussianProcessClassifier"],
-    "svc": ["sklearn.svm", "SVC"],
+    "nn": MLPClassifier,
+    "gp": GaussianProcessClassifier,
+    "svc": SVC,
 }
 
 
@@ -93,6 +93,7 @@ class ActiveLearningClassifier(Classifier):
 
     is_active = True
 
+    @log_init_args
     def __init__(self, n_params, classifier_obj, batch_size, active_sampler_obj=None):
         """Initialise active learning classifier.
 
@@ -124,3 +125,9 @@ class ActiveLearningClassifier(Classifier):
             X=x_train, y=y_train, clf=self.classifier_obj, batch_size=self.batch_size
         )
         return query_idx
+
+
+VALID_CLASSIFIER_LEARNING_TYPES = {
+    "passive_learning": Classifier,
+    "active_learning": ActiveLearningClassifier,
+}

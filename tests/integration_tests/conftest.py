@@ -1,6 +1,6 @@
 """Collect fixtures used by the integration tests."""
-
 import getpass
+import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -8,9 +8,10 @@ from typing import Optional
 
 import numpy as np
 import pytest
+import yaml
 
 from queens.utils.path_utils import relative_path_from_queens
-from queens.utils.run_subprocess import run_subprocess_remote
+from queens.utils.remote_operations import RemoteConnection
 
 _logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class ClusterConfig:
 
     Attributes:
         name (str):                         name of cluster
-        cluster_address (str):              hostname or address to reach cluster from network
+        host (str):                         hostname or ip address to reach cluster from network
         workload_manager (str):             type of work load scheduling software (PBS or SLURM)
         jobscript_template (Path):          absolute path to jobscript template file
         cluster_internal_address (str)      ip address of login node in cluster internal network
@@ -38,7 +39,7 @@ class ClusterConfig:
     """
 
     name: str
-    cluster_address: str
+    host: str
     workload_manager: str
     jobscript_template: Path
     cluster_internal_address: str
@@ -52,7 +53,7 @@ class ClusterConfig:
 
 THOUGHT_CONFIG = ClusterConfig(
     name="thought",
-    cluster_address="129.187.58.22",
+    host="129.187.58.22",
     workload_manager="slurm",
     queue="normal",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
@@ -65,7 +66,7 @@ THOUGHT_CONFIG = ClusterConfig(
 
 BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
-    cluster_address="bruteforce.lnm.ed.tum.de",
+    host="bruteforce.lnm.ed.tum.de",
     workload_manager="slurm",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
     cluster_internal_address="10.10.0.1",
@@ -77,7 +78,7 @@ BRUTEFORCE_CONFIG = ClusterConfig(
 )
 CHARON_CONFIG = ClusterConfig(
     name="charon",
-    cluster_address="charon.bauv.unibw-muenchen.de",
+    host="charon.bauv.unibw-muenchen.de",
     workload_manager="slurm",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
     cluster_internal_address="192.168.2.253",
@@ -100,10 +101,19 @@ def fixture_user():
     return getpass.getuser()
 
 
-@pytest.fixture(name="cluster_user", scope="session")
-def fixture_cluster_user(pytestconfig):
+@pytest.fixture(name="remote_user", scope="session")
+def fixture_remote_user(pytestconfig):
     """Username of cluster account to use for tests."""
     return pytestconfig.getoption("remote_user")
+
+
+@pytest.fixture(name="gateway", scope="session")
+def fixture_gateway(pytestconfig):
+    """String of a dictionary that defines gateway connection (proxyjump)."""
+    gateway = pytestconfig.getoption("gateway")
+    if isinstance(gateway, str):
+        gateway = json.loads(gateway)
+    return gateway
 
 
 @pytest.fixture(name="cluster", scope="session")
@@ -117,36 +127,70 @@ def fixture_cluster(request):
 
 
 @pytest.fixture(name="cluster_settings", scope="session")
-def fixture_cluster_settings(cluster, cluster_user):
+def fixture_cluster_settings(
+    cluster, remote_user, gateway, remote_python, remote_queens_repository
+):
     """Hold all settings of cluster."""
     settings = CLUSTER_CONFIGS.get(cluster).dict()
     _logger.debug("raw cluster config: %s", settings)
     settings["cluster"] = cluster
-    settings["cluster_user"] = cluster_user
-    settings["connect_to_resource"] = cluster_user + '@' + settings["cluster_address"]
+    settings["user"] = remote_user
+    settings["remote_python"] = remote_python
+    settings["remote_queens_repository"] = remote_queens_repository
+
+    if gateway is None:
+        # None is equal to null in yaml
+        settings["gateway"] = "null"
+    elif isinstance(gateway, dict):
+        # the gateway settings should be supplied via a dict:
+        # save the settings in string of yaml format to make it more flexible for parsing it into
+        # the yaml input file (we don't know which keywords the user used to supply the settings)
+
+        # in the yaml file this dict is already two level indented: add four spaces before each line
+        indentation = 4 * " "
+        settings["gateway"] = (
+            "\n" + indentation + yaml.dump(gateway).replace("\n", "\n" + indentation)
+        )
+    else:
+        raise ValueError(f"Cannot handle gateway information {gateway} of type {type(gateway)}.")
     return settings
 
 
-@pytest.fixture(name="connect_to_resource", scope="session")
-def fixture_connect_to_resource(cluster_settings):
-    """Use for ssh connect to the cluster."""
-    return cluster_settings["connect_to_resource"]
+@pytest.fixture(name="remote_python", scope="session")
+def fixture_remote_python(pytestconfig):
+    """Path to Python environment on remote host."""
+    return pytestconfig.getoption("remote_python")
+
+
+@pytest.fixture(name="remote_connection", scope="session")
+def fixture_remote_connection(cluster_settings, gateway):
+    """Fabric connection to remote."""
+    return RemoteConnection(
+        host=cluster_settings["host"],
+        user=cluster_settings["user"],
+        remote_python=cluster_settings["remote_python"],
+        remote_queens_repository=cluster_settings["remote_queens_repository"],
+        gateway=gateway,
+    )
+
+
+@pytest.fixture(name="remote_queens_repository", scope="session")
+def fixture_remote_queens_repository(pytestconfig):
+    """Path to queens repository on remote host."""
+    remote_queens = pytestconfig.getoption("remote_queens_repository", skip=True)
+    return remote_queens
 
 
 @pytest.fixture(name="baci_cluster_paths", scope="session")
-def fixture_baci_cluster_paths(connect_to_resource):
+def fixture_baci_cluster_paths(remote_connection):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
     """
-    _, _, remote_home, _ = run_subprocess_remote(
-        "echo ~",
-        remote_connect=connect_to_resource,
-        additional_error_message=f"Unable to identify home on remote.\n"
-        f"Tried to connect to {connect_to_resource}.",
-    )
+    result = remote_connection.run("echo ~", in_stream=False)
+    remote_home = Path(result.stdout.rstrip())
 
-    base_directory = Path(remote_home.rstrip()) / "workspace" / "build"
+    base_directory = remote_home / "workspace" / "build"
 
     path_to_executable = base_directory / "baci-release"
     path_to_post_processor = base_directory / "post_processor"
@@ -154,13 +198,8 @@ def fixture_baci_cluster_paths(connect_to_resource):
 
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
-        command_string = f'find {file_path}'
-        run_subprocess_remote(
-            command=command_string,
-            remote_connect=connect_to_resource,
-            additional_error_message=f"Could not find executable on {connect_to_resource}.\n"
-            f"Was looking here: {file_path}",
-        )
+        find_result = remote_connection.run(f'find {file_path}', in_stream=False)
+        return Path(find_result.stdout.rstrip())
 
     exists_on_remote(path_to_executable)
     exists_on_remote(path_to_post_processor)

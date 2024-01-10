@@ -5,6 +5,8 @@ import numpy as np
 import xarray as xr
 from scipy.stats import qmc
 
+from queens.utils.logger_settings import log_init_args
+
 _logger = logging.getLogger(__name__)
 
 
@@ -32,6 +34,7 @@ class Sampler:
         seed_monte_carlo (int): seed for random samples
     """
 
+    @log_init_args
     def __init__(
         self,
         parameter_names,

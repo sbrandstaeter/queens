@@ -6,6 +6,7 @@ import numpy as np
 
 from queens.models.simulation_model import SimulationModel
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
+from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
                            of function evaluation.
     """
 
+    @log_init_args
     def __init__(self, interface, finite_difference_method, step_size=1e-5, bounds=None):
         """Initialize model.
 

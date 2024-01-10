@@ -5,6 +5,7 @@ import logging
 import numpy as np
 
 from queens.data_processor.data_processor import DataProcessor
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ _logger = logging.getLogger(__name__)
 class DataProcessorNumpy(DataProcessor):
     """Class for extracting data from numpy binaries."""
 
+    @log_init_args
     def __init__(
         self,
         file_name_identifier=None,

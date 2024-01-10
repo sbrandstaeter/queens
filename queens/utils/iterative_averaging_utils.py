@@ -3,13 +3,8 @@ import abc
 
 import numpy as np
 
+from queens.utils.logger_settings import log_init_args
 from queens.utils.print_utils import get_str_table
-
-VALID_TYPES = {
-    "moving_average": ['queens.utils.iterative_averaging_utils', 'MovingAveraging'],
-    "polyak_averaging": ['queens.utils.iterative_averaging_utils', 'PolyakAveraging'],
-    "exponential_averaging": ['queens.utils.iterative_averaging_utils', 'ExponentialAveraging'],
-}
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
@@ -93,6 +88,7 @@ class MovingAveraging(IterativeAveraging):
 
     _name = "Moving Averaging"
 
+    @log_init_args
     def __init__(self, num_iter_for_avg):
         """Initialize moving averaging object.
 
@@ -144,6 +140,7 @@ class PolyakAveraging(IterativeAveraging):
 
     _name = "Polyak Averaging"
 
+    @log_init_args
     def __init__(self):
         """Initialize Polyak averaging object."""
         super().__init__()
@@ -192,6 +189,7 @@ class ExponentialAveraging(IterativeAveraging):
 
     _name = "Exponential Averaging"
 
+    @log_init_args
     def __init__(self, coefficient):
         """Initialize exponential averaging object.
 
@@ -280,3 +278,10 @@ def relative_change(old_value, new_value, norm):
     increment = old_value - new_value
     increment = np.nan_to_num(increment)
     return norm(increment) / (norm(old_value) + 1e-16)
+
+
+VALID_TYPES = {
+    "moving_average": MovingAveraging,
+    "polyak_averaging": PolyakAveraging,
+    "exponential_averaging": ExponentialAveraging,
+}

@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
+from queens.utils.logger_settings import log_init_args
+
 _logger = logging.getLogger(__name__)
 
 
@@ -26,6 +28,7 @@ class StatisticsSobolIndexEstimates:
         parameter_names (list): list of parameter names
     """
 
+    @log_init_args
     def __init__(self, parameter_names, number_gp_realizations, number_bootstrap_samples):
         """Initialize.
 

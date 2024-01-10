@@ -32,9 +32,9 @@ Either of them will work, but we strongly recommend to use **mamba** due to the 
 
 #### Installation
 There are multiple ways of installing both mamba and conda.
-However, we recommend the following:
-- **mamba** (recommended): install [mambaforge](https://github.com/conda-forge/miniforge#mambaforge). For detailed instructions see also [here](https://mamba.readthedocs.io/en/latest/installation.html#installation).
-- conda: install [miniforge](https://github.com/conda-forge/miniforge#miniforge3) or [miniconda](https://docs.conda.io/en/latest/miniconda.html#miniconda)
+However, we recommend to use
+> [Miniforge](https://github.com/conda-forge/miniforge): Miniforge contains both mamba and conda and
+  comes with the `conda-forge` channel (which QUEENS uses) predefined.
 
 #### Usage
 For instructions on how to use mamba or conda, e.g. on how to activate an environment, please refer to the official guides:

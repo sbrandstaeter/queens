@@ -1,15 +1,19 @@
 """Custom exceptions."""
 
 
-class FileTypeError(Exception):
+class QueensException(Exception):
+    """QUEENS exception."""
+
+
+class FileTypeError(QueensException):
     """Exception for wrong file types."""
 
 
-class CLIError(Exception):
+class CLIError(QueensException):
     """QUEENS exception for CLI input."""
 
 
-class InvalidOptionError(Exception):
+class InvalidOptionError(QueensException):
     """Custom error class for invalid options during QUEENS runs."""
 
     @classmethod
@@ -31,7 +35,7 @@ class InvalidOptionError(Exception):
         return cls(message)
 
 
-class SubprocessError(Exception):
+class SubprocessError(QueensException):
     """Custom error class for the QUEENS subprocess wrapper."""
 
     @classmethod
@@ -57,3 +61,23 @@ class SubprocessError(Exception):
         if additional_message:
             message += '\n\n' + additional_message
         return cls(message)
+
+
+class InjectionError(QueensException):
+    """Exception class for injection errors."""
+
+    @classmethod
+    def construct_error(cls, required_keys, provided_keys):
+        """Construct a Subprocess error from a command and its outputs.
+
+        Args:
+            required_keys (iterable): Keys required by the template
+            provided_keys (iterable): Keys provided to inject
+
+        Returns:
+            InjectionError
+        """
+        return cls(
+            f"Provided keys ({', '.join(provided_keys)}) and required keys "
+            f"({', '.join(required_keys)}) differ, template could not be injected!"
+        )

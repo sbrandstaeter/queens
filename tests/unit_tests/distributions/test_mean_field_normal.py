@@ -221,8 +221,10 @@ def test_grad_logpdf_var(mean_field_normal, samples):
     mean = mean_field_normal.mean
     cov_vec = mean_field_normal.covariance
 
+    def new_fun(cov, sample):
+        return jax_stats.multivariate_normal.logpdf(sample, mean, jnp.diag(cov))
+
     grad_benchmark_logpdf_var_lst = []
-    new_fun = lambda cov, sample: jax_stats.multivariate_normal.logpdf(sample, mean, jnp.diag(cov))
     for sample in samples:
         grad_benchmark_logpdf_var_lst.append(grad(new_fun)(cov_vec, sample))
     grad_benchmark_logpdf_var = np.array(grad_benchmark_logpdf_var_lst).reshape(2, -1)
@@ -242,18 +244,18 @@ def test_pdf(mean_field_normal, samples):
 
 def test_ppf(mean_field_normal):
     """Test ppf."""
-    q = 0.8
+    quantile = 0.8
     # test multivariate case
     with pytest.raises(ValueError):
-        mean_field_normal.ppf(q)
+        mean_field_normal.ppf(quantile)
 
     # test univariate case
     mean_field_normal.mean = np.array([2.0])
     mean_field_normal.covariance = np.array([3.0])
     mean_field_normal.dimension = 1
 
-    ppf = mean_field_normal.ppf(q)
-    expected_ppf = scipy.stats.norm.ppf(q, loc=2.0, scale=3.0 ** (1 / 2))
+    ppf = mean_field_normal.ppf(quantile)
+    expected_ppf = scipy.stats.norm.ppf(quantile, loc=2.0, scale=3.0 ** (1 / 2))
 
     # test
     np.testing.assert_array_almost_equal(ppf, expected_ppf, decimal=6)

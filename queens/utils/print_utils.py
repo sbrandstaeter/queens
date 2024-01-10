@@ -4,18 +4,21 @@
 DEFAULT_OUTPUT_WIDTH = 81
 
 
-def get_str_table(name, print_dict):
+def get_str_table(name, print_dict, use_repr=False):
     """Function to get table to be used in *__str__* methods.
 
     Args:
         name (str): Object name
         print_dict (dict): Dict containing labels and values to print
+        use_repr (bool, opt): If true, use repr() function to obtain string representations of
+                              objects
 
     Returns:
         str: Table to print
     """
     column_name = [str(k) for k in print_dict.keys()]
-    column_value = [str(v).replace("\n", " ") for v in print_dict.values()]
+    str_fun = repr if use_repr else str
+    column_value = [str_fun(v).replace("\n", " ") for v in print_dict.values()]
     column_width_name = max(len(s) for s in column_name)
     column_width_value = max(len(s) for s in column_value)
 

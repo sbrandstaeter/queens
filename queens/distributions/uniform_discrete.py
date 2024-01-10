@@ -2,11 +2,13 @@
 import numpy as np
 
 from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.utils.logger_settings import log_init_args
 
 
 class UniformDiscreteDistribution(ParticleDiscreteDistribution):
     """Discrete uniform distribution."""
 
+    @log_init_args
     def __init__(self, sample_space):
         """Initialize discrete uniform distribution.
 

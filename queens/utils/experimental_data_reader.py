@@ -5,10 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from queens.data_processor.data_processor_csv import DataProcessorCsv
-
-VALID_TYPES = {
-    "experimental_data_reader": ['queens.utils.experimental_data_reader', 'ExperimentalDataReader']
-}
+from queens.utils.logger_settings import log_init_args
 
 
 class ExperimentalDataReader:
@@ -23,6 +20,7 @@ class ExperimentalDataReader:
         data_processor (DataProcessor): data processor for experimental data
     """
 
+    @log_init_args
     def __init__(
         self,
         data_processor=None,
@@ -102,3 +100,6 @@ class ExperimentalDataReader:
             self.coordinate_labels,
             self.output_label,
         )
+
+
+VALID_TYPES = {"experimental_data_reader": ExperimentalDataReader}

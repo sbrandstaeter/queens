@@ -5,7 +5,10 @@ This package contains a set of driver scripts, which are used to make
 the actual call to the simulation software.
 """
 
+from queens.drivers.jobscript_driver import JobscriptDriver
+from queens.drivers.mpi_driver import MpiDriver
+
 VALID_TYPES = {
-    'mpi': ["queens.drivers.mpi_driver", "MpiDriver"],
-    'jobscript': ["queens.drivers.jobscript_driver", "JobscriptDriver"],
+    'mpi': MpiDriver,
+    'jobscript': JobscriptDriver,
 }

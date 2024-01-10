@@ -3,7 +3,9 @@ import logging
 from pathlib import Path
 
 from queens.drivers.driver import Driver
-from queens.utils.injector import inject_in_template, read_file
+from queens.utils.injector import inject_in_template
+from queens.utils.io_utils import read_file
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ class JobscriptDriver(Driver):
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
     """
 
+    @log_init_args
     def __init__(
         self,
         input_template,
@@ -92,7 +95,11 @@ class JobscriptDriver(Driver):
             'INPUT': input_file,
             'JOB_ID': job_id,
         }
-        inject_in_template(final_jobscript_options, self.jobscript_template, str(jobscript_file))
+
+        # Strict is False as the options depend on the cluster jobscripts
+        inject_in_template(
+            final_jobscript_options, self.jobscript_template, str(jobscript_file), strict=False
+        )
 
         execute_cmd = 'bash ' + str(jobscript_file)
         self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)

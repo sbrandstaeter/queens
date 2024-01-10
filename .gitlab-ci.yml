@@ -1,18 +1,33 @@
 ---
 #---------------------------------------------------------------------------------------------------
-# Define variables
 variables:
-  # flags to turn on/ off tests for specific platforms
-  UBUNTU_TESTS: "1"
-  CLUSTER_TESTS: "1"
-  BENCHMARKS: "0"
-  UPDATE_REQUIREMENTS: "0"
-  # optional parameters for pytest calls
-  PYTEST_OPTIONAL_PARAMETERS: ""
-  LNM_REMOTE_PYTHON: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
-  IMCS_REMOTE_PYTHON: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
-  # python package manager
-  PYTHON_PACKAGE_MANAGER: "mamba"
+  UBUNTU_TESTS:
+    value: "1"
+    description: "Run integration and unit tests on Ubuntu machines"
+  TEST_TIMING_OPTION:
+    value: "--no-test-timing"
+    description: "Set the option if local test should be timed or not. Default is off."
+  CLUSTER_TESTS:
+    value: "1"
+    description: "Run cluster tests"
+  BENCHMARKS:
+    value: "0"
+    description: "Run benchmarks"
+  UPDATE_REQUIREMENTS:
+    value: "0"
+    description: "Update requirements for QUEENS and create a MR"
+  PYTEST_OPTIONAL_PARAMETERS:
+    value: ""
+    description: "Additional pytest options for the ubuntu pytest run"
+  LNM_REMOTE_PYTHON:
+    value: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
+    description: "Python path on LNM clusters"
+  IMCS_REMOTE_PYTHON:
+    value: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+    description: "Python path on IMCS clusters"
+  PYTHON_PACKAGE_MANAGER:
+    value: "mamba"
+    description: "Python package manager to create the python environments"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -110,11 +125,11 @@ imcs-build_conda_env:
     - if: $CLUSTER_TESTS == "1"
   script:
     - ENV_PREFIX=queens-$CI_PIPELINE_ID
-    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10
+    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10 cloudpickle fabric
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
     - python queens/utils/remote_build.py
-      --remote-address=$REMOTE_ADDRESS --remote-user=queens --remote-python=$REMOTE_PYTHON
+      --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
       $PYTHON_PACKAGE_MANAGER
 
@@ -243,7 +258,7 @@ license_check:
   rules:
     - !reference [.default_test_conditions, rules]
   script:
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report --time-tests $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report
@@ -287,6 +302,7 @@ imcs-ubuntu_full_test_suite:
       --remote-user=queens
       --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --color=yes
 
 lnm-cluster_tests:
   extends:
@@ -322,7 +338,7 @@ benchmarks:
   rules:
     - if: $BENCHMARKS == "1"
   script:
-    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS --color=yes
   needs:
     - lnm-build_conda_env
 

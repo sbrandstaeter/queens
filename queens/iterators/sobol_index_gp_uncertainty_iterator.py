@@ -14,6 +14,7 @@ from queens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsSobolIndexEstimates,
     StatisticsThirdOrderSobolIndexEstimates,
 )
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 from .iterator import Iterator
@@ -61,6 +62,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         results (dict): Dictionary for results.
     """
 
+    @log_init_args
     def __init__(
         self,
         model,

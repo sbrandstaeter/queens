@@ -13,12 +13,6 @@ from queens.utils.iterative_averaging_utils import (
 from queens.utils.print_utils import get_str_table
 from queens.utils.valid_options_utils import get_option
 
-VALID_TYPES = {
-    "adam": ['queens.utils.stochastic_optimizer', 'Adam'],
-    "rms_prop": ['queens.utils.stochastic_optimizer', 'RMSprop'],
-    "adamax": ['queens.utils.stochastic_optimizer', 'Adamax'],
-}
-
 _logger = logging.getLogger(__name__)
 
 
@@ -568,3 +562,10 @@ def clip_by_value(gradient, threshold=1e6):
     gradient = np.nan_to_num(gradient)
     gradient = np.clip(gradient, -threshold, threshold)
     return gradient
+
+
+VALID_TYPES = {
+    "adam": Adam,
+    "rms_prop": RMSprop,
+    "adamax": Adamax,
+}

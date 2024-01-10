@@ -2,6 +2,8 @@
 import logging
 from pathlib import Path
 
+from queens.utils.path_utils import create_folder_if_not_existent
+
 _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
@@ -35,7 +37,7 @@ def experiment_directory(experiment_name):
 def create_directory(dir_path):
     """Create a directory either local or remote."""
     _logger.debug("Creating folder %s.", dir_path)
-    Path(dir_path).mkdir(parents=True, exist_ok=True)
+    create_folder_if_not_existent(dir_path)
 
 
 def current_job_directory(experiment_dir, job_id):

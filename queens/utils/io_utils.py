@@ -75,3 +75,15 @@ def write_to_csv(output_file_path, data, delimiter=","):
         # write only new data
         for row in data:
             writer.writerow(row)
+
+
+def read_file(file_path):
+    """Function to read in a file.
+
+    Args:
+        file_path (str, Path): Path to file
+    Returns:
+        file (str): read in file as string
+    """
+    file = Path(file_path).read_text(encoding='utf-8')
+    return file

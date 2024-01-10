@@ -11,6 +11,7 @@ from scipy.optimize import curve_fit
 
 from queens.iterators.iterator import Iterator
 from queens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -79,6 +80,7 @@ class OptimizationIterator(Iterator):
         OptimizationIterator (obj): Instance of the OptimizationIterator
     """
 
+    @log_init_args
     def __init__(
         self,
         model,

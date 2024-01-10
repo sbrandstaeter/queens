@@ -7,6 +7,7 @@ from scipy.special import logsumexp
 from queens.distributions import VALID_TYPES
 from queens.distributions.distributions import ContinuousDistribution
 from queens.utils.import_utils import get_module_class
+from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ _logger = logging.getLogger(__name__)
 class MixtureDistribution(ContinuousDistribution):
     """Mixture models."""
 
+    @log_init_args
     def __init__(self, weights, component_distributions):
         """Initialize mixture model.
 
@@ -202,7 +204,9 @@ class MixtureDistribution(ContinuousDistribution):
                 )
                 data_component_i.append(log_ratio)
             inv_log_responsibility.append(data_component_i)
-        inv_log_responsibility = -logsumexp(inv_log_responsibility, axis=1)  # pylint: disable=E1130
+        inv_log_responsibility = -logsumexp(  # pylint: disable=invalid-unary-operand-type
+            inv_log_responsibility, axis=1
+        )
         return np.exp(inv_log_responsibility).T
 
     def export_dict(self):

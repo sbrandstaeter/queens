@@ -4,6 +4,7 @@ import logging
 import pickle
 
 from queens.iterators.iterator import Iterator
+from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results.
     """
 
+    @log_init_args
     def __init__(self, path_to_data, result_description, parameters=None):
         """Initialise data iterator.
 

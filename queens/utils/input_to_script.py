@@ -13,7 +13,7 @@ from queens.models.bmfmc_model import BMFMCModel
 from queens.parameters.fields.random_fields import RandomField
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.fcc_utils import VALID_TYPES, check_for_reference
-from queens.utils.import_utils import get_module_attribute, get_option, import_module
+from queens.utils.import_utils import get_module_attribute, get_option
 from queens.utils.io_utils import load_input_file
 
 _logger = logging.getLogger(__name__)
@@ -363,9 +363,10 @@ def get_module_class(module_options, valid_types, code, module_type_specifier="t
         )
         module_attribute = module_type
     else:
-        module_path, module_attribute = get_option(valid_types, module_type)
+        module_class = get_option(valid_types, module_type)
+        module_attribute = module_class.__name__
+        module_path = module_class.__module__
         code.imports.append(f"from {module_path} import {module_attribute}")
-        module_class = getattr(import_module(module_path), module_attribute)
     return module_class, module_attribute
 
 

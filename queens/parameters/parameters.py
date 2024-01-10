@@ -9,6 +9,7 @@ from queens.distributions.distributions import ContinuousDistribution
 from queens.parameters.fields import VALID_TYPES as VALID_FIELD_TYPES
 from queens.parameters.fields.random_fields import RandomField
 from queens.utils.import_utils import get_module_class
+from queens.utils.logger_settings import log_init_args
 
 VALID_TYPES = VALID_DISTRIBUTION_TYPES | VALID_FIELD_TYPES
 
@@ -73,6 +74,7 @@ class Parameters:
         names (list): Parameter names.
     """
 
+    @log_init_args
     def __init__(self, **parameters):
         """Initialize Parameters object.
 
