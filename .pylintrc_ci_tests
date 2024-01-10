@@ -109,7 +109,6 @@ disable=raw-checker-failed,
         consider-using-enumerate,
         line-too-long,
         unnecessary-lambda-assignment,
-        ungrouped-imports,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

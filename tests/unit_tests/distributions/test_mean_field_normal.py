@@ -1,15 +1,15 @@
 """Test-module for mean-field normal distribution."""
-from jax.config import config
-
-config.update("jax_enable_x64", True)
 import jax.scipy.stats as jax_stats
 import numpy as np
 import pytest
 import scipy
 from jax import grad
 from jax import numpy as jnp
+from jax.config import config
 
 from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+
+config.update("jax_enable_x64", True)
 
 
 @pytest.fixture(name="mean_field_normal")
