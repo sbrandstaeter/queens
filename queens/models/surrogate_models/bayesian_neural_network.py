@@ -3,6 +3,7 @@
 import logging
 import os
 
+import keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -15,7 +16,7 @@ _logger = logging.getLogger(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
-tf.keras.backend.set_floatx('float64')
+keras.backend.set_floatx('float64')
 
 # Use GPU acceleration if possible
 if tf.test.gpu_device_name() != '/device:GPU:0':
@@ -153,11 +154,11 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             ),
         ]
         dense_architecture.extend(output_layer)
-        self.bnn_model = tf.keras.Sequential(dense_architecture)
+        self.bnn_model = keras.Sequential(dense_architecture)
 
         # compile the Tensorflow model
         self.bnn_model.compile(
-            optimizer=tf.optimizers.Adam(learning_rate=self.adams_training_rate),
+            optimizer=keras.optimizers.Adam(learning_rate=self.adams_training_rate),
             loss=self.negative_log_likelihood,
         )
 
@@ -200,7 +201,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
 
         # note: the mean of the Gaussian is an input variable here, hence we have n*mean input
         # variables; one mean per node of the NN
-        prior_distribution = tf.keras.Sequential(
+        prior_distribution = keras.Sequential(
             [
                 tfp.layers.VariableLayer(n, dtype=dtype),
                 tfp.layers.DistributionLambda(
@@ -234,7 +235,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         """
         n = kernel_size + bias_size
         c = np.log(np.expm1(1.0))
-        mean_field_variational_distr = tf.keras.Sequential(
+        mean_field_variational_distr = keras.Sequential(
             [
                 tfp.layers.VariableLayer(2 * n, dtype=dtype),
                 tfp.layers.DistributionLambda(

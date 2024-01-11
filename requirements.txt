@@ -11,7 +11,7 @@ absl-py==2.0.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
-arviz==0.16.1
+arviz==0.17.0
     # via
     #   -r requirements.in
     #   pymc
@@ -61,7 +61,7 @@ cons==0.4.6
     #   pytensor
 contourpy==1.2.0
     # via matplotlib
-coverage[toml]==7.3.3
+coverage[toml]==7.4.0
     # via
     #   coverage
     #   pytest-cov
@@ -118,23 +118,23 @@ filelock==3.13.1
     # via pytensor
 flatbuffers==23.5.26
     # via tensorflow
-fonttools==4.46.0
+fonttools==4.47.0
     # via matplotlib
 fsspec==2023.12.2
     # via dask
 future==0.18.3
     # via autograd
-gast==0.4.0
+gast==0.5.4
     # via
     #   tensorflow
     #   tensorflow-probability
-gnuplotlib==0.40
+gnuplotlib==0.41
     # via -r requirements.in
-google-auth==2.25.2
+google-auth==2.26.0
     # via
     #   google-auth-oauthlib
     #   tensorboard
-google-auth-oauthlib==0.4.6
+google-auth-oauthlib==1.2.0
     # via tensorboard
 google-pasta==0.2.0
     # via tensorflow
@@ -152,7 +152,7 @@ h5py==3.10.0
     #   tensorflow
 idna==3.6
     # via requests
-importlib-metadata==7.0.0
+importlib-metadata==7.0.1
     # via
     #   chaospy
     #   dask
@@ -183,9 +183,7 @@ joblib==1.2.0
     #   particles
     #   scikit-activeml
     #   scikit-learn
-keras==2.10.0
-    # via tensorflow
-keras-preprocessing==1.1.2
+keras==2.15.0
     # via tensorflow
 kiwisolver==1.4.5
     # via matplotlib
@@ -220,10 +218,11 @@ matplotlib==3.7.4
     #   vtk
 minikanren==1.0.3
     # via pytensor
-ml-dtypes==0.3.1
+ml-dtypes==0.2.0
     # via
     #   jax
     #   jaxlib
+    #   tensorflow
 mock==5.1.0
     # via -r requirements.in
 msgpack==1.0.7
@@ -261,7 +260,6 @@ numpy==1.23.5
     #   h5py
     #   jax
     #   jaxlib
-    #   keras-preprocessing
     #   matplotlib
     #   ml-dtypes
     #   numba
@@ -284,7 +282,7 @@ numpy==1.23.5
     #   tensorflow-probability
     #   xarray
     #   xarray-einstats
-numpysane==0.39
+numpysane==0.40
     # via gnuplotlib
 oauthlib==3.2.2
     # via requests-oauthlib
@@ -315,7 +313,7 @@ pandas==1.5.3
     #   salib
     #   seaborn
     #   xarray
-paramiko==3.3.1
+paramiko==3.4.0
     # via fabric
 partd==1.4.1
     # via dask
@@ -325,7 +323,7 @@ pathos==0.3.1
     # via -r requirements.in
 pathspec==0.12.1
     # via black
-pillow==10.1.0
+pillow==10.2.0
     # via
     #   bokeh
     #   matplotlib
@@ -339,11 +337,11 @@ pox==0.3.3
     # via pathos
 ppft==1.7.6.7
     # via pathos
-protobuf==3.19.6
+protobuf==4.23.4
     # via
     #   tensorboard
     #   tensorflow
-psutil==5.9.6
+psutil==5.9.7
     # via distributed
 py==1.11.0
     # via -r requirements.in
@@ -361,15 +359,15 @@ pydoe==0.3.8
     # via -r requirements.in
 pyfiglet==1.0.2
     # via -r requirements.in
-pymc==5.0.2
+pymc==5.10.3
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
 pyparsing==3.1.1
     # via matplotlib
-pytensor==2.9.1
+pytensor==2.18.5
     # via pymc
-pytest==7.4.3
+pytest==7.4.4
     # via
     #   -r requirements.in
     #   pytest-codestyle
@@ -430,14 +428,14 @@ scipy==1.10.1
     #   scikit-activeml
     #   scikit-learn
     #   xarray-einstats
-seaborn==0.13.0
+seaborn==0.13.1
     # via -r requirements.in
 six==1.16.0
     # via
     #   astunparse
     #   google-pasta
-    #   keras-preprocessing
     #   python-dateutil
+    #   tensorboard
     #   tensorflow
     #   tensorflow-probability
 sortedcontainers==2.4.0
@@ -448,21 +446,19 @@ tblib==3.0.0
     # via distributed
 tenacity==8.2.3
     # via plotly
-tensorboard==2.10.1
+tensorboard==2.15.1
     # via tensorflow
-tensorboard-data-server==0.6.1
+tensorboard-data-server==0.7.2
     # via tensorboard
-tensorboard-plugin-wit==1.8.1
-    # via tensorboard
-tensorflow==2.10.1
+tensorflow==2.15.0.post1
     # via
     #   -r requirements.in
     #   gpflow
-tensorflow-estimator==2.10.0
+tensorflow-estimator==2.15.0
     # via tensorflow
-tensorflow-io-gcs-filesystem==0.34.0
+tensorflow-io-gcs-filesystem==0.35.0
     # via tensorflow
-tensorflow-probability==0.18.0
+tensorflow-probability==0.23.0
     # via
     #   -r requirements.in
     #   gpflow
@@ -508,10 +504,8 @@ vtk==9.3.0
 werkzeug==3.0.1
     # via tensorboard
 wheel==0.42.0
-    # via
-    #   astunparse
-    #   tensorboard
-wrapt==1.16.0
+    # via astunparse
+wrapt==1.14.1
     # via
     #   deprecated
     #   tensorflow
