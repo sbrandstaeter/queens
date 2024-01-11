@@ -152,8 +152,9 @@ h5py==3.10.0
     #   tensorflow
 idna==3.6
     # via requests
-importlib-metadata==7.0.1
+importlib-metadata==6.11.0
     # via
+    #   -r requirements.in
     #   chaospy
     #   dask
     #   numpoly
