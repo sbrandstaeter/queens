@@ -10,8 +10,8 @@ from queens.distributions.normal import NormalDistribution
 
 
 # ------------- univariate --------------
-@pytest.fixture(params=[-2.0, [-1.0, 0.0, 1.0, 2.0]])
-def sample_pos_1d(request):
+@pytest.fixture(name="sample_pos_1d", params=[-2.0, [-1.0, 0.0, 1.0, 2.0]])
+def fixture_sample_pos_1d(request):
     """Sample position to be evaluated."""
     return np.array(request.param)
 
