@@ -5,7 +5,10 @@ variables:
     value: "1"
     description: "Run integration and unit tests on Ubuntu machines"
   TEST_TIMING_OPTION:
-    value: "--no-test-timing"
+    value: ""
+    options:
+      - ""
+      - "--test-timing"
     description: "Set the option if local test should be timed or not. Default is off."
   CLUSTER_TESTS:
     value: "1"
@@ -258,6 +261,8 @@ license_check:
   rules:
     - !reference [.default_test_conditions, rules]
   script:
+    - "echo TEST_TIMING_OPTION: $TEST_TIMING_OPTION"
+    - "echo PYTEST_OPTIONAL_PARAMETERS: $PYTEST_OPTIONAL_PARAMETERS"
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
