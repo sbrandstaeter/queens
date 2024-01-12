@@ -90,15 +90,12 @@ disable=raw-checker-failed,
         suppressed-message,
         useless-suppression,
         deprecated-pragma,
+        use-symbolic-message-instead,
         design,
         fixme,
         abstract-method,
         duplicate-code,
         invalid-name,
-        use-dict-literal,
-        logging-fstring-interpolation,
-        wrong-import-position,
-        logging-format-interpolation,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
