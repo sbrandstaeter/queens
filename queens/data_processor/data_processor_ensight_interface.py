@@ -175,7 +175,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                         k += 1
         return monfile_data
 
-    def _get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path):
         """Read-in EnSight file using vtkGenericEnSightReader.
 
         Args:
@@ -190,7 +190,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         raw_data.Update()
         return raw_data
 
-    def _filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data):
         """Get deformed boundary from vtk.
 
         Create vtk representation of deformed external_geometry_obj and
@@ -216,13 +216,13 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             outline_out, outline_data = self._get_dim_dependent_vtk_output(geometry_output)
 
             for measured_point_pair in current_step_experimental_data[1]:
-                point_vector = self._stretch_vector(
+                point_vector = self.stretch_vector(
                     measured_point_pair[0], measured_point_pair[1], 10
                 )
                 intersection_points = self._get_intersection_points(
                     outline_data, outline_out, point_vector
                 )
-                distance = self._compute_distance(intersection_points, measured_point_pair)
+                distance = self.compute_distance(intersection_points, measured_point_pair)
                 residual_distance_lst.append(distance)
 
                 self._visualize_intermediate_discrepancy_measure(
@@ -376,7 +376,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             ren_win.Render()
             iren.Start()
 
-    def _stretch_vector(self, vec1, vec2, scalar):
+    def stretch_vector(self, vec1, vec2, scalar):
         """Extend a vector by scalar factor on both ends.
 
         Args:
@@ -395,7 +395,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         return vec
 
-    def _compute_distance(self, intersection_points, measured_points):
+    def compute_distance(self, intersection_points, measured_points):
         """Find the furthest point for a set of intersection points.
 
         Args:

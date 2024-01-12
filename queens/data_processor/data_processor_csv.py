@@ -127,7 +127,7 @@ class DataProcessorCsv(DataProcessor):
         returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
 
         filter_options_dict = file_options_dict.get('filter')
-        self._check_valid_filter_options(filter_options_dict)
+        self.check_valid_filter_options(filter_options_dict)
 
         filter_type = filter_options_dict.get('type')
         if not isinstance(filter_type, str):
@@ -181,7 +181,7 @@ class DataProcessorCsv(DataProcessor):
         self.returned_filter_format = returned_filter_format
 
     @classmethod
-    def _check_valid_filter_options(cls, filter_options_dict):
+    def check_valid_filter_options(cls, filter_options_dict):
         """Check valid filter input options.
 
         Args:
@@ -217,7 +217,7 @@ class DataProcessorCsv(DataProcessor):
         else:
             raise TypeError("You provided an invalid 'filter_type'!")
 
-    def _get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path):
         """Get the raw data from the files of interest.
 
         This method loads the desired parts of the csv file as a pandas
@@ -250,7 +250,7 @@ class DataProcessorCsv(DataProcessor):
             )
             return None
 
-    def _filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data):
         """Filter the pandas data-frame based on filter type.
 
         Args:
