@@ -161,7 +161,7 @@ class MetropolisHastingsIterator(Iterator):
         Returns:
             TODO_doc
         """
-        log_likelihood = self.model.evaluate(samples)
+        log_likelihood = self.model.evaluate(samples)['result']
         return log_likelihood
 
     def do_mh_step(self, step_id):
@@ -293,10 +293,10 @@ class MetropolisHastingsIterator(Iterator):
 
             accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_samples))
 
-            # process output takes a dict as input with key 'mean'
+            # process output takes a dict as input with key 'result'
             results = process_outputs(
                 {
-                    'mean': chain_core,
+                    'result': chain_core,
                     'accept_rate': accept_rate,
                     'chain_burn_in': chain_burn_in,
                     'initial_sample': initial_samples,
@@ -320,7 +320,7 @@ class MetropolisHastingsIterator(Iterator):
                 )
                 _logger.info(
                     "\tmean±std: %s±%s",
-                    results.get('mean', np.array([np.nan] * self.num_chains))[i],
+                    results.get('result', np.array([np.nan] * self.num_chains))[i],
                     np.sqrt(results.get('var', np.array([np.nan] * self.num_chains))[i]),
                 )
                 _logger.info(

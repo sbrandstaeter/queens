@@ -139,7 +139,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Calculate Sensitivity Indices...")
         self.sensitivity_indices = sobol.analyze(
             self.salib_problem,
-            np.reshape(self.output['mean'], (-1)),
+            np.reshape(self.output['result'], (-1)),
             calc_second_order=self.calc_second_order,
             num_resamples=self.num_bootstrap_samples,
             conf_level=self.confidence_level,

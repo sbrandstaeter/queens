@@ -53,7 +53,7 @@ class TestVisualizationGridIterator:
     def test_plot_qoi_grid(self, tmp_path):
         """TODO_doc."""
         # set arguments
-        output = {"mean": np.array([1.0, 2.0, 3.0, 4.0])}
+        output = {"result": np.array([1.0, 2.0, 3.0, 4.0])}
         samples = np.array([[1.0, 1.0], [2.0, 2.0], [1.0, 2.0], [2.0, 1.0]])
         num_params = 2
         n_grid_p = [2, 2]
@@ -86,7 +86,7 @@ class TestVisualizationGridIterator:
 
     def test_plot_one_d(self):
         """TODO_doc."""
-        output = {'mean': np.array([0.0, 1.0])}
+        output = {'result': np.array([0.0, 1.0])}
         samples = np.array([0.0, 1.0])
         dummy = 1.0
         qvis.grid_iterator_visualization_instance.plot_one_d(output, samples, dummy)
@@ -94,6 +94,6 @@ class TestVisualizationGridIterator:
     def test_plot_two_d(self):
         """TODO_doc."""
         samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
-        output = {'mean': np.array([0.0, 1.0, 0.0, 1.0])}
+        output = {'result': np.array([0.0, 1.0, 0.0, 1.0])}
         n_grid_p = [2, 2]
         qvis.grid_iterator_visualization_instance.plot_two_d(output, samples, n_grid_p)

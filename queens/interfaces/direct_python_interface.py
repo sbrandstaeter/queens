@@ -82,7 +82,7 @@ class DirectPythonInterface(Interface):
                 +----------+------------------------------------------------+
                 |**key:**  |  **value:**                                    |
                 +----------+------------------------------------------------+
-                |'mean'    | ndarray shape (samples size, shape_of_response)|
+                |'result'  | ndarray shape (samples size, shape_of_response)|
                 +----------+------------------------------------------------+
         """
         samples_list = self.create_samples_list(samples, add_job_id=self.function_requires_job_id)
@@ -105,7 +105,7 @@ class DirectPythonInterface(Interface):
         else:
             results_array = np.array(results)
 
-        output["mean"] = results_array
+        output['result'] = results_array
         return output
 
     @staticmethod

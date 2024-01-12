@@ -118,7 +118,7 @@ class BaciLMIterator(Iterator):
 
         self.model.evaluate(positions)
 
-        f = self.model.response['mean']
+        f = self.model.response['result']
         f_batch = f[-(len(positions)) :]
 
         f0 = f_batch[0]  # first entry corresponds to f(x0)

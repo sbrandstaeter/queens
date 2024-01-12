@@ -310,7 +310,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var_pred)) ** 2).reshape(
             -1, 1
         )
-        output["mean"] = self.scaler_y.inverse_transform_mean(mean_pred).reshape(
+        output['result'] = self.scaler_y.inverse_transform_mean(mean_pred).reshape(
             -1, 1
         ) + self.mean_function(x_test)
 
@@ -343,7 +343,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
 
         # write mean and variance to output dictionary
         output = {
-            "mean": self.scaler_y.inverse_transform_mean(mean_pred).reshape(-1, 1)
+            'result': self.scaler_y.inverse_transform_mean(mean_pred).reshape(-1, 1)
             + self.mean_function(x_test)
         }
         output["variance"] = (

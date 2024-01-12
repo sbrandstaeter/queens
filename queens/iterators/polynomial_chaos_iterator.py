@@ -154,7 +154,7 @@ class PolynomialChaosIterator(Iterator):
                 f" lead to {num_collocation_points} collocation points"
             )
         _logger.info("Number of collocation points: %s", num_collocation_points)
-        evaluations = self.model.evaluate(nodes.T)['mean']
+        evaluations = self.model.evaluate(nodes.T)['result']
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)
@@ -177,7 +177,7 @@ class PolynomialChaosIterator(Iterator):
             self.num_collocation_points, rule=self.sampling_rule
         )
 
-        evaluations = self.model.evaluate(collocation_points.T)['mean']
+        evaluations = self.model.evaluate(collocation_points.T)['result']
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)

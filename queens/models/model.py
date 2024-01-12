@@ -17,7 +17,7 @@ class Model(metaclass=abc.ABCMeta):
         Two, it acts as a factory for the instantiation of model objects.
 
     Attributes:
-        response (dict): Response corresponding to parameters.
+        response (dict): Response of the underlying model at input samples.
     """
 
     evaluate_and_gradient_bool = False
@@ -71,7 +71,7 @@ class Model(metaclass=abc.ABCMeta):
                                        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         Model.evaluate_and_gradient_bool = True
-        model_output = self.evaluate(samples)
+        model_output = self.evaluate(samples)['result']
         if upstream_gradient is None:
             upstream_gradient = np.ones((samples.shape[0], 1))
         model_gradient = self.grad(

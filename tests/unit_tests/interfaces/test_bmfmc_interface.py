@@ -57,7 +57,7 @@ def fixture_probabilistic_mapping_obj(map_output_dict):
 @pytest.fixture(name="map_output_dict")
 def fixture_map_output_dict():
     """Map output dictionary."""
-    output = {'mean': np.linspace(1.0, 5.0, 5), 'variance': np.linspace(5.0, 10.0, 5)}
+    output = {'result': np.linspace(1.0, 5.0, 5), 'variance': np.linspace(5.0, 10.0, 5)}
     return output
 
 
@@ -81,7 +81,7 @@ def test_init():
 def test_map(default_interface, map_output_dict):
     """Test mapping."""
     Z_LF = 1.0
-    expected_Y_HF_mean = map_output_dict['mean']
+    expected_Y_HF_mean = map_output_dict['result']
     expected_Y_HF_var = map_output_dict['variance']
 
     mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.evaluate(Z_LF)

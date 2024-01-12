@@ -49,7 +49,9 @@ def test_init():
 
 def test_evaluate(default_fd_model):
     """Test the evaluation method."""
-    default_fd_model.interface.evaluate = lambda x: {"mean": np.sum(x**2, axis=1, keepdims=True)}
+    default_fd_model.interface.evaluate = lambda x: {
+        "result": np.sum(x**2, axis=1, keepdims=True)
+    }
     samples = np.random.random((3, 2))
 
     expected_mean = np.sum(samples**2, axis=1, keepdims=True)
@@ -57,31 +59,31 @@ def test_evaluate(default_fd_model):
 
     response = default_fd_model.evaluate(samples)
     assert len(response) == 1
-    np.testing.assert_array_equal(response['mean'], expected_mean)
+    np.testing.assert_array_equal(response['result'], expected_mean)
     assert len(default_fd_model.response) == 1
-    np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
+    np.testing.assert_array_equal(default_fd_model.response['result'], expected_mean)
 
     Model.evaluate_and_gradient_bool = False
     response = default_fd_model.evaluate(samples)
     assert len(response) == 1
-    np.testing.assert_array_equal(response['mean'], expected_mean)
+    np.testing.assert_array_equal(response['result'], expected_mean)
     assert len(default_fd_model.response) == 1
-    np.testing.assert_array_equal(default_fd_model.response['mean'], expected_mean)
+    np.testing.assert_array_equal(default_fd_model.response['result'], expected_mean)
 
     Model.evaluate_and_gradient_bool = True
     response = default_fd_model.evaluate(samples)
-    np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
+    np.testing.assert_array_almost_equal(expected_mean, response['result'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=5)
 
     default_fd_model.interface.evaluate = lambda x: {
-        "mean": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
+        "result": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
     }
     samples = np.random.random((3, 4))
 
     expected_grad = np.swapaxes(np.array([2 * samples, 4 * samples]), 0, 1)
     expected_mean = np.array([np.sum(samples**2, axis=1), np.sum(2 * samples**2, axis=1)]).T
     response = default_fd_model.evaluate(samples)
-    np.testing.assert_array_almost_equal(expected_mean, response['mean'], decimal=5)
+    np.testing.assert_array_almost_equal(expected_mean, response['result'], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=4)
     Model.evaluate_and_gradient_bool = False
 
@@ -91,7 +93,7 @@ def test_grad(default_fd_model):
     np.random.seed(42)
     samples = np.random.random((2, 4, 3))
     default_fd_model.response = {
-        'mean': np.sum(samples**2, axis=2, keepdims=True),
+        'result': np.sum(samples**2, axis=2, keepdims=True),
         'gradient': 2 * samples,
     }
     upstream_gradient = np.random.random((2, 1))

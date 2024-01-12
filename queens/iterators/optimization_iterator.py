@@ -417,7 +417,7 @@ class OptimizationIterator(Iterator):
             if precalculated_output is not None:
                 f_batch.append(precalculated_output)
             else:
-                f_batch.append(self.model.evaluate(position.reshape(1, -1))['mean'].reshape(-1))
+                f_batch.append(self.model.evaluate(position.reshape(1, -1))['result'].reshape(-1))
                 self.precalculated_positions['position'].append(position)
                 self.precalculated_positions['output'].append(f_batch[-1])
         f_batch = np.array(f_batch).squeeze()

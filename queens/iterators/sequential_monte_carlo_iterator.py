@@ -180,7 +180,7 @@ class SequentialMonteCarloIterator(Iterator):
         Returns:
             log_likelihood: TODO_doc
         """
-        log_likelihood = self.model.evaluate(sample_batch)
+        log_likelihood = self.model.evaluate(sample_batch)['result']
         return log_likelihood
 
     def pre_run(self):
@@ -424,7 +424,7 @@ class SequentialMonteCarloIterator(Iterator):
             # this enables the calculation of the covariance matrix
             results = process_outputs(
                 {
-                    'mean': particles_resampled[:, np.newaxis, :],
+                    'result': particles_resampled[:, np.newaxis, :],
                     'particles': self.particles,
                     'weights': normalized_weights,
                     'log_likelihood': self.log_likelihood,

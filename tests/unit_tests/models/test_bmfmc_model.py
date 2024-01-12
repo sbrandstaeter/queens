@@ -25,7 +25,7 @@ def fixture_dummy_high_fidelity_model():
     """Create dummy high-fidelity model."""
     interface = 'my_dummy_interface'
     hf_model = SimulationModel(interface)
-    hf_model.response = {'mean': 1.0}
+    hf_model.response = {'result': 1.0}
     return hf_model
 
 

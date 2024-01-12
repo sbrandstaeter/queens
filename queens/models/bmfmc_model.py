@@ -422,7 +422,7 @@ class BMFMCModel(Model):
             self.high_fidelity_model.evaluate(self.X_train)
 
             # Get the HF-model training data for BMFMC
-            self.Y_HF_train = self.high_fidelity_model.response['mean']
+            self.Y_HF_train = self.high_fidelity_model.response['result']
             _logger.info(
                 "High-fidelity simulations finished successfully!\n Starting now BMFMC "
                 "routine..."

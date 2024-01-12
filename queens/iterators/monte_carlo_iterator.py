@@ -71,15 +71,15 @@ class MonteCarloIterator(Iterator):
                     plt.rcParams.update({'font.size': 23})
                     _, ax = plt.subplots()
 
-                    if results['raw_output_data']['mean'][0].shape[0] > 1:
-                        for ele in results['raw_output_data']['mean']:
+                    if results['raw_output_data']['result'][0].shape[0] > 1:
+                        for ele in results['raw_output_data']['result']:
                             ax.plot(ele[:, 0], ele[:, 1])
 
                         ax.set_xlabel(r't [s]')
                         ax.set_ylabel(r'$C_L(t)$')
                         plt.show()
                     else:
-                        data = results['raw_output_data']['mean']
+                        data = results['raw_output_data']['result']
                         ax.hist(data, bins=200)
                         ax.set_xlabel(r'Count [-]')
                         ax.set_xlabel(r'$C_L(t)$')
@@ -87,5 +87,5 @@ class MonteCarloIterator(Iterator):
         # else:
         _logger.debug("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)
-        _logger.debug("Size of outputs %s", self.output['mean'].shape)
-        _logger.debug("Outputs %s", self.output['mean'])
+        _logger.debug("Size of outputs %s", self.output['result'].shape)
+        _logger.debug("Outputs %s", self.output['result'])

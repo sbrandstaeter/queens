@@ -168,7 +168,7 @@ class InstanceMockModel:
 
     def evaluate(self, *_args, **_kwargs):
         """Mock evaluate method."""
-        return {"mean": 1}
+        return {"result": 1}
 
 
 @pytest.fixture(name="mock_model")
@@ -249,7 +249,7 @@ def test_evaluate(default_mf_likelihood, mocker):
     # on purpose transpose y_lf_mat here to check if this is wrong orientation is corrected
     mp1 = mocker.patch(
         'queens.models.simulation_model.SimulationModel.evaluate',
-        return_value={"mean": y_lf_mat.T},
+        return_value={"result": y_lf_mat.T},
     )
 
     mp2 = mocker.patch(
@@ -258,7 +258,7 @@ def test_evaluate(default_mf_likelihood, mocker):
         return_value=likelihood_output,
     )
 
-    mf_log_likelihood = default_mf_likelihood.evaluate(samples)
+    mf_log_likelihood = default_mf_likelihood.evaluate(samples)['result']
 
     # assert statements
     mp1.assert_called_once()
@@ -526,7 +526,7 @@ def test_evaluate_forward_model(default_mf_likelihood, mock_model):
     """Test if forward model (lf model) is updated and evaluated correctly."""
     y_mat_expected = 1
     default_mf_likelihood.forward_model = mock_model
-    y_mat = default_mf_likelihood.forward_model.evaluate(None)['mean']
+    y_mat = default_mf_likelihood.forward_model.evaluate(None)['result']
 
     # actual tests / asserts
     np.testing.assert_array_almost_equal(y_mat, y_mat_expected, decimal=4)

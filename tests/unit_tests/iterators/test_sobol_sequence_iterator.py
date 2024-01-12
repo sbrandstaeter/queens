@@ -67,5 +67,5 @@ def test_correct_results(default_qmc_iterator):
     )
 
     np.testing.assert_allclose(
-        default_qmc_iterator.output["mean"][0:10].flatten(), ref_results, 1e-09, 1e-09
+        default_qmc_iterator.output["result"][0:10].flatten(), ref_results, 1e-09, 1e-09
     )

@@ -348,7 +348,7 @@ class GPJittedModel(SurrogateModel):
             )
 
         output = {"x_test": x_test}
-        output["mean"] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
+        output['result'] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
             -1, 1
         ) + self.mean_function(x_test)
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2).reshape(-1, 1)

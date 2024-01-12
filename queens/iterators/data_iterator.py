@@ -56,8 +56,8 @@ class DataIterator(Iterator):
         # else:
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.info("Inputs %s", self.samples)
-        _logger.info("Size of outputs %s", self.output['mean'].shape)
-        _logger.info("Outputs %s", self.output['mean'])
+        _logger.info("Size of outputs %s", self.output['result'].shape)
+        _logger.info("Outputs %s", self.output['result'])
 
     def read_pickle_file(self):
         """Read in data from a pickle file.

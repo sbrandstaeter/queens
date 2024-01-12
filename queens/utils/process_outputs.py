@@ -144,7 +144,7 @@ def estimate_result_interval(output_data):
     Returns:
         list: Output interval
     """
-    samples = output_data["mean"]
+    samples = output_data["result"]
     _logger.debug(samples)
     min_data = np.amin(samples)
     _logger.debug(min_data)
@@ -166,7 +166,7 @@ def estimate_mean(output_data):
     Returns:
         float: Unbiased mean estimate
     """
-    samples = output_data["mean"]
+    samples = output_data["result"]
     return np.mean(samples, axis=0)
 
 
@@ -179,7 +179,7 @@ def estimate_var(output_data):
     Returns:
         float: Unbiased variance estimate
     """
-    samples = output_data["mean"]
+    samples = output_data["result"]
     return np.var(samples, ddof=1, axis=0)
 
 
@@ -192,7 +192,7 @@ def estimate_cov(output_data):
     Returns:
         numpy.array: Unbiased covariance estimate
     """
-    samples = output_data["mean"]
+    samples = output_data["result"]
 
     # we assume that rows represent observations and columns represent variables
     row_variable = False
@@ -217,7 +217,7 @@ def estimate_cdf(output_data, support_points, bayesian):
     cdf = {}
     cdf["x"] = support_points
     if bayesian is False:
-        raw_data = output_data["mean"]
+        raw_data = output_data["result"]
         size_data = raw_data.size
         cdf_values = []
         for i in support_points:
@@ -265,7 +265,7 @@ def estimate_icdf(output_data, bayesian):
     icdf = {}
     icdf["x"] = my_percentiles
     if bayesian is False:
-        samples = output_data["mean"]
+        samples = output_data["result"]
         icdf_values = np.zeros_like(my_percentiles)
         for i, percentile in enumerate(my_percentiles):
             icdf_values[i] = np.percentile(samples, percentile, axis=0)
@@ -301,7 +301,7 @@ def estimate_pdf(output_data, support_points, bayesian):
     pdf = {}
     pdf["x"] = support_points
     if bayesian is False:
-        samples = output_data["mean"]
+        samples = output_data["result"]
         min_samples = np.amin(samples)
         max_samples = np.amax(samples)
         bandwidth = estimate_bandwidth_for_kde(samples, min_samples, max_samples)
@@ -309,7 +309,7 @@ def estimate_pdf(output_data, support_points, bayesian):
     else:
         min_samples = np.amin(support_points)
         max_samples = np.amax(support_points)
-        mean_samples = output_data["mean"]
+        mean_samples = output_data["result"]
         # estimate kernel bandwidth only once
         bandwidth = estimate_bandwidth_for_kde(mean_samples, min_samples, max_samples)
         raw_data = output_data["post_samples"]

@@ -29,7 +29,7 @@ class SimulationModel(Model):
             samples (np.ndarray): Input samples
 
         Returns:
-            self.response (np.array): Response of the underlying model at current variables
+            response (dict): Response of the underlying model at input samples
         """
         self.response = self.interface.evaluate(samples)
         return self.response

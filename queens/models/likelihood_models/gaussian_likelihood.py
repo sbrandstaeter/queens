@@ -106,14 +106,14 @@ class GaussianLikelihood(LikelihoodModel):
             samples (np.array): Input samples
 
         Returns:
-            log_likelihood (np.array): log-likelihood values per model input
+            dict: log-likelihood values at input samples
         """
         self.response = self.forward_model.evaluate(samples)
         if self.noise_type.startswith('MAP'):
-            self.update_covariance(self.response['mean'])
-        log_likelihood = self.normal_distribution.logpdf(self.response['mean'])
+            self.update_covariance(self.response['result'])
+        log_likelihood = self.normal_distribution.logpdf(self.response['result'])
 
-        return log_likelihood
+        return {'result': log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.
@@ -132,7 +132,7 @@ class GaussianLikelihood(LikelihoodModel):
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         # shape convention: num_samples x jacobian_shape
-        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['mean'])
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['result'])
         upstream_gradient = upstream_gradient * log_likelihood_grad
         gradient = self.forward_model.grad(samples, upstream_gradient)
         return gradient

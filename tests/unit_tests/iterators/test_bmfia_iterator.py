@@ -224,7 +224,7 @@ def test_core_run(default_bmfia_iterator, mocker):
 def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of LF model with test data."""
     with patch.object(
-        default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
+        default_bmfia_iterator.lf_model, 'evaluate', return_value={'result': np.array([1, 1])}
     ) as mo_1:
         default_bmfia_iterator.evaluate_LF_model_for_X_train()
 
@@ -235,7 +235,7 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
 def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of HF model with test data."""
     with patch.object(
-        default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
+        default_bmfia_iterator.hf_model, 'evaluate', return_value={'result': np.array([1, 1])}
     ) as mo_2:
         default_bmfia_iterator.evaluate_HF_model_for_X_train()
 

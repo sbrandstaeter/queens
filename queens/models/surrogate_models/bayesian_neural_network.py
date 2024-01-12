@@ -330,7 +330,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         # get mean of the individual gaussian models (aleatory uncertainty)
         y_rv_model_means = np.array([y_rv.mean() for y_rv in y_rv_models]).squeeze()
         # combine both sources of uncertainty averaging them
-        output["mean"] = np.atleast_2d(y_rv_model_means.mean(axis=0)).T
+        output['result'] = np.atleast_2d(y_rv_model_means.mean(axis=0)).T
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:
@@ -369,7 +369,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             model_realization(x_test) for model_realization in self.model_realizations_lst
         ]
         y_rv_model_means = np.array([y_rv.mean() for y_rv in y_rv_models])
-        output["mean"] = y_rv_model_means.mean(axis=0)
+        output['result'] = y_rv_model_means.mean(axis=0)
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:

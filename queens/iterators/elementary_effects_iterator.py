@@ -126,7 +126,7 @@ class ElementaryEffectsIterator(Iterator):
         self.si = morris_analyzer.analyze(
             self.salib_problem,
             self.samples,
-            np.reshape(self.output['mean'], (-1)),
+            np.reshape(self.output['result'], (-1)),
             num_resamples=self.num_bootstrap_samples,
             conf_level=self.confidence_level,
             print_to_console=False,

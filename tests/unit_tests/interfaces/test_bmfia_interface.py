@@ -494,10 +494,10 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker):
 
     # test evaluation per coordinate with correct
     map_1 = mocker.MagicMock()
-    map_1.predict.return_value = {"mean": np.array([[1], [2]]), "variance": np.array([[3], [4]])}
+    map_1.predict.return_value = {"result": np.array([[1], [2]]), "variance": np.array([[3], [4]])}
 
     map_2 = mocker.MagicMock()
-    map_2.predict.return_value = {"mean": np.array([[3], [4]]), "variance": np.array([[5], [6]])}
+    map_2.predict.return_value = {"result": np.array([[3], [4]]), "variance": np.array([[5], [6]])}
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
     mean, variance = default_bmfia_interface.evaluate_per_coordinate(
@@ -600,7 +600,7 @@ def test_iterate_over_time_steps(mocker):
 
     mp1 = mocker.MagicMock()
     mp1.predict.return_value = {
-        "mean": np.array([[1], [2]]),
+        "result": np.array([[1], [2]]),
         "variance": np.array([[3], [4]]),
         "grad_mean": np.array([[[5, 6], [6, 7]]]),
         "grad_var": np.array([[[7, 8], [8, 9]]]),
@@ -608,7 +608,7 @@ def test_iterate_over_time_steps(mocker):
 
     mp2 = mocker.MagicMock()
     mp2.predict.return_value = {
-        "mean": np.array([[3], [4]]),
+        "result": np.array([[3], [4]]),
         "variance": np.array([[5], [6]]),
         "grad_mean": np.array([[[9, 10], [10, 11]]]),
         "grad_var": np.array([[[11, 12], [12, 13]]]),
@@ -647,7 +647,7 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
     # test evaluation per coordinate with correct 3d gradient
     map_1 = mocker.MagicMock()
     map_1.predict.return_value = {
-        "mean": np.array([[1], [2]]),
+        "result": np.array([[1], [2]]),
         "variance": np.array([[3], [4]]),
         "grad_mean": np.array([[5, 6], [6, 7]]),
         "grad_var": np.array([[7, 8], [8, 9]]),
@@ -655,7 +655,7 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
 
     map_2 = mocker.MagicMock()
     map_2.predict.return_value = {
-        "mean": np.array([[3], [4]]),
+        "result": np.array([[3], [4]]),
         "variance": np.array([[5], [6]]),
         "grad_mean": np.array([[9, 10], [10, 11]]),
         "grad_var": np.array([[11, 12], [12, 13]]),
@@ -687,7 +687,7 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
     # test evaluation per coordinate with 2d gradient
     map_1 = mocker.MagicMock()
     map_1.predict.return_value = {
-        "mean": np.array([[1], [2]]),
+        "result": np.array([[1], [2]]),
         "variance": np.array([[3], [4]]),
         "grad_mean": np.array([5, 6]),
         "grad_var": np.array([7, 8]),
@@ -695,7 +695,7 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
 
     map_2 = mocker.MagicMock()
     map_2.predict.return_value = {
-        "mean": np.array([[3], [4]]),
+        "result": np.array([[3], [4]]),
         "variance": np.array([[5], [6]]),
         "grad_mean": np.array([9, 10]),
         "grad_var": np.array([11, 12]),
