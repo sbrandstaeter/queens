@@ -30,14 +30,14 @@ def fixture_dummy_data():
     return data
 
 
-@pytest.fixture(name="write_dummy_data")
+@pytest.fixture(name="_write_dummy_data")
 def fixture_write_dummy_data(data_path, dummy_data):
     """Write the dummy data."""
     with open(data_path, "wb") as f:
         np.save(f, dummy_data)
 
 
-@pytest.fixture(name="write_wrong_dummy_data")
+@pytest.fixture(name="_write_wrong_dummy_data")
 def fixture_write_wrong_dummy_data(wrong_data_path, dummy_data):
     """Write the wrong dummy data."""
     with open(wrong_data_path, "w", encoding="utf-8") as f:
@@ -45,7 +45,7 @@ def fixture_write_wrong_dummy_data(wrong_data_path, dummy_data):
 
 
 @pytest.fixture(name="default_data_processor_npy")
-def fixture_default_data_processor_npy(data_path):
+def fixture_default_data_processor_npy():
     """Dummy data processor npy."""
     file_name_identifier = "dummy"
     file_options_dict = {}
@@ -82,7 +82,7 @@ def test_get_raw_data_from_file(
     default_data_processor_npy,
     data_path,
     dummy_data,
-    write_dummy_data,
+    _write_dummy_data,
 ):
     """Test get raw data from file."""
     raw_data = default_data_processor_npy.get_raw_data_from_file(data_path)
@@ -96,7 +96,7 @@ def test_non_existing_file(default_data_processor_npy, data_path):
     assert raw_data is None
 
 
-def test_wrong_file_type(default_data_processor_npy, write_wrong_dummy_data, wrong_data_path):
+def test_wrong_file_type(default_data_processor_npy, wrong_data_path, _write_wrong_dummy_data):
     """Test with wrong file type."""
     raw_data = default_data_processor_npy.get_raw_data_from_file(wrong_data_path)
     assert raw_data is None

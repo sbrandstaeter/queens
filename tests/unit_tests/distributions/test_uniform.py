@@ -213,7 +213,7 @@ def test_pdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
     np.testing.assert_allclose(uniform_2d.pdf(sample_pos_2d), ref_sol)
 
 
-def test_ppf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
+def test_ppf_uniform_2d(uniform_2d):
     """Test ppf method of Uniform distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         uniform_2d.ppf(np.zeros(2))

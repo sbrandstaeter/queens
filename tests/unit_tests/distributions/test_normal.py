@@ -128,7 +128,7 @@ def test_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(normal_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-def test_grad_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
+def test_grad_logpdf_normal_1d(normal_1d, sample_pos_1d):
     """Test pdf method of normal distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     grad_logpdf_jax = grad(logpdf, argnums=0)
@@ -188,7 +188,7 @@ def test_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     np.testing.assert_allclose(normal_3d.logpdf(sample_pos_3d), ref_sol)
 
 
-def test_grad_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
+def test_grad_logpdf_normal_3d(normal_3d, sample_pos_3d):
     """Test pdf method of normal distribution class."""
     sample_pos_3d = sample_pos_3d.reshape(-1, 3)
     grad_logpdf_jax = grad(logpdf, argnums=0)
@@ -209,7 +209,7 @@ def test_pdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     np.testing.assert_allclose(normal_3d.pdf(sample_pos_3d), ref_sol)
 
 
-def test_ppf_normal_3d(normal_3d, mean_3d, covariance_3d):
+def test_ppf_normal_3d(normal_3d):
     """Test ppf method of Normal distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         normal_3d.ppf(np.zeros(2))
@@ -236,7 +236,7 @@ def test_init_normal_not_symmetric(mean_3d):
         NormalDistribution(mean=mean_3d, covariance=covariance)
 
 
-def logpdf(x, logpdf_const, mean, precision):
+def logpdf(x, logpdf_const, mean, precision):  # pylint: disable=invalid-name
     """Log pdf of normal distribution.
 
     Args:
