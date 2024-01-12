@@ -1,6 +1,4 @@
 """Test-module for mean-field normal distribution."""
-
-
 import jax.scipy.stats as jax_stats
 import numpy as np
 import pytest
