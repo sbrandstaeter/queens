@@ -132,7 +132,7 @@ def test_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d
     np.testing.assert_allclose(lognormal_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-def test_grad_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
+def test_grad_logpdf_lognormal_1d(lognormal_1d, sample_pos_1d):
     """Test *grad_logpdf* method of LogNormal distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     grad_logpdf_jax = grad(logpdf, argnums=0)
@@ -221,7 +221,7 @@ def test_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d
     np.testing.assert_allclose(lognormal_2d.logpdf(sample_pos_2d), ref_sol)
 
 
-def test_grad_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
+def test_grad_logpdf_lognormal_2d(lognormal_2d, sample_pos_2d):
     """Test *grad_logpdf* method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
     grad_logpdf_jax = grad(logpdf, argnums=0)
@@ -249,13 +249,13 @@ def test_pdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     np.testing.assert_allclose(lognormal_2d.pdf(sample_pos_2d), ref_sol)
 
 
-def test_ppf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
+def test_ppf_lognormal_2d(lognormal_2d):
     """Test ppf method of LogNormal distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         lognormal_2d.ppf(np.zeros(2))
 
 
-def test_init_lognormal_wrong_dimension(mean_2d):
+def test_init_lognormal_wrong_dimension():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
     with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
@@ -286,7 +286,7 @@ def test_init_lognormal_nonmatching_dimension():
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
-def logpdf(x, logpdf_const, normal_mean, precision):
+def logpdf(x, logpdf_const, normal_mean, precision):  # pylint: disable=invalid-name
     """Log pdf of lognormal (using jax.numpy).
 
     Args:

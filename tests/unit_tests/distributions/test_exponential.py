@@ -200,7 +200,7 @@ def test_pdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     np.testing.assert_allclose(exponential_2d.pdf(sample_pos_2d), ref_sol)
 
 
-def test_ppf_exponential_2d(exponential_2d, rate_2d):
+def test_ppf_exponential_2d(exponential_2d):
     """Test ppf method of Exponential distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         exponential_2d.ppf(np.zeros(2))
