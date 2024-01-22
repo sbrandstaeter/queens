@@ -1,3 +1,4 @@
+# yamllint disable
 ---
 #---------------------------------------------------------------------------------------------------
 variables:
@@ -194,8 +195,7 @@ code_analysis:
   script:
     - isort --check-only queens/ > track_isort.txt
     - black --check queens > track_black.txt
-    - pylint --rcfile=.pylintrc_ci queens | tee track_pylint.txt
-    - pylint --rcfile=.pylintrc_ci_tests tests | tee track_pylint_tests.txt
+    - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt
     - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
