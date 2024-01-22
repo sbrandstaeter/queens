@@ -87,3 +87,27 @@ def read_file(file_path):
     """
     file = Path(file_path).read_text(encoding='utf-8')
     return file
+
+
+def to_dict_with_standard_types(obj):
+    """Convert dictionaries to dictionaries with python standard types only.
+
+    Args:
+        obj (dict): Dictionary to convert
+
+    Returns:
+        dict: Dictionary with standard types
+    """
+    match obj:
+        case tuple():
+            return [to_dict_with_standard_types(value) for value in obj]
+        case list():
+            return [to_dict_with_standard_types(value) for value in obj]
+        case dict():
+            for key, value in obj.items():
+                obj[key] = to_dict_with_standard_types(value)
+            return obj
+        case _ if hasattr(obj, "tolist"):
+            return obj.tolist()
+        case _:
+            return obj

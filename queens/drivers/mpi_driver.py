@@ -5,6 +5,7 @@ from pathlib import Path
 
 from queens.drivers.driver import Driver
 from queens.utils.logger_settings import log_init_args
+from queens.utils.metadata import SimulationMetadata
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -73,15 +74,33 @@ class MpiDriver(Driver):
             Result and potentially the gradient
         """
         job_id = sample_dict.pop('job_id')
-        _, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
+        job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
-        self.prepare_input_files(sample_dict, experiment_dir, input_file)
-        execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
-        self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=self.verbose)
-        self._run_post_processing(num_procs_post, output_file, output_dir)
+        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
 
-        return self._get_results(output_dir)
+        with metadata.time_code("prepare_input_files"):
+            self.prepare_input_files(sample_dict, experiment_dir, input_file)
+
+        with metadata.time_code("run_executable"):
+            execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
+            self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=self.verbose)
+
+        if self.post_processor:
+            with metadata.time_code("post_processing"):
+                self._run_post_processing(
+                    num_procs_post,
+                    output_file,
+                    output_dir,
+                )
+
+        results = None
+        if self.data_processor:
+            with metadata.time_code("data_processing"):
+                results = self._get_results(output_dir)
+                metadata.outputs = results
+
+        return results
 
     def _run_post_processing(self, num_procs_post, output_file, output_dir):
         """Run post-processing.
@@ -91,21 +110,20 @@ class MpiDriver(Driver):
             output_file (Path): Path to output file(s)
             output_dir (Path): Path to output directory
         """
-        if self.post_processor:
-            output_file = '--file=' + str(output_file)
-            target_file = '--output=' + str(output_dir.joinpath(self.post_file_prefix))
-            post_processor_cmd = self._assemble_post_processor_cmd(
-                num_procs_post, output_file, target_file
-            )
+        output_file = '--file=' + str(output_file)
+        target_file = '--output=' + str(output_dir.joinpath(self.post_file_prefix))
+        post_processor_cmd = self._assemble_post_processor_cmd(
+            num_procs_post, output_file, target_file
+        )
 
-            _logger.debug("Start post-processor with command:")
-            _logger.debug(post_processor_cmd)
+        _logger.debug("Start post-processor with command:")
+        _logger.debug(post_processor_cmd)
 
-            run_subprocess(
-                post_processor_cmd,
-                additional_error_message="Post-processing failed!",
-                raise_error_on_subprocess_failure=True,
-            )
+        run_subprocess(
+            post_processor_cmd,
+            additional_error_message="Post-processing failed!",
+            raise_error_on_subprocess_failure=False,
+        )
 
     def _assemble_execute_cmd(self, num_procs, input_file, output_file):
         """Assemble execute command.
