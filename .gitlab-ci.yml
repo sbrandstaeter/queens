@@ -173,30 +173,12 @@ update:
     - pip install pip-tools
     - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
     - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
-    - cd $CI_PROJECT_DIR
-    - $PYTHON_PACKAGE_MANAGER deactivate
-    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
-    - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
-    - git config --global user.name "${AUTO_COMMITTER_NAME}"
-    - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
-    # Checkout to a new branch so we push the changes to a new branch
-    - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
-    - git add requirements.txt dev-requirements.txt
-    - git commit -m "Update requirements based on pip-tools"
-    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
-    - >
-      BODY="{\"id\": \"${CI_PROJECT_ID}\",
-      \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
-      \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
-      \"remove_source_branch\": true,
-      \"title\": \"Pip-tools update $(date '+%Y-%m-%d')\"}"
-    - >
-      MR_IID=$(curl -sS -X POST "https://gitlab.lrz.de/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
-              --header "PRIVATE-TOKEN:${GIT_PUSH_TOKEN}" \
-              --header "Content-Type: application/json" \
-              --data "${BODY}" \
-      | jq '.iid')
-    - echo "Opened MR !${MR_IID}"
+    # create a branch and merge request
+    - NEW_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
+    - FILES="requirements.txt dev-requirements.txt"
+    - 'COMMIT_MESSAGE="build: update requirements based on pip-tools"'
+    - MR_TITLE="Pip-tools update $(date '+%Y-%m-%d')"
+    - source $CI_PROJECT_DIR/.gitlab/bash_scripts/create_merge_request.sh
   rules:
     - if: $UPDATE_REQUIREMENTS == "1"
   tags:
