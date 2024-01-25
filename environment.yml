@@ -16,6 +16,7 @@ dependencies:
   - pandas==1.5.3
   - scikit-learn==1.2.2
   - scipy==1.10.1
+  - libopenblas==0.3.25
 # Only install pip-tools via pip itself since
 # all other pip dependencies should be managed
 # via pip-tools in the requirements.in files
