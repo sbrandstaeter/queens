@@ -57,7 +57,7 @@ def assemble_rsync_command(
 
     options = " ".join([str(option) for option in options])
     source = " ".join([str(file) for file in source])
-    command = f"rsync {options} {source} {destination}"
+    command = f"rsync {options} {source} {destination}/"
     return command
 
 
