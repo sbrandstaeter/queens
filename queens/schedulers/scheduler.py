@@ -7,8 +7,6 @@ import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
-from queens.utils.io_utils import read_file
-
 _logger = logging.getLogger(__name__)
 
 SHUTDOWN_CLIENTS = []
@@ -102,15 +100,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         result_dict['gradient'] = np.array(result_dict['gradient'])
         return result_dict
 
-    def copy_file(self, file_path):
-        """Copy file to experiment directory.
-
-        Args:
-            file_path (Path): path to file that should be copied to experiment directory
-        """
-        file = read_file(file_path)
-        destination = self.experiment_dir / file_path.name
-        self.client.submit(destination.write_text, file, encoding='utf-8').result()
+    @abc.abstractmethod
+    def copy_files_to_experiment_dir(self, paths):
+        """Copy file to experiment directory."""
 
     @abc.abstractmethod
     def restart_worker(self, worker):

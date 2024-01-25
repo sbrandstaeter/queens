@@ -14,6 +14,7 @@ from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
 from queens.utils.path_utils import PATH_TO_QUEENS
+from queens.utils.rsync import assemble_rsync_command
 from queens.utils.run_subprocess import start_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -207,22 +208,44 @@ class RemoteConnection(Connection):
         start_time = time.time()
         self.create_remote_directory(self.remote_queens_repository)
 
-        # build command string for rsync
-        remote_shell_command = ""
+        source = f"{PATH_TO_QUEENS}/"
+        self.copy_to_remote(
+            source, self.remote_queens_repository, exclude=".git", filters=":- .gitignore"
+        )
+        _logger.info("Sync of remote repository was successful.")
+        _logger.info("It took: %s s.\n", time.time() - start_time)
+
+    def copy_to_remote(self, source, destination, verbose=True, exclude=None, filters=None):
+        """Copy files or folders to remote.
+
+        Args:
+            source (str, Path, list): paths to copy
+            destination (str, Path): destination relative to host
+            verbose (bool): true for verbose
+            exclude (str, list): options to exclude
+            filters (str): filters for rsync
+        """
+        host = f"{self.user}@{self.host}"
+        _logger.debug("Copying from %s to %s", source, destination)
+        remote_shell_command = None
         if self.gateway is not None:
             remote_shell_command = f"--rsh='ssh {self.gateway.user}@{self.gateway.host} ssh'"
-
-        rsync_cmd = (
-            "rsync --out-format='%n' --archive --checksum --verbose --verbose "
-            f"--filter=':- .gitignore' --exclude '.git' {remote_shell_command} "
-            f"{PATH_TO_QUEENS}/ {self.user}@{self.host}:{self.remote_queens_repository}"
+            _logger.debug("Using remote shell command %s", remote_shell_command)
+        rsync_cmd = assemble_rsync_command(
+            source,
+            destination,
+            verbose=verbose,
+            archive=True,
+            exclude=exclude,
+            filters=filters,
+            rsh=remote_shell_command,
+            host=host,
+            rsync_options=["--out-format='%n'", "--checksum"],
         )
-
         # Run rsync command
         result = self.local(rsync_cmd, in_stream=False)
         _logger.debug(result.stdout)
-        _logger.info("Sync of remote repository was successful.")
-        _logger.info("It took: %s s.\n", time.time() - start_time)
+        _logger.debug("Copying complete.")
 
     def build_remote_environment(
         self,

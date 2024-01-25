@@ -205,3 +205,13 @@ class ClusterScheduler(Scheduler):
             worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
         """
         self.client.retire_workers(workers=list(worker))
+
+    def copy_files_to_experiment_dir(self, paths):
+        """Copy file to experiment directory.
+
+        Args:
+            paths (Path, list): paths to files or directories that should be copied to experiment
+                                directory
+        """
+        destination = f"{self.experiment_dir}/"
+        self.remote_connection.copy_to_remote(paths, destination)

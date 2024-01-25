@@ -27,6 +27,7 @@ class MpiDriver(Driver):
         self,
         input_template,
         path_to_executable,
+        files_to_copy=None,
         post_file_prefix=None,
         post_process_options='',
         path_to_postprocessor=None,
@@ -40,6 +41,7 @@ class MpiDriver(Driver):
         Args:
             input_template (str, Path): path to simulation input template
             path_to_executable (str, Path): path to main executable of respective software
+            files_to_copy (list): files or directories to copy to experiment_dir
             post_file_prefix (str, opt): unique prefix to name the post-processed files
             post_process_options (str, opt): options for post-processing
             path_to_postprocessor (path, opt): path to post_processor
@@ -52,6 +54,7 @@ class MpiDriver(Driver):
             input_template,
             data_processor,
             gradient_data_processor,
+            files_to_copy,
         )
         self.executable = Path(path_to_executable)
         self.post_processor = Path(path_to_postprocessor) if path_to_postprocessor else None

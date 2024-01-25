@@ -16,13 +16,11 @@ class Driver(metaclass=abc.ABCMeta):
         simulation_input_template (Path): read in simulation input template as string
         data_processor (obj): instance of data processor class
         gradient_data_processor (obj): instance of data processor class for gradient data
+        files_to_copy (list): files or directories to copy to experiment_dir
     """
 
     def __init__(
-        self,
-        simulation_input_template,
-        data_processor,
-        gradient_data_processor,
+        self, simulation_input_template, data_processor, gradient_data_processor, files_to_copy=None
     ):
         """Initialize Driver object.
 
@@ -30,10 +28,14 @@ class Driver(metaclass=abc.ABCMeta):
             simulation_input_template (str, Path): path to simulation input template
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
+            files_to_copy (list): files or directories to copy to experiment_dir
         """
         self.simulation_input_template = Path(simulation_input_template)
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
+        self.files_to_copy = [self.simulation_input_template]
+        if files_to_copy is not None:
+            self.files_to_copy.extend(files_to_copy)
 
     @abc.abstractmethod
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):

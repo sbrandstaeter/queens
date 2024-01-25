@@ -27,6 +27,7 @@ class JobscriptDriver(Driver):
         path_to_executable,
         dask_jobscript_template,
         cluster_script_path,
+        files_to_copy=None,
         post_file_prefix=None,
         post_process_options='',
         path_to_postprocessor=None,
@@ -41,6 +42,7 @@ class JobscriptDriver(Driver):
             path_to_executable (str, Path): path to main executable of respective software
             dask_jobscript_template (str, Path): path to (dask specific) jobscript template
             cluster_script_path (str, Path): path to cluster script
+            files_to_copy (list): files or directories to copy to experiment_dir
             post_file_prefix (str, opt): unique prefix to name the post-processed files
             post_process_options (str, opt): options for post-processing
             path_to_postprocessor (path, opt): path to post_processor
@@ -52,6 +54,7 @@ class JobscriptDriver(Driver):
             input_template,
             data_processor,
             gradient_data_processor,
+            files_to_copy,
         )
         post_processor = path_to_postprocessor if path_to_postprocessor else None
 
