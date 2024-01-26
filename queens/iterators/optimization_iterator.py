@@ -285,16 +285,10 @@ class OptimizationIterator(Iterator):
 
     def post_run(self):
         """Analyze the resulting optimum."""
-        if self.algorithm == 'LM':
-            parameter_list = self.parameters.parameters_keys()
-            _logger.info(
-                "The optimum of the parameters %s is:\n\t%s", *parameter_list, self.solution[0]
-            )
-        else:
-            _logger.info("The optimum:\n\t%s", self.solution.x)
-            if self.algorithm == 'LSQ':
-                _logger.info("Optimality:\n\t%s", self.solution.optimality)
-                _logger.info("Cost:\n\t%s", self.solution.cost)
+        _logger.info("The optimum:\n\t%s", self.solution.x)
+        if self.algorithm == 'LSQ':
+            _logger.info("Optimality:\n\t%s", self.solution.optimality)
+            _logger.info("Cost:\n\t%s", self.solution.cost)
 
         if self.result_description:
             if self.result_description["write_results"]:
