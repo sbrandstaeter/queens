@@ -26,7 +26,7 @@ def fixture_rel_step(request):
 @pytest.fixture(name="x0", scope='module')
 def fixture_x0():
     """Position where Jacobian should be evaluated."""
-    return np.array([-3.0, 4.0])
+    return np.array([-3.0, 4.0, 0.0])
 
 
 @pytest.fixture(
@@ -34,11 +34,13 @@ def fixture_x0():
     scope='module',
     params=[
         (-np.inf, np.inf),  # no bounds
-        ([-10.0, -10.0], [10.0, 10.0]),  # inactive bounds
-        ([-3.0, -10.0], [10.0, 10.0]),
-        ([-10.0, 4.0], [10.0, 10.0]),
-        ([-10.0, -10.0], [-3.0, 10.0]),
-        ([-10.0, -10.0], [10.0, 4.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 10.0, 10.0]),  # inactive bounds
+        ([-3.0, -10.0, -10.0], [10.0, 10.0, 10.0]),
+        ([-10.0, 4.0, -10.0], [10.0, 10.0, 10.0]),
+        ([-10.0, -10.0, 0.0], [10.0, 10.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [-3.0, 10.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 4.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 10.0, 0.0]),
     ],
 )
 def fixture_bounds(request):
