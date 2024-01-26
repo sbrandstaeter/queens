@@ -1,13 +1,9 @@
 """Deterministic optimization toolbox."""
-import glob
 import logging
 import time
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import scipy.optimize
-from scipy.optimize import curve_fit
 
 from queens.iterators.iterator import Iterator
 from queens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
@@ -60,18 +56,8 @@ class OptimizationIterator(Iterator):
         jac_rel_step: TODO_doc
         max_feval (int): Maximal number of function evaluations.
         result_description (dict): Description of desired post-processing.
-        experimental_data_path_list (list): List containing the path to base directories with
-                                            experimental data csv-files.
-        experimental_data_dict: TODO_doc
-        output_column (int): Specifies the columns that belong to the *y_obs* in the experimental
-                             data set (currently only scalar output possible but could be
-                             extended to vector-valued output).
         verbose_output (int): Integer encoding which kind of verbose information should be
                               printed by the optimizers (not applicable for LM).
-        coordinate_labels: TODO_doc
-        output_label: TODO_doc
-        axis_scaling_experimental: TODO_doc
-        output_scaling_experimental: TODO_doc
         precalculated_positions (dict): Dictionary containing precalculated positions and
                                         corresponding model responses.
         solution (np.array): Solution obtained from the optimization process.
@@ -94,12 +80,6 @@ class OptimizationIterator(Iterator):
         max_feval=None,
         algorithm='L-BFGS-B',
         jac_method='2-point',
-        experimental_csv_data_base_dirs=None,
-        output_observation_column_in_csv=None,
-        coordinate_labels=None,
-        output_label=None,
-        axis_scaling_experimental=None,
-        output_scaling_experimental=None,
     ):
         """TODO_doc.
 
@@ -115,12 +95,6 @@ class OptimizationIterator(Iterator):
             max_feval: TODO_doc
             algorithm: TODO_doc
             jac_method: TODO_doc
-            experimental_csv_data_base_dirs: TODO_doc
-            output_observation_column_in_csv: TODO_doc
-            coordinate_labels: TODO_doc
-            output_label: TODO_doc
-            axis_scaling_experimental: TODO_doc
-            output_scaling_experimental: TODO_doc
         """
         super().__init__(model, parameters)
         _logger.info("Optimization Iterator for experiment: %s", self.experiment_name)
@@ -144,14 +118,7 @@ class OptimizationIterator(Iterator):
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
         self.result_description = result_description
-        self.experimental_data_path_list = experimental_csv_data_base_dirs
-        self.experimental_data_dict = None
-        self.output_column = output_observation_column_in_csv
         self.verbose_output = verbose_output
-        self.coordinate_labels = coordinate_labels
-        self.output_label = output_label
-        self.axis_scaling_experimental = axis_scaling_experimental
-        self.output_scaling_experimental = output_scaling_experimental
         self.precalculated_positions = {'position': [], 'output': []}
         self.solution = None
 
@@ -214,35 +181,13 @@ class OptimizationIterator(Iterator):
     def pre_run(self):
         """Get initial guess."""
         _logger.info("Initialize Optimization run.")
-        self._get_experimental_data()
 
     def core_run(self):
         """Core run of Optimization iterator."""
         _logger.info('Welcome to Optimization core run.')
         start = time.time()
-        # nonlinear least squares optimization with Levenberg-Marquardt (without Jacobian here!)
-        # Jacobian of the model could be integrated for better performance
-        if self.algorithm == 'LM':
-            # extract experimental coordinates as numpy array
-            experimental_coordinates = (
-                np.array(
-                    [
-                        self.experimental_data_dict[coordinate]
-                        for coordinate in self.coordinate_labels
-                    ]
-                ),
-            )[0].T
-            self.solution = curve_fit(
-                self.objective_function,
-                experimental_coordinates,
-                np.array(self.experimental_data_dict[self.output_label]).flatten(),
-                p0=self.initial_guess.tolist(),
-                method="lm",
-                maxfev=self.max_feval,
-            )
-
         # nonlinear least squares with bounds using Jacobian
-        elif self.algorithm == 'LSQ':
+        if self.algorithm == 'LSQ':
             self.solution = scipy.optimize.least_squares(
                 self.objective_function,
                 self.initial_guess,
@@ -319,86 +264,6 @@ class OptimizationIterator(Iterator):
         if self.result_description:
             if self.result_description["write_results"]:
                 write_results(self.solution, self.output_dir, self.experiment_name)
-
-    # -------------- private helper functions --------------------------
-    def _get_experimental_data(self):
-        """Loop over post files in given output directory."""
-        if self.experimental_data_path_list is not None:
-            # iteratively load all csv files in specified directory
-            files_of_interest_list = []
-            all_files_list = []
-            for experimental_data_path in self.experimental_data_path_list:
-                prefix_expr = '*.csv'  # only read csv files
-                files_of_interest_paths = Path(experimental_data_path, prefix_expr)
-                files_of_interest_list.extend(glob.glob(files_of_interest_paths))
-                all_files_path = Path(experimental_data_path, '*')
-                all_files_list.extend(glob.glob(all_files_path))
-
-            #  check if some files are not csv files and throw a warning
-            non_csv_files = [x for x in all_files_list if x not in files_of_interest_list]
-
-            if non_csv_files:
-                _logger.info(
-                    '#####################################################################'
-                )
-                _logger.info(
-                    'The following experimental data files could not be read-in as they do '
-                    'not have a .csv file-ending: %s',
-                    non_csv_files,
-                )
-                _logger.info(
-                    '#####################################################################'
-                )
-
-            # read all experimental data into one numpy array
-            # TODO filter out / handle corrupted data and NaNs
-            data_list = []
-            for filename in files_of_interest_list:
-                try:
-                    new_experimental_data = pd.read_csv(
-                        filename, sep=r'[,\s]\s*', header=0, engine='python', index_col=None
-                    )
-                    data_list.append(new_experimental_data)
-
-                except IOError as error:
-                    raise IOError(
-                        'An error occurred while reading in the experimental data '
-                        'files. Abort...'
-                    ) from error
-            self.experimental_data_dict = pd.concat(data_list, axis=0, ignore_index=True).to_dict(
-                'list'
-            )
-
-            # potentially scale experimental data
-            self._scale_experimental_data()
-
-    def _scale_experimental_data(self):
-        # scale the experimental coordinates
-        for key, scaling in zip(self.coordinate_labels, self.axis_scaling_experimental):
-            if scaling == 'log':
-                self.experimental_data_dict[key] = np.log(self.experimental_data_dict[key])
-            elif scaling == 'linear':
-                pass
-            else:
-                raise ValueError(
-                    f'The scaling option <{scaling}> for the experimental coordinates is not a '
-                    f'valid choice! Please '
-                    f'choose a valid scaling! Abort...'
-                )
-
-        # scale experimental output
-        if self.output_scaling_experimental == 'linear':
-            pass
-        elif self.output_scaling_experimental == 'log':
-            self.experimental_data_dict[self.output_label] = np.log(
-                self.experimental_data_dict[self.output_label]
-            )
-        else:
-            raise ValueError(
-                f'The scaling option <{self.output_scaling_experimental}> for the experimental '
-                f'data output is not a valid choice! Please '
-                f'choose a valid scaling! Abort...'
-            )
 
     def eval_model(self, positions):
         """Evaluate model at defined positions.
