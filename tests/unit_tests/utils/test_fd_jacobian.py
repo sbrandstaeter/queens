@@ -8,7 +8,7 @@ import pytest
 from scipy.optimize import rosen
 from scipy.optimize._numdiff import approx_derivative
 
-from queens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
+from queens.utils.fd_jacobian import fd_jacobian, get_positions
 
 
 @pytest.fixture(name="method", scope='module', params=['2-point', '3-point'])
@@ -54,8 +54,7 @@ def test_fd_jacobian(x0, method, rel_step, bounds):
     """
     # calculated all necessary inputs
 
-    x_stencil_batch, dx = get_positions(x0, method, rel_step, bounds)
-    _, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
+    x_stencil_batch, dx, use_one_sided = get_positions(x0, method, rel_step, bounds)
 
     x_batch = np.vstack((np.atleast_2d(x0), x_stencil_batch))
 
