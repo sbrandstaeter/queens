@@ -253,7 +253,7 @@ class LogpdfGPModel(Model):
             lower_index = upper_index
             upper_index = min(upper_index + self.batch_size, x_test.shape[0])
         log_likelihood = np.array(log_likelihood)
-        return log_likelihood
+        return {'result': log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model w.r.t.

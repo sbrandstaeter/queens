@@ -103,7 +103,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Returns:
             log_likelihood (np.array): Value of log-likelihood for samples.
         """
-        log_likelihood = self.model.evaluate(samples)
+        log_likelihood = self.model.evaluate(samples)['result']
         return log_likelihood
 
     def _initialize_prior_model(self):
