@@ -127,9 +127,6 @@ class OptimizationIterator(Iterator):
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
-        if bounds is None:
-            bounds = [(-np.inf, np.inf)] * initial_guess.shape[0]
-
         constraints_list = []
         if constraints:
             for value in constraints.values():
@@ -180,9 +177,9 @@ class OptimizationIterator(Iterator):
         """Evaluate Jacobian of objective function at *x0*.
 
         Args:
-            x0: TODO_doc
+            x0 (np.array): position to evaluate Jacobian at
         Returns:
-            TODO_doc
+            jacobian_matrix (np.array): Jacobian matrix evaluated at *x0*
         """
         additional_positions, delta_positions = get_positions(
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
@@ -198,19 +195,21 @@ class OptimizationIterator(Iterator):
         f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)
         f_perturbed = f_batch[1:].reshape(-1, f0.size)
 
-        J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method)
+        jacobian_matrix = fd_jacobian(
+            f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method
+        )
         # sanity checks:
         # in the case of LSQ, the number of residuals needs to be
         # greater or equal to the number of parameters to be fitted
-        if self.algorithm == 'LSQ' and J.ndim == 2:
-            num_res, num_par = J.shape
+        if self.algorithm == 'LSQ' and jacobian_matrix.ndim == 2:
+            num_res, num_par = jacobian_matrix.shape
             if num_res < num_par:
                 raise ValueError(
                     f"Number of residuals (={num_res}) has to be greater or equal to"
                     f" number of parameters (={num_par})."
                     f" You have {num_res}<{num_par}."
                 )
-        return J
+        return jacobian_matrix
 
     def pre_run(self):
         """Get initial guess."""
