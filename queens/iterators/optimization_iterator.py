@@ -3,7 +3,8 @@ import logging
 import time
 
 import numpy as np
-from scipy.optimize import least_squares, minimize
+from scipy.optimize import Bounds, least_squares, minimize
+from scipy.optimize._numdiff import _prepare_bounds
 
 from queens.iterators.iterator import Iterator
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
@@ -80,7 +81,8 @@ class OptimizationIterator(Iterator):
         initial_guess,
         result_description,
         verbose_output=False,
-        bounds=None,
+        bounds=Bounds(lb=-np.inf, ub=np.inf),
+        # bounds=(-np.inf, np.inf),
         constraints=None,
         max_feval=None,
         algorithm='L-BFGS-B',
@@ -139,6 +141,39 @@ class OptimizationIterator(Iterator):
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
+        # check sanity of bounds and extract array of lower and upper bounds to unify the bounds
+        if not isinstance(bounds, Bounds):
+            if len(bounds) == 2:
+                lb, ub = bounds
+                # lb or ub can be scalars which don't have a len attribute
+                if hasattr(lb, "__len__") and hasattr(ub, "__len__"):
+                    # warn if definition of bounds is not unique
+                    if len(lb) == 2 and len(ub) == 2 and len(initial_guess) == 2:
+                        _logger.warning(
+                            "Definition of 'bounds' is not unique. "
+                            "Make sure to use the 'new' definition of bounds: "
+                            "bounds must contains two elements. "
+                            "The first element corresponds to an array_like for the lower bounds"
+                            "and the second element to an array_like for the upper bounds."
+                        )
+            else:
+                # ensure "new" style bounds
+                raise ValueError(
+                    "`bounds` must contain 2 elements.\n"
+                    "The first element corresponds to an array_like for the lower bounds"
+                    "and the second element to an array_like for the upper bounds."
+                )
+        else:
+            lb, ub = np.squeeze(bounds.lb), np.squeeze(bounds.ub)
+
+        # unify the bounds:
+        # make sure that each array contains number of variable entries
+        # i.e. we need one lower bound and one upper bound per variable
+        lb, ub = _prepare_bounds((lb, ub), initial_guess)
+
+        # convert to Bounds object to ensure correct handling by scipy.optimize
+        bounds = Bounds(lb=lb, ub=ub)
+
         constraints_list = []
         if constraints:
             for value in constraints.values():
@@ -187,7 +222,10 @@ class OptimizationIterator(Iterator):
             jacobian_matrix (np.array): Jacobian matrix evaluated at *x0*
         """
         additional_positions, delta_positions, use_one_sided = get_positions(
-            x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
+            x0,
+            method=self.jac_method,
+            rel_step=self.jac_rel_step,
+            bounds=(self.bounds.lb, self.bounds.ub),
         )
 
         # model response should now correspond to objective function evaluated at positions

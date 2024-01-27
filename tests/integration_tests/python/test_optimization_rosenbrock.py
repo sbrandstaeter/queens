@@ -11,7 +11,10 @@ from queens.main import run
 from queens.utils import injector
 
 
-@pytest.fixture(name="algorithm", params=['NELDER-MEAD', 'POWELL', 'CG', 'BFGS', 'L-BFGS-B', 'TNC'])
+@pytest.fixture(
+    name="algorithm",
+    params=['NELDER-MEAD', 'POWELL', 'CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP'],
+)
 def fixture_algorithm(request):
     """TODO_doc."""
     return request.param

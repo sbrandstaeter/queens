@@ -7,7 +7,7 @@ method:
   result_description:
     write_results: true
     plot_results: true
-  bounds: [[0, .inf], [0, .inf]]
+  bounds: [[0.0, 0.0], [.inf, .inf]]
   constraints:
     cons1:
       type: ineq
