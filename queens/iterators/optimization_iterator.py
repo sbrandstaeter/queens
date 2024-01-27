@@ -46,8 +46,14 @@ class OptimizationIterator(Iterator):
                                    the need for a Jacobian. Minimizes the function by a
                                    bidirectional search along each search vector
         bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
-                                   Powell, and trust-constr methods. See SciPy documentation on
-                                   how to specify bounds.
+                                   Powell, and trust-constr methods.
+                                   There are two ways to specify the bounds:
+
+                                   1. Instance of `Bounds` class.
+                                   2. A sequence with 2 elements. The first element corresponds
+                                   to a sequence of lower bounds and the second element to
+                                   sequence of upper bounds. The length of each of the two
+                                   subsequences must be equal to the number of variables.
         cons (np.array): Nonlinear constraints for the optimization.
                          Only for COBYLA, SLSQP and trust-constr
                          (see SciPy documentation for details)
@@ -99,8 +105,14 @@ class OptimizationIterator(Iterator):
             verbose_output (int): Integer encoding which kind of verbose information should be
                                   printed by the optimizers.
             bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
-                                       Powell, and trust-constr methods. See SciPy documentation on
-                                       how to specify bounds.
+                                       Powell, and trust-constr methods.
+                                       There are two ways to specify the bounds:
+
+                                       1. Instance of `Bounds` class.
+                                       2. A sequence with 2 elements. The first element corresponds
+                                       to a sequence of lower bounds and the second element to
+                                       sequence of upper bounds. The length of each of the two
+                                       subsequences must be equal to the number of variables.
             constraints (np.array): Nonlinear constraints for the optimization.
                                     Only for COBYLA, SLSQP and trust-constr
                                     (see SciPy documentation for details)
