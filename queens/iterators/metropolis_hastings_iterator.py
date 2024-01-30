@@ -13,6 +13,7 @@ import logging
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 from queens.distributions.normal import NormalDistribution
 from queens.iterators.iterator import Iterator
@@ -258,7 +259,7 @@ class MetropolisHastingsIterator(Iterator):
             _logger.info('Metropolis-Hastings core run.')
 
         # Burn-in phase
-        for i in range(1, self.num_burn_in + 1):
+        for i in tqdm(range(1, self.num_burn_in + 1)):
             self.do_mh_step(i)
 
         if self.num_burn_in:
@@ -269,7 +270,7 @@ class MetropolisHastingsIterator(Iterator):
         self.accepted_interval = 0
 
         # Sampling phase
-        for i in range(self.num_burn_in + 1, self.num_burn_in + self.num_samples + 1):
+        for i in tqdm(range(self.num_burn_in + 1, self.num_burn_in + self.num_samples + 1)):
             self.do_mh_step(i)
 
     def post_run(self):

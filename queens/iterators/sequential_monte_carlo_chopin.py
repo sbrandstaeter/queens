@@ -92,6 +92,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.feynman_kac_model = feynman_kac_model
         self.num_rejuvenation_steps = num_rejuvenation_steps
         self.waste_free = waste_free
+        self._initialize_prior_model()
 
     def eval_log_likelihood(self, samples):
         """Evaluate natural logarithm of likelihood at sample.
@@ -102,7 +103,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Returns:
             log_likelihood (np.array): Value of log-likelihood for samples.
         """
-        log_likelihood = self.model.evaluate(samples)
+        log_likelihood = self.model.evaluate(samples)['result']
         return log_likelihood
 
     def _initialize_prior_model(self):
@@ -154,7 +155,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
     def pre_run(self):
         """Draw initial sample."""
         _logger.info("Initialize run.")
-        self._initialize_prior_model()
         np.random.seed(self.seed)
 
         # Likelihood function for the static model based on the QUEENS function
