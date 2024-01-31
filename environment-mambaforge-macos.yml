@@ -12,7 +12,7 @@ dependencies:
 # for example BLAS libraries like Intel MKL for numpy
   - cython
   - numba
-  - numpy==1.23.5
+  - numpy
   - pandas
   - scikit-learn
   - scipy
@@ -28,9 +28,8 @@ dependencies:
   - xarray # Special array format
   - pyDOE # design of experiments
   - SALib # for sensitivity analysis
-  - vtk # vtk format handler
+  - vtk>=9.2.0 # vtk format handler
   - autograd # wrapper around numpy for automated differentiation
-  - chaospy # polynomial chaos
   - pyyaml # to load yaml files
   - jinja2
 
@@ -38,9 +37,8 @@ dependencies:
   - arviz # Bayesian visualization
   - gpflow # LV and variational GPs
   - optax # google jax based optimizer
-  - tensorflow<2.11.0
-  - tensorflow-probability<0.19
-  - pytorch
+  - tensorflow
+  - tensorflow-probability
   - jax[cpu]
   - jax
   - pymc
@@ -49,7 +47,6 @@ dependencies:
   - matplotlib
   - seaborn
   - plotly
-
 # testing framework
   - pytest
   - py
@@ -67,17 +64,17 @@ dependencies:
 
 # Other Python stuff
   - pathos # multiprocessing with more complex python objects
+  - black==22.3.0 # formatter, needed to format code created by QUEENS
 
 # Development
+  - commitizen #>=3.12.0
   - pylint>=2.16
   - isort>=5.0
-  - black==22.3.0
   - pre-commit
   - pre-commit-hooks>=4.4.0
   - sphinx
   - nbsphinx
   - pandoc
-  - commitizen
   - pydocstyle>=6.3.0
   - docformatter>=1.5.1
   - yamllint>=1.19.0
@@ -85,9 +82,11 @@ dependencies:
 # These packages need to be installed via pip
   - pip
   - pip:
-      - pip-tools
-      - gnuplotlib # for gnuplot based terminal ascii plots
-      - diversipy # sampling from space filling subsets
-      - particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
-      - liccheck
-      - pylint-exit
+    - pip-tools
+    - gnuplotlib # for gnuplot based terminal ascii plots
+    - diversipy # sampling from space filling subsets
+    - particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
+    - liccheck
+    - pylint-exit
+    - scikit-activeml>=0.4.1
+    - chaospy>=4.3.13 # polynomial chaos
