@@ -6,7 +6,7 @@ method:
   initial_guess: [-3.0, -4.0]
   result_description:
     write_results: true
-  bounds: [[-.inf, .inf], [-.inf, .inf]]
+  bounds: [[-.inf, -.inf], [.inf, .inf]]
 model:
   type: simulation_model
   interface_name: interface

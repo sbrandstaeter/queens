@@ -23,8 +23,8 @@ class Iterator(metaclass=abc.ABCMeta):
         """Initialize iterator object.
 
         Args:
-            model (obj): Model to be evaluated by iterator.
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator.
+            parameters (Parameters): Parameters object
         """
         self.model = model
         self.experiment_name = queens.global_settings.GLOBAL_SETTINGS.experiment_name

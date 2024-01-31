@@ -155,7 +155,7 @@ def get_positions(x0, method, rel_step, bounds):
 
     delta_positions = np.array(dx_stack)
 
-    return additional_positions, delta_positions
+    return additional_positions, delta_positions, use_one_sided
 
 
 def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
@@ -195,7 +195,7 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
 
         df = f1 - f0
     elif method == '3-point':
-        len_f1 = int((num_feval_perturbed) / 2)
+        len_f1 = int(num_feval_perturbed / 2)
         f1 = np.stack(f_perturbed[0:len_f1], axis=0)
         f2 = np.stack(f_perturbed[len_f1:], axis=0)
         df = np.empty(f1.shape)
@@ -205,12 +205,12 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
             else:
                 df[i] = f2[i] - f1[i]
 
-    J_transposed = df / dx
+    jacobian_transposed = df / dx
 
     # shape[1] of transposed Jacobian corresponds to the dimension of the objective function.
     # If it is equal to one (i.e., we deal with a scalar objective function),
     # the respective optimization algorithms expect a 1d array (vector).
     # You may think of the gradient as a degenerated Jacobian in the 1d case.
-    if J_transposed.shape[1] == 1:
-        J_transposed = np.squeeze(J_transposed)
-    return J_transposed.T
+    if jacobian_transposed.shape[1] == 1:
+        jacobian_transposed = np.squeeze(jacobian_transposed)
+    return jacobian_transposed.T

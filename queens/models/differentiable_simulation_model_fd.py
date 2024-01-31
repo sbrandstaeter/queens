@@ -115,7 +115,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
         stencil_samples_lst = []
         delta_positions_lst = []
         for sample in samples:
-            stencil_sample, delta_positions = get_positions(
+            stencil_sample, delta_positions, _ = get_positions(
                 sample,
                 method=self.finite_difference_method,
                 rel_step=self.step_size,

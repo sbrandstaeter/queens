@@ -8,7 +8,7 @@ import pytest
 from scipy.optimize import rosen
 from scipy.optimize._numdiff import approx_derivative
 
-from queens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
+from queens.utils.fd_jacobian import fd_jacobian, get_positions
 
 
 @pytest.fixture(name="method", scope='module', params=['2-point', '3-point'])
@@ -26,7 +26,7 @@ def fixture_rel_step(request):
 @pytest.fixture(name="x0", scope='module')
 def fixture_x0():
     """Position where Jacobian should be evaluated."""
-    return np.array([-3.0, 4.0])
+    return np.array([-3.0, 4.0, 0.0])
 
 
 @pytest.fixture(
@@ -34,11 +34,13 @@ def fixture_x0():
     scope='module',
     params=[
         (-np.inf, np.inf),  # no bounds
-        ([-10.0, -10.0], [10.0, 10.0]),  # inactive bounds
-        ([-3.0, -10.0], [10.0, 10.0]),
-        ([-10.0, 4.0], [10.0, 10.0]),
-        ([-10.0, -10.0], [-3.0, 10.0]),
-        ([-10.0, -10.0], [10.0, 4.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 10.0, 10.0]),  # inactive bounds
+        ([-3.0, -10.0, -10.0], [10.0, 10.0, 10.0]),
+        ([-10.0, 4.0, -10.0], [10.0, 10.0, 10.0]),
+        ([-10.0, -10.0, 0.0], [10.0, 10.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [-3.0, 10.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 4.0, 10.0]),
+        ([-10.0, -10.0, -10.0], [10.0, 10.0, 0.0]),
     ],
 )
 def fixture_bounds(request):
@@ -54,8 +56,7 @@ def test_fd_jacobian(x0, method, rel_step, bounds):
     """
     # calculated all necessary inputs
 
-    x_stencil_batch, dx = get_positions(x0, method, rel_step, bounds)
-    _, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
+    x_stencil_batch, dx, use_one_sided = get_positions(x0, method, rel_step, bounds)
 
     x_batch = np.vstack((np.atleast_2d(x0), x_stencil_batch))
 
