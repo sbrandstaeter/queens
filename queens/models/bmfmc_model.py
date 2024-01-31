@@ -525,7 +525,10 @@ class BMFMCModel(Model):
                 inv_sigma = (
                     1
                     / det_sigma
-                    * np.array([[var2, -covariance], [-covariance, var1]], dtype=np.float64)
+                    * np.array(
+                        [np.append(var2, -covariance), np.insert(var1, 0, -covariance)],
+                        dtype=np.float64,
+                    )
                 )
 
                 a = np.dot(diff, inv_sigma)

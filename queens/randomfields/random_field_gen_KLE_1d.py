@@ -59,7 +59,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         self.lambda_n = np.zeros((self.trunc_thres, 2))
         for k in range(self.trunc_thres):
             self.lambda_n[k, :] = [
-                2 * self.corr_length / ((self.corr_length**2 * self.w_n[k] ** 2 + 1)),
+                np.squeeze(2 * self.corr_length / ((self.corr_length**2 * self.w_n[k] ** 2 + 1))),
                 k,
             ]
             sum_lambda = sum_lambda + self.lambda_n[k, 0]
