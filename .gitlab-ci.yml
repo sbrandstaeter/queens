@@ -20,6 +20,9 @@ variables:
   UPDATE_REQUIREMENTS:
     value: "0"
     description: "Update requirements for QUEENS and create a MR"
+  UPDATE_CHANGELOG:
+    value: ""
+    description: "Update changelog for QUEENS manually and create a MR"
   PYTEST_OPTIONAL_PARAMETERS:
     value: ""
     description: "Additional pytest options for the ubuntu pytest run"
@@ -164,13 +167,23 @@ charon-build_conda_env:
   tags:
     - imcs-build
 #----------------------------------------------------------------------------------------------
-update:
+simple_build: # Environment that does not require all queens dependencies
+  stage: build
+  script:
+    # create a simple environment to use for updates etc
+    - $PYTHON_PACKAGE_MANAGER create -n simple-env python==3.10 -y
+  rules:
+    - if: $UPDATE_REQUIREMENTS == "1"
+    - if: $CI_COMMIT_TAG
+    - if: $UPDATE_CHANGELOG
+  tags:
+    - lnm-build
+
+update_requirements:
   stage: build
   script:
     - cd $CI_PROJECT_DIR
-    # create a simple environment to use pip-tools
-    - $PYTHON_PACKAGE_MANAGER create -n piptools-env python==3.10 -y
-    - $PYTHON_PACKAGE_MANAGER activate piptools-env
+    - $PYTHON_PACKAGE_MANAGER activate simple-env
     - pip install pip-tools
     - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
     - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
@@ -180,8 +193,32 @@ update:
     - 'COMMIT_MESSAGE="build: update requirements based on pip-tools"'
     - MR_TITLE="Pip-tools update $(date '+%Y-%m-%d')"
     - source $CI_PROJECT_DIR/.gitlab/bash_scripts/create_merge_request.sh
+  needs:
+    - simple_build
   rules:
     - if: $UPDATE_REQUIREMENTS == "1"
+  tags:
+    - lnm-build
+
+update_changelog:
+  stage: build
+  script:
+    - cd $CI_PROJECT_DIR
+    - $PYTHON_PACKAGE_MANAGER activate simple-env
+    - pip install python-gitlab
+    # update changelog
+    - FILES=$CI_PROJECT_DIR/CHANGELOG.md
+    - python $CI_PROJECT_DIR/.gitlab/pipeline_utils/update_changelog.py $GIT_PUSH_TOKEN $CI_PROJECT_ID $FILES
+    # create a branch and merge request
+    - NEW_BRANCH_NAME="update-changelog"
+    - 'COMMIT_MESSAGE="docs: update changelog"'
+    - MR_TITLE="Update changelog"
+    - source $CI_PROJECT_DIR/.gitlab/pipeline_utils/create_merge_request.sh
+  needs:
+    - simple_build
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $UPDATE_CHANGELOG
   tags:
     - lnm-build
 #---------------------------------------------------------------------------------------------------
