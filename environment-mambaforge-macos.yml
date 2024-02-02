@@ -35,7 +35,6 @@ dependencies:
 
 # Machine learning libraries
   - arviz # Bayesian visualization
-  - gpflow # LV and variational GPs
   - optax # google jax based optimizer
   - tensorflow
   - tensorflow-probability
@@ -90,3 +89,4 @@ dependencies:
     - pylint-exit
     - scikit-activeml>=0.4.1
     - chaospy>=4.3.13 # polynomial chaos
+    - gpflow # LV and variational GPs
