@@ -1,15 +1,16 @@
+---
 name: queens
 channels:
   - conda-forge
-# We want to have a reproducible setup, so we don't want default channels,
-# which may be different for different users. All required channels should
-# be listed explicitly here.
+  # We want to have a reproducible setup, so we don't want default channels,
+  # which may be different for different users. All required channels should
+  # be listed explicitly here.
   - nodefaults
 dependencies:
   - python==3.10
-# to ensure that performance optimized backends are used,
-# the following packages are installed from conda
-# for example BLAS libraries like Intel MKL for numpy
+  # to ensure that performance optimized backends are used,
+  # the following packages are installed from conda
+  # for example BLAS libraries like Intel MKL for numpy
   - cython
   - numba
   - numpy
@@ -17,36 +18,36 @@ dependencies:
   - scikit-learn
   - scipy
 
-# Dask packages
+  # Dask packages
   - dask
-  - distributed # dask.distributed
+  - distributed  # dask.distributed
   - dask-jobqueue
-  - bokeh<3 # for dask dashboard
-  - fabric  # for ssh connection
+  - bokeh<3  # for dask dashboard
+  - fabric   # for ssh connection
 
-# Others
-  - xarray # Special array format
-  - pyDOE # design of experiments
-  - SALib # for sensitivity analysis
-  - vtk>=9.2.0 # vtk format handler
-  - autograd # wrapper around numpy for automated differentiation
-  - pyyaml # to load yaml files
+  # Others
+  - xarray  # Special array format
+  - pyDOE  # design of experiments
+  - SALib  # for sensitivity analysis
+  - vtk>=9.2.0  # vtk format handler
+  - autograd  # wrapper around numpy for automated differentiation
+  - pyyaml  # to load yaml files
   - jinja2
 
-# Machine learning libraries
-  - arviz # Bayesian visualization
-  - optax # google jax based optimizer
+  # Machine learning libraries
+  - arviz  # Bayesian visualization
+  - optax  # google jax based optimizer
   - tensorflow
   - tensorflow-probability
   - jax[cpu]
   - jax
   - pymc
 
-# making fancy plots
+  # making fancy plots
   - matplotlib
   - seaborn
   - plotly
-# testing framework
+  # testing framework
   - pytest
   - py
   - pytest-codestyle
@@ -56,17 +57,17 @@ dependencies:
   - mock
   - py
 
-# Terminal utils
-  - pyfiglet # make ascii  -art printsc
-  - tqdm # a smart progress meter for loops
-  - tomli # TOML parser
+  # Terminal utils
+  - pyfiglet  # make ascii  -art printsc
+  - tqdm  # a smart progress meter for loops
+  - tomli  # TOML parser
 
-# Other Python stuff
-  - pathos # multiprocessing with more complex python objects
-  - black==22.3.0 # formatter, needed to format code created by QUEENS
+  # Other Python stuff
+  - pathos  # multiprocessing with more complex python objects
+  - black==22.3.0  # formatter, needed to format code created by QUEENS
 
-# Development
-  - commitizen #>=3.12.0
+  # Development
+  - commitizen  # >=3.12.0
   - pylint>=2.16
   - isort>=5.0
   - pre-commit
@@ -78,15 +79,16 @@ dependencies:
   - docformatter>=1.5.1
   - yamllint>=1.19.0
 
-# These packages need to be installed via pip
+  # These packages need to be installed via pip
   - pip
   - pip:
-    - pip-tools
-    - gnuplotlib # for gnuplot based terminal ascii plots
-    - diversipy # sampling from space filling subsets
-    - particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
-    - liccheck
-    - pylint-exit
-    - scikit-activeml>=0.4.1
-    - chaospy>=4.3.13 # polynomial chaos
-    - gpflow # LV and variational GPs
+      - pip-tools
+      - gnuplotlib  # for gnuplot based terminal ascii plots
+      - diversipy  # sampling from space filling subsets
+      # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
+      - particles
+      - liccheck
+      - pylint-exit
+      - scikit-activeml>=0.4.1
+      - chaospy>=4.3.13  # polynomial chaos
+      - gpflow  # LV and variational GPs
