@@ -154,6 +154,11 @@ class VariationalInferenceIterator(Iterator):
             old_parameters = self.variational_params.copy()
             self._clearing_and_plots()
 
+        # Store the final variational params
+        self.variational_params = (
+            self.stochastic_optimizer.current_variational_parameters.copy().flatten()
+        )
+
         end = time.time()
 
         if self.n_sims > self.max_feval:
