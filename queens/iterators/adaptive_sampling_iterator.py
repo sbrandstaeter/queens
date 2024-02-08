@@ -121,7 +121,7 @@ class AdaptiveSamplingIterator(Iterator):
                 x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
                 epn = xp.shared['exponents'][-1]
                 target = self_.current_target(epn)
-                for j, par in enumerate(self.solving_iterator.random_variable_keys):
+                for j, par in enumerate(xp.theta.dtype.names):
                     xp.theta[par][0] = x_train_ml[j]
                 target(xp)
                 return self_.move(xp, target)
