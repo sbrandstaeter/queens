@@ -192,7 +192,7 @@ update_requirements:
     - FILES="requirements.txt dev-requirements.txt"
     - 'COMMIT_MESSAGE="build: update requirements based on pip-tools"'
     - MR_TITLE="Pip-tools update $(date '+%Y-%m-%d')"
-    - source $CI_PROJECT_DIR/.gitlab/bash_scripts/create_merge_request.sh
+    - source $CI_PROJECT_DIR/.gitlab/pipeline_utils/create_merge_request.sh
   needs:
     - simple_build
   rules:
