@@ -2,10 +2,10 @@
 import numpy as np
 import pytest
 
-from queens.utils.stochastic_optimizer import Adam, Adamax, RMSprop
+from queens.utils.stochastic_optimizer import SGD, Adam, Adamax, RMSprop
 
 
-def test_RMSprop_max(rmsprop_optimizer):
+def test_rmsprop_max(rmsprop_optimizer):
     """Test RMSprop."""
     varparams = 5 * np.ones(5).reshape(-1, 1)
     rmsprop_optimizer.current_variational_parameters = varparams
@@ -19,7 +19,7 @@ def test_RMSprop_max(rmsprop_optimizer):
     assert np.mean(result - 0.5) < 0.05
 
 
-def test_Adamax(adamax_optimizer):
+def test_adamax(adamax_optimizer):
     """Test Adamax."""
     varparams = np.ones(5).reshape(-1, 1)
     adamax_optimizer.current_variational_parameters = varparams
@@ -30,7 +30,7 @@ def test_Adamax(adamax_optimizer):
     assert np.mean(result - 0.5) < 0.005
 
 
-def test_Adam(adam_optimizer):
+def test_adam(adam_optimizer):
     """Test Adam."""
     varparams = np.ones(5).reshape(-1, 1)
     adam_optimizer.current_variational_parameters = varparams
@@ -39,6 +39,30 @@ def test_Adam(adam_optimizer):
     iterations = adam_optimizer.iteration
     assert iterations < 1000
     assert np.mean(result - 0.5) < 0.005
+
+
+def test_sgd(sgd_optimizer):
+    """Test Adam."""
+    varparams = np.ones(5).reshape(-1, 1)
+    sgd_optimizer.current_variational_parameters = varparams
+    sgd_optimizer.set_gradient_function(gradient)
+    result = sgd_optimizer.run_optimization()
+    iterations = sgd_optimizer.iteration
+    assert iterations < 1000
+    assert np.mean(result - 0.5) < 0.005
+
+
+@pytest.fixture(name="sgd_optimizer")
+def fixture_sgd_optimizer():
+    """SGD optimizer."""
+    optimizer = SGD(
+        learning_rate=1e-2,
+        optimization_type="max",
+        rel_l1_change_threshold=1e-4,
+        rel_l2_change_threshold=1e-6,
+        max_iteration=1000,
+    )
+    return optimizer
 
 
 @pytest.fixture(name="adam_optimizer")
