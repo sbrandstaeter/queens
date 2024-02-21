@@ -1,4 +1,4 @@
-[MASTER]
+f[MASTER]
 
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
@@ -92,7 +92,6 @@ disable=raw-checker-failed,
         deprecated-pragma,
         use-symbolic-message-instead,
         design,
-        fixme,
         abstract-method,
         duplicate-code,
         invalid-name,

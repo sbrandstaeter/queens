@@ -133,7 +133,7 @@ class RandomField:
 
     def compute_eigendecomposition(self):
         """Compute eigenvalues and eigenvectors of covariance matrix."""
-        # TODO we should use the information about the Cholesky decomp
+        # TODO we should use the information about the Cholesky decomp # pylint: disable=fixme
         eig_val, eig_vec = np.linalg.eigh(self.K_mat)
         eigen_vals_vec = np.real(eig_val)
         eigen_vecs_mat = np.real(eig_vec)

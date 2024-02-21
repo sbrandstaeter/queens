@@ -109,14 +109,14 @@ class SurrogateModel(Model):
             )
             for measure, error in error_measures.items():
                 _logger.info("Error %s is: %s", measure, error)
-        # TODO check that final surrogate is on all points
+        # TODO check that final surrogate is on all points # pylint: disable=fixme
 
         # train regression model on the data
         self.setup(x_train, y_train)
         self.train()
         self.is_trained = True
 
-        # TODO: Passing self is ugly
+        # TODO: Passing self is ugly # pylint: disable=fixme
         qvis.surrogate_visualization_instance.plot(self.training_iterator.parameters.names, self)
 
         if self.testing_iterator:
@@ -185,7 +185,7 @@ class SurrogateModel(Model):
         # init output array
         outputs = np.zeros_like(y_train, dtype=float)
         # set random_state=None, shuffle=False)
-        # TODO check out randomness feature
+        # TODO check out randomness feature # pylint: disable=fixme
         kf = KFold(n_splits=folds)
         kf.get_n_splits(x_train)
 

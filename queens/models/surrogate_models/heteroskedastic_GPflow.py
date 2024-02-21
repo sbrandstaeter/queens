@@ -182,7 +182,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         """
         x_test = np.atleast_2d(x_test).reshape((-1, self.x_train.shape[1]))
         output = {}
-        # TODO this method call is super slow as Cholesky decomp gets computed in every call
+        # TODO this method call is super slow as Cholesky decomp gets computed in every call #pylint: disable=fixme
         mean, variance = self.model.predict_y(x_test)
         mean = mean.numpy()
         variance = variance.numpy()
@@ -270,7 +270,7 @@ class HeteroskedasticGPModel(SurrogateModel):
             optimization_step_fun (obj): Tensorflow optimization EM-step function for variational
                                          optimization of the GP
         """
-        # TODO pull below out to json
+        # TODO pull below out to json # pylint: disable=fixme
         np.random.seed(self.random_seed)
         tf.random.set_seed(self.random_seed)
         data = (self.x_train, self.y_train)

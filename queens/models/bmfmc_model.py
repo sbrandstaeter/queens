@@ -182,7 +182,7 @@ class BMFMCModel(Model):
             path_to_lf_mc_data (str): path to low fidelity monte carlo data
             path_to_hf_mc_reference_data (str): path to high fidelity monte carlo reference data
         """
-        # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
+        # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and # pylint: disable=fixme
         #  random fields is prone to errors and should be changed! The implementation should
         #  rather use the variable module and reconstruct the eigenfunctions of the random fields
         #  if not provided in the data field
@@ -220,7 +220,9 @@ class BMFMCModel(Model):
         self.p_yhf_mc = None
         self.p_ylf_mc = None
         self.no_features_comparison_bool = BMFMC_reference
-        self.eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
+        self.eigenfunc_random_fields = (
+            None  # TODO this should be moved to the variable class! # pylint: disable=fixme
+        )
         self.eigenvals = None
         self.f_mean_train = None
         self.y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
@@ -326,7 +328,7 @@ class BMFMCModel(Model):
         # Evaluate probabilistic mapping for certain Z-points
         self.m_f_mc, self.var_y_mc = self.interface.evaluate(self.Z_mc.T)
         self.f_mean_train, _ = self.interface.evaluate(self.Z_train.T)
-        # TODO the variables (here) manifold must probably an object from the variable class!
+        # TODO the variables (here) manifold must probably an object from the variable class! # pylint: disable=fixme
 
         # actual 'evaluation' of generalized BMFMC routine
         self.compute_pyhf_statistics()
@@ -505,7 +507,7 @@ class BMFMCModel(Model):
         i = 1
         _logger.info('\n')
 
-        # TODO we should speed this up with multiprocessing
+        # TODO we should speed this up with multiprocessing # pylint: disable=fixme
         for num1, (mean1, var1) in enumerate(
             zip(tqdm(f_mean_pred, desc=r'Calculating Var_f[p(y_HF|f,z,D)]'), yhf_var_pred)
         ):
@@ -567,7 +569,7 @@ class BMFMCModel(Model):
                 np.atleast_2d(self.Y_LFs_mc).T,
                 bandwidth_lfmc,
                 support_points=np.atleast_2d(self.y_pdf_support),
-            )  # TODO: make this also work for several lfs
+            )  # TODO: make this also work for several lfs # pylint: disable=fixme
 
     def set_feature_strategy(self):
         r"""Set feature strategy.

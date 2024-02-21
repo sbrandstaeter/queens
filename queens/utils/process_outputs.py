@@ -64,7 +64,7 @@ def do_processing(output_data, output_description):
 
     # result interval
     result_interval = output_description.get('result_interval', None)
-    # TODO: we get an error below!
+    # TODO: we get an error below! # pylint: disable=fixme
 
     if result_interval is None:
         # estimate interval from results

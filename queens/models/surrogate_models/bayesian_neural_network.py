@@ -196,7 +196,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             weights of the Bayesian NN, taking the mean of the Gaussian as an input
             variable for the prior distribution and fixing the variance
         """
-        # TODO check this prior and make it full Bayesian?
+        # TODO check this prior and make it full Bayesian? # pylint: disable=fixme
         n = kernel_size + bias_size
 
         # note: the mean of the Gaussian is an input variable here, hence we have n*mean input

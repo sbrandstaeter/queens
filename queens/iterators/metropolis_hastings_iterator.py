@@ -109,7 +109,7 @@ class MetropolisHastingsIterator(Iterator):
         self.as_smc_rejuvenation_step = as_smc_rejuvenation_step
 
         self.tune = tune
-        # TODO change back to a scalar value.
+        # TODO change back to a scalar value. # pylint: disable=fixme
         #  Otherwise the diagnostics tools might not make sense
         self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
         self.num_burn_in = num_burn_in
