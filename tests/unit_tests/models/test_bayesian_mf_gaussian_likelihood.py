@@ -1,5 +1,5 @@
 """Unit tests for Bayesian multi-fidelity Gaussian likelihood function."""
-
+# pylint: disable=invalid-name
 from unittest import mock
 
 import numpy as np

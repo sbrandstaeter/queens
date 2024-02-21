@@ -1,5 +1,5 @@
 """Iterator for Bayesian multi-fidelity UQ."""
-
+# pylint: disable=invalid-name
 import logging
 
 import numpy as np

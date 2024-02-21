@@ -11,6 +11,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.fields.random_fields import RandomField
 from queens.parameters.parameters import Parameters
 
+# pylint: disable=invalid-name
 
 # ------------ fixtures --------------------------
 @pytest.fixture(name="result_description")

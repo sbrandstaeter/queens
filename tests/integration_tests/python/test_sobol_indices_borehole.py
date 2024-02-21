@@ -14,7 +14,7 @@ def test_sobol_indices_borehole(inputdir, tmp_path):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    expected_result_S1 = np.array(
+    expected_first_order_indices = np.array(
         [
             0.8275788005095177,
             3.626326582692376e-05,
@@ -27,4 +27,4 @@ def test_sobol_indices_borehole(inputdir, tmp_path):
         ]
     )
 
-    np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_result_S1)
+    np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_first_order_indices)

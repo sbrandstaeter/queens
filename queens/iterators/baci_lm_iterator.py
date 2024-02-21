@@ -111,7 +111,7 @@ class BaciLMIterator(Iterator):
             x0 (numpy.ndarray): Vector with current parameters
 
         Returns:
-            J (numpy.ndarray): Jacobian Matrix approximation from finite differences
+            jacobian_matrix (numpy.ndarray): Jacobian Matrix approximation from finite differences
             f0 (numpy.ndarray): Residual of objective function at `x0`
         """
         positions, delta_positions = self.get_positions_raw_2pointperturb(x0)
@@ -123,11 +123,11 @@ class BaciLMIterator(Iterator):
 
         f0 = f_batch[0]  # first entry corresponds to f(x0)
         f_perturbed = np.delete(f_batch, 0, 0)  # delete the first entry
-        J = fd_jacobian(f0, f_perturbed, delta_positions, True, '2-point')
+        jacobian_matrix = fd_jacobian(f0, f_perturbed, delta_positions, True, '2-point')
         # sanity checks:
         # in the case of LSQ, the number of residuals needs to be
         # greater or equal to the number of parameters to be fitted
-        num_res, num_par = J.shape
+        num_res, num_par = jacobian_matrix.shape
         if num_res < num_par:
             raise ValueError(
                 f"Number of residuals (={num_res}) has to be greater or equal to"
@@ -135,7 +135,7 @@ class BaciLMIterator(Iterator):
                 f" You have {num_res}<{num_par}."
             )
 
-        return J, f0
+        return jacobian_matrix, f0
 
     def pre_run(self):
         """Initialize run.
@@ -178,15 +178,15 @@ class BaciLMIterator(Iterator):
             )
             jacobian, residual = self.jacobian_and_residual(self.param_current)
 
-            # store terms for repeated useage
-            JTJ = (jacobian.T).dot(jacobian)
-            JTr = (jacobian.T).dot(residual)
+            # store terms for repeated usage
+            jacobian_inner_product = (jacobian.T).dot(jacobian)
+            jacobian_transpose_residual_product = (jacobian.T).dot(residual)
 
             resnorm_o = resnorm
             resnorm = np.linalg.norm(residual) / np.sqrt(residual.size)
 
             gradnorm_o = gradnorm
-            gradnorm = np.linalg.norm(JTr)
+            gradnorm = np.linalg.norm(jacobian_transpose_residual_product)
 
             if i == 0:
                 resnorm_o = resnorm
@@ -202,7 +202,10 @@ class BaciLMIterator(Iterator):
 
             # compute update step. Not necessary for last iteration! Should usually be low
             # dimension matrix inversion. We need J and r anyway for convergence check.
-            param_delta = np.linalg.solve(JTJ + self.reg_param * np.diag(np.diag(JTJ)), -(JTr))
+            param_delta = np.linalg.solve(
+                jacobian_inner_product + self.reg_param * np.diag(np.diag(jacobian_inner_product)),
+                -(jacobian_transpose_residual_product),
+            )
 
             # output for iteration. Before update including next step
             self.printstep(i, resnorm, gradnorm, param_delta)

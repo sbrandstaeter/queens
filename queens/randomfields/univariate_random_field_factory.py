@@ -6,9 +6,9 @@ from queens.randomfields.generic_external_random_field import GenericExternalRan
 from queens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from queens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 from queens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFourier3D
-from queens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
-from queens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
-from queens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
+from queens.randomfields.random_field_gen_kle_1d import RandomFieldGenKLE1D
+from queens.randomfields.random_field_gen_kle_2d import RandomFieldGenKLE2D
+from queens.randomfields.random_field_gen_kle_3d import RandomFieldGenKLE3D
 
 
 def create_univariate_random_field(

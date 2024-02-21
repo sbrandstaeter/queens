@@ -44,11 +44,15 @@ def calculate_indices_first_total_order(
     bootstrap_samples = bootstrap(prediction, bootstrap_idx)
     for idx_bootstrap in np.arange(number_bootstrap_samples):
         current_bootstrap_sample = bootstrap_samples[idx_bootstrap, :]
-        A, B, AB = _extract_sample_matrices(current_bootstrap_sample, input_dim)
-        estimates_first_order[idx_bootstrap] = _estimate_first_order_index(
-            A, B, AB, first_order_estimator
+        sample_matrix_a, sample_matrix_b, sample_matrix_ab = _extract_sample_matrices(
+            current_bootstrap_sample, input_dim
         )
-        estimates_total_order[idx_bootstrap] = _estimate_total_order_index(A, B, AB)
+        estimates_first_order[idx_bootstrap] = _estimate_first_order_index(
+            sample_matrix_a, sample_matrix_b, sample_matrix_ab, first_order_estimator
+        )
+        estimates_total_order[idx_bootstrap] = _estimate_total_order_index(
+            sample_matrix_a, sample_matrix_b, sample_matrix_ab
+        )
 
     return estimates_first_order, estimates_total_order
 
@@ -90,11 +94,22 @@ def calculate_indices_second_order_gp_realizations(
         current_bootstrap_sample = bootstrap_samples[b, :]
         idx_loop = 0
         for input_dim_j in range(input_dim_i + 1, number_parameters):
-            A, B, ABi, ABj, BAi = _extract_sample_matrices_second_order(
+            (
+                sample_matrix_a,
+                sample_matrix_b,
+                sample_matrix_ab_i,
+                sample_matrix_ab_j,
+                sample_matrix_ba_i,
+            ) = _extract_sample_matrices_second_order(
                 current_bootstrap_sample, input_dim_i, input_dim_j, number_parameters
             )
             estimates_second_order[b, idx_loop] = _estimate_second_order_index(
-                A, ABi, ABj, BAi, B, first_order_estimator
+                sample_matrix_a,
+                sample_matrix_ab_i,
+                sample_matrix_ab_j,
+                sample_matrix_ba_i,
+                sample_matrix_b,
+                first_order_estimator,
             )
             idx_loop += 1
 
@@ -121,18 +136,35 @@ def calculate_indices_second_order_gp_mean(
         estimates_total_order (ndarray): estimates of total-order Sobol index
     """
     bootstrap_sample = bootstrap(prediction, bootstrap_indices)
-    A, B, AB = _extract_sample_matrices(bootstrap_sample, input_dim_i)
-    estimates_first_order = _estimate_first_order_index(A, B, AB, first_order_estimator)
-    estimates_total_order = _estimate_total_order_index(A, B, AB)
+    sample_matrix_a, sample_matrix_b, sample_matrix_ab = _extract_sample_matrices(
+        bootstrap_sample, input_dim_i
+    )
+    estimates_first_order = _estimate_first_order_index(
+        sample_matrix_a, sample_matrix_b, sample_matrix_ab, first_order_estimator
+    )
+    estimates_total_order = _estimate_total_order_index(
+        sample_matrix_a, sample_matrix_b, sample_matrix_ab
+    )
 
     estimates_second_order = np.empty(number_parameters - (input_dim_i + 1))
     idx_loop = 0
     for input_dim_j in range(input_dim_i + 1, number_parameters):
-        A, B, ABi, ABj, BAi = _extract_sample_matrices_second_order(
+        (
+            sample_matrix_a,
+            sample_matrix_b,
+            sample_matrix_ab_i,
+            sample_matrix_ab_j,
+            sample_matrix_ba_i,
+        ) = _extract_sample_matrices_second_order(
             bootstrap_sample, input_dim_i, input_dim_j, number_parameters
         )
         estimates_second_order[idx_loop] = _estimate_second_order_index(
-            A, ABi, ABj, BAi, B, first_order_estimator
+            sample_matrix_a,
+            sample_matrix_ab_i,
+            sample_matrix_ab_j,
+            sample_matrix_ba_i,
+            sample_matrix_b,
+            first_order_estimator,
         )
         idx_loop += 1
 
@@ -179,11 +211,22 @@ def calculate_indices_third_order(
         idx_loop = 0
         for idx_i, i in enumerate(range(number_parameters)):
             for j in range(idx_i + 1, number_parameters):
-                A, B, ABi, ABj, BAi = _extract_sample_matrices_second_order(
+                (
+                    sample_matrix_a,
+                    sample_matrix_b,
+                    sample_matrix_ab_i,
+                    sample_matrix_ab_j,
+                    sample_matrix_ba_i,
+                ) = _extract_sample_matrices_second_order(
                     current_bootstrap_sample, i, j, number_parameters
                 )
                 estimates_second_order[b, idx_loop] = _estimate_second_order_index(
-                    A, ABi, ABj, BAi, B, first_order_estimator
+                    sample_matrix_a,
+                    sample_matrix_ab_i,
+                    sample_matrix_ab_j,
+                    sample_matrix_ba_i,
+                    sample_matrix_b,
+                    first_order_estimator,
                 )
                 idx_loop += 1
 
@@ -191,8 +234,14 @@ def calculate_indices_third_order(
     closed_estimates_third_order = np.empty((number_boostrap_samples, 1))
     for b in np.arange(number_boostrap_samples):
         current_bootstrap_sample = bootstrap_samples[b, :]
-        A, B, AB_ijk = _extract_sample_matrices_third_order(current_bootstrap_sample)
-        closed_estimates_third_order[b, 0] = _estimate_closed_third_order_index(B, AB_ijk)
+        (
+            sample_matrix_a,
+            sample_matrix_b,
+            sample_matrix_ab_ijk,
+        ) = _extract_sample_matrices_third_order(current_bootstrap_sample)
+        closed_estimates_third_order[b, 0] = _estimate_closed_third_order_index(
+            sample_matrix_b, sample_matrix_ab_ijk
+        )
 
     # 4. Subtract lower order indices
     estimates_third_order = (
@@ -215,15 +264,15 @@ def _extract_sample_matrices(prediction, i):
         i (int): index to calculate
 
     Returns:
-        A (ndarray): Saltelli A sample matrix
-        B (ndarray): Saltelli B sample matrix
-        AB (ndarray): Saltelli AB sample matrix
+        sample_matrix_a (ndarray): Saltelli A sample matrix
+        sample_matrix_b (ndarray): Saltelli B sample matrix
+        sample_matrix_ab (ndarray): Saltelli AB sample matrix
     """
-    AB = prediction[:, i]
-    A = prediction[:, -2]
-    B = prediction[:, -1]
+    sample_matrix_ab = prediction[:, i]
+    sample_matrix_a = prediction[:, -2]
+    sample_matrix_b = prediction[:, -1]
 
-    return A, B, AB
+    return sample_matrix_a, sample_matrix_b, sample_matrix_ab
 
 
 def _extract_sample_matrices_second_order(prediction, i, j, number_parameters):
@@ -239,18 +288,25 @@ def _extract_sample_matrices_second_order(prediction, i, j, number_parameters):
         number_parameters (int): number of input space dimensions
 
     Returns:
-        A (ndarray): Saltelli A sample matrix
-        B (ndarray): Saltelli B sample matrix
-        AB (ndarray): Saltelli AB sample matrix
-        BA (ndarray): Saltelli AB sample matrix
+        sample_matrix_a (ndarray): Saltelli A sample matrix
+        sample_matrix_b (ndarray): Saltelli B sample matrix
+        sample_matrix_ab_i (ndarray): Saltelli ABi sample matrix
+        sample_matrix_ab_j (ndarray): Saltelli ABj sample matrix
+        sample_matrix_ba_i (ndarray): Saltelli BAi sample matrix
     """
-    ABi = prediction[:, i]
-    ABj = prediction[:, j]
-    BAi = prediction[:, number_parameters + i]
-    A = prediction[:, -2]
-    B = prediction[:, -1]
+    sample_matrix_ab_i = prediction[:, i]
+    sample_matrix_ab_j = prediction[:, j]
+    sample_matrix_ba_i = prediction[:, number_parameters + i]
+    sample_matrix_a = prediction[:, -2]
+    sample_matrix_b = prediction[:, -1]
 
-    return A, B, ABi, ABj, BAi
+    return (
+        sample_matrix_a,
+        sample_matrix_b,
+        sample_matrix_ab_i,
+        sample_matrix_ab_j,
+        sample_matrix_ba_i,
+    )
 
 
 def _extract_sample_matrices_third_order(prediction):
@@ -263,18 +319,18 @@ def _extract_sample_matrices_third_order(prediction):
         prediction (ndarray): realizations of Gaussian process
 
     Returns:
-        A (ndarray): Saltelli A sample matrix
-        B (ndarray): Saltelli B sample matrix
-        AB_ijk (ndarray): Saltelli AB_ijk sample matrix
+        sample_matrix_a (ndarray): Saltelli A sample matrix
+        sample_matrix_b (ndarray): Saltelli B sample matrix
+        sample_matrix_ab_ijk (ndarray): Saltelli AB_ijk sample matrix
     """
-    AB_ijk = prediction[:, -3]
-    A = prediction[:, -2]
-    B = prediction[:, -1]
+    sample_matrix_ab_ijk = prediction[:, -3]
+    sample_matrix_a = prediction[:, -2]
+    sample_matrix_b = prediction[:, -1]
 
-    return A, B, AB_ijk
+    return sample_matrix_a, sample_matrix_b, sample_matrix_ab_ijk
 
 
-def _estimate_first_order_index(A, B, AB, estimator):
+def _estimate_first_order_index(sample_matrix_a, sample_matrix_b, sample_matrix_ab, estimator):
     """Compute first-order Sobol indices.
 
     References for estimators:
@@ -292,9 +348,9 @@ def _estimate_first_order_index(A, B, AB, estimator):
     (1 February 2010): 259–270. https://doi.org/10.1016/j.cpc.2009.09.018.
 
     Args:
-        A (ndarray): results corresponding to A sample matrix
-        B (ndarray): results corresponding B sample matrix
-        AB (ndarray): results corresponding to AB sample matrix
+        sample_matrix_a (ndarray): results corresponding to A sample matrix
+        sample_matrix_b (ndarray): results corresponding B sample matrix
+        sample_matrix_ab (ndarray): results corresponding to AB sample matrix
         estimator (str): estimator for first-order indices
 
     Returns:
@@ -302,23 +358,36 @@ def _estimate_first_order_index(A, B, AB, estimator):
     """
     if estimator == 'Janon2014':
         # [Janon2014] Equation (2.5)
-        first_order = (np.mean(B * AB) - (0.5 * np.mean(B + AB)) ** 2) / (
-            np.mean(B * B) - (0.5 * np.mean(B + AB)) ** 2
+        first_order = (
+            np.mean(sample_matrix_b * sample_matrix_ab)
+            - (0.5 * np.mean(sample_matrix_b + sample_matrix_ab)) ** 2
+        ) / (
+            np.mean(sample_matrix_b * sample_matrix_b)
+            - (0.5 * np.mean(sample_matrix_b + sample_matrix_ab)) ** 2
         )
 
     elif estimator == 'Janon2014alt':
         # [Janon2014] Equation (2.8)
         first_order = np.sum(
-            (B - 0.5 * (B.mean() + AB.mean())) * (AB - 0.5 * (B.mean() + AB.mean()))
-        ) / np.sum(0.5 * (B**2 + AB**2) - (0.5 * (B.mean() + AB.mean())) ** 2)
+            (sample_matrix_b - 0.5 * (sample_matrix_b.mean() + sample_matrix_ab.mean()))
+            * (sample_matrix_ab - 0.5 * (sample_matrix_b.mean() + sample_matrix_ab.mean()))
+        ) / np.sum(
+            0.5 * (sample_matrix_b**2 + sample_matrix_ab**2)
+            - (0.5 * (sample_matrix_b.mean() + sample_matrix_ab.mean())) ** 2
+        )
 
     elif estimator == 'Gratiet2014':
         # [Gratiet2014] Equation (4.1)
-        first_order = (np.mean(B * AB) - B.mean() * AB.mean()) / (np.mean(B * B) - B.mean() ** 2)
+        first_order = (
+            np.mean(sample_matrix_b * sample_matrix_ab)
+            - sample_matrix_b.mean() * sample_matrix_ab.mean()
+        ) / (np.mean(sample_matrix_b * sample_matrix_b) - sample_matrix_b.mean() ** 2)
 
     elif estimator == 'Saltelli2010':
         # [Saltelli2010] also used in SALib library
-        first_order = np.mean(B * (AB - A), axis=0) / np.var(np.r_[A, B], axis=0)
+        first_order = np.mean(
+            sample_matrix_b * (sample_matrix_ab - sample_matrix_a), axis=0
+        ) / np.var(np.r_[sample_matrix_a, sample_matrix_b], axis=0)
 
     else:
         raise ValueError(
@@ -329,7 +398,7 @@ def _estimate_first_order_index(A, B, AB, estimator):
     return first_order
 
 
-def _estimate_total_order_index(A, B, AB):
+def _estimate_total_order_index(sample_matrix_a, sample_matrix_b, sample_matrix_ab):
     """Estimate total-order Sobol indices.
 
     Reference:
@@ -338,20 +407,31 @@ def _estimate_total_order_index(A, B, AB):
     (1 February 2010): 259–270. https://doi.org/10.1016/j.cpc.2009.09.018.
 
     Args:
-        A (ndarray): results corresponding to A sample matrix
-        B (ndarray): results corresponding to B sample matrix
-        AB (ndarray): results corresponding to AB sample matrix
+        sample_matrix_a (ndarray): results corresponding to A sample matrix
+        sample_matrix_b (ndarray): results corresponding to B sample matrix
+        sample_matrix_ab (ndarray): results corresponding to AB sample matrix
 
     Returns:
         total_order (ndarray): total-order Sobol index estimates
     """
     # from SALib library [Saltelli2010]
-    total_order = 0.5 * np.mean((A - AB) ** 2, axis=0) / np.var(np.r_[A, B], axis=0)
+    total_order = (
+        0.5
+        * np.mean((sample_matrix_a - sample_matrix_ab) ** 2, axis=0)
+        / np.var(np.r_[sample_matrix_a, sample_matrix_b], axis=0)
+    )
 
     return total_order
 
 
-def _estimate_second_order_index(A, ABj, ABk, BAj, B, first_order_estimator):
+def _estimate_second_order_index(
+    sample_matrix_a,
+    sample_matrix_ab_j,
+    sample_matrix_ab_k,
+    sample_matrix_ba_j,
+    sample_matrix_b,
+    first_order_estimator,
+):
     """Estimate second-order Sobol indices.
 
     [Saltelli2010] Saltelli, A., et al. ‘Variance Based Sensitivity Analysis of Model Output. Design
@@ -359,26 +439,32 @@ def _estimate_second_order_index(A, ABj, ABk, BAj, B, first_order_estimator):
     (1 February 2010): 259–270. https://doi.org/10.1016/j.cpc.2009.09.018.
 
     Args:
-        A (ndarray): results corresponding to A sample matrix
-        ABj (ndarray): results corresponding to AB sample matrix
-        ABk (ndarray): results corresponding to AB sample matrix
-        BAj (ndarray): results corresponding to BA sample matrix
-        B (ndarray): results corresponding to B sample matrix
+        sample_matrix_a (ndarray): results corresponding to A sample matrix
+        sample_matrix_ab_j (ndarray): results corresponding to AB sample matrix
+        sample_matrix_ab_k (ndarray): results corresponding to AB sample matrix
+        sample_matrix_ba_j (ndarray): results corresponding to BA sample matrix
+        sample_matrix_b (ndarray): results corresponding to B sample matrix
         first_order_estimator (str): estimator for first-order indices
 
     Returns:
         second_order (ndarray): second-order Sobol index estimates
     """
     # from SALib library [Saltelli2010]
-    Sjk = np.mean(BAj * ABk - A * B, axis=0) / np.var(np.r_[A, B], axis=0)
-    Sj = _estimate_first_order_index(A, B, ABj, first_order_estimator)
-    Sk = _estimate_first_order_index(A, B, ABk, first_order_estimator)
-    second_order = Sjk - Sj - Sk
+    total_second_order_effect_jk = np.mean(
+        sample_matrix_ba_j * sample_matrix_ab_k - sample_matrix_a * sample_matrix_b, axis=0
+    ) / np.var(np.r_[sample_matrix_a, sample_matrix_b], axis=0)
+    first_order_index_j = _estimate_first_order_index(
+        sample_matrix_a, sample_matrix_b, sample_matrix_ab_j, first_order_estimator
+    )
+    first_order_index_k = _estimate_first_order_index(
+        sample_matrix_a, sample_matrix_b, sample_matrix_ab_k, first_order_estimator
+    )
+    second_order = total_second_order_effect_jk - first_order_index_j - first_order_index_k
 
     return second_order
 
 
-def _estimate_closed_third_order_index(B, AB_ijk):
+def _estimate_closed_third_order_index(sample_matrix_b, sample_matrix_ab_ijk):
     """Estimate closed third-order Sobol indices.
 
     Estimator based on Equation (4.1) in
@@ -389,14 +475,15 @@ def _estimate_closed_third_order_index(B, AB_ijk):
     https://doi.org/10.1137/130926869.
 
     Args:
-        B (ndarray): results corresponding to B
-        AB_ijk (ndarray): results corresponding to AB_ijk
+        sample_matrix_b (ndarray): results corresponding to B
+        sample_matrix_ab_ijk (ndarray): results corresponding to AB_ijk
 
     Returns:
         second_order (ndarray): second-order Sobol index estimates
     """
-    closed_third_order = (np.mean(B * AB_ijk) - B.mean() * AB_ijk.mean()) / (
-        np.mean(B * B) - B.mean() ** 2
-    )
+    closed_third_order = (
+        np.mean(sample_matrix_b * sample_matrix_ab_ijk)
+        - sample_matrix_b.mean() * sample_matrix_ab_ijk.mean()
+    ) / (np.mean(sample_matrix_b * sample_matrix_b) - sample_matrix_b.mean() ** 2)
 
     return closed_third_order

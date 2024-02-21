@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-import vtk
 
 from queens.data_processor.data_processor_ensight_interface import (
     DataProcessorEnsightInterfaceDiscrepancy,
@@ -40,68 +39,6 @@ def fixture_default_data_processor(mocker):
         file_to_be_deleted_regex_lst,
     )
     return pp
-
-
-@pytest.fixture(name="vtkUnstructuredGridExample2d")
-def fixture_vtkUnstructuredGridExample2d():
-    """Exemplary vtk grid."""
-    node_coords = [
-        [-2, 0, 0],
-        [0, 0, 0],
-        [2, 0, 0],
-        [-2, 2, 0],
-        [-1, 2, 0],
-        [1, 2, 0],
-        [2, 2, 0],
-    ]
-
-    grid = vtk.vtkUnstructuredGrid()
-
-    vtkpoints = vtk.vtkPoints()
-
-    for i, node_coords in enumerate(node_coords):
-        vtkpoints.InsertPoint(i, node_coords)
-
-    grid.InsertNextCell(vtk.VTK_QUAD, 4, [0, 1, 4, 3])
-    grid.InsertNextCell(vtk.VTK_QUAD, 4, [1, 2, 6, 5])
-    grid.InsertNextCell(vtk.VTK_TRIANGLE, 3, [1, 5, 4])
-
-    grid.SetPoints(vtkpoints)
-
-    return grid
-
-
-@pytest.fixture(name="vtkUnstructuredGridExample3d")
-def fixture_vtkUnstructuredGridExample3d():
-    """Exemplary unstructured 3D vtk grid."""
-    node_coords = [
-        [0, 0, 0],
-        [1, 0, 0],
-        [1, 1, 0],
-        [0, 1, 0],
-        [0.5, 1.5, 0],
-        [0, 0, 2],
-        [1, 0, 2],
-        [1, 1, 2],
-        [0, 1, 2],
-        [0.5, 1.5, 2],
-        [0.5, 1.5, -1],
-    ]
-
-    grid = vtk.vtkUnstructuredGrid()
-
-    vtkpoints = vtk.vtkPoints()
-
-    for i, node_coords in enumerate(node_coords):
-        vtkpoints.InsertPoint(i, node_coords)
-
-    grid.InsertNextCell(vtk.VTK_HEXAHEDRON, 8, [0, 1, 2, 3, 5, 6, 7, 8])
-    grid.InsertNextCell(vtk.VTK_WEDGE, 6, [3, 2, 4, 8, 7, 9])
-    grid.InsertNextCell(vtk.VTK_TETRA, 4, [2, 3, 4, 10])
-
-    grid.SetPoints(vtkpoints)
-
-    return grid
 
 
 # --------------- actual tests -------------------------

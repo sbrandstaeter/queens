@@ -15,19 +15,19 @@ from queens.utils.iterative_averaging_utils import (
 def test_l1_norm():
     """Test L1 norm."""
     x = 2 * np.ones(10)
-    norm_L1 = l1_norm(x)
-    norm_L1_avg = l1_norm(x, True)
-    np.testing.assert_almost_equal(norm_L1, 20)
-    np.testing.assert_almost_equal(norm_L1_avg, 2)
+    norm_l1 = l1_norm(x)
+    norm_l1_avg = l1_norm(x, True)
+    np.testing.assert_almost_equal(norm_l1, 20)
+    np.testing.assert_almost_equal(norm_l1_avg, 2)
 
 
 def test_l2_norm():
     """Test L2 norm."""
     x = 2 * np.ones(10)
-    norm_L2 = l2_norm(x)
-    norm_L2_avg = l2_norm(x, True)
-    np.testing.assert_almost_equal(norm_L2, 2 * np.sqrt(10))
-    np.testing.assert_almost_equal(norm_L2_avg, 2)
+    norm_l2 = l2_norm(x)
+    norm_l2_avg = l2_norm(x, True)
+    np.testing.assert_almost_equal(norm_l2, 2 * np.sqrt(10))
+    np.testing.assert_almost_equal(norm_l2_avg, 2)
 
 
 def test_relative_change():

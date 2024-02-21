@@ -75,8 +75,8 @@ def fixture_expected_samples_two():
     """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
-    X1, X2 = np.meshgrid(x1, x2)
-    samples = np.array([X1.flatten(), X2.flatten()]).T
+    x1, x2 = np.meshgrid(x1, x2)
+    samples = np.array([x1.flatten(), x2.flatten()]).T
     return samples
 
 
@@ -86,8 +86,8 @@ def fixture_expected_samples_three():
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
     x3 = np.linspace(-2, 2, 5)
-    X1, X2, X3 = np.meshgrid(x1, x2, x3)
-    samples = np.array([X1.flatten(), X2.flatten(), X3.flatten()]).T
+    x1, x2, x3 = np.meshgrid(x1, x2, x3)
+    samples = np.array([x1.flatten(), x2.flatten(), x3.flatten()]).T
     return samples
 
 
@@ -235,7 +235,7 @@ def test_post_run(mocker, default_grid_iterator):
     )
     mp3 = mocker.patch(
         'queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance'
-        '.plot_QoI_grid',
+        '.plot_qoi_grid',
         return_value=1,
     )
     default_grid_iterator.post_run()

@@ -18,7 +18,7 @@ class GenericExternalRandomField:
         num_points (int): Number of discretization points of the random field.
         mean (np.array): Vector that contains the discretized mean function of the
                                    random field.
-        K_mat (np.array): Covariance matrix of the random field.
+        covariance_matrix (np.array): Covariance matrix of the random field.
         cholesky_decomp_covar_mat (np.array): Cholesky decomposition of covariance matrix.
         realizations (np.array): Realization/sample of the random field.
         fixed_one_dim_coords_vector (np.array): Fixed coordinate vector for discretization of the
@@ -70,7 +70,7 @@ class GenericExternalRandomField:
         self.num_samples = num_samples
         self.num_points = None  # not num_samples!
         self.mean = None
-        self.K_mat = None
+        self.covariance_matrix = None
         self.cholesky_decomp_covar_mat = None
         self.realizations = None
         self.fixed_one_dim_coords_vector = None
@@ -167,16 +167,18 @@ class GenericExternalRandomField:
         covariance matrix using the external geometry and coordinates.
         Afterwards, calculate the Cholesky decomposition.
         """
-        K_mat = np.zeros((self.num_points, self.num_points))
+        covariance_matrix = np.zeros((self.num_points, self.num_points))
         # here we assume a specific kernel, namely a rbf kernel
         for num1, x_one in enumerate(self.random_field_coordinates):
             for num2, x_two in enumerate(self.random_field_coordinates):
-                K_mat[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
+                covariance_matrix[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
                     -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length**2)
                 )
 
-        self.K_mat = K_mat + self.nugget_variance_rf * np.eye(self.num_points)
-        self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.K_mat)
+        self.covariance_matrix = covariance_matrix + self.nugget_variance_rf * np.eye(
+            self.num_points
+        )
+        self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.covariance_matrix)
 
         # decompose and truncate the random field
         self._decompose_and_truncate_random_field()
@@ -190,7 +192,7 @@ class GenericExternalRandomField:
         """
         # compute eigendecomposition
         # TODO we should use the information about the Cholesky decomp # pylint: disable=fixme
-        eig_val, eig_vec = sp.linalg.eigh(self.K_mat)
+        eig_val, eig_vec = sp.linalg.eigh(self.covariance_matrix)
         self.eigen_vals_vec = np.real(eig_val)
         self.eigen_vecs_mat = np.real(eig_vec)
 

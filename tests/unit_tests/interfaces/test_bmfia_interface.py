@@ -1,5 +1,5 @@
 """Unit tests for the Bayesian multi-fidelity inverse analysis interface."""
-
+# pylint: disable=invalid-name
 import time
 
 import numpy as np

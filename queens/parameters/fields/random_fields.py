@@ -20,7 +20,7 @@ class RandomField:
                                         diagonal values of the covariance matrix).
             explained_variance (float): Explained variance by the eigen decomposition.
             dim_truncated: TODO_doc
-            K_mat (np.ndarray): Covariance matrix of the random field.
+            covariance_matrix (np.ndarray): Covariance matrix of the random field.
             cholesky_decomp_covar_mat (np.ndarray): Cholesky decomposition of the covariance matrix.
             eigen_vals_vec (np.ndarray): Eigenvalues of the covariance matrix.
             eigen_vecs_mat (np.ndarray): Eigenvectors of the covariance matrix.
@@ -59,8 +59,8 @@ class RandomField:
         self.nugget_variance_rf = 1e-9
         self.explained_variance = explained_variance
         self.weighted_eigen_val_mat_truncated = None
-        self.K_mat = self.compute_covariance_matrix_and_cholseky()
-        self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.K_mat)
+        self.covariance_matrix = self.compute_covariance_matrix_and_cholseky()
+        self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.covariance_matrix)
         # compute eigendecomposition
         self.eigen_vals_vec, self.eigen_vecs_mat = self.compute_eigendecomposition()
         # decompose and truncate the random field
@@ -121,20 +121,20 @@ class RandomField:
         covariance matrix using the external geometry and coordinates.
         Afterwards, calculate the Cholesky decomposition.
         """
-        K_mat = np.zeros((self.dimension, self.dimension))
+        covariance_matrix = np.zeros((self.dimension, self.dimension))
         # here we assume a specific kernel, namely a rbf kernel
         for num1, x_one in enumerate(self.coords['coords']):
             for num2, x_two in enumerate(self.coords['coords']):
-                K_mat[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
+                covariance_matrix[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
                     -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length**2)
                 )
 
-        return K_mat + self.nugget_variance_rf * np.eye(self.dimension)
+        return covariance_matrix + self.nugget_variance_rf * np.eye(self.dimension)
 
     def compute_eigendecomposition(self):
         """Compute eigenvalues and eigenvectors of covariance matrix."""
         # TODO we should use the information about the Cholesky decomp # pylint: disable=fixme
-        eig_val, eig_vec = np.linalg.eigh(self.K_mat)
+        eig_val, eig_vec = np.linalg.eigh(self.covariance_matrix)
         eigen_vals_vec = np.real(eig_val)
         eigen_vecs_mat = np.real(eig_vec)
         return eigen_vals_vec, eigen_vecs_mat

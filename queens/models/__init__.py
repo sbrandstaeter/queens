@@ -20,7 +20,7 @@ from queens.models.surrogate_models.gaussian_neural_network import GaussianNeura
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
 from queens.models.surrogate_models.gp_approximation_gpflow_svgp import GPflowSVGPModel
 from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
-from queens.models.surrogate_models.heteroskedastic_GPflow import HeteroskedasticGPModel
+from queens.models.surrogate_models.gp_heteroskedastic_gpflow import HeteroskedasticGPModel
 
 VALID_TYPES = {
     'simulation_model': SimulationModel,

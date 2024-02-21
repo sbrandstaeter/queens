@@ -1,5 +1,5 @@
 """Unit tests for Bayesian multi-fidelity inverse analysis iterator."""
-
+# pylint: disable=invalid-name
 from unittest.mock import patch
 
 import numpy as np

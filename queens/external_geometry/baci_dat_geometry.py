@@ -1172,7 +1172,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             random_fields_lst (lst): List containing descriptions of involved random fields
         """
         # iterate through all random fields that encode BCs
-        BCs_random_fields = (
+        boundary_conditions_random_fields = (
             random_field
             for random_field in random_fields_lst
             if (
@@ -1182,7 +1182,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             )
         )
         nodes_mesh_lst = []  # note, this is a list of dicts
-        for random_field in BCs_random_fields:
+        for random_field in boundary_conditions_random_fields:
             # get associated geometric set
             topology_name = random_field["external_instance"]
             topology_type = topology_name.split()[0]
