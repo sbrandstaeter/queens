@@ -27,7 +27,7 @@ variables:
     value: ""
     description: "Additional pytest options for the ubuntu pytest run"
   LNM_REMOTE_PYTHON:
-    value: "/home/queens/anaconda/miniconda/envs/queens-$CI_PIPELINE_ID/bin/python"
+    value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on LNM clusters"
   IMCS_REMOTE_PYTHON:
     value: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
