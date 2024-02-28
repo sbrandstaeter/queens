@@ -229,7 +229,7 @@ class RemoteConnection(Connection):
         _logger.debug("Copying from %s to %s", source, destination)
         remote_shell_command = None
         if self.gateway is not None:
-            remote_shell_command = f"--rsh='ssh {self.gateway.user}@{self.gateway.host} ssh'"
+            remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
             _logger.debug("Using remote shell command %s", remote_shell_command)
         rsync_cmd = assemble_rsync_command(
             source,
