@@ -99,6 +99,8 @@ def to_dict_with_standard_types(obj):
         dict: Dictionary with standard types
     """
     match obj:
+        case Path():
+            return str(obj)
         case tuple():
             return [to_dict_with_standard_types(value) for value in obj]
         case list():
