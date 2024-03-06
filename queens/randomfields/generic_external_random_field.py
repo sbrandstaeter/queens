@@ -111,14 +111,16 @@ class GenericExternalRandomField:
                 * self.mean_fun_params[0]
                 * (-((self.fixed_one_dim_coords_vector - 0.5) ** 2) + 0.25)
             )
-        elif self.mean_fun_type == 'constant':  # TODO quick option for testing should be extra
+        elif (
+            self.mean_fun_type == 'constant'
+        ):  # TODO quick option for testing should be extra # pylint: disable=fixme
             # get name of geometric set the current rf is defined on
             geometric_set_name = self.external_definition['external_instance']
             field_type = self.external_definition['type']
 
             if field_type == 'material':
                 # get element centers and coordinate
-                # TODO atm we assume only one random field this should be generalized
+                # TODO atm we assume only one random field this should be generalized # pylint: disable=fixme
                 coordinates_random_field = self.external_geometry_obj.element_centers
 
             else:
@@ -187,7 +189,7 @@ class GenericExternalRandomField:
         the truncation.
         """
         # compute eigendecomposition
-        # TODO we should use the information about the Cholesky decomp
+        # TODO we should use the information about the Cholesky decomp # pylint: disable=fixme
         eig_val, eig_vec = sp.linalg.eigh(self.K_mat)
         self.eigen_vals_vec = np.real(eig_val)
         self.eigen_vecs_mat = np.real(eig_vec)
@@ -199,7 +201,7 @@ class GenericExternalRandomField:
             sum_val += eigenval
             variance_fraction = sum_val / sum_eigenval
             num_eigen = num
-            if variance_fraction > 0.95:  # TODO pull this out to json file
+            if variance_fraction > 0.95:  # TODO pull this out to json file # pylint: disable=fixme
                 break
         # truncated eigenfunction base
         eigen_vec_mat_red = self.eigen_vecs_mat[:, num_eigen:]
@@ -221,13 +223,15 @@ class GenericExternalRandomField:
         The actual field is not build here but will be reconstructed
         from the coefficient matrix and the truncated basis.
         """
-        # TODO this should be changed to new truncated version (code already goes in this method)
-        # TODO copy here content of `univariate_field_generator_factory` staticmethod
+        # TODO this should be changed to new truncated version (code already goes in this method) # pylint: disable=fixme
+        # TODO copy here content of `univariate_field_generator_factory` staticmethod # pylint: disable=fixme
         self.realizations = np.zeros((self.num_samples, self.num_points))
-        if self.mean_fun_type == 'inflow_parabola':  # TODO quick option for testing -> should
+        if (
+            self.mean_fun_type == 'inflow_parabola'
+        ):  # TODO quick option for testing -> should # pylint: disable=fixme
             for num in range(self.num_samples):
                 # be extra class
-                # TODO this part is still in the old representation
+                # TODO this part is still in the old representation # pylint: disable=fixme
                 np.random.seed(num)  # fix a specific random seed to make runs repeatable
                 rand = np.random.normal(0, 1, self.num_points)
                 self.realizations[num, :] = self.mean * (
@@ -237,7 +241,7 @@ class GenericExternalRandomField:
                 self.realizations[num, -1] = 0  # BCs
 
         elif self.mean_fun_type == 'constant':
-            np.random.seed(1)  # TODO: pull this out to json
+            np.random.seed(1)  # TODO: pull this out to json # pylint: disable=fixme
             dim_truncation = self.weighted_eigen_val_mat_truncated.shape[1]
 
             # will be written to the db externally

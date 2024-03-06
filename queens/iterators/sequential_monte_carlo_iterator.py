@@ -139,7 +139,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         # init particles (location, weights, posterior)
         self.particles = np.zeros((self.num_particles, self.num_variables))
-        # TODO: use normalised weights?
+        # TODO: use normalised weights? # pylint: disable=fixme
         self.weights = np.ones((self.num_particles, 1))
 
         self.log_likelihood = np.zeros((self.num_particles, 1))
@@ -269,8 +269,8 @@ class SequentialMonteCarloIterator(Iterator):
             f = ess_new - zeta * self.ess_cur
             return f
 
-        # TODO: adjust accuracy - method, xtol, rtol, maxiter
-        # TODO: new ESS is already calculated in this step
+        # TODO: adjust accuracy - method, xtol, rtol, maxiter # pylint: disable=fixme
+        # TODO: new ESS is already calculated in this step # pylint: disable=fixme
         search_interval = [gamma_cur, 1.0]
         try:
             root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method='toms748')
@@ -418,7 +418,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         particles_resampled, _, _, _ = self.resample()
         if self.result_description:
-            # TODO
+            # TODO # pylint: disable=fixme
             # interpret the resampled particles as a single markov chain -> in accordance with the
             # Metropolis Hastings iterator add a dimension to the numpy array
             # this enables the calculation of the covariance matrix

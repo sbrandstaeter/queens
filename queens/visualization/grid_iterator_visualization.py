@@ -234,7 +234,7 @@ class GridIteratorVisualization:
         self._get_tick_formatter('y')
 
         # scale axes with user defined tick formatter
-        # TODO the formatter contains currently a bug
+        # TODO the formatter contains currently a bug # pylint: disable=fixme
         ax.xaxis.set_major_locator(plt.MaxNLocator(n_grid_p[0]))
         ax.yaxis.set_major_locator(plt.MaxNLocator(n_grid_p[1]))
 

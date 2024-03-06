@@ -178,7 +178,9 @@ class BMFMCVisualization:
             ax.legend(loc='upper right')
             fig.set_size_inches(15, 15)
 
-            if self.save_bools[0] is not None:  # TODO: probably change that list to a dictionary
+            if (
+                self.save_bools[0] is not None
+            ):  # TODO: probably change that list to a dictionary # pylint: disable=fixme
                 _save_plot(self.save_bools[0], self.paths[0])
 
             plt.show()

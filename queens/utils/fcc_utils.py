@@ -137,7 +137,9 @@ def check_for_reference(obj_description):
         bool: True, if another uninitialized object is referenced.
     """
     for key, value in obj_description.items():
-        if key.endswith('_name') and key != 'plot_name':  # TODO: rename plot_name keyword
+        if (
+            key.endswith('_name') and key != 'plot_name'
+        ):  # TODO: rename plot_name keyword # pylint: disable=fixme
             return True
         if isinstance(value, dict):
             reference_check = check_for_reference(value)

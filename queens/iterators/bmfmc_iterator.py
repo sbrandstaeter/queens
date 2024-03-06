@@ -152,7 +152,7 @@ class BMFMCIterator(Iterator):
         run_design_method(n_points)
 
         # update the Bmfmc model variables
-        # TODO: normally done by model.update_model_from_sample_batch() !
+        # TODO: normally done by model.update_model_from_sample_batch() ! # pylint: disable=fixme
         self.model.X_train = self.X_train
         self.model.Y_LFs_train = self.Y_LFs_train
 

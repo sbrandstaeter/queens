@@ -188,7 +188,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     def _get_element_centers(self):
         """Calculate the geometric center of each finite element."""
         element_centers = []
-        # TODO atm we only take first element of the list and dont loop over several random fields
+        # TODO atm we only take first element of the list and dont loop over several random fields # pylint: disable=fixme
         for element_node_lst in self.element_topology[0]["nodes"]:
             element_center = np.array([0.0, 0.0, 0.0])
             for node in element_node_lst:
@@ -243,7 +243,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """Get the dat-sections that contain the desired geometric sets."""
         # initialize keys with empty lists
         for geo_set in self.list_geometric_sets:
-            # TODO for now we read in all element_topology; this should be changed such that we only
+            # TODO for now we read in all element_topology; this should be changed such that we only # pylint: disable=fixme
             #  store element_topology that belong to the desired geometric set (difficult though as
             # we would need to look-up the attached nodes and check their set assignment
             if geo_set.split()[1] == "ELEMENTS":
@@ -275,7 +275,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # Note that the latter applies to all element sections!
         if "ELEMENTS" in self.current_dat_section and self.list_associated_material_numbers:
             material_number = int(line.split("MAT")[1].split()[0])
-            # TODO atm we only can handle one material--> this should be changed to a list of
+            # TODO atm we only can handle one material--> this should be changed to a list of # pylint: disable=fixme
             #  original_materials_in_dat
             if material_number == self.list_associated_material_numbers[0][0]:
                 # get the element number
@@ -608,7 +608,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     materials_copy.remove(material)
 
             # set number of new materials equal to length of element_topology of interest
-            # TODO atm we just take the first list entry here and dont loop over several fields
+            # TODO atm we just take the first list entry here and dont loop over several fields # pylint: disable=fixme
             n_mats = len(self.element_topology[0]['element_number'])
 
             # Check the largest material definition to avoid overwriting existing original_materials
@@ -618,8 +618,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
             else:
                 max_material_number = int(0)
 
-            # TODO at the moment we only take the first given materials (list in list of lists)
-            #  and cannot handle several material definitions
+            # TODO at the moment we only take the first given materials (list in list of lists) # pylint: disable=fixme
+            #  and cannot handle several material definitions # pylint: disable=fixme
             if len(self.list_associated_material_numbers[0]) == 1:
                 # below is also a list in a list such that we cover the general case of base and
                 # nested material even if in this if branch only the base material is of interest
@@ -651,7 +651,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         One per element in desired geometric set to the associated
         structure element under the dat section `STRUCTURE ELEMENTS`
         """
-        # TODO below we take the first list entry and dont loop for now over lists of list.
+        # TODO below we take the first list entry and dont loop for now over lists of list. # pylint: disable=fixme
         # The first material in the sublist is assumed to be the base material, the following
         # numbers are associated to nested materials. Hence we take the first number to write the
         # element
@@ -661,14 +661,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 # Current element number
                 current_element_number = int(line.split()[0])
 
-                # TODO atm we just take first list entry below and dont loop over all element
+                # TODO atm we just take first list entry below and dont loop over all element # pylint: disable=fixme
                 # topologies get index of current element within element_topology
                 element_idx = self.element_topology[0]['element_number'].index(
                     current_element_number
                 )
 
-                # TODO note that new materials is atm only one list not a list of lists as iteration
-                #  over several topologies is not implemented so far
+                # TODO note that new materials is atm only one list not a list of lists as iteration # pylint: disable=fixme
+                #  over several topologies is not implemented so far # pylint: disable=fixme
                 # we use first list here as element depend normally on base material
                 new_material_number = self.new_material_numbers[0][element_idx]
 
@@ -691,8 +691,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """
         current_material_number = int(line.split()[1])
 
-        # TODO see how to use the random field lst here but also only address first rf for now
-        # TODO maybe directly separate the rf types as different attributes
+        # TODO see how to use the random field lst here but also only address first rf for now # pylint: disable=fixme
+        # TODO maybe directly separate the rf types as different attributes # pylint: disable=fixme
         # get random fields of type material
         material_fields = [field for field in random_field_lst if field["type"] == "material"]
 
@@ -705,13 +705,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         # check if the current material number is equal to base material and rewrite the base
         # materials as well as the potentially associated nested materials here
-        # TODO atm we only focus on first sublist and do not iterate over several materials
+        # TODO atm we only focus on first sublist and do not iterate over several materials # pylint: disable=fixme
         if current_material_number == self.list_associated_material_numbers[0][0]:
             self._write_base_materials(current_material_number, line, material_fields)
 
         # in case the current material number is a nested material overwrite now the nested
         # material block. Now we are in the next line and the base material was already written
-        # TODO note that we again assume only one topology (first sublist)
+        # TODO note that we again assume only one topology (first sublist) # pylint: disable=fixme
         elif (current_material_number in self.list_associated_material_numbers[0]) and (
             current_material_number != self.list_associated_material_numbers[0][0]
         ):
@@ -731,18 +731,18 @@ class BaciDatExternalGeometry(ExternalGeometry):
             material_fields (lst): List of dictionaries containing descriptions of material fields
         """
         # Add new material definitions
-        # TODO Note: new_material numbers is atm just a list for the first topology
+        # TODO Note: new_material numbers is atm just a list for the first topology # pylint: disable=fixme
         for idx, material_num in enumerate(self.new_material_numbers[0]):
             old_material_expression = "MAT " + str(current_material_number)
             new_material_expression = "MAT " + str(material_num)
 
             # potentially replace material parameter
-            #  TODO idx seems to be wrong here
+            #  TODO idx seems to be wrong here # pylint: disable=fixme
             line_new = BaciDatExternalGeometry._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
             )
 
-            # TODO check if associated material intends nested material
+            # TODO check if associated material intends nested material # pylint: disable=fixme
             if len(self.list_associated_material_numbers[0]) == 1:
                 # Update the old material line/definition
                 new_line = line_new.replace(old_material_expression, new_material_expression)
@@ -807,8 +807,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Returns:
             line_new (str): New updated line that contains material value of field realization
         """
-        # TODO atm we only assume one random material field (see [0]). This should be generalized!
-        mat_param_name = material_fields[0]["name"]  # TODO see if name is correct here
+        # TODO atm we only assume one random material field (see [0]). This should be generalized! # pylint: disable=fixme
+        mat_param_name = material_fields[0][
+            "name"
+        ]  # TODO see if name is correct here # pylint: disable=fixme
         # potentially replace material parameter
         line_new = line
         if mat_param_name in line:
@@ -816,7 +818,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             line_new = line.replace(
                 string_to_replace, f'{{ {mat_param_name}_{realization_index} }}'
             )
-            # TODO key field realization prob wrong
+            # TODO key field realization prob wrong # pylint: disable=fixme
 
         return line_new
 
@@ -1076,7 +1078,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                               associated dimension of the random field. This is a BACI specific
                               function that might, e.g., vary in time.
         """
-        # TODO see how this behaves for several fields
+        # TODO see how this behaves for several fields # pylint: disable=fixme
         set_shape = len(self.node_coordinates['node_mesh'])
         for deter_dof, value_deter_dof, funct_deter in zip(
             fields_dirich_on_geo_set[0]["dofs_deterministic"],
@@ -1143,7 +1145,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Returns:
             my_topology (lst): List with desired geometric topology
         """
-        # TODO this is problematic as topology has not been read it for the new object
+        # TODO this is problematic as topology has not been read it for the new object # pylint: disable=fixme
         if geo_set_name_type == 'DNODE':
             my_topology = self.node_topology
 

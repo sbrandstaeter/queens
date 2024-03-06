@@ -16,7 +16,7 @@ from queens.utils.process_outputs import write_results
 _logger = logging.getLogger(__name__)
 
 
-# TODO deal with non-uniform input distribution
+# TODO deal with non-uniform input distribution # pylint: disable=fixme
 class SobolIndexIterator(Iterator):
     """Sobol Index Iterator.
 

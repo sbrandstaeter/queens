@@ -64,7 +64,7 @@ def run_iterator(iterator):
     except Exception as exception:
         _logger.exception(exception)
         queens.global_settings.GLOBAL_SETTINGS.__exit__(None, None, None)
-        # TODO: Write iterator in pickle file
+        # TODO: Write iterator in pickle file # pylint: disable=fixme
         raise exception
 
     end_time_calc = time.time()

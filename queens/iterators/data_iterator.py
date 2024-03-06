@@ -33,15 +33,17 @@ class DataIterator(Iterator):
         super().__init__(None, parameters)
         self.samples = None
         self.output = None
-        self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
+        self.eigenfunc = (
+            None  # TODO this is an intermediate solution--> see Issue #45 # pylint: disable=fixme
+        )
         self.path_to_data = path_to_data
         self.result_description = result_description
 
     def core_run(self):
         """Read data from file."""
-        # TODO: We should return a more general data structure in the future
-        # TODO: including I/O and meta data; for now catch it with a try statement
-        # TODO: see Issue #45;
+        # TODO: We should return a more general data structure in the future # pylint: disable=fixme
+        # TODO: including I/O and meta data; for now catch it with a try statement # pylint: disable=fixme
+        # TODO: see Issue #45; # pylint: disable=fixme
         try:
             self.samples, self.output, self.eigenfunc = self.read_pickle_file()
         except ValueError:
