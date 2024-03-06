@@ -1,10 +1,7 @@
 """Tests for ."""
 
-import matplotlib
 import numpy as np
 import pytest
-
-matplotlib.use('Agg')
 
 from queens.distributions.uniform import UniformDistribution
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
