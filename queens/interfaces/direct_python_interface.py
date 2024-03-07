@@ -43,7 +43,7 @@ class DirectPythonInterface(Interface):
         Args:
             parameters (obj): Parameters object
             function (callable, str): Function or name of example function provided by QUEENS
-            external_python_module_function (pathos pool): Path to external module with function
+            external_python_module_function (Path | str): Path to external module with function
             num_workers (int): Number of workers
             verbose (boolean): verbosity of evaluations
         """
