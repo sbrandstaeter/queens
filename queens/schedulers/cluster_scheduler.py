@@ -1,4 +1,5 @@
 """Cluster scheduler for QUEENS runs."""
+
 import logging
 import time
 from datetime import timedelta
@@ -8,7 +9,7 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 
 import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
-from queens.utils.config_directories import experiment_directory
+from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
 

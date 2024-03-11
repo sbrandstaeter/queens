@@ -327,6 +327,7 @@ imcs-ubuntu_full_test_suite:
       --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
       --color=yes
+      --pipeline-id=$CI_PIPELINE_ID
 
 lnm-cluster_tests:
   extends:
@@ -505,7 +506,7 @@ imcs-remove_conda_env:
   stage: cleanup
   script:
     - ssh queens@$REMOTE_ADDRESS "$PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID;
-      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID; rm -rf /home/queens/queens-simulation-data/tests"
+      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID"
   when: always
   rules:
     - if: $CLUSTER_TESTS == "1"

@@ -1,4 +1,5 @@
 """Module supplies functions to conduct operation on remote resource."""
+
 import atexit
 import json
 import logging

@@ -1,4 +1,5 @@
 """Configuration module for the entire test suite (highest level)."""
+
 import getpass
 import logging
 import socket
@@ -24,6 +25,7 @@ def pytest_addoption(parser):
     parser.addoption("--remote-user", action="store", default=local_user)
     parser.addoption("--remote-python", action="store", default=None)
     parser.addoption("--remote-queens-repository", action="store", default="null")
+    parser.addoption("--pipeline-id", action="store", default=None)
     parser.addoption(
         "--test-timing",
         action="store_true",
@@ -53,6 +55,39 @@ def check_item_for_marker(item, marker_name):
         bool: True if the test is marked
     """
     return marker_name in [mark.name for mark in item.own_markers]
+
+
+def pytest_collection_finish(session):
+    """Print information after collection of tests."""
+    # After all the tests are collected we give some information for our test setup
+    if len(session.items) > 0:
+        # pylint: disable-next=protected-access
+        tmp_path = session.items[0].config._tmp_path_factory.getbasetemp()
+        # Use print as otherwise logger will not necessarily be shown in terminal
+        print(f"\nThe pytest directory for this test run is {tmp_path}")
+
+    if pipeline_id := session.config.getoption("--pipeline-id"):
+        print(f"The pipeline id for this test run is {pipeline_id}")
+
+    # Options to be displayed in the terminal
+    options_dict = {
+        # Options for remote tests
+        "For remote cluster tests": [
+            "--remote-user",
+            "--remote-python",
+            "--remote-queens-repository",
+            "--gateway",
+        ],
+        # Other options
+        "Other options": ["--test-timing", "--pipeline-id"],
+    }
+
+    print("\nThe following QUEENS pytest options are used (if needed):")
+    for options_section, options_list in options_dict.items():
+        print("\n  " + options_section)
+        for option in options_list:
+            option_value = session.config.getoption(option)
+            print(f"     {option}: {option_value}")
 
 
 def pytest_collection_modifyitems(items):
@@ -108,6 +143,14 @@ def fixture_hostname(name_of_host=NAME_OF_HOST):
     """Hostname calling the test suite."""
     _logger.debug("Tests are run on: %s", name_of_host)
     return name_of_host
+
+
+@pytest.fixture(name="pytest_id", autouse=True, scope="session")
+def fixture_pytest_id(tmp_path_factory):
+    """Pipeline id."""
+    pytest_tests_path = tmp_path_factory.getbasetemp()
+    pytest_run_id = pytest_tests_path.name
+    return pytest_run_id
 
 
 @pytest.fixture(name="global_mock_local_base_dir", autouse=True)
