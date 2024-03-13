@@ -26,7 +26,7 @@ def test_baci_lm_rosenbrock_res(tmp_path):
         # Setup QUEENS stuff
         interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
         model = SimulationModel(interface=interface)
-        method = BaciLMIterator(
+        iterator = BaciLMIterator(
             jac_rel_step=1e-05,
             jac_abs_step=0.001,
             max_feval=99,
@@ -40,20 +40,20 @@ def test_baci_lm_rosenbrock_res(tmp_path):
         )
 
         # Actual analysis
-        run_iterator(method)
+        run_iterator(iterator)
 
         # Load results
         result_file = output_dir / "OptimizeLM.csv"
 
-        data = pd.read_csv(
-            result_file,
-            sep='\t',
-        )
+    data = pd.read_csv(
+        result_file,
+        sep='\t',
+    )
 
-        params = data.get('params').tail(1)
-        dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
-        dfparams = dfparams.astype(float)
-        numpyparams = dfparams.to_numpy()
+    params = data.get('params').tail(1)
+    dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
+    dfparams = dfparams.astype(float)
+    numpyparams = dfparams.to_numpy()
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
