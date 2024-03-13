@@ -1,26 +1,59 @@
 """TODO_doc."""
-
 import numpy as np
 import pandas as pd
 
-from queens.main import run
+from queens.distributions.free import FreeVariable
+from queens.global_settings import GlobalSettings
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.baci_lm_iterator import BaciLMIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
 
 
-def test_baci_lm_rosenbrock_res(inputdir, tmp_path):
+def test_baci_lm_rosenbrock_res(tmp_path):
     """Test case for Levenberg Marquardt iterator."""
-    run(inputdir / 'baci_lm_rosenbrock_res.yml', tmp_path)
+    # Global settings
+    experiment_name = "OptimizeLM"
+    output_dir = tmp_path
 
-    result_file = tmp_path / 'OptimizeLM.csv'
+    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False):
+        # Parameters
+        x1 = FreeVariable(dimension=1)
+        x2 = FreeVariable(dimension=1)
+        parameters = Parameters(x1=x1, x2=x2)
 
-    data = pd.read_csv(
-        result_file,
-        sep='\t',
-    )
+        # Setup QUEENS stuff
+        interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
+        model = SimulationModel(interface=interface)
+        method = BaciLMIterator(
+            jac_rel_step=1e-05,
+            jac_abs_step=0.001,
+            max_feval=99,
+            init_reg=0.01,
+            update_reg="grad",
+            convergence_tolerance=1e-06,
+            initial_guess=[0.9, 0.9],
+            result_description={"write_results": True, "plot_results": True},
+            model=model,
+            parameters=parameters,
+        )
 
-    params = data.get('params').tail(1)
-    dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
-    dfparams = dfparams.astype(float)
-    numpyparams = dfparams.to_numpy()
+        # Actual analysis
+        run_iterator(method)
+
+        # Load results
+        result_file = output_dir / "OptimizeLM.csv"
+
+        data = pd.read_csv(
+            result_file,
+            sep='\t',
+        )
+
+        params = data.get('params').tail(1)
+        dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
+        dfparams = dfparams.astype(float)
+        numpyparams = dfparams.to_numpy()
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
