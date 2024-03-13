@@ -1,4 +1,4 @@
-experiment_name: xxx
+experiment_name: elementary_effects_ishigami_iterator
 method:
   type: elementary_effects
   seed: 2
