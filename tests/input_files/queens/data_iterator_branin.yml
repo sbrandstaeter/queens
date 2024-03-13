@@ -1,8 +1,0 @@
-experiment_name: branin_data_iterator
-method:
-  type: read_data_from_file
-  path_to_data: /path_to_data/some_data.pickle
-  result_description:
-    write_results: true
-    plot_results: false
-    num_support_points: 5
