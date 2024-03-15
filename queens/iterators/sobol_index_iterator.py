@@ -78,47 +78,24 @@ class SobolIndexIterator(Iterator):
         self.output = None
         self.salib_problem = None
         self.num_params = self.parameters.num_parameters
-        self.parameter_names = []
+        self.parameter_names = self.parameters.names
         self.sensitivity_indices = None
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
         # setup SALib problem dict
-        bounds = []
-        dists = []
-        for key, parameter in self.parameters.dict.items():
-            self.parameter_names.append(key)
-            if isinstance(parameter, uniform.UniformDistribution):
-                upper_bound = parameter.upper_bound
-                lower_bound = parameter.lower_bound
-                distribution_name = 'unif'
-            # in queens normal distributions are parameterized with mean and var
-            # in salib normal distributions are parameterized via mean and std
-            # -> we need to reparameterize normal distributions
-            elif isinstance(parameter, normal.NormalDistribution):
-                lower_bound = parameter.mean.squeeze()
-                upper_bound = np.sqrt(parameter.covariance.squeeze())
-                distribution_name = 'norm'
-            elif isinstance(parameter, lognormal.LogNormalDistribution):
-                lower_bound = parameter.mu.squeeze()
-                upper_bound = parameter.sigma.squeeze()
-                distribution_name = 'lognorm'
-            else:
-                raise ValueError("Valid distributions are normal, lognormal and uniform!")
-
-            bounds.append([lower_bound, upper_bound])
-            dists.append(distribution_name)
 
         if self.parameters.random_field_flag:
             raise RuntimeError(
                 "The SaltelliIterator does not work in conjunction with random fields."
             )
+        distribution_types, bounds = extract_parameters_of_parameter_distributions(self.parameters)
 
         self.salib_problem = {
             'num_vars': self.parameters.num_parameters,
             'names': self.parameters.names,
             'bounds': bounds,
-            'dists': dists,
+            'dists': distribution_types,
         }
 
         _logger.info("Draw %s samples...", self.num_samples)
@@ -320,3 +297,39 @@ class SobolIndexIterator(Iterator):
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)
+
+
+def extract_parameters_of_parameter_distributions(parameters):
+    """Extract the parameters of the parameter distributions.
+
+    Args:
+        parameters (Parameters): QUEENS Parameters object containing the metadata
+    Returns:
+        distribution_types (list): list with distribution types of the parameter distributions
+        bounds (list): list with bounds of the parameter distributions
+    """
+    distribution_types = []
+    bounds = []
+    for parameter in parameters.dict.values():
+        if isinstance(parameter, uniform.UniformDistribution):
+            upper_bound = parameter.upper_bound
+            lower_bound = parameter.lower_bound
+            distribution_name = 'unif'
+        # in queens normal distributions are parameterized with mean and var
+        # in salib normal distributions are parameterized via mean and std
+        # -> we need to reparameterize normal distributions
+        elif isinstance(parameter, normal.NormalDistribution):
+            lower_bound = parameter.mean.squeeze()
+            upper_bound = np.sqrt(parameter.covariance.squeeze())
+            distribution_name = 'norm'
+        elif isinstance(parameter, lognormal.LogNormalDistribution):
+            lower_bound = parameter.mu.squeeze()
+            upper_bound = parameter.sigma.squeeze()
+            distribution_name = 'lognorm'
+        else:
+            raise ValueError("Valid distributions are normal, lognormal and uniform!")
+
+        distribution_types.append(distribution_name)
+        bounds.append([lower_bound, upper_bound])
+
+    return distribution_types, bounds
