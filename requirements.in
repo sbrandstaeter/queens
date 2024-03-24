@@ -34,7 +34,7 @@ arviz # Bayesian visualization
 gpflow # LV and variational GPs
 optax # google jax based optimizer
 tensorflow
-tensorflow-probability
+tensorflow-probability[tf]
 jax[cpu]
 jax
 scikit-activeml>=0.4.1
