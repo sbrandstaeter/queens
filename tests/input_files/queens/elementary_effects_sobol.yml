@@ -1,4 +1,4 @@
-experiment_name: xxx
+experiment_name: elementary_effects_sobol
 method:
   type: elementary_effects
   seed: 2
