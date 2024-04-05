@@ -29,7 +29,7 @@ GLOBAL_SETTINGS_CONTEXT = [
     "with GlobalSettings(experiment_name=experiment_name,"
     " output_dir=output_dir, debug=False) as gs:"
 ]
-RUN_ITERATOR = ["run_iterator(method)"]
+RUN_ITERATOR = ["run_iterator(method, gs)"]
 LOAD_RESULTS = [
     'result_file = gs.output_dir / f"{gs.experiment_name}.pickle"',
     "results = load_result(result_file)",
@@ -267,6 +267,8 @@ def create_initialization_call(obj_description, python_code):
     # add parameters
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description["parameters"] = VariableName("parameters")
+    if issubclass(object_class, (Iterator, BMFMCModel)):
+        obj_description["global_settings"] = VariableName("gs")
 
     if issubclass(object_class, Scheduler):
         python_code.create_main = True

@@ -67,6 +67,7 @@ def fixture_default_bmfmc_iterator(
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         initial_design=initial_design,
     )
@@ -75,22 +76,21 @@ def fixture_default_bmfmc_iterator(
 
 # ------ actual unit_tests --------------------------------------------
 def test_init(
-    mocker,
     default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
     initial_design,
+    _initialize_global_settings,
 ):
     """TODO_doc."""
-    mp = mocker.patch('queens.iterators.iterator.Iterator.__init__')
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         initial_design=initial_design,
     )
     # tests / asserts
-    mp.assert_called_once_with(default_bmfmc_model, default_parameters_uniform_2d)
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None

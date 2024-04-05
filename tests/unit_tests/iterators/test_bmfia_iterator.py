@@ -106,8 +106,8 @@ def test_init(
     with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
-            features_config=features_config,
             global_settings=_initialize_global_settings,
+            features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
             initial_design={},

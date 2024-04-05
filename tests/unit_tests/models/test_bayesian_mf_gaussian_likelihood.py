@@ -67,6 +67,7 @@ def fixture_default_bmfia_iterator(_initialize_global_settings):
     with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters="dummy_parameters",
+            global_settings=_initialize_global_settings,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,

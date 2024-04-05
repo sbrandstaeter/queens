@@ -64,9 +64,9 @@ def fixture_likelihood_model(parameters):
 def fixture_expected_mean():
     """Expected mean fixture."""
     expected_mean = {
-        'GPMAP-I': [0.30465568, 0.52168328],
-        'CGPMAP-II': [0.29862195, 0.74123874],
-        'CFBGP': [0.29330584, 0.96121542],
+        'GPMAP-I': [0.30427587, 0.53454306],
+        'CGPMAP-II': [0.29874207, 0.74095174],
+        'CFBGP': [0.29329803, 0.96108789],
     }
     return expected_mean
 
@@ -75,9 +75,9 @@ def fixture_expected_mean():
 def fixture_expected_std():
     """Expected standard deviation fixture."""
     expected_std = {
-        'GPMAP-I': [0.00105374, 0.03230814],
-        'CGPMAP-II': [0.00197814, 0.04068283],
-        'CFBGP': [0.00156066, 0.02839873],
+        'GPMAP-I': [0.00101052, 0.03076364],
+        'CGPMAP-II': [0.00294576, 0.05681254],
+        'CFBGP': [0.00155767, 0.02837052],
     }
     return expected_std
 
@@ -112,14 +112,17 @@ def test_constrained_gp_ip_park(
         )
 
         initial_train_iterator = MonteCarloIterator(
-            seed=seed,
             model=None,
-            num_samples=num_initial_samples,
             parameters=parameters,
+            global_settings=global_settings,
+            seed=seed,
+            num_samples=num_initial_samples,
         )
 
         solving_iterator = SequentialMonteCarloChopinIterator(
             model=logpdf_gp_model,
+            parameters=parameters,
+            global_settings=global_settings,
             seed=42,
             waste_free=True,
             feynman_kac_model="adaptive_tempering",
@@ -129,12 +132,12 @@ def test_constrained_gp_ip_park(
             resampling_method='residual',
             resampling_threshold=0.5,
             result_description={},
-            parameters=parameters,
         )
 
         adaptive_sampling_iterator = AdaptiveSamplingIterator(
             model=logpdf_gp_model,
             parameters=parameters,
+            global_settings=global_settings,
             likelihood_model=likelihood_model,
             initial_train_iterator=initial_train_iterator,
             solving_iterator=solving_iterator,
@@ -142,7 +145,7 @@ def test_constrained_gp_ip_park(
             num_steps=num_steps,
         )
 
-        run_iterator(adaptive_sampling_iterator)
+        run_iterator(adaptive_sampling_iterator, global_settings)
 
         results = load_result(tmp_path / (experiments_name + '.pickle'))
 

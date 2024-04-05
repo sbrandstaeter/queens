@@ -117,7 +117,7 @@ def fixture_default_bmfmc_model(_initialize_global_settings, parameters, setting
 def fixture_default_data_iterator(result_description, _initialize_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
-    data_iterator = DataIterator(path_to_data, result_description)
+    data_iterator = DataIterator(path_to_data, result_description, _initialize_global_settings)
     return data_iterator
 
 

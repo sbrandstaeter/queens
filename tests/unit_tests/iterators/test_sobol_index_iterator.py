@@ -16,6 +16,7 @@ def fixture_default_sobol_index_iterator(
     my_iterator = SobolIndexIterator(
         default_simulation_model,
         parameters=default_parameters_uniform_3d,
+        global_settings=_initialize_global_settings,
         seed=42,
         num_samples=2,
         calc_second_order=True,

@@ -109,6 +109,7 @@ def fixture_default_grid_iterator(
     my_grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_two,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         grid_design=grid_dict_two,
     )
@@ -134,12 +135,13 @@ def test_init(
     my_grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_two,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         grid_design=grid_dict_two,
     )
 
     # tests / asserts
-    mp.assert_called_once_with(default_model, parameters_two)
+    mp.assert_called_once_with(default_model, parameters_two, _initialize_global_settings)
     assert my_grid_iterator.grid_dict == grid_dict_two
     assert my_grid_iterator.result_description == result_description
     assert my_grid_iterator.samples is None
@@ -168,6 +170,7 @@ def test_pre_run_one(
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_one,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         grid_design=grid_dict_one,
     )
@@ -186,6 +189,7 @@ def test_pre_run_two(
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_two,
+        global_settings=_initialize_global_settings,
         result_description={},
         grid_design=grid_dict_two,
     )
@@ -205,6 +209,7 @@ def test_pre_run_three(
     grid_iterator = GridIterator(
         model=default_model,
         parameters=parameters_three,
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         grid_design=grid_dict_three,
     )

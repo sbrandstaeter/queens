@@ -15,6 +15,7 @@ def fixture_default_qmc_iterator(
     my_iterator = SobolSequenceIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,
+        global_settings=_initialize_global_settings,
         seed=42,
         number_of_samples=100,
         randomize=True,

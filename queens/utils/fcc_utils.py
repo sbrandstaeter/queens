@@ -126,8 +126,8 @@ def from_config_create_object(obj_description, global_settings=None, parameters=
         return object_class
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description['parameters'] = parameters
-        if issubclass(object_class, Iterator):
-            obj_description['global_settings'] = global_settings
+    if issubclass(object_class, (Iterator, BMFMCModel)):
+        obj_description['global_settings'] = global_settings
     return object_class(**obj_description)
 
 
