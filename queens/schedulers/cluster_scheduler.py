@@ -7,7 +7,6 @@ from datetime import timedelta
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
-import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
@@ -58,6 +57,7 @@ class ClusterScheduler(Scheduler):
     @log_init_args
     def __init__(
         self,
+        experiment_name,
         workload_manager,
         walltime,
         remote_connection,
@@ -76,6 +76,7 @@ class ClusterScheduler(Scheduler):
         The total number of cores per job is given by num_procs*num_nodes.
 
         Args:
+            experiment_name (str): name of the current experiment
             workload_manager (str): Workload manager ("pbs" or "slurm")
             walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             remote_connection (RemoteConnection): ssh connection to the remote host
@@ -90,8 +91,6 @@ class ClusterScheduler(Scheduler):
                                     jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
         """
-        experiment_name = queens.global_settings.GLOBAL_SETTINGS.experiment_name
-
         self.remote_connection = remote_connection
         self.remote_connection.open()
 

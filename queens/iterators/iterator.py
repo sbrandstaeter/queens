@@ -15,7 +15,7 @@ class Iterator(metaclass=abc.ABCMeta):
         parameters: Parameters object
         global_settings (GlobalSettings): settings of the QUEENS experiment including its name and
                                           the output directory
-        experiment_name (str): Experiment name
+        experiment_name (str): name of the current experiment
         output_dir (Path): Output directory
     """
 

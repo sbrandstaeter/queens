@@ -271,6 +271,7 @@ def create_initialization_call(obj_description, python_code):
         obj_description["global_settings"] = VariableName("gs")
 
     if issubclass(object_class, Scheduler):
+        obj_description["experiment_name"] = VariableName("gs.experiment_name")
         python_code.create_main = True
 
     return create_initialization_call_from_class_and_arguments(class_name, obj_description)

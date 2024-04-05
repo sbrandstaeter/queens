@@ -7,6 +7,7 @@ system call.
 
 from queens.schedulers.cluster_scheduler import ClusterScheduler
 from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.scheduler import Scheduler
 
 VALID_TYPES = {
     'local': LocalScheduler,

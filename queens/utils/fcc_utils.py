@@ -15,6 +15,7 @@ from queens.models import VALID_TYPES as VALID_MODEL_TYPES
 from queens.models.bmfmc_model import BMFMCModel
 from queens.parameters.parameters import from_config_create_parameters
 from queens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
+from queens.schedulers import Scheduler
 from queens.utils.classifier import VALID_CLASSIFIER_LEARNING_TYPES, VALID_CLASSIFIER_TYPES
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.experimental_data_reader import (
@@ -128,6 +129,8 @@ def from_config_create_object(obj_description, global_settings=None, parameters=
         obj_description['parameters'] = parameters
     if issubclass(object_class, (Iterator, BMFMCModel)):
         obj_description['global_settings'] = global_settings
+    if issubclass(object_class, Scheduler):
+        obj_description['experiment_name'] = global_settings.experiment_name
     return object_class(**obj_description)
 
 

@@ -16,7 +16,7 @@ class Scheduler(metaclass=abc.ABCMeta):
     """Abstract base class for schedulers in QUEENS.
 
     Attributes:
-        experiment_name (str): name of QUEENS experiment.
+        experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         client (Client): Dask client that connects to and submits computation to a Dask cluster
         num_procs (int): number of cores per job
