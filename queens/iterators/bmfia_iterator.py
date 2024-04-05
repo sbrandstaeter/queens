@@ -5,9 +5,8 @@ import logging
 import numpy as np
 
 from queens.iterators.iterator import Iterator
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
-from queens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from queens.utils.logger_settings import log_init_args
+from queens.utils.sobol_sequence import sample_sobol_sequence
 
 _logger = logging.getLogger(__name__)
 
@@ -46,6 +45,7 @@ class BMFIAIterator(Iterator):
     def __init__(
         self,
         parameters,
+        global_settings,
         features_config,
         hf_model,
         lf_model,
@@ -57,7 +57,9 @@ class BMFIAIterator(Iterator):
         """Instantiate the BMFIAIterator object.
 
         Args:
-            parameters (obj): Parameters object
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             features_config (str): Type of feature selection method.
             hf_model (obj): High-fidelity model object.
             lf_model (obj): Low-fidelity model object.
@@ -66,10 +68,10 @@ class BMFIAIterator(Iterator):
             num_features (int, opt): Number of features to be selected.
             coord_cols (list, opt): List of columns for coordinates taken from input variables.
         """
-        super().__init__(None, parameters)  # Input prescribed by iterator.py
+        super().__init__(None, parameters, global_settings)  # Input prescribed by iterator.py
 
         # ---------- calculate the initial training samples via classmethods ----------
-        x_train = self.calculate_initial_x_train(initial_design, lf_model, parameters)
+        x_train = self.calculate_initial_x_train(initial_design, parameters)
 
         self.X_train = x_train
         self.Y_LF_train = None
@@ -86,7 +88,7 @@ class BMFIAIterator(Iterator):
         self.coord_cols = coord_cols
 
     @classmethod
-    def calculate_initial_x_train(cls, initial_design_dict, model, parameters):
+    def calculate_initial_x_train(cls, initial_design_dict, parameters):
         """Optimal training data set for probabilistic model.
 
         Based on the selected design method, determine the optimal set of
@@ -103,7 +105,7 @@ class BMFIAIterator(Iterator):
             x_train (np.array): Optimal training input samples
         """
         run_design_method = cls.get_design_method(initial_design_dict)
-        x_train = run_design_method(initial_design_dict, model, parameters)
+        x_train = run_design_method(initial_design_dict, parameters)
         return x_train
 
     @classmethod
@@ -143,7 +145,7 @@ class BMFIAIterator(Iterator):
         return run_design_method
 
     @staticmethod
-    def random_design(initial_design_dict, model, parameters):
+    def random_design(initial_design_dict, parameters):
         """Generate a uniformly random design strategy.
 
         Get a random initial design using the Monte-Carlo sampler with a uniform distribution.
@@ -157,23 +159,14 @@ class BMFIAIterator(Iterator):
         Returns:
             x_train (np.array): Optimal training input samples
         """
-        # Some dummy arguments that are necessary for class initialization but not needed
-        dummy_model = model
-        dummy_result_description = {}
-
-        mc_iterator = MonteCarloIterator(
-            model=dummy_model,
-            seed=initial_design_dict['seed'],
-            num_samples=initial_design_dict['num_HF_eval'],
-            result_description=dummy_result_description,
-            parameters=parameters,
-        )
-        mc_iterator.pre_run()
-        x_train = mc_iterator.samples
+        seed = initial_design_dict['seed']
+        num_samples = initial_design_dict['num_HF_eval']
+        np.random.seed(seed)
+        x_train = parameters.draw_samples(num_samples)
         return x_train
 
     @staticmethod
-    def _sobol_design(initial_design_dict, model, parameters):
+    def _sobol_design(initial_design_dict, parameters):
         """Generate  quasi random design using the Sobol sequence.
 
         Args:
@@ -185,19 +178,13 @@ class BMFIAIterator(Iterator):
         Returns:
             x_train (np.array): Training input samples from Sobol sequence
         """
-        # Some dummy arguments that are necessary for class initialization but not needed
-        dummy_model = model
-        dummy_result_description = {}
-
-        sobol_iterator = SobolSequenceIterator(
-            model=dummy_model,
-            seed=initial_design_dict['seed'],
+        x_train = sample_sobol_sequence(
+            dimension=parameters.num_parameters,
             number_of_samples=initial_design_dict['num_HF_eval'],
-            result_description=dummy_result_description,
             parameters=parameters,
+            randomize=False,
+            seed=initial_design_dict['seed'],
         )
-        sobol_iterator.pre_run()
-        x_train = sobol_iterator.samples
         return x_train
 
     # ----------- main methods of the object form here ----------------------------------------

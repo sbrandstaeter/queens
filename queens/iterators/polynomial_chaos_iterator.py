@@ -41,6 +41,7 @@ class PolynomialChaosIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         num_collocation_points,
         polynomial_order,
         approach,
@@ -52,8 +53,10 @@ class PolynomialChaosIterator(Iterator):
         """Initialise polynomial chaos iterator.
 
         Args:
-            model (model): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_collocation_points (int): Number of samples to compute
             polynomial_order (int): Order of polynomial expansion
             approach (str): Approach for the polynomial chaos approach
@@ -62,7 +65,7 @@ class PolynomialChaosIterator(Iterator):
             sampling_rule (dict, opt): Rule according to which samples are drawn
             seed (int, opt): Seed for random number generation
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         valid_approaches = ["pseudo_spectral", "collocation"]
         if approach not in valid_approaches:
             raise ValueError(

@@ -24,7 +24,6 @@ class PyMCIterator(Iterator):
         Science. 2016.
 
     Attributes:
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
         result_description (dict): Settings for storing and visualizing the results
         discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
         num_chains (int): Number of chains to sample
@@ -55,6 +54,7 @@ class PyMCIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         num_burn_in,
         num_chains,
         num_samples,
@@ -70,8 +70,10 @@ class PyMCIterator(Iterator):
         """Initialize PyMC iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
@@ -85,7 +87,7 @@ class PyMCIterator(Iterator):
                                         functions
             progressbar (boolean): Setting for printing progress bar while sampling
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.result_description = result_description
         self.summary = summary
         self.pymc_sampler_stats = pymc_sampler_stats

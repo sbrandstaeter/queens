@@ -10,7 +10,6 @@ from queens.utils.print_utils import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
-GLOBAL_SETTINGS = None
 
 
 class GlobalSettings:
@@ -110,8 +109,6 @@ class GlobalSettings:
             self
         """
         print_banner_and_description()
-        global GLOBAL_SETTINGS  # pylint: disable=global-statement
-        GLOBAL_SETTINGS = self
 
         return self
 
@@ -128,9 +125,6 @@ class GlobalSettings:
             exception_value: indicates exception instance
             traceback: traceback object
         """
-        global GLOBAL_SETTINGS  # pylint: disable=global-statement
-        GLOBAL_SETTINGS = None
-
         for shutdown_client in SHUTDOWN_CLIENTS.copy():
             SHUTDOWN_CLIENTS.remove(shutdown_client)
             shutdown_client()

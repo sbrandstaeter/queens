@@ -43,6 +43,7 @@ class SobolIndexIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         seed,
         num_samples,
         calc_second_order,
@@ -53,8 +54,10 @@ class SobolIndexIterator(Iterator):
         """Initialize Saltelli SALib iterator object.
 
         Args:
-            model (model): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             seed (int): Seed for random number generation
             num_samples (int): Number of desired (random) samples
             calc_second_order (bool): Calculate second-order sensitivities
@@ -62,7 +65,7 @@ class SobolIndexIterator(Iterator):
             confidence_level (float): The confidence interval level
             result_description (dict): Dictionary with desired result description
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples

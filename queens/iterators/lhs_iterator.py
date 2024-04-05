@@ -35,6 +35,7 @@ class LHSIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         seed,
         num_samples,
         result_description=None,
@@ -44,8 +45,10 @@ class LHSIterator(Iterator):
         """Initialise LHSiterator.
 
         Args:
-            model (obj, optional): Model to be evaluated by iterator.
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             seed (int): Seed for numpy random number generator
             num_samples (int):    Number of samples to compute
             result_description (dict, opt):  Description of desired results
@@ -53,7 +56,7 @@ class LHSIterator(Iterator):
             criterion (str): Allowable values are "center" or "c", "maximin" or "m",
                              "centermaximin" or "cm", and "correlation" or "corr"
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations

@@ -53,6 +53,7 @@ class RPVIIterator(VariationalInferenceIterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         variational_distribution,
         n_samples_per_iter,
@@ -71,8 +72,10 @@ class RPVIIterator(VariationalInferenceIterator):
         """Initialize RPVI iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
@@ -101,6 +104,7 @@ class RPVIIterator(VariationalInferenceIterator):
         super().__init__(
             model=model,
             parameters=parameters,
+            global_settings=global_settings,
             result_description=result_description,
             variational_distribution=variational_distribution,
             variational_params_initialization=variational_parameter_initialization,

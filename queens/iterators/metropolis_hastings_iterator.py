@@ -65,6 +65,7 @@ class MetropolisHastingsIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         proposal_distribution,
         num_samples,
@@ -80,8 +81,10 @@ class MetropolisHastingsIterator(Iterator):
         """Initialize Metropolis-Hastings iterator.
 
         Args:
-            model (obj, optional): Model to be evaluated by iterator.
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): Description of desired results.
             proposal_distribution (obj): Proposal distribution.
             num_samples (int): Number of samples per chain.
@@ -97,7 +100,7 @@ class MetropolisHastingsIterator(Iterator):
                                              iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         _logger.info("Metropolis-Hastings Iterator for experiment: %s", self.experiment_name)
 
         self.num_chains = num_chains

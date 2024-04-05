@@ -44,6 +44,7 @@ class AdaptiveSamplingIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         likelihood_model,
         initial_train_iterator,
         solving_iterator,
@@ -56,8 +57,10 @@ class AdaptiveSamplingIterator(Iterator):
         """Initialise AdaptiveSamplingIterator.
 
         Args:
-            model (model): Model to be evaluated by iterator
+            model (Model): Model to be evaluated by iterator
             parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
             initial_train_iterator (Iterator): Iterator to draw initial training samples (e.g. MC,
                                                LHS)
@@ -70,7 +73,7 @@ class AdaptiveSamplingIterator(Iterator):
             restart_file (str, opt): Result file path for restarts
             cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.likelihood_model = likelihood_model
         self.initial_train_iterator = initial_train_iterator

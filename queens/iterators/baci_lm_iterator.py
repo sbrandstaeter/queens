@@ -47,6 +47,7 @@ class BaciLMIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         initial_guess=None,
         bounds=None,
@@ -61,8 +62,10 @@ class BaciLMIterator(Iterator):
         """TODO_doc.
 
         Args:
-            model: TODO_doc
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description: TODO_doc
             initial_guess: TODO_doc
             bounds: TODO_doc
@@ -75,7 +78,7 @@ class BaciLMIterator(Iterator):
             lowesterror (float or None): The lowest error achieved during optimization.
             verbose_output: TODO_doc
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
 
         _logger.info("Baci LM Iterator for experiment: %s", self.experiment_name)
 

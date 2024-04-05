@@ -77,6 +77,7 @@ class BMFMCIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         initial_design,
         plotting_options=None,
@@ -84,15 +85,17 @@ class BMFMCIterator(Iterator):
         r"""Initialize BMFMC iterator object.
 
         Args:
-            model (obj): Instance of the BMFMCModel
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): Dictionary containing settings for plotting and saving data/
                                        results
             initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                    design of training points for the probabilistic mapping
             plotting_options (dict): Plotting options
         """
-        super().__init__(model, parameters)  # Input prescribed by iterator.py
+        super().__init__(model, parameters, global_settings)  # Input prescribed by iterator.py
         self.result_description = result_description
         self.X_train = None
         self.Y_LFs_train = None

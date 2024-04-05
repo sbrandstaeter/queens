@@ -22,15 +22,17 @@ class DataIterator(Iterator):
     """
 
     @log_init_args
-    def __init__(self, path_to_data, result_description, parameters=None):
+    def __init__(self, path_to_data, result_description, global_settings, parameters=None):
         """Initialise data iterator.
 
         Args:
             path_to_data (string):      Path to pickle file containing data
-            result_description (dict):  Description of desired results
-            parameters (obj, optional): Parameters
+            result_description (dict):  Description of desired results        Args:
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
+            parameters (Parameters, optional): Parameters object
         """
-        super().__init__(None, parameters)
+        super().__init__(None, parameters, global_settings)
         self.samples = None
         self.output = None
         self.eigenfunc = (

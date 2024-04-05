@@ -50,6 +50,7 @@ class ElementaryEffectsIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         num_trajectories,
         local_optimization,
         num_optimal_trajectories,
@@ -62,8 +63,10 @@ class ElementaryEffectsIterator(Iterator):
         """Initialize ElementaryEffectsIterator.
 
         Args:
-            model (model): QUEENS model to evaluate
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_trajectories (int): number of trajectories to generate
             local_optimization (bool): flag whether to use local optimization according to Ruano
                                        et al. (2012). Speeds up the process tremendously for
@@ -78,7 +81,7 @@ class ElementaryEffectsIterator(Iterator):
                                          intervals for sensitivity measures
             result_description (dict): dictionary with desired result description
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories

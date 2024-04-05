@@ -24,16 +24,18 @@ class PointsIterator(Iterator):
     """
 
     @log_init_args
-    def __init__(self, model, parameters, points, result_description):
+    def __init__(self, model, parameters, global_settings, points, result_description):
         """Initialise Iterator.
 
         Args:
-            model (obj, optional): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             points (dict): Dictionary with name and samples
             result_description (dict): Settings for storing
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.points = points
         self.result_description = result_description
         self.output = None
