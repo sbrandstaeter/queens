@@ -3,7 +3,6 @@ import logging
 import sys
 import time
 
-import queens.global_settings
 from queens.global_settings import GlobalSettings
 from queens.utils.cli_utils import get_cli_options, print_greeting_message
 from queens.utils.fcc_utils import from_config_create_iterator
@@ -31,9 +30,9 @@ def run(input_file, output_dir, debug=False):
         experiment_name=experiment_name,
         output_dir=output_dir,
         debug=debug,
-    ):
+    ) as global_settings:
         # create iterator
-        my_iterator = from_config_create_iterator(config)
+        my_iterator = from_config_create_iterator(config, global_settings)
 
         end_time_input = time.time()
 
@@ -42,16 +41,18 @@ def run(input_file, output_dir, debug=False):
         _logger.info("")
 
         # perform analysis
-        run_iterator(my_iterator)
+        run_iterator(my_iterator, global_settings)
 
 
-def run_iterator(iterator):
+def run_iterator(iterator, global_settings):
     """Run the main queens iterator.
 
     Args:
         iterator (Iterator): Main queens iterator
+        global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                  and the output directory
     """
-    queens.global_settings.GLOBAL_SETTINGS.print_git_information()
+    global_settings.print_git_information()
 
     start_time_calc = time.time()
 
@@ -63,7 +64,7 @@ def run_iterator(iterator):
         iterator.run()
     except Exception as exception:
         _logger.exception(exception)
-        queens.global_settings.GLOBAL_SETTINGS.__exit__(None, None, None)
+        global_settings.__exit__(None, None, None)
         # TODO: Write iterator in pickle file # pylint: disable=fixme
         raise exception
 

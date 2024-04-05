@@ -46,7 +46,7 @@ VALID_TYPES = {
 }
 
 
-def from_config_create_iterator(config):
+def from_config_create_iterator(config, global_settings):
     """Create main iterator for queens run from config.
 
     A bottom up approach is used here to create all objects from the description. First, the objects
@@ -58,6 +58,8 @@ def from_config_create_iterator(config):
 
     Args:
         config (dict): Description of the queens run
+        global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                          and the output directory
 
     Returns:
         new_obj (iterator): Main queens iterator with all initialized objects.
@@ -89,7 +91,7 @@ def from_config_create_iterator(config):
 
         try:
             obj_description = config.pop(obj_key)
-            new_obj = from_config_create_object(obj_description, parameters)
+            new_obj = from_config_create_object(obj_description, global_settings, parameters)
         except (TypeError, InvalidOptionError) as err:
             raise InvalidOptionError(f"Object '{obj_key}' can not be initialized.") from err
 
@@ -107,11 +109,13 @@ def from_config_create_iterator(config):
     )
 
 
-def from_config_create_object(obj_description, parameters=None):
+def from_config_create_object(obj_description, global_settings=None, parameters=None):
     """Create object from description.
 
     Args:
         obj_description (dict): Description of the object
+        global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                          and the output directory
         parameters (obj, optional): Parameters object
 
     Returns:
@@ -122,6 +126,8 @@ def from_config_create_object(obj_description, parameters=None):
         return object_class
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
         obj_description['parameters'] = parameters
+        if issubclass(object_class, Iterator):
+            obj_description['global_settings'] = global_settings
     return object_class(**obj_description)
 
 
