@@ -89,6 +89,7 @@ def fixture_default_bmfmc_model(_initialize_global_settings, parameters, setting
     """Create default BMFMC model."""
     model = BMFMCModel(
         parameters=parameters,
+        global_settings=_initialize_global_settings,
         probabilistic_mapping=Mock(),
         features_config=settings_probab_mapping["features_config"],
         predictive_var=False,
@@ -147,6 +148,7 @@ def test_init(_initialize_global_settings, mocker, settings_probab_mapping, para
     approx = "dummy_approx"
     model = BMFMCModel(
         parameters=parameters,
+        global_settings=_initialize_global_settings,
         probabilistic_mapping=approx,
         features_config=settings_probab_mapping["features_config"],
         predictive_var=True,
