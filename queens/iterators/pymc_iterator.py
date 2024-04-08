@@ -318,9 +318,11 @@ class PyMCIterator(Iterator):
             self.result_description,
         )
         if self.result_description["write_results"]:
-            write_results(results, self.output_dir, self.experiment_name)
+            write_results(
+                results, self.global_settings.output_dir, self.global_settings.experiment_name
+            )
 
-        filebasename = f"{self.output_dir}/{self.experiment_name}"
+        filebasename = f"{self.global_settings.output_dir}/{self.global_settings.experiment_name}"
 
         self.results_dict = results_dict
         if self.summary:

@@ -56,7 +56,9 @@ class DataIterator(Iterator):
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
-                write_results(results, self.output_dir, self.experiment_name)
+                write_results(
+                    results, self.global_settings.output_dir, self.global_settings.experiment_name
+                )
         # else:
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.info("Inputs %s", self.samples)

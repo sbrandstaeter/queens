@@ -230,5 +230,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(results, self.output_dir, self.experiment_name)
+                write_results(
+                    results, self.global_settings.output_dir, self.global_settings.experiment_name
+                )
             _logger.info("Post run data exported!")

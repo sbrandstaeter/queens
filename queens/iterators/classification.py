@@ -162,8 +162,8 @@ class ClassificationIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.output_dir,
-                    self.experiment_name,
+                    self.global_settings.output_dir,
+                    self.global_settings.experiment_name,
                 )
 
         # plot decision boundary for the trained classifier
@@ -178,8 +178,8 @@ class ClassificationIterator(Iterator):
 
         # save checkpoint
         self.classifier.save(
-            self.output_dir,
-            self.experiment_name + "_classifier",
+            self.global_settings.output_dir,
+            self.global_settings.experiment_name + "_classifier",
         )
 
     def _evaluate_model(self, samples):

@@ -185,7 +185,9 @@ class AdaptiveSamplingIterator(Iterator):
             cs_div (float): Maximum Cauchy-Schwarz divergence between marginals of the current and
                             previous step
         """
-        pickle_file = Path(self.output_dir, self.experiment_name + ".pickle")
+        pickle_file = Path(
+            self.global_settings.output_dir, self.global_settings.experiment_name + ".pickle"
+        )
 
         if iteration == 0 and not self.restart_file:
             results = {

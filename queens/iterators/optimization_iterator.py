@@ -151,7 +151,9 @@ class OptimizationIterator(Iterator):
                                        automatically. (see SciPy documentation for details)
         """
         super().__init__(model, parameters, global_settings)
-        _logger.info("Optimization Iterator for experiment: %s", self.experiment_name)
+        _logger.info(
+            "Optimization Iterator for experiment: %s", self.global_settings.experiment_name
+        )
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
@@ -344,7 +346,11 @@ class OptimizationIterator(Iterator):
 
         if self.result_description:
             if self.result_description["write_results"]:
-                write_results(self.solution, self.output_dir, self.experiment_name)
+                write_results(
+                    self.solution,
+                    self.global_settings.output_dir,
+                    self.global_settings.experiment_name,
+                )
 
     def eval_model(self, positions):
         """Evaluate model at defined positions.

@@ -196,7 +196,9 @@ class VariationalInferenceIterator(Iterator):
         """Write results and potentially visualize them."""
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(result_dict, self.output_dir, self.experiment_name)
+            write_results(
+                result_dict, self.global_settings.output_dir, self.global_settings.experiment_name
+            )
 
         if qvis.vi_visualization_instance:
             qvis.vi_visualization_instance.save_plots()
@@ -220,7 +222,9 @@ class VariationalInferenceIterator(Iterator):
     def _write_results(self):
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(result_dict, self.output_dir, self.experiment_name)
+            write_results(
+                result_dict, self.global_settings.output_dir, self.global_settings.experiment_name
+            )
 
     def _initialize_variational_params(self):
         """Initialize the variational parameters.

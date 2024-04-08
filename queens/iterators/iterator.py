@@ -15,8 +15,6 @@ class Iterator(metaclass=abc.ABCMeta):
         parameters: Parameters object
         global_settings (GlobalSettings): settings of the QUEENS experiment including its name and
                                           the output directory
-        experiment_name (str): name of the current experiment
-        output_dir (Path): Output directory
     """
 
     def __init__(self, model, parameters, global_settings):
@@ -30,8 +28,6 @@ class Iterator(metaclass=abc.ABCMeta):
         """
         self.model = model
         self.global_settings = global_settings
-        self.experiment_name = global_settings.experiment_name
-        self.output_dir = global_settings.output_dir
         self.parameters = parameters
 
     def pre_run(self):

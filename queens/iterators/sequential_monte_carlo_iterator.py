@@ -105,7 +105,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         _logger.info(
             "Sequential Monte Carlo Iterator for experiment: %s",
-            self.experiment_name,
+            self.global_settings.experiment_name,
         )
 
         self.mcmc_kernel = MetropolisHastingsIterator(
@@ -439,7 +439,9 @@ class SequentialMonteCarloIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(results, self.output_dir, self.experiment_name)
+                write_results(
+                    results, self.global_settings.output_dir, self.global_settings.experiment_name
+                )
 
             if self.result_description["plot_results"]:
                 self.draw_trace('final')
@@ -475,5 +477,8 @@ class SequentialMonteCarloIterator(Iterator):
         }
         inference_data = az.convert_to_inference_data(data_dict)
         az.plot_trace(inference_data)
-        plt.savefig(f"{self.output_dir}/{self.experiment_name}" + f"_trace_{step}.png")
+        plt.savefig(
+            f"{self.global_settings.output_dir}/{self.global_settings.experiment_name}"
+            + f"_trace_{step}.png"
+        )
         plt.close("all")

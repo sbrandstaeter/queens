@@ -105,7 +105,7 @@ class HMCIterator(PyMCIterator):
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
         )
-        _logger.info("HMC Iterator for experiment: %s", self.experiment_name)
+        _logger.info("HMC Iterator for experiment: %s", self.global_settings.experiment_name)
         self.max_steps = max_steps
         self.target_accept = target_accept
         self.path_length = path_length

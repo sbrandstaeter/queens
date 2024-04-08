@@ -80,7 +80,7 @@ class BaciLMIterator(Iterator):
         """
         super().__init__(model, parameters, global_settings)
 
-        _logger.info("Baci LM Iterator for experiment: %s", self.experiment_name)
+        _logger.info("Baci LM Iterator for experiment: %s", self.global_settings.experiment_name)
 
         self.havebounds = True
         if bounds is None:
@@ -154,7 +154,9 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                csv_file = Path(self.output_dir, self.experiment_name + '.csv')
+                csv_file = Path(
+                    self.global_settings.output_dir, self.global_settings.experiment_name + '.csv'
+                )
                 df.to_csv(csv_file, mode="w", sep='\t', index=None)
 
     def core_run(self):
@@ -252,7 +254,13 @@ class BaciLMIterator(Iterator):
         _logger.info("The optimum:\t%s occurred in iteration #%s.", self.solution, self.iter_opt)
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
-                data = pd.read_csv(Path(self.output_dir, self.experiment_name + '.csv'), sep='\t')
+                data = pd.read_csv(
+                    Path(
+                        self.global_settings.output_dir,
+                        self.global_settings.experiment_name + '.csv',
+                    ),
+                    sep='\t',
+                )
                 xydata = data['params']
                 xydata = xydata.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
                 xydata = xydata.unstack()
@@ -305,7 +313,12 @@ class BaciLMIterator(Iterator):
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 
-                fig.write_html(Path(self.output_dir, self.experiment_name + '.html'))
+                fig.write_html(
+                    Path(
+                        self.global_settings.output_dir,
+                        self.global_settings.experiment_name + '.html',
+                    )
+                )
 
     def get_positions_raw_2pointperturb(self, x0):
         """Get parameter sets for objective function evaluations.
@@ -351,7 +364,9 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                csv_file = Path(self.output_dir, self.experiment_name + '.csv')
+                csv_file = Path(
+                    self.global_settings.output_dir, self.global_settings.experiment_name + '.csv'
+                )
                 df = pd.DataFrame(
                     {
                         'iter': i,
