@@ -20,12 +20,12 @@ def borehole83_lofi(rw, r, tu, hu, tl, hl, l, kw):
 
     | rw  ~ N(0.10, 0.0161812)
     | r   ~ Lognormal(7.71, 1.0056)
-    | Tu  ~ Uniform[63070, 115600]
-    | Hu  ~ Uniform[990, 1110]
-    | Tl  ~ Uniform[63.1, 116]
-    | Hl  ~ Uniform[700, 820]
-    | L   ~ Uniform[1120, 1680]
-    | Kw  ~ Uniform[9855, 12045]
+    | tu  ~ Uniform[63070, 115600]
+    | hu  ~ Uniform[990, 1110]
+    | tl  ~ Uniform[63.1, 116]
+    | hl  ~ Uniform[700, 820]
+    | l   ~ Uniform[1120, 1680]
+    | kw  ~ Uniform[9855, 12045]
 
     Args:
         rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
@@ -78,12 +78,12 @@ def borehole83_hifi(rw, r, tu, hu, tl, hl, l, kw):
 
     | rw  ~ N(0.10,0.0161812)
     | r   ~ Lognormal(7.71,1.0056)
-    | Tu  ~ Uniform[63070, 115600]
-    | Hu  ~ Uniform[990, 1110]
-    | Tl  ~ Uniform[63.1, 116]
-    | Hl  ~ Uniform[700, 820]
-    | L   ~ Uniform[1120, 1680]
-    | Kw  ~ Uniform[9855, 12045]
+    | tu  ~ Uniform[63070, 115600]
+    | hu  ~ Uniform[990, 1110]
+    | tl  ~ Uniform[63.1, 116]
+    | hl  ~ Uniform[700, 820]
+    | l   ~ Uniform[1120, 1680]
+    | kw  ~ Uniform[9855, 12045]
 
     Args:
         rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
