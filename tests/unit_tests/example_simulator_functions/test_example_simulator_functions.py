@@ -96,7 +96,7 @@ TEST_DICT = {
         "input": {"x1": 0.6, "x2": 0.9},
         "desired_result": 2.7200000000000006,
     },
-    "parabula_residual": {"input": {"x1": 0.6}, "desired_result": np.array([3.0])},
+    "parabola_residual": {"input": {"x1": 0.6}, "desired_result": np.array([3.0])},
     "park91a_lofi_on_grid": {
         "input": {"x1": 0.6, "x2": 0.9},
         "desired_result": np.array(

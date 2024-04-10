@@ -12,8 +12,8 @@ from queens.example_simulator_functions.gardner14a import gardner14a
 from queens.example_simulator_functions.ishigami90 import ishigami90
 from queens.example_simulator_functions.ma09 import ma09
 from queens.example_simulator_functions.oakley_ohagan04 import oakley_ohagan04
+from queens.example_simulator_functions.parabola_residual import parabola_residual
 from queens.example_simulator_functions.paraboloid import paraboloid
-from queens.example_simulator_functions.parabula_residual import parabula_residual
 from queens.example_simulator_functions.park91a import (
     park91a_hifi,
     park91a_hifi_on_grid,
@@ -47,7 +47,7 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "ma09": ma09,
     "oakley_ohagan04": oakley_ohagan04,
     "paraboloid": paraboloid,
-    "parabula_residual": parabula_residual,
+    "parabola_residual": parabola_residual,
     "park91a_lofi_on_grid": park91a_lofi_on_grid,
     "park91a_hifi_on_grid": park91a_hifi_on_grid,
     "park91a_hifi_on_grid_with_gradients": park91a_hifi_on_grid_with_gradients,

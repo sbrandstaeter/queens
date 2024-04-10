@@ -1,5 +1,4 @@
 """TODO_doc."""
-
 import pickle
 
 import numpy as np
@@ -13,13 +12,13 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_optimization_lsq_parabula(tmp_path):
+def test_optimization_lsq_parabola(tmp_path):
     """Test special case for optimization iterator with the least squares.
 
     Special case: 1 unknown and 1 residual.
     """
     # Global settings
-    experiment_name = "ParabulaResLSQ"
+    experiment_name = "ParabolaResLSQ"
     output_dir = tmp_path
 
     with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False) as gs:
@@ -28,7 +27,7 @@ def test_optimization_lsq_parabula(tmp_path):
         parameters = Parameters(x1=x1)
 
         # Setup QUEENS stuff
-        interface = DirectPythonInterface(function="parabula_residual", parameters=parameters)
+        interface = DirectPythonInterface(function="parabola_residual", parameters=parameters)
         model = SimulationModel(interface=interface)
         iterator = OptimizationIterator(
             algorithm="LSQ",
