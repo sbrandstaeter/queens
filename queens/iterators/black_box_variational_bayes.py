@@ -89,6 +89,7 @@ class BBVIIterator(VariationalInferenceIterator):
         FIM_dampening_lower_bound=1e-8,
         model_eval_iteration_period=1000,
         resample=False,
+        verbose_every_n_iter=10,
     ):
         """Initialize BBVI iterator.
 
@@ -126,6 +127,7 @@ class BBVIIterator(VariationalInferenceIterator):
                                                the probabilistic model is sampled independent of the
                                                other conditions
             resample (bool): True is resampling should be used
+            verbose_every_n_iter (int): Number of iterations between printing, plotting, and saving
 
         Returns:
             bbvi_obj (obj): Instance of the BBVIIterator
@@ -153,6 +155,7 @@ class BBVIIterator(VariationalInferenceIterator):
             FIM_dampening_lower_bound=FIM_dampening_lower_bound,
             stochastic_optimizer=stochastic_optimizer,
             iteration_data=iteration_data,
+            verbose_every_n_iter=verbose_every_n_iter,
         )
 
         if not memory:
