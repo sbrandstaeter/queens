@@ -28,6 +28,7 @@ from queens.example_simulator_functions.rosenbrock60 import (
     rosenbrock60,
     rosenbrock60_residual,
     rosenbrock60_residual_1d,
+    rosenbrock60_residual_3d,
 )
 from queens.example_simulator_functions.sinus import sinus_test_fun
 from queens.example_simulator_functions.sobol_g_function import sobol_g_function
@@ -61,6 +62,7 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "rosenbrock60": rosenbrock60,
     "rosenbrock60_residual": rosenbrock60_residual,
     "rosenbrock60_residual_1d": rosenbrock60_residual_1d,
+    "rosenbrock60_residual_3d": rosenbrock60_residual_3d,
     "sinus_test_fun": sinus_test_fun,
     "sobol_g_function": sobol_g_function,
     "patch_for_likelihood": lambda x: 42,

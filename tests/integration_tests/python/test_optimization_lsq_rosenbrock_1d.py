@@ -1,5 +1,4 @@
 """TODO_doc."""
-
 import pickle
 
 import numpy as np
@@ -14,7 +13,7 @@ from queens.parameters.parameters import Parameters
 
 
 def test_optimization_lsq_rosenbrock_1d(tmp_path):
-    """Test special case for optimization iterator with least squares.
+    """Test special case for optimization iterator with the least squares.
 
     Special case: 1 unknown but 2 residuals.
     """
