@@ -211,7 +211,7 @@ class RPVIIterator(VariationalInferenceIterator):
 
         super()._verbose_output()
 
-        if self.stochastic_optimizer.iteration > 1:
+        if self.stochastic_optimizer.iteration > 1 and hasattr(self.model, "normal_distribution"):
             _logger.debug(
                 "Likelihood noise variance: %s", self.model.normal_distribution.covariance
             )
@@ -248,10 +248,7 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch.reshape(-1, self.num_parameters)
         )
         self.n_sims += len(sample_batch)
-        self.iteration_data.add(
-            n_sims=self.n_sims,
-            likelihood_variance=self.model.normal_distribution.covariance,
-            samples=sample_batch,
-        )
-
+        self.iteration_data.add(n_sims=self.n_sims, samples=sample_batch)
+        if hasattr(self.model, "normal_distribution"):
+            self.iteration_data.add(likelihood_variance=self.model.normal_distribution.covariance)
         return log_likelihood, grad_log_likelihood_x
