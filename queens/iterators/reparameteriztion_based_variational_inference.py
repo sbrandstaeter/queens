@@ -67,6 +67,7 @@ class RPVIIterator(VariationalInferenceIterator):
         dampening_coefficient=1e-2,
         FIM_dampening_lower_bound=1e-8,
         score_function_bool=False,
+        verbose_every_n_iter=10,
     ):
         """Initialize RPVI iterator.
 
@@ -93,6 +94,7 @@ class RPVIIterator(VariationalInferenceIterator):
             score_function_bool (bool): Boolean flag to decide whether the score function term
                                         should be considered in the ELBO gradient. If true the
                                         score function is considered.
+            verbose_every_n_iter (int): Number of iterations between printing, plotting, and saving
         """
         iterative_data_names = result_description.get("iterative_field_names", [])
         check_if_valid_options(VALID_EXPORT_FIELDS, iterative_data_names)
@@ -115,6 +117,7 @@ class RPVIIterator(VariationalInferenceIterator):
             FIM_dampening_lower_bound=FIM_dampening_lower_bound,
             stochastic_optimizer=stochastic_optimizer,
             iteration_data=iteration_data,
+            verbose_every_n_iter=verbose_every_n_iter,
         )
         self.score_function_bool = score_function_bool
 
