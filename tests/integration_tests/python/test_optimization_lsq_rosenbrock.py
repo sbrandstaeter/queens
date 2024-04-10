@@ -4,14 +4,44 @@ import pickle
 
 import numpy as np
 
-from queens.main import run
+from queens.distributions.free import FreeVariable
+from queens.global_settings import GlobalSettings
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.optimization_iterator import OptimizationIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
 
 
-def test_optimization_lsq_rosenbrock(inputdir, tmp_path):
+def test_optimization_lsq_rosenbrock(tmp_path):
     """Test case for optimization iterator with the least squares."""
-    run(inputdir / 'optimization_lsq_rosenbrock.yml', tmp_path)
+    # Global settings
+    experiment_name = "ResRosenbrockLSQ"
+    output_dir = tmp_path
 
-    result_file = tmp_path / 'ResRosenbrockLSQ.pickle'
+    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False) as gs:
+        # Parameters
+        x1 = FreeVariable(dimension=1)
+        x2 = FreeVariable(dimension=1)
+        parameters = Parameters(x1=x1, x2=x2)
+
+        # Setup QUEENS stuff
+        interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
+        model = SimulationModel(interface=interface)
+        iterator = OptimizationIterator(
+            algorithm="LSQ",
+            initial_guess=[-3.0, -4.0],
+            result_description={"write_results": True},
+            bounds=[float("-inf"), float("inf")],
+            model=model,
+            parameters=parameters,
+        )
+
+        # Actual analysis
+        run_iterator(iterator)
+
+        # Load results
+        result_file = gs.output_dir / f"{gs.experiment_name}.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]))
