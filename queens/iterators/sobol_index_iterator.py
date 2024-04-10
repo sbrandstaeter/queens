@@ -89,12 +89,14 @@ class SobolIndexIterator(Iterator):
             raise RuntimeError(
                 "The SaltelliIterator does not work in conjunction with random fields."
             )
-        distribution_types, bounds = extract_parameters_of_parameter_distributions(self.parameters)
+        distribution_types, distribution_parameters = extract_parameters_of_parameter_distributions(
+            self.parameters
+        )
 
         self.salib_problem = {
             'num_vars': self.parameters.num_parameters,
             'names': self.parameters.names,
-            'bounds': bounds,
+            'bounds': distribution_parameters,
             'dists': distribution_types,
         }
 
@@ -306,10 +308,10 @@ def extract_parameters_of_parameter_distributions(parameters):
         parameters (Parameters): QUEENS Parameters object containing the metadata
     Returns:
         distribution_types (list): list with distribution types of the parameter distributions
-        bounds (list): list with bounds of the parameter distributions
+        distribution_parameters (list): list with parameters of the parameter distributions
     """
     distribution_types = []
-    bounds = []
+    distribution_parameters = []
     for parameter in parameters.dict.values():
         if isinstance(parameter, uniform.UniformDistribution):
             upper_bound = parameter.upper_bound
@@ -330,6 +332,6 @@ def extract_parameters_of_parameter_distributions(parameters):
             raise ValueError("Valid distributions are normal, lognormal and uniform!")
 
         distribution_types.append(distribution_name)
-        bounds.append([lower_bound, upper_bound])
+        distribution_parameters.append([lower_bound, upper_bound])
 
-    return distribution_types, bounds
+    return distribution_types, distribution_parameters
