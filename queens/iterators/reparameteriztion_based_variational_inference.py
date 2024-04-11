@@ -2,7 +2,6 @@
 import logging
 
 import numpy as np
-from scipy.stats import multivariate_normal as mvn
 
 from queens.iterators.variational_inference import VALID_EXPORT_FIELDS, VariationalInferenceIterator
 from queens.utils.collection_utils import CollectionObject
@@ -151,7 +150,6 @@ class RPVIIterator(VariationalInferenceIterator):
         )
 
         grad_log_priors = self.parameters.grad_joint_logpdf(sample_batch)
-        log_priors = self.parameters.joint_logpdf(sample_batch)
         grad_variational_batch = self.variational_distribution_obj.grad_logpdf_sample(
             sample_batch, self.variational_params
         )
@@ -178,31 +176,24 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_elbo_grad = sample_elbo_grad - score_function
 
         # MC estimate of elbo gradient
-        grad_elbo = np.sum(sample_elbo_grad, axis=0) / self.n_samples_per_iter
-        # MC estimate for unnormalized posterior
-        log_unnormalized_posterior = (
-            np.sum(log_likelihood_batch + log_priors) / self.n_samples_per_iter
-        )
+        grad_elbo = np.mean(sample_elbo_grad, axis=0)
 
-        self._calculate_elbo(log_unnormalized_posterior)
+        self._calculate_elbo(sample_batch, log_likelihood_batch)
         return grad_elbo.reshape(-1, 1)
 
-    def _calculate_elbo(self, log_unnormalized_posterior_mean):
+    def _calculate_elbo(self, sample_batch, log_likelihood):
         """Calculate the ELBO of the current variational approximation.
 
         Args:
-            log_unnormalized_posterior_mean (float): Monte-Carlo expectation of the
-                                                     log-unnormalized posterior
+            sample_batch (np.array): Sample-batch with samples row-wise
+            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
         """
-        mean = np.array(self.variational_params[: self.num_parameters])
-        covariance = np.diag(
-            np.exp(
-                2 * np.array(self.variational_params[self.num_parameters : 2 * self.num_parameters])
-            ).flatten()
+        log_prior = self.parameters.joint_logpdf(sample_batch)
+        logpdf_variational = self.variational_distribution_obj.logpdf(
+            self.variational_params, sample_batch
         )
-        elbo = float(mvn.entropy(mean.flatten(), covariance) + log_unnormalized_posterior_mean)
-        self.iteration_data.add(elbo=elbo)
-        self.elbo = elbo
+        self.elbo = float(np.mean(log_likelihood + log_prior - logpdf_variational))
+        self.iteration_data.add(elbo=self.elbo)
 
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""
