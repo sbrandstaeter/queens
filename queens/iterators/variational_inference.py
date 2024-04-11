@@ -54,6 +54,7 @@ class VariationalInferenceIterator(Iterator):
         nan_in_gradient_counter (int): Count how many times *NaNs* appeared in the gradient estimate
                                        in a row.
         iteration_data (CollectionObject): Object to store iteration data if desired.
+        verbose_every_n_iter (int): Number of iterations between printing, plotting, and saving
     """
 
     def __init__(
@@ -74,6 +75,7 @@ class VariationalInferenceIterator(Iterator):
         FIM_dampening_lower_bound,
         stochastic_optimizer,
         iteration_data,
+        verbose_every_n_iter=10,
     ):
         """Initialize VI iterator.
 
@@ -97,6 +99,7 @@ class VariationalInferenceIterator(Iterator):
             FIM_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
             iteration_data (CollectionObject): Object to store iteration data if desired
+            verbose_every_n_iter (int): Number of iterations between printing, plotting, and saving
         Returns:
             Initialise variational inference iterator
         """
@@ -127,6 +130,7 @@ class VariationalInferenceIterator(Iterator):
         self.elbo = -np.inf
         self.nan_in_gradient_counter = 0
         self.iteration_data = iteration_data
+        self.verbose_every_n_iter = verbose_every_n_iter
 
         if result_description.get("plotting_options"):
             qvis.from_config_create(result_description['plotting_options'])
@@ -142,9 +146,10 @@ class VariationalInferenceIterator(Iterator):
             self._catch_non_converging_simulations(old_parameters)
 
             # Just to avoid constant spamming
-            if self.stochastic_optimizer.iteration % 10 == 0:
+            if self.stochastic_optimizer.iteration % self.verbose_every_n_iter == 0:
                 self._verbose_output()
                 self._write_results()
+                self._clearing_and_plots()
 
             # Stop the optimizer in case of too many simulations
             if self.n_sims >= self.max_feval:
@@ -152,7 +157,6 @@ class VariationalInferenceIterator(Iterator):
 
             self.iteration_data.add(variational_parameters=self.variational_params)
             old_parameters = self.variational_params.copy()
-            self._clearing_and_plots()
 
         # Store the final variational params
         self.variational_params = (
