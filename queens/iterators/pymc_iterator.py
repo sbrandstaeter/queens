@@ -318,11 +318,7 @@ class PyMCIterator(Iterator):
             self.result_description,
         )
         if self.result_description["write_results"]:
-            write_results(
-                results, self.global_settings.output_dir, self.global_settings.experiment_name
-            )
-
-        filebasename = f"{self.global_settings.output_dir}/{self.global_settings.experiment_name}"
+            write_results(results, self.global_settings.result_file(".pickle"))
 
         self.results_dict = results_dict
         if self.summary:
@@ -335,10 +331,10 @@ class PyMCIterator(Iterator):
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")
 
             _axes = az.plot_trace(self.results_dict, divergences=None)
-            plt.savefig(filebasename + "_trace.png")
+            plt.savefig(self.global_settings.result_file(suffix="_trace", extension=".png"))
 
             _axes = az.plot_autocorr(self.results_dict)
-            plt.savefig(filebasename + "_autocorr.png")
+            plt.savefig(self.global_settings.result_file(suffix="_autocorr", extension=".png"))
 
             _axes = az.plot_forest(
                 self.results_dict,
@@ -351,11 +347,11 @@ class PyMCIterator(Iterator):
                 ridgeplot_alpha=0.5,
                 ridgeplot_truncate=False,
             )
-            plt.savefig(filebasename + "_forest.png")
+            plt.savefig(self.global_settings.result_file(suffix="_forest", extension=".png"))
 
             if self.parameters.num_parameters < 17:
                 az.plot_density(self.results_dict, hdi_prob=0.99)
-                plt.savefig(filebasename + "_marginals.png")
+                plt.savefig(self.global_settings.result_file(suffix="_marginals", extension=".png"))
 
             plt.close("all")
 

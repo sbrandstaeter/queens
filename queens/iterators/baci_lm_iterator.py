@@ -1,6 +1,5 @@
 """Levenberg Marquardt iterator."""
 import logging
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -154,9 +153,7 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                csv_file = Path(
-                    self.global_settings.output_dir, self.global_settings.experiment_name + '.csv'
-                )
+                csv_file = self.global_settings.result_file(".csv")
                 df.to_csv(csv_file, mode="w", sep='\t', index=None)
 
     def core_run(self):
@@ -255,10 +252,7 @@ class BaciLMIterator(Iterator):
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
-                    Path(
-                        self.global_settings.output_dir,
-                        self.global_settings.experiment_name + '.csv',
-                    ),
+                    self.global_settings.result_file(".csv"),
                     sep='\t',
                 )
                 xydata = data['params']
@@ -313,12 +307,7 @@ class BaciLMIterator(Iterator):
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 
-                fig.write_html(
-                    Path(
-                        self.global_settings.output_dir,
-                        self.global_settings.experiment_name + '.html',
-                    )
-                )
+                fig.write_html(self.global_settings.result_file(".html"))
 
     def get_positions_raw_2pointperturb(self, x0):
         """Get parameter sets for objective function evaluations.
@@ -364,9 +353,6 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                csv_file = Path(
-                    self.global_settings.output_dir, self.global_settings.experiment_name + '.csv'
-                )
                 df = pd.DataFrame(
                     {
                         'iter': i,
@@ -377,6 +363,7 @@ class BaciLMIterator(Iterator):
                         'mu': np.format_float_scientific(self.reg_param, precision=8),
                     }
                 )
+                csv_file = self.global_settings.result_file(".csv")
                 df.to_csv(
                     csv_file, mode="a", sep='\t', header=None, index=None, float_format='%.8f'
                 )

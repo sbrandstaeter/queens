@@ -313,9 +313,7 @@ class MetropolisHastingsIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(
-                    results, self.global_settings.output_dir, self.global_settings.experiment_name
-                )
+                write_results(results, self.global_settings.result_file(".pickle"))
 
             _logger.info("Size of outputs %s", chain_core.shape)
             for i in range(self.num_chains):
@@ -351,13 +349,11 @@ class MetropolisHastingsIterator(Iterator):
             ess = az.ess(inference_data, relative=True)
             _logger.info(ess)
             az.plot_trace(inference_data)
-            filebasename = (
-                f"{self.global_settings.output_dir}/{self.global_settings.experiment_name}"
-            )
-            plt.savefig(filebasename + "_trace.png")
+
+            plt.savefig(self.global_settings.result_file(suffix="_trace", extension=".png"))
 
             az.plot_autocorr(inference_data)
-            plt.savefig(filebasename + "_autocorr.png")
+            plt.savefig(self.global_settings.result_file(suffix="_autocorr", extension=".png"))
             plt.close("all")
 
         return None

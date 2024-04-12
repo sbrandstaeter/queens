@@ -143,10 +143,8 @@ class ElementaryEffectsIterator(Iterator):
         if self.result_description is not None:
             self.print_results(results)
 
-            if self.result_description["write_results"] is True:
-                write_results(
-                    results, self.global_settings.output_dir, self.global_settings.experiment_name
-                )
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))
 
             if qvis.sa_visualization_instance:
                 qvis.sa_visualization_instance.plot(results)

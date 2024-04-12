@@ -3,7 +3,6 @@
 import logging
 import pickle
 import warnings
-from pathlib import Path
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
@@ -119,17 +118,14 @@ def do_processing(output_data, output_description):
     return processed_results
 
 
-def write_results(processed_results, path_to_file, file_name):
+def write_results(processed_results, file_path):
     """Write results to pickle file.
 
     Args:
         processed_results (dict):  Dictionary with results
-        path_to_file (str):        Path to write results to
-        file_name (str):           Name of result file
+        file_path (str, Path):     Path to pickle file to write results to
     """
-    pickle_file = Path(path_to_file, file_name + ".pickle")
-
-    with open(pickle_file, 'wb') as handle:
+    with open(file_path, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

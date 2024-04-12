@@ -80,7 +80,5 @@ class SobolSequenceIterator(Iterator):
         """Analyze the results."""
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, input_data=self.samples)
-            if self.result_description["write_results"] is True:
-                write_results(
-                    results, self.global_settings.output_dir, self.global_settings.experiment_name
-                )
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))

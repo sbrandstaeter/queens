@@ -162,8 +162,7 @@ class ClassificationIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.global_settings.output_dir,
-                    self.global_settings.experiment_name,
+                    self.global_settings.result_file(".pickle"),
                 )
 
         # plot decision boundary for the trained classifier
@@ -177,9 +176,9 @@ class ClassificationIterator(Iterator):
             )
 
         # save checkpoint
-        self.classifier.save(
-            self.global_settings.output_dir,
-            self.global_settings.experiment_name + "_classifier",
+        write_results(
+            self.classifier.classifier_obj,
+            self.global_settings.result_file(suffix="_classifier", extension=".pickle"),
         )
 
     def _evaluate_model(self, samples):

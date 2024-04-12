@@ -100,7 +100,7 @@ class GlobalSettings:
             )
         )
 
-    def result_file(self, extension: str, suffix: str = None) -> str:
+    def result_file(self, extension: str, suffix: str = None) -> Path:
         """Create path to a result file with a given extension.
 
         Args:

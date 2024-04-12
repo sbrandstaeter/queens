@@ -145,11 +145,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """Post-run."""
         if self.result_description is not None:
             if self.result_description["write_results"]:
-                write_results(
-                    self.results,
-                    self.global_settings.output_dir,
-                    self.global_settings.experiment_name,
-                )
+                write_results(self.results, self.global_settings.result_file(".pickle"))
 
     def calculate_index(self):
         """Calculate Sobol indices.

@@ -192,12 +192,8 @@ class PolynomialChaosIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            if self.result_description["write_results"] is True:
-                write_results(
-                    self.result_dict,
-                    self.global_settings.output_dir,
-                    self.global_settings.experiment_name,
-                )
+            if self.result_description["write_results"]:
+                write_results(self.result_dict, self.global_settings.result_file(".pickle"))
 
 
 def create_chaospy_joint_distribution(parameters):
