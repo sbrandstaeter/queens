@@ -43,7 +43,7 @@ class GlobalSettings:
         self.debug = debug
 
         # set up logging
-        log_file_path = self.output_dir / f'{self.experiment_name}.log'
+        log_file_path = self.result_file(".log")
         setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return_code, _, stdout, stderr = run_subprocess(
@@ -99,6 +99,32 @@ class GlobalSettings:
                 },
             )
         )
+
+    def result_file(self, extension: str, suffix: str = None) -> str:
+        """Create path to a result file with a given extension.
+
+        Args:
+            extension (str): The extension of the file.
+            suffix (str, optional): The suffix to be appended to the experiment_name
+                                    i.e. the default stem of the filename.
+
+        Returns:
+            Path: Path of the file.
+        """
+        # Get the stem of the existing file name, should be the experiment_name
+        file_stem = self.experiment_name
+
+        # Append the suffix to the stem if provided
+        if suffix is not None:
+            file_stem += suffix
+
+        # Create a new file name with the updated stem and provided extension
+        file_name = file_stem + '.' + extension.lstrip(".")
+
+        # Create a new Path object with the updated file name
+        file_path = self.output_dir / file_name
+
+        return file_path
 
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.
