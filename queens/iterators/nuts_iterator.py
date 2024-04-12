@@ -112,7 +112,6 @@ class NUTSIterator(PyMCIterator):
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
         )
-        _logger.info("NUTS Iterator for experiment: %s", self.global_settings.experiment_name)
         self.max_treedepth = max_treedepth
         self.early_max_treedepth = early_max_treedepth
         self.step_size = step_size

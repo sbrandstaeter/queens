@@ -151,9 +151,6 @@ class OptimizationIterator(Iterator):
                                        automatically. (see SciPy documentation for details)
         """
         super().__init__(model, parameters, global_settings)
-        _logger.info(
-            "Optimization Iterator for experiment: %s", self.global_settings.experiment_name
-        )
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 

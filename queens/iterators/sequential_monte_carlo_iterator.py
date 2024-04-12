@@ -103,11 +103,6 @@ class SequentialMonteCarloIterator(Iterator):
         """
         super().__init__(model, parameters, global_settings)
 
-        _logger.info(
-            "Sequential Monte Carlo Iterator for experiment: %s",
-            self.global_settings.experiment_name,
-        )
-
         self.mcmc_kernel = MetropolisHastingsIterator(
             model=model,
             parameters=parameters,

@@ -56,6 +56,9 @@ def run_iterator(iterator, global_settings):
 
     start_time_calc = time.time()
 
+    _logger.info(
+        "%s for experiment: %s", iterator.__class__.__name__, global_settings.experiment_name
+    )
     _logger.info("")
     _logger.info("Starting Analysis...")
     _logger.info("")

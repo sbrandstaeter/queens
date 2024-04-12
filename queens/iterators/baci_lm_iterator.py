@@ -79,8 +79,6 @@ class BaciLMIterator(Iterator):
         """
         super().__init__(model, parameters, global_settings)
 
-        _logger.info("Baci LM Iterator for experiment: %s", self.global_settings.experiment_name)
-
         self.havebounds = True
         if bounds is None:
             self.havebounds = False

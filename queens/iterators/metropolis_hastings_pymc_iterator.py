@@ -96,10 +96,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             progressbar=progressbar,
         )
 
-        _logger.info(
-            "PyMC Metropolis-Hastings Iterator for experiment: %s",
-            self.global_settings.experiment_name,
-        )
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling

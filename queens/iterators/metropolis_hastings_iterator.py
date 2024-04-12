@@ -101,9 +101,6 @@ class MetropolisHastingsIterator(Iterator):
             temper_type (str): Temper type ('bayes' or 'generic')
         """
         super().__init__(model, parameters, global_settings)
-        _logger.info(
-            "Metropolis-Hastings Iterator for experiment: %s", self.global_settings.experiment_name
-        )
 
         self.num_chains = num_chains
         self.num_samples = num_samples
