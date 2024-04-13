@@ -128,16 +128,14 @@ class StaticStateSpaceModel(ssp.StaticModel):
 
     Attributes:
         likelihood_model (object): Log-likelihood function.
-        random_variable_keys (list): List containing the names of the RV.
         n_sims (int): Number of model calls.
     """
 
-    def __init__(self, likelihood_model, random_variable_keys, data=None, prior=None):
+    def __init__(self, likelihood_model, data=None, prior=None):
         """Initialize Static State Space model.
 
         Args:
             likelihood_model (obj): Model for the log-likelihood function.
-            random_variable_keys (list): List with variable names
             data (np.array, optional): Optional data to define state space model.
                                        Defaults to None.
             prior (obj, optional): Model for the prior distribution. Defaults to None.
@@ -145,7 +143,6 @@ class StaticStateSpaceModel(ssp.StaticModel):
         # Data is always set to `Ǹone` as we let QUEENS handle the actual likelihood computation
         super().__init__(data=data, prior=prior)
         self.likelihood_model = likelihood_model
-        self.random_variable_keys = random_variable_keys
         self.n_sims = 0
 
     def loglik(self, theta, t=None):
@@ -165,21 +162,27 @@ class StaticStateSpaceModel(ssp.StaticModel):
     def particles_array_to_numpy(self, theta):
         """Convert particles objects to numpy arrays.
 
-        The *particles* library uses an homemade variable type. We need to
-        convert this into numpy array to work with queens.
+        The *particles* library uses np.ndarrays with homemade variable dtypes.
+        We need to convert this into numpy array to work with queens.
 
         Args:
-            theta (*particles* object): *Particle* variables object
+            theta (np.ndarray with homemade dtype): *Particle* variables object
 
         Returns:
-            x (np.array): Numpy array from of the given data
+            np.ndarray: Numpy array of the particles
         """
-        x = None
-        for theta_i in self.random_variable_keys:
-            theta_i_np = theta[theta_i].flatten()
-            if x is not None:
-                x = np.vstack((x, theta_i_np))
-            else:
-                x = theta_i_np
-        x = np.transpose(np.atleast_2d(x))
-        return x
+        return np.lib.recfunctions.structured_to_unstructured(theta)
+
+    def numpy_to_particles_array(self, samples):
+        """Convert numpy arrays to particles objects.
+
+        The *particles* library uses np.ndarrays with homemade variable dtypes.
+        This method converts it back to the particles library type.
+
+        Args:
+            samples (np.ndarray): Numpy array samples
+
+        Returns:
+            np.ndarray with homemade dtype: *Particle* variables object
+        """
+        return samples.astype(self.prior.dtype)

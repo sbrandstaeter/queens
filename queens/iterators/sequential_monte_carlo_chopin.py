@@ -2,6 +2,7 @@
 
 import logging
 import re
+from collections import OrderedDict
 
 import numpy as np
 import particles
@@ -9,11 +10,11 @@ from particles import collectors as col
 from particles import distributions as dists
 from particles.smc_samplers import AdaptiveTempering
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.distributions import Distribution
 from queens.iterators.iterator import Iterator
 from queens.utils import smc_utils
 from queens.utils.logger_settings import log_init_args
+from queens.utils.print_utils import get_str_table
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -39,7 +40,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
         max_feval (int): Maximum number of model calls.
         prior (object): Particles Prior object.
         smc_obj (object): Particles SMC object.
-        random_variable_keys (list): Random variables names.
         resampling_threshold (float): Ratio of ESS to particle number at which to resample.
         resampling_method (str): Resampling method implemented in particles.
         feynman_kac_model (str): Feynman Kac model for the smc object.
@@ -86,7 +86,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.max_feval = max_feval
         self.prior = None
         self.smc_obj = None
-        self.random_variable_keys = []
         self.resampling_threshold = resampling_threshold
         self.resampling_method = resampling_method
         self.feynman_kac_model = feynman_kac_model
@@ -112,23 +111,34 @@ class SequentialMonteCarloChopinIterator(Iterator):
             raise NotImplementedError(
                 'Particles SMC for random fields is not yet implemented! Abort...'
             )
+
+        # Important that has to be a OrderedDict otherwise there is a mismatch between particles
+        # and QUEENS parameters
+        prior_dict = OrderedDict()
+
         # Generate prior using the particles library
-        prior_dict = {}
         for key, parameter in self.parameters.dict.items():
-            if isinstance(parameter, NormalDistribution):
-                loc = parameter.mean.squeeze()
-                scale = parameter.covariance.squeeze() ** 0.5
-                prior_dict.update({key: dists.Normal(loc=loc, scale=scale)})
-            elif isinstance(parameter, UniformDistribution):
-                lower_bound = parameter.lower_bound
-                upper_bound = parameter.upper_bound
-                prior_dict.update({key: dists.Uniform(a=lower_bound, b=upper_bound)})
+
+            # native QUEENS distribution
+            if isinstance(parameter, Distribution):
+                prior_dict[key] = ParticlesChopinDistribution(parameter)
+
+            # native particles distribution
+            elif isinstance(parameter, dists.ProbDist):
+                prior_dict[key] = parameter
             else:
-                raise NotImplementedError(
-                    "Currently the priors are only allowed to be normal or uniform"
+                raise TypeError(
+                    "The prior distribution has to be of type queens.Distribution or of type"
+                    " particles distributions.ProbDist"
                 )
-            self.random_variable_keys.append(key)
         self.prior = dists.StructDist(prior_dict)
+
+        # Sanity check
+        if (qparams := list(prior_dict.keys())) != (pparams := list(self.prior.laws.keys())):
+            raise ValueError(
+                f"Order of parameters between QUEENS {qparams} and particles {pparams} is "
+                "mismatching! "
+            )
 
     def initialize_feynman_kac(self, static_model):
         """Initialize the Feynman Kac model for the SMC approach.
@@ -165,7 +175,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
             data=None,
             prior=self.prior,
             likelihood_model=log_likelihood,
-            random_variable_keys=self.random_variable_keys,
         )
 
         # Feynman Kac model for the SMC algorithm
@@ -229,3 +238,89 @@ class SequentialMonteCarloChopinIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(results, self.output_dir, self.experiment_name)
             _logger.info("Post run data exported!")
+
+
+# Interface from QUEENS to Particles distributions
+class ParticlesChopinDistribution(dists.ProbDist):
+    """Distribution interfacing QUEENS  distributions to particles."""
+
+    def __init__(self, queens_distribution):
+        """Initialize distribution.
+
+        Args:
+            queens_distribution (queens.Distribution): QUEENS distribution
+        """
+        self.queens_distribution = queens_distribution
+
+    @property
+    def dim(self):
+        """Dimension of the distribution.
+
+        Returns:
+            int: dimension of the RV
+        """
+        return self.queens_distribution.dimension
+
+    def logpdf(self, x):
+        """Logpdf of the distribution.
+
+        Args:
+            x (np.ndarray): Input locations
+
+        Returns:
+            np.ndarray: logpdf values
+        """
+        return self.queens_distribution.logpdf(x)
+
+    def pdf(self, x):
+        """Pdf of the distribution.
+
+        Args:
+            x (np.ndarray): Input locations
+
+        Returns:
+            np.ndarray: pdf values
+        """
+        return self.queens_distribution.pdf(x)
+
+    def rvs(self, size=None):
+        """Draw samples of the distribution.
+
+        size basically is the number of samples.
+
+        Args:
+            size (np.ndarray, optional): Shape of the outputs. Defaults to None.
+
+        Returns:
+            np.ndarray: samples of the distribution
+        """
+        if size is None:
+            size = self.dim  # This is a strange particles thing
+
+        samples = self.queens_distribution.draw(num_draws=size)
+
+        if self.dim == 1:
+            samples = samples.flatten()
+        return samples
+
+    def ppf(self, u):
+        """Ppf of the distribution.
+
+        Args:
+            x (np.ndarray): Input locations
+
+        Returns:
+            np.ndarray: ppf values
+        """
+        return self.queens_distribution.ppf(u)
+
+    def __str__(self):
+        """String method of the distribution.
+
+        Returns:
+            str: description of the distribution
+        """
+        distribution_type = (
+            f"{type(self).__name__} wrapper for {type(self.queens_distribution).__name__}"
+        )
+        return get_str_table(distribution_type, self.queens_distribution.export_dict())
