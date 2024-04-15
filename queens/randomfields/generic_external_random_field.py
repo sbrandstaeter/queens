@@ -11,7 +11,7 @@ class GenericExternalRandomField:
 
     Attributes:
         corr_length (float): Hyperparameter for the correlation length (a.t.m. only one).
-        std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field.
+        std_hyperparam_random_field (float): Hyperparameter for standard-deviation of random field.
         mean_fun_params (lst): List of parameters for mean function parameterization of
                                random field.
         num_samples (int): Number of samples/realizations of the random field.
@@ -23,7 +23,7 @@ class GenericExternalRandomField:
         realizations (np.array): Realization/sample of the random field.
         fixed_one_dim_coords_vector (np.array): Fixed coordinate vector for discretization of the
                                                 random field (depreciated).
-        nugget_variance_rf (float): Nugget variance for the random field (lower bound for
+        nugget_variance_random_field (float): Nugget variance for the random field (lower bound for
                                     diagonal values of the covariance matrix).
         mean_fun_type (str): Type of mean function of the random field.
         external_geometry_obj (obj): External geometry object.
@@ -44,7 +44,7 @@ class GenericExternalRandomField:
     def __init__(
         self,
         corr_length=None,
-        std_hyperparam_rf=None,
+        std_hyperparam_random_field=None,
         mean_fun_params=None,
         num_samples=None,
         external_definition=None,
@@ -56,7 +56,7 @@ class GenericExternalRandomField:
 
         Args:
             corr_length: TODO_doc
-            std_hyperparam_rf: TODO_doc
+            std_hyperparam_random_field: TODO_doc
             mean_fun_params: TODO_doc
             num_samples: TODO_doc
             external_definition: TODO_doc
@@ -65,7 +65,7 @@ class GenericExternalRandomField:
             dimension: TODO_doc
         """
         self.corr_length = corr_length
-        self.std_hyperparam_rf = std_hyperparam_rf
+        self.std_hyperparam_random_field = std_hyperparam_random_field
         self.mean_fun_params = mean_fun_params
         self.num_samples = num_samples
         self.num_points = None  # not num_samples!
@@ -74,7 +74,7 @@ class GenericExternalRandomField:
         self.cholesky_decomp_covar_mat = None
         self.realizations = None
         self.fixed_one_dim_coords_vector = None
-        self.nugget_variance_rf = 1e-9
+        self.nugget_variance_random_field = 1e-9
         self.mean_fun_type = mean_fun_type
         self.external_geometry_obj = external_geometry_obj
         self.external_definition = external_definition
@@ -114,7 +114,7 @@ class GenericExternalRandomField:
         elif (
             self.mean_fun_type == 'constant'
         ):  # TODO quick option for testing should be extra # pylint: disable=fixme
-            # get name of geometric set the current rf is defined on
+            # get name of geometric set the current random_field is defined on
             geometric_set_name = self.external_definition['external_instance']
             field_type = self.external_definition['type']
 
@@ -171,11 +171,11 @@ class GenericExternalRandomField:
         # here we assume a specific kernel, namely a rbf kernel
         for num1, x_one in enumerate(self.random_field_coordinates):
             for num2, x_two in enumerate(self.random_field_coordinates):
-                covariance_matrix[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
+                covariance_matrix[num1, num2] = self.std_hyperparam_random_field**2 * np.exp(
                     -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length**2)
                 )
 
-        self.covariance_matrix = covariance_matrix + self.nugget_variance_rf * np.eye(
+        self.covariance_matrix = covariance_matrix + self.nugget_variance_random_field * np.eye(
             self.num_points
         )
         self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.covariance_matrix)
@@ -237,7 +237,9 @@ class GenericExternalRandomField:
                 np.random.seed(num)  # fix a specific random seed to make runs repeatable
                 rand = np.random.normal(0, 1, self.num_points)
                 self.realizations[num, :] = self.mean * (
-                    1 + self.std_hyperparam_rf * np.dot(self.cholesky_decomp_covar_mat, rand)
+                    1
+                    + self.std_hyperparam_random_field
+                    * np.dot(self.cholesky_decomp_covar_mat, rand)
                 )
                 self.realizations[num, 0] = 0  # BCs
                 self.realizations[num, -1] = 0  # BCs

@@ -290,17 +290,19 @@ def assign_variable_value(variable_name, value):
     return variable_name + "=" + value
 
 
-def from_config_create_fields_code(rf_preprocessor_options, python_code):
+def from_config_create_fields_code(random_field_preprocessor_options, python_code):
     """Create code to preprocess random fields.
 
     Args:
-        rf_preprocessor_options (dict): random field description
+        random_field_preprocessor_options (dict): random field description
         python_code (QueensPythonCode): object to store the code in
     """
-    rf_preprocessor = create_initialization_call(rf_preprocessor_options, python_code)
-    python_code.parameters.append(f"rf_preprocessor = {rf_preprocessor}")
-    python_code.parameters.append("rf_preprocessor.main_run()")
-    python_code.parameters.append("rf_preprocessor.write_random_fields_to_dat()")
+    random_field_preprocessor = create_initialization_call(
+        random_field_preprocessor_options, python_code
+    )
+    python_code.parameters.append(f"random_field_preprocessor = {random_field_preprocessor}")
+    python_code.parameters.append("random_field_preprocessor.main_run()")
+    python_code.parameters.append("random_field_preprocessor.write_random_fields_to_dat()")
 
 
 def from_config_create_parameters(parameters_options, python_code):
@@ -421,9 +423,9 @@ def from_config_create_script(config, output_dir):
         assign_variable_value("output_dir", '"' + str(output_dir) + '"')
     )
 
-    rf_preprocessor_options = config.pop("random_field_preprocessor", None)
-    if rf_preprocessor_options:
-        from_config_create_fields_code(rf_preprocessor_options, python_code)
+    random_field_preprocessor_options = config.pop("random_field_preprocessor", None)
+    if random_field_preprocessor_options:
+        from_config_create_fields_code(random_field_preprocessor_options, python_code)
 
     from_config_create_parameters(config.pop("parameters", {}), python_code)
 

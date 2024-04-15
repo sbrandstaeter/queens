@@ -126,7 +126,7 @@ def fixture_parameters_options_3():
         "random_inflow": {
             "type": "random_field",
             "corr_length": 1.0,
-            "std_hyperparam_rf": 0.001,
+            "std_hyperparam_random_field": 0.001,
             "mean_type": "constant",
             "mean_param": 0,
         },

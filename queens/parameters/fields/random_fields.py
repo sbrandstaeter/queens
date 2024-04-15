@@ -14,10 +14,12 @@ class RandomField:
             mean_type (str): Type of mean function of the random field.
             mean (np.ndarray): Discretized mean function.
             coords (np.ndarray): Coordinates at which the random field is evaluated.
-            std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field.
+            std_hyperparam_random_field (float): Hyperparameter for standard-deviation
+                                                 of random field.
             corr_length (float): Hyperparameter for the correlation length.
-            nugget_variance_rf (float): Nugget variance for the random field (lower bound for
-                                        diagonal values of the covariance matrix).
+            nugget_variance_random_field (float): Nugget variance for the random field
+                                                  (lower bound for diagonal values of the
+                                                  covariance matrix).
             explained_variance (float): Explained variance by the eigen decomposition.
             dim_truncated: TODO_doc
             covariance_matrix (np.ndarray): Covariance matrix of the random field.
@@ -32,7 +34,7 @@ class RandomField:
     def __init__(
         self,
         coords,
-        std_hyperparam_rf,
+        std_hyperparam_random_field,
         corr_length,
         mean_param=0,
         mean_type="constant",
@@ -43,7 +45,8 @@ class RandomField:
         Args:
             coords (dict): Dictionary with coordinates of discretized random field and the
                            corresponding keys
-            std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
+            std_hyperparam_random_field (float): Hyperparameter for standard-deviation
+                                                 of random field
             corr_length (float): Hyperparameter for the correlation length
             mean_param (float): Parameter for mean function parameterization of random field
             mean_type (str): Type of mean function of the random field
@@ -54,9 +57,9 @@ class RandomField:
         self.mean_type = mean_type
         self.mean = self.calculate_mean_fun()
         self.coords = coords
-        self.std_hyperparam_rf = std_hyperparam_rf
+        self.std_hyperparam_random_field = std_hyperparam_random_field
         self.corr_length = corr_length
-        self.nugget_variance_rf = 1e-9
+        self.nugget_variance_random_field = 1e-9
         self.explained_variance = explained_variance
         self.weighted_eigen_val_mat_truncated = None
         self.covariance_matrix = self.compute_covariance_matrix_and_cholseky()
@@ -89,7 +92,8 @@ class RandomField:
         """
         if self.mean_type == 'inflow_parabola':
             sample = self.mean * (
-                1 + self.std_hyperparam_rf * np.dot(self.cholesky_decomp_covar_mat, sample)
+                1
+                + self.std_hyperparam_random_field * np.dot(self.cholesky_decomp_covar_mat, sample)
             )
             sample[0] = 0  # BCs
             sample[-1] = 0  # BCs
@@ -125,11 +129,11 @@ class RandomField:
         # here we assume a specific kernel, namely a rbf kernel
         for num1, x_one in enumerate(self.coords['coords']):
             for num2, x_two in enumerate(self.coords['coords']):
-                covariance_matrix[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
+                covariance_matrix[num1, num2] = self.std_hyperparam_random_field**2 * np.exp(
                     -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length**2)
                 )
 
-        return covariance_matrix + self.nugget_variance_rf * np.eye(self.dimension)
+        return covariance_matrix + self.nugget_variance_random_field * np.eye(self.dimension)
 
     def compute_eigendecomposition(self):
         """Compute eigenvalues and eigenvectors of covariance matrix."""

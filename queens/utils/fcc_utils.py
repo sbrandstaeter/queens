@@ -66,14 +66,16 @@ def from_config_create_iterator(config, global_settings):
         new_obj (iterator): Main queens iterator with all initialized objects.
     """
     # do pre-processing
-    rf_preprocessor = None
-    rf_preprocessor_options = config.pop('random_field_preprocessor', None)
-    if rf_preprocessor_options:
-        rf_preprocessor = from_config_create_object(rf_preprocessor_options)
-        rf_preprocessor.main_run()
-        rf_preprocessor.write_random_fields_to_dat()
+    random_field_preprocessor = None
+    random_field_preprocessor_options = config.pop('random_field_preprocessor', None)
+    if random_field_preprocessor_options:
+        random_field_preprocessor = from_config_create_object(random_field_preprocessor_options)
+        random_field_preprocessor.main_run()
+        random_field_preprocessor.write_random_fields_to_dat()
 
-    parameters = from_config_create_parameters(config.pop('parameters', {}), rf_preprocessor)
+    parameters = from_config_create_parameters(
+        config.pop('parameters', {}), random_field_preprocessor
+    )
     obj_key = None
     for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
         deadlock = True

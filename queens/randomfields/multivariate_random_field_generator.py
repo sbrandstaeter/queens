@@ -21,7 +21,7 @@ class MultiVariateRandomFieldGenerator:
 
     Attributes:
         var_dim (int):      How many variates do we have?
-        my_univ_rfs (list): Univariate random field generators.
+        my_univ_random_fields (list): Univariate random field generators.
         stoch_dim (int):    Stochastic dimension, i.e. number of random variable
                             needed to generate samples.
         pre_factor (linalg.block_diag):  Factor to multiply independent random
@@ -73,9 +73,9 @@ class MultiVariateRandomFieldGenerator:
             )
 
         temp = 0
-        self.my_univ_rfs = []
+        self.my_univ_random_fields = []
         for i in range(self.var_dim):
-            self.my_univ_rfs.append(
+            self.my_univ_random_fields.append(
                 create_univariate_random_field(
                     marg_pdf=marginal_distributions[i],
                     spatial_dimension=spatial_dimension,
@@ -88,7 +88,7 @@ class MultiVariateRandomFieldGenerator:
                 )
             )
 
-            temp = temp + self.my_univ_rfs[i].stoch_dim
+            temp = temp + self.my_univ_random_fields[i].stoch_dim
 
         self.stoch_dim = temp
 
@@ -103,7 +103,7 @@ class MultiVariateRandomFieldGenerator:
         lambda_c, phi_c = np.linalg.eig(crosscorr)
 
         # use dimension of first field for now
-        temp = np.diag(np.ones((self.my_univ_rfs[0].stoch_dim,)))
+        temp = np.diag(np.ones((self.my_univ_random_fields[0].stoch_dim,)))
 
         phi_d = np.kron(phi_c, temp)
         lambda_c3 = lambda_c.reshape((lambda_c.shape[0], 1, 1)) * temp
@@ -141,5 +141,7 @@ class MultiVariateRandomFieldGenerator:
         my_xi = helper.reshape((-1, self.var_dim), order='F')
 
         for i in range(self.var_dim):
-            new_vals[:, i] = self.my_univ_rfs[i].evaluate_field_at_location(x, my_xi[:, i])
+            new_vals[:, i] = self.my_univ_random_fields[i].evaluate_field_at_location(
+                x, my_xi[:, i]
+            )
         return new_vals

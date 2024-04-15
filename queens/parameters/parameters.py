@@ -231,12 +231,12 @@ class Parameters:
         return parameter_list
 
     def latent_grad(self, upstream_gradient):
-        """Gradient of the rvs and rfs w.r.t. latent variables.
+        """Gradient of the rvs and random_fields w.r.t. latent variables.
 
         Args:
             upstream_gradient (np.array): Upstream gradient
         Returns:
-            gradient (np.ndarray): Gradient of the joint rvs/rfs w.r.t. the samples
+            gradient (np.ndarray): Gradient of the joint rvs/random_fields w.r.t. the samples
         """
         return upstream_gradient
 
