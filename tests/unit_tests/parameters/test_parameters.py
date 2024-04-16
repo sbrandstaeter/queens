@@ -26,27 +26,27 @@ def fixture_parameters_set_2():
 
 def test_from_config_create_parameters_set_1(parameters_set_1):
     """Test *from_config_create_parameters* method."""
-    rv_x1 = parameters_set_1.dict['x1']
-    rv_x2 = parameters_set_1.dict['x2']
+    random_variable_x1 = parameters_set_1.dict['x1']
+    random_variable_x2 = parameters_set_1.dict['x2']
     expected_covariance = np.array([[1, 0], [0, 2]])
     expected_low_chol = np.array([[1.0, 0.0], [0.0, 1.41421356]])
     expected_precision = np.array([[1.0, 0.0], [0.0, 0.5]])
 
     assert parameters_set_1.names == ['x1', 'x2']
-    assert rv_x1.lower_bound == -5
-    assert rv_x1.upper_bound == 10
-    assert rv_x1.mean == [2.5]
-    assert rv_x1.pdf_const == 0.06666666666666667
-    assert rv_x1.width == [15]
-    assert rv_x1.logpdf_const == -2.70805020110221
+    assert random_variable_x1.lower_bound == -5
+    assert random_variable_x1.upper_bound == 10
+    assert random_variable_x1.mean == [2.5]
+    assert random_variable_x1.pdf_const == 0.06666666666666667
+    assert random_variable_x1.width == [15]
+    assert random_variable_x1.logpdf_const == -2.70805020110221
 
-    assert np.array_equal(rv_x2.covariance, expected_covariance)
-    assert rv_x2.dimension == 2
-    assert rv_x2.logpdf_const == -2.184450656689318
-    assert np.array_equal(rv_x2.mean, [0, 1])
-    assert np.array_equal(rv_x2.mean, [0, 1])
-    assert np.allclose(rv_x2.low_chol, expected_low_chol)
-    assert np.allclose(rv_x2.precision, expected_precision)
+    assert np.array_equal(random_variable_x2.covariance, expected_covariance)
+    assert random_variable_x2.dimension == 2
+    assert random_variable_x2.logpdf_const == -2.184450656689318
+    assert np.array_equal(random_variable_x2.mean, [0, 1])
+    assert np.array_equal(random_variable_x2.mean, [0, 1])
+    assert np.allclose(random_variable_x2.low_chol, expected_low_chol)
+    assert np.allclose(random_variable_x2.precision, expected_precision)
 
 
 def test_draw_samples(parameters_set_1):

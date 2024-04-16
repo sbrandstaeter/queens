@@ -72,7 +72,7 @@ class BetaDistribution(ContinuousDistribution):
         Returns:
             samples (np.ndarray): drawn samples from the distribution
         """
-        samples = self.scipy_beta.rvs(size=num_draws).reshape(-1, 1)
+        samples = self.scipy_beta.random_variables(size=num_draws).reshape(-1, 1)
         return samples
 
     def logpdf(self, x):

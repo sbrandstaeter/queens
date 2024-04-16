@@ -38,22 +38,24 @@ def fixture_grid_dict_three():
 @pytest.fixture(name="parameters_one")
 def fixture_parameters_one():
     """TODO_doc."""
-    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv)
+    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=random_variable)
 
 
 @pytest.fixture(name="parameters_two")
 def fixture_parameters_two():
     """TODO_doc."""
-    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv, x2=deepcopy(rv))
+    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(x1=random_variable, x2=deepcopy(random_variable))
 
 
 @pytest.fixture(name="parameters_three")
 def fixture_parameters_three():
     """TODO_doc."""
-    rv = UniformDistribution(lower_bound=-2, upper_bound=2)
-    return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
+    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    return Parameters(
+        x1=random_variable, x2=deepcopy(random_variable), x3=deepcopy(random_variable)
+    )
 
 
 @pytest.fixture(name="result_description")
