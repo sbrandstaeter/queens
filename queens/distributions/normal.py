@@ -122,17 +122,19 @@ class NormalDistribution(ContinuousDistribution):
         pdf = np.exp(self.logpdf(x))
         return pdf
 
-    def ppf(self, q):
+    def ppf(self, quantils):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantils (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
-        ppf = scipy.stats.norm.ppf(q, loc=self.mean, scale=self.covariance ** (1 / 2)).reshape(-1)
+        ppf = scipy.stats.norm.ppf(
+            quantils, loc=self.mean, scale=self.covariance ** (1 / 2)
+        ).reshape(-1)
         return ppf
 
     def update_covariance(self, covariance):

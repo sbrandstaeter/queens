@@ -117,18 +117,18 @@ class LogNormalDistribution(ContinuousDistribution):
         """
         return np.exp(self.logpdf(x))
 
-    def ppf(self, q):
+    def ppf(self, quantils):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantils (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
         ppf = scipy.stats.lognorm.ppf(
-            q,
+            quantils,
             s=self.normal_distribution.covariance ** (1 / 2),
             scale=np.exp(self.normal_distribution.mean),
         ).reshape(-1)

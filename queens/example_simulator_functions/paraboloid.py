@@ -1,5 +1,4 @@
 """2D paraboloid."""
-# pylint: disable=invalid-name
 
 
 def paraboloid(x1, x2):

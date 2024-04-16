@@ -9,15 +9,13 @@ References:
     Computer Physics Communications, 181(2), 259–270.
     https://doi.org/10.1016/j.cpc.2009.09.018
 """
-# pylint: disable=invalid-name
-
 import numpy as np
 
 # values  of G*_6 in Table 5 of [1]
-dim = 10
+DIM = 10
 A = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.8, 1, 2, 3, 4])
-ALPHA = np.array([2] * dim)
-DELTA = np.array([0] * dim)
+ALPHA = np.array([2] * DIM)
+DELTA = np.array([0] * DIM)
 
 
 def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
@@ -68,21 +66,21 @@ def first_effect_variance(a=A, alpha=ALPHA):
     Returns:
         ndarray: Vector of first order variances
     """
-    Vi = alpha**2 / (1 + 2 * alpha) / (1 + a) ** 2
-    return Vi
+    variance_i = alpha**2 / (1 + 2 * alpha) / (1 + a) ** 2
+    return variance_i
 
 
-def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
+def variance(variance_i=first_effect_variance(a=A, alpha=ALPHA)):
     """Calculate variance of Sobol function :math:`V_x[Y]`.
 
     Args:
-        Vi (ndarray): Vector of first effect variances
+        variance_i (ndarray): Vector of first effect variances
 
     Returns:
         double: Variance of Sobol's G function
     """
-    V = np.prod(1 + Vi) - 1
-    return V
+    total_variance = np.prod(1 + variance_i) - 1
+    return total_variance
 
 
 def first_order_indices(a=A, alpha=ALPHA):
@@ -97,10 +95,10 @@ def first_order_indices(a=A, alpha=ALPHA):
     Returns:
         ndarray: Vector of first order indices
     """
-    Vi = first_effect_variance(a, alpha)
-    V = variance(Vi=Vi)
-    Si = Vi / V
-    return Si
+    variance_i = first_effect_variance(a, alpha)
+    total_variance = variance(variance_i=variance_i)
+    first_order_index_i = variance_i / total_variance
+    return first_order_index_i
 
 
 def total_order_indices(a=A, alpha=ALPHA):
@@ -115,13 +113,13 @@ def total_order_indices(a=A, alpha=ALPHA):
     Returns:
         ndarray: Vector of total order indices
     """
-    Vi = first_effect_variance(a=a, alpha=alpha)
-    V = variance(Vi=Vi)
+    variance_i = first_effect_variance(a=a, alpha=alpha)
+    total_variance = variance(variance_i=variance_i)
 
-    ST = np.empty(Vi.shape)
-    for i in range(Vi.shape[0]):
-        mask = np.ones(Vi.shape, dtype=bool)
+    total_index = np.empty(variance_i.shape)
+    for i in range(variance_i.shape[0]):
+        mask = np.ones(variance_i.shape, dtype=bool)
         mask[i] = False
-        ST[i] = Vi[i] * np.prod(1 + Vi[mask]) / V
+        total_index[i] = variance_i[i] * np.prod(1 + variance_i[mask]) / total_variance
 
-    return ST
+    return total_index

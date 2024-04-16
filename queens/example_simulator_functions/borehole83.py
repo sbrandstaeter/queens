@@ -1,10 +1,9 @@
 """Borehole function."""
-# pylint: disable=invalid-name
 
 import numpy as np
 
 
-def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
+def borehole83_lofi(rw, r, tu, hu, tl, hl, l, kw):
     r"""Low-fidelity version of Borehole benchmark function.
 
     Very simple and quick to evaluate eight dimensional function that models
@@ -31,12 +30,12 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     Args:
         rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
         r  (float): Radius of influence :math:`(m)` [100, 50000]
-        Tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
-        Hu (float): Potentiometric head of upper aquifer :math:`(m)` [990, 1110]
-        Tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
-        Hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
-        L  (float): Length of borehole :math:`(m)` [1120, 1680]
-        Kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})` [9855, 12045]
+        tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
+        hu (float): Potentiometric head of upper aquifer :math:`(m)` [990, 1110]
+        tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
+        hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
+        l  (float): Length of borehole :math:`(m)` [1120, 1680]
+        kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})` [9855, 12045]
 
     Returns:
         float: The response is water flow rate, in :math:`(\frac{m^3}{yr})`
@@ -46,17 +45,17 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
             analysis of high-accuracy and low-accuracy computer codes.
             Technometrics, 55(1), 37-46.
     """
-    frac1 = 5 * Tu * (Hu - Hl)
+    frac1 = 5 * tu * (hu - hl)
 
-    frac2a = 2 * L * Tu / (np.log(r / rw) * rw**2 * Kw)
-    frac2b = Tu / Tl
+    frac2a = 2 * l * tu / (np.log(r / rw) * rw**2 * kw)
+    frac2b = tu / tl
     frac2 = np.log(r / rw) * (1.5 + frac2a + frac2b)
 
     y = frac1 / frac2
     return y
 
 
-def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
+def borehole83_hifi(rw, r, tu, hu, tl, hl, l, kw):
     r"""High-fidelity version of Borehole benchmark function.
 
     Very simple and quick to evaluate eight dimensional function, that models
@@ -89,12 +88,12 @@ def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     Args:
         rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
         r  (float): Radius of influence :math:`(m)` [100, 50000]
-        Tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
-        Hu (float): Potentiometric head of upper aquifer :math:`(m)`  [990, 1110]
-        Tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
-        Hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
-        L  (float): Length of borehole :math:`(m)` [1120, 1680]
-        Kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})`  [9855, 12045]
+        tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
+        hu (float): Potentiometric head of upper aquifer :math:`(m)`  [990, 1110]
+        tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
+        hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
+        l  (float): Length of borehole :math:`(m)` [1120, 1680]
+        kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})`  [9855, 12045]
 
     Returns:
         float: The response is water flow rate, in :math:`\frac{m^3}{yr}`
@@ -140,10 +139,10 @@ def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
 
     For further information, see also http://www.sfu.ca/~ssurjano/borehole.html
     """
-    frac1 = 2 * np.pi * Tu * (Hu - Hl)
+    frac1 = 2 * np.pi * tu * (hu - hl)
 
-    frac2a = 2 * L * Tu / (np.log(r / rw) * rw**2 * Kw)
-    frac2b = Tu / Tl
+    frac2a = 2 * l * tu / (np.log(r / rw) * rw**2 * kw)
+    frac2b = tu / tl
     frac2 = np.log(r / rw) * (1 + frac2a + frac2b)
 
     y = frac1 / frac2

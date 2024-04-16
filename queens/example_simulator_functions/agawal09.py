@@ -5,7 +5,6 @@ collocation approach for analysis of MEMS under uncertainties. Journal
 of Computational Physics, 228(20), 7662?7688.
 http://doi.org/10.1016/j.jcp.2009.07.014
 """
-# pylint: disable=invalid-name
 
 import numpy as np
 

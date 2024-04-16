@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from queens.example_simulator_functions.park91a import park91a_hifi_on_grid, x3_vec, x4_vec
+from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 
 
 @pytest.fixture(name="setup_symbolic_links_baci", autouse=True)
@@ -98,8 +98,8 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     np.random.seed(seed=1)
 
     # True input values
-    x1 = 0.5  # pylint: disable=invalid-name
-    x2 = 0.2  # pylint: disable=invalid-name
+    x1 = 0.5
+    x2 = 0.2
 
     y_vec = park91a_hifi_on_grid(x1, x2)
 
@@ -112,8 +112,8 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
 
     # write fake data to csv
     data_dict = {
-        'x3': x3_vec,
-        'x4': x4_vec,
+        'x3': X3,
+        'x4': X4,
         'y_obs': y_fake,
     }
     experimental_data_path = tmp_path / 'experimental_data.csv'

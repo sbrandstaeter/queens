@@ -5,7 +5,6 @@ analysis and UQ.
 
 It is nonlinear and non-monotonous.
 """
-# pylint: disable=invalid-name
 
 
 import numpy as np
@@ -108,10 +107,10 @@ def first_effect_variance(p1=P1, p2=P2):
     Returns:
         float: Value of first effect (conditional) variance of *ishigami* function
     """
-    V1 = 0.2 * p2 * np.pi**4 + 0.02 * p2**2 * np.pi**8 + 0.5
-    V2 = 0.125 * p1**2
-    V3 = 0
-    return np.array([V1, V2, V3])
+    variance_1 = 0.2 * p2 * np.pi**4 + 0.02 * p2**2 * np.pi**8 + 0.5
+    variance_2 = 0.125 * p1**2
+    variance_3 = 0
+    return np.array([variance_1, variance_2, variance_3])
 
 
 def first_order_indices(p1=P1, p2=P2):
@@ -131,9 +130,9 @@ def first_order_indices(p1=P1, p2=P2):
     Returns:
         float: Analytical values of first order Sobol indices of the *ishigami* function
     """
-    V = variance(p1=p1, p2=p2)
-    Vi = first_effect_variance(p1=p1, p2=p2)
-    return Vi / V
+    total_variance = variance(p1=p1, p2=p2)
+    variance_i = first_effect_variance(p1=p1, p2=p2)
+    return variance_i / total_variance
 
 
 def total_order_indices(p1=P1, p2=P2):
@@ -153,16 +152,16 @@ def total_order_indices(p1=P1, p2=P2):
     Returns:
         float: Analytical values of total order Sobol indices of the *ishigami* function
     """
-    V = variance(p1=p1, p2=p2)
-    Vi = first_effect_variance(p1=p1, p2=p2)
-    V1 = Vi[0]
-    V2 = Vi[1]
-    V3 = Vi[2]
-    V12 = 0
-    V13 = p2**2 * np.pi**8 * (1.0 / 18.0 - 0.02)
-    V23 = 0
-    V123 = 0
-    VT1 = V1 + V12 + V13 + V123
-    VT2 = V2 + V12 + V23 + V123
-    VT3 = V3 + V13 + V23 + V123
-    return np.array([VT1, VT2, VT3]) / V
+    total_variance = variance(p1=p1, p2=p2)
+    variance_i = first_effect_variance(p1=p1, p2=p2)
+    variance_1 = variance_i[0]
+    variance_2 = variance_i[1]
+    variance_3 = variance_i[2]
+    variance_12 = 0
+    variance_13 = p2**2 * np.pi**8 * (1.0 / 18.0 - 0.02)
+    variance_23 = 0
+    variance_123 = 0
+    total_variance_1 = variance_1 + variance_12 + variance_13 + variance_123
+    total_variance_2 = variance_2 + variance_12 + variance_23 + variance_123
+    total_variance_3 = variance_3 + variance_13 + variance_23 + variance_123
+    return np.array([total_variance_1, total_variance_2, total_variance_3]) / total_variance

@@ -1,14 +1,11 @@
 """Park91a function."""
-# pylint: disable=invalid-name
-
-
 import numpy as np
 
 # x3 and x4 grid
-x = np.linspace(0, 1, 4)
-x3_vec, x4_vec = np.meshgrid(x, x)
-x3_vec = x3_vec.flatten()
-x4_vec = x4_vec.flatten()
+X = np.linspace(0, 1, 4)
+X3, X4 = np.meshgrid(X, X)
+X3 = X3.flatten()
+X4 = X4.flatten()
 
 
 def unit_bounding(*args):
@@ -42,7 +39,7 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False):
     dy_dx1_vec = []
     dy_dx2_vec = []
     if gradient_bool:
-        for x3, x4 in zip(x3_vec, x4_vec):
+        for x3, x4 in zip(X3, X4):
             # Bound the arguments
             args = unit_bounding(x1, x2, x3, x4)
             y, gradient = park_function(*args, gradient_bool=True)
@@ -50,7 +47,7 @@ def x3_x4_grid_eval(park_function, x1, x2, gradient_bool=False):
             dy_dx2_vec.append(gradient[1])
             y_vec.append(y)
         return np.array(y_vec), (np.array(dy_dx1_vec), np.array(dy_dx2_vec))
-    for x3, x4 in zip(x3_vec, x4_vec):
+    for x3, x4 in zip(X3, X4):
         # Bound the arguments
         args = unit_bounding(x1, x2, x3, x4)
         y_vec.append(park_function(*args))

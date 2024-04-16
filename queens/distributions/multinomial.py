@@ -67,7 +67,7 @@ class MultinomialDistribution(DiscreteDistribution):
         """
         return self.scipy_multinomial.pmf(x)
 
-    def cdf(self, x):  # pylint: disable=invalid-name
+    def cdf(self, x):
         """Cumulative distribution function.
 
         Args:
@@ -75,10 +75,10 @@ class MultinomialDistribution(DiscreteDistribution):
         """
         super().check_1d()
 
-    def ppf(self, q):  # pylint: disable=invalid-name
+    def ppf(self, quantils):
         """Percent point function (inverse of cdf - quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantils (np.ndarray): Quantiles at which the ppf is evaluated
         """
         super().check_1d()

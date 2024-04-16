@@ -1,5 +1,4 @@
 """Residual of a parabula."""
-# pylint: disable=invalid-name
 
 import numpy as np
 

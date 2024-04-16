@@ -67,7 +67,7 @@ def fixture_direct_python_interface_function_passing(parameters):
 def fixture_function_without_job_id():
     """Function without job_id argument."""
 
-    def function(x1, x2, x3):  # pylint: disable=invalid-name
+    def function(x1, x2, x3):
         return ishigami90(x1, x2, x3)
 
     return function
@@ -77,7 +77,7 @@ def fixture_function_without_job_id():
 def fixture_function_with_job_id():
     """Function with job_id argument."""
 
-    def function(x1, x2, x3, job_id):  # pylint: disable=invalid-name,unused-argument
+    def function(x1, x2, x3, job_id):  # pylint: disable=unused-argument
         return ishigami90(x1, x2, x3)
 
     return function
@@ -87,7 +87,7 @@ def fixture_function_with_job_id():
 def fixture_function_with_kwargs():
     """Function with kwargs."""
 
-    def function(x1, x2, x3, **kwargs):  # pylint: disable=invalid-name,unused-argument
+    def function(x1, x2, x3, **kwargs):
         if "job_id" not in kwargs:
             raise AttributeError("job_id was not passed in the kwargs")
         return ishigami90(x1, x2, x3)

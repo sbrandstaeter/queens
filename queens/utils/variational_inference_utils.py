@@ -225,7 +225,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
 
         Args:
             variational_parameters (np.ndarray): Variational parameters
-            n_draw (int): Number of samples to draw
+            n_draws (int): Number of samples to draw
 
         Returns:
             samples (np.ndarray): Row-wise samples of the variational distribution

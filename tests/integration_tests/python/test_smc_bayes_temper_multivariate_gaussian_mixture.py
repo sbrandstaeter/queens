@@ -9,7 +9,7 @@ import pytest
 from mock import patch
 
 from queens.example_simulator_functions.gaussian_mixture_logpdf import (
-    gaussian_component_1,
+    GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
 )
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
@@ -77,7 +77,7 @@ def target_density(self, samples):  # pylint: disable=unused-argument
 def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
-    samples = gaussian_component_1.draw(10)
+    samples = GAUSSIAN_COMPONENT_1.draw(10)
     pdf = gaussian_mixture_4d_logpdf(samples)
 
     pdf = np.array(pdf)
