@@ -13,11 +13,54 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmp_path):
+def test_sobol_indices_ishigami_gp_uncertainty(tmp_path, _initialize_global_settings):
     """Test case for Sobol indices based on GP realizations."""
-    run(inputdir / 'sobol_indices_ishigami_gp_uncertainty.yml', tmp_path)
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
-    results = load_result(tmp_path / 'xxx.pickle')
+    # Setup QUEENS stuff
+    interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    training_iterator = LHSIterator(
+        seed=42, num_samples=100, num_iterations=10, model=model, parameters=parameters
+    )
+    testing_iterator = LHSIterator(
+        seed=30, num_samples=100, num_iterations=10, model=model, parameters=parameters
+    )
+    model = GPFlowRegressionModel(
+        error_measures=["nash_sutcliffe_efficiency"],
+        train_likelihood_variance=False,
+        number_restarts=5,
+        number_training_iterations=1000,
+        dimension_lengthscales=3,
+        seed_posterior_samples=42,
+        training_iterator=training_iterator,
+        testing_iterator=testing_iterator,
+    )
+    iterator = SobolIndexGPUncertaintyIterator(
+        seed_monte_carlo=42,
+        number_monte_carlo_samples=1000,
+        number_gp_realizations=3,
+        number_bootstrap_samples=2,
+        second_order=True,
+        sampling_approach="quasi_random",
+        num_procs=6,
+        seed_posterior_samples=42,
+        first_order_estimator="Gratiet2014",
+        result_description={"write_results": True},
+        model=model,
+        parameters=parameters,
+    )
+
+    # Actual analysis
+    run_iterator(iterator)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     expected_s1 = np.array(
         [
