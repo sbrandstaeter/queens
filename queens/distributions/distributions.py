@@ -134,11 +134,11 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, quantils):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            quantils (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
         """
 
     def check_1d(self):
@@ -251,11 +251,11 @@ class DiscreteDistribution(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, quantils):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf - quantiles).
 
         Args:
-            quantils (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
         """
 
     @abstractmethod

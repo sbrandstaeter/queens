@@ -102,16 +102,16 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
 
         return self.probabilities[index]
 
-    def ppf(self, quantils):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf-quantiles).
 
         Args:
-            quantils (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             np.ndarray: Event samples corresponding to the quantiles
         """
         self.check_1d()
-        indices = np.searchsorted(np.cumsum(self.probabilities), quantils, side='left')
+        indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side='left')
         indices = np.clip(indices, 0, len(self.probabilities))
         return self.sample_space[indices]

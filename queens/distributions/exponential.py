@@ -108,15 +108,15 @@ class ExponentialDistribution(ContinuousDistribution):
         pdf = np.exp(self.logpdf(x))
         return pdf
 
-    def ppf(self, quantils):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            quantils (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
-        ppf = -self.scale * np.log(1 - quantils)
+        ppf = -self.scale * np.log(1 - quantiles)
         return ppf

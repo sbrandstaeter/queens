@@ -119,17 +119,17 @@ class UniformDistribution(ContinuousDistribution):
         pdf = within_bounds * self.pdf_const
         return pdf
 
-    def ppf(self, quantils):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            quantils (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
-        ppf = scipy.stats.uniform.ppf(q=quantils, loc=self.lower_bound, scale=self.width).reshape(
+        ppf = scipy.stats.uniform.ppf(q=quantiles, loc=self.lower_bound, scale=self.width).reshape(
             -1
         )
         return ppf
