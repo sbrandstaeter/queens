@@ -43,7 +43,7 @@ model:
     plot_names:
       - bmfia_plot.png
       - posterior.png
-    plotting_dir: {{ plot_dir }}
+    plotting_dir: plot_dir
     save_bool:
       - false
       - false
@@ -51,7 +51,7 @@ model:
 experimental_data_reader:
   type: experimental_data_reader
   file_name_identifier: '*.csv'
-  csv_data_base_dir: {{ experimental_data_path }}
+  csv_data_base_dir: experimental_data_path
   output_label: y_obs
   coordinate_labels: [x3, x4]
 mf_approx:

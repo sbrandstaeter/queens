@@ -8,11 +8,17 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
+from queens.distributions.normal import NormalDistribution
 from queens.global_settings import GlobalSettings
+from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.black_box_variational_bayes import BBVIIterator
-from queens.main import run
+from queens.main import run_iterator
+from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.stochastic_optimizers import Adam
-from queens.utils import injector
+from queens.utils.iterative_averaging_utils import MovingAveraging
 from queens.variational_distributions import MeanFieldNormalVariational
 
 
@@ -63,29 +69,83 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    inputdir, tmp_path, _create_experimental_data_park91a_hifi_on_grid
+    tmp_path, _create_experimental_data_park91a_hifi_on_grid, _initialize_global_settings
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
-    # generate json input file from template
-    template = inputdir / "bbvi_park91a_hifi_template.yml"
     experimental_data_path = tmp_path  # pylint: disable=duplicate-code
     plot_dir = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
-    }
-    input_file = tmp_path / "bbvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
-
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
     np.random.seed(211)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_bbvi_park91a_hifi.pickle"
+    # Setup QUEENS stuff
+    stochastic_optimizer = Adam(
+        learning_rate=0.01,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
+    )
+    noise_var_iterative_averaging = MovingAveraging(num_iter_for_avg=10)
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=experimental_data_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        noise_var_iterative_averaging=noise_var_iterative_averaging,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = BBVIIterator(
+        max_feval=100,
+        n_samples_per_iter=2,
+        memory=20,
+        variational_distribution={
+            "variational_approximation_type": "fullrank",
+            "variational_family": "normal",
+        },
+        model_eval_iteration_period=1000,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        control_variates_scaling_type="averaged",
+        loo_control_variates_scaling=False,
+        result_description={
+            "write_results": True,
+            "iterative_field_names": ["elbo"],
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": plot_dir,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+    )
+
+    # Actual analysis
+    run_iterator(iterator)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
     elbo_list = results["iteration_data"]["elbo"]
