@@ -8,9 +8,15 @@ import pytest
 from scipy.stats import entropy
 
 import queens.utils.pdf_estimation as est
+from queens.distributions.uniform import UniformDistribution
 from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
-from queens.main import run
-from queens.utils import injector
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.bmfmc_iterator import BMFMCIterator
+from queens.main import run_iterator
+from queens.models.bmfmc_model import BMFMCModel
+from queens.models.simulation_model import SimulationModel
+from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
+from queens.parameters.parameters import Parameters
 from queens.utils.process_outputs import write_results
 
 
@@ -87,37 +93,74 @@ def fixture_design_method(request):
 # ---- actual integration tests -------------------------------------------------
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     tmp_path,
-    inputdir,
     _write_LF_MC_data_to_pickle,
     generate_HF_MC_data,
     generate_LF_MC_data,
     design_method,
+    _initialize_global_settings,
 ):
     """TODO_doc: add a one-line explanation.
 
     Integration tests for the BMFMC routine based on the HF and LF
     *currin88* function.
     """
-    # generate json input file from template
-    template = inputdir / 'bmfmc_currin88_template.yml'
     plot_dir = tmp_path
     lf_mc_data_name = 'LF_MC_data.pickle'
     path_lf_mc_pickle_file = tmp_path / lf_mc_data_name
-    dir_dict = {
-        'lf_mc_pickle_file': path_lf_mc_pickle_file,
-        'plot_dir': plot_dir,
-        'design_method': design_method,
-    }
-    input_file = tmp_path / 'bmfmc_currin88.yml'
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    x2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup QUEENS stuff
+    probabilistic_mapping = GPFlowRegressionModel(
+        train_likelihood_variance=False,
+        number_restarts=2,
+        number_training_iterations=1000,
+        dimension_lengthscales=2,
+    )
+    interface = DirectPythonInterface(function="currin88_hifi", parameters=parameters)
+    hf_model = SimulationModel(interface=interface)
+    model = BMFMCModel(
+        predictive_var=False,
+        BMFMC_reference=False,
+        y_pdf_support_min=-0.5,
+        y_pdf_support_max=15.0,
+        path_to_lf_mc_data=path_lf_mc_pickle_file,
+        path_to_hf_mc_reference_data=None,
+        features_config="opt_features",
+        num_features=1,
+        probabilistic_mapping=probabilistic_mapping,
+        hf_model=hf_model,
+        parameters=parameters,
+    )
+    iterator = BMFMCIterator(
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_booleans": [False, False, False],
+                "plotting_dir": plot_dir,
+                "plot_names": ["pdfs.eps", "manifold.eps", "ranking.eps"],
+                "save_bool": [False, False, False],
+                "animation_bool": False,
+            },
+        },
+        initial_design={
+            "num_HF_eval": 100,
+            "num_bins": 50,
+            "method": design_method,
+            "seed": 1,
+            "master_LF": 0,
+        },
+        model=model,
+        parameters=parameters,
+    )
 
-    # actual main call of BMFMC
+    # Actual analysis
+    run_iterator(iterator)
 
-    # get the results of the QUEENS run
-    result_file = tmp_path / 'bmfmc_currin88.pickle'
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
