@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 
 from queens.distributions.free import FreeVariable
-from queens.global_settings import GlobalSettings
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.baci_lm_iterator import BaciLMIterator
 from queens.main import run_iterator
@@ -11,39 +10,34 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_baci_lm_rosenbrock_res(tmp_path):
+def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
     """Test case for Levenberg Marquardt iterator."""
-    # Global settings
-    experiment_name = "OptimizeLM"
-    output_dir = tmp_path
+    # Parameters
+    x1 = FreeVariable(dimension=1)
+    x2 = FreeVariable(dimension=1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False):
-        # Parameters
-        x1 = FreeVariable(dimension=1)
-        x2 = FreeVariable(dimension=1)
-        parameters = Parameters(x1=x1, x2=x2)
+    # Setup QUEENS stuff
+    interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = BaciLMIterator(
+        jac_rel_step=1e-05,
+        jac_abs_step=0.001,
+        max_feval=99,
+        init_reg=0.01,
+        update_reg="grad",
+        convergence_tolerance=1e-06,
+        initial_guess=[0.9, 0.9],
+        result_description={"write_results": True, "plot_results": True},
+        model=model,
+        parameters=parameters,
+    )
 
-        # Setup QUEENS stuff
-        interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
-        model = SimulationModel(interface=interface)
-        iterator = BaciLMIterator(
-            jac_rel_step=1e-05,
-            jac_abs_step=0.001,
-            max_feval=99,
-            init_reg=0.01,
-            update_reg="grad",
-            convergence_tolerance=1e-06,
-            initial_guess=[0.9, 0.9],
-            result_description={"write_results": True, "plot_results": True},
-            model=model,
-            parameters=parameters,
-        )
+    # Actual analysis
+    run_iterator(iterator)
 
-        # Actual analysis
-        run_iterator(iterator)
-
-        # Load results
-        result_file = output_dir / "OptimizeLM.csv"
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
 
     data = pd.read_csv(
         result_file,
