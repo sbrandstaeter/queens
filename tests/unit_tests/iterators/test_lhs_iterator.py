@@ -17,6 +17,7 @@ def fixture_default_lhs_iterator(
     my_iterator = LHSIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,
+        global_settings=_initialize_global_settings,
         seed=42,
         num_samples=100,
         num_iterations=1,

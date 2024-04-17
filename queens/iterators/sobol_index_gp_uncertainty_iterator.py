@@ -67,6 +67,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         num_procs=mp.cpu_count() - 2,
         second_order=False,
@@ -76,14 +77,16 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """Initialize Sobol index iterator with GP uncertainty.
 
         Args:
-            model (Model object): QUEENS model to evaluate
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): dictionary with desired result description
             num_procs (int, opt): number of processors
             second_order (bool, opt): true if second-order indices are calculated
             third_order (bool, opt): true if third-order indices only are calculated
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
 
         additional_options['second_order'] = second_order
         additional_options['third_order'] = third_order
@@ -142,7 +145,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """Post-run."""
         if self.result_description is not None:
             if self.result_description["write_results"]:
-                write_results(self.results, self.output_dir, self.experiment_name)
+                write_results(self.results, self.global_settings.result_file(".pickle"))
 
     def calculate_index(self):
         """Calculate Sobol indices.

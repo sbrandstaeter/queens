@@ -89,6 +89,7 @@ def fixture_default_bmfmc_model(_initialize_global_settings, parameters, setting
     """Create default BMFMC model."""
     model = BMFMCModel(
         parameters=parameters,
+        global_settings=_initialize_global_settings,
         probabilistic_mapping=Mock(),
         features_config=settings_probab_mapping["features_config"],
         predictive_var=False,
@@ -117,7 +118,7 @@ def fixture_default_bmfmc_model(_initialize_global_settings, parameters, setting
 def fixture_default_data_iterator(result_description, _initialize_global_settings):
     """Create default data iterator."""
     path_to_data = 'dummy'
-    data_iterator = DataIterator(path_to_data, result_description)
+    data_iterator = DataIterator(path_to_data, result_description, _initialize_global_settings)
     return data_iterator
 
 
@@ -147,6 +148,7 @@ def test_init(_initialize_global_settings, mocker, settings_probab_mapping, para
     approx = "dummy_approx"
     model = BMFMCModel(
         parameters=parameters,
+        global_settings=_initialize_global_settings,
         probabilistic_mapping=approx,
         features_config=settings_probab_mapping["features_config"],
         predictive_var=True,

@@ -61,6 +61,7 @@ class VariationalInferenceIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         variational_distribution,
         variational_params_initialization,
@@ -80,8 +81,10 @@ class VariationalInferenceIterator(Iterator):
         """Initialize VI iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): Settings for storing and visualizing the results
             variational_distribution (dict): Description of variational distribution
             variational_params_initialization (str): Flag to decide how to initialize the
@@ -103,7 +106,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             Initialise variational inference iterator
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
 
         self.result_description = result_description
         self.variational_params_initialization_approach = variational_params_initialization
@@ -197,7 +200,7 @@ class VariationalInferenceIterator(Iterator):
         """Write results and potentially visualize them."""
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(result_dict, self.output_dir, self.experiment_name)
+            write_results(result_dict, self.global_settings.result_file(".pickle"))
 
         if qvis.vi_visualization_instance:
             qvis.vi_visualization_instance.save_plots()
@@ -221,7 +224,7 @@ class VariationalInferenceIterator(Iterator):
     def _write_results(self):
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
-            write_results(result_dict, self.output_dir, self.experiment_name)
+            write_results(result_dict, self.global_settings.result_file(".pickle"))
 
     def _initialize_variational_params(self):
         """Initialize the variational parameters.

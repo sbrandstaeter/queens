@@ -64,6 +64,7 @@ def fixture_default_baci_lm_iterator(_initialize_global_settings):
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
         result_description={'write_results': True, 'plot_results': True},
         initial_guess=[0.1, 0.2],
         jac_rel_step=1e-05,
@@ -113,6 +114,7 @@ def test_init(_initialize_global_settings):
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
         parameters="dummy_parameters",
+        global_settings=_initialize_global_settings,
         result_description=result_description,
         initial_guess=initial_guess,
         bounds=bounds,

@@ -1,6 +1,5 @@
 """Levenberg Marquardt iterator."""
 import logging
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -47,6 +46,7 @@ class BaciLMIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         initial_guess=None,
         bounds=None,
@@ -61,8 +61,10 @@ class BaciLMIterator(Iterator):
         """TODO_doc.
 
         Args:
-            model: TODO_doc
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description: TODO_doc
             initial_guess: TODO_doc
             bounds: TODO_doc
@@ -75,9 +77,7 @@ class BaciLMIterator(Iterator):
             lowesterror (float or None): The lowest error achieved during optimization.
             verbose_output: TODO_doc
         """
-        super().__init__(model, parameters)
-
-        _logger.info("Baci LM Iterator for experiment: %s", self.experiment_name)
+        super().__init__(model, parameters, global_settings)
 
         self.havebounds = True
         if bounds is None:
@@ -151,7 +151,7 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                csv_file = Path(self.output_dir, self.experiment_name + '.csv')
+                csv_file = self.global_settings.result_file(".csv")
                 df.to_csv(csv_file, mode="w", sep='\t', index=None)
 
     def core_run(self):
@@ -249,7 +249,10 @@ class BaciLMIterator(Iterator):
         _logger.info("The optimum:\t%s occurred in iteration #%s.", self.solution, self.iter_opt)
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
-                data = pd.read_csv(Path(self.output_dir, self.experiment_name + '.csv'), sep='\t')
+                data = pd.read_csv(
+                    self.global_settings.result_file(".csv"),
+                    sep='\t',
+                )
                 xydata = data['params']
                 xydata = xydata.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
                 xydata = xydata.unstack()
@@ -302,7 +305,7 @@ class BaciLMIterator(Iterator):
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 
-                fig.write_html(Path(self.output_dir, self.experiment_name + '.html'))
+                fig.write_html(self.global_settings.result_file(".html"))
 
     def get_positions_raw_2pointperturb(self, x0):
         """Get parameter sets for objective function evaluations.
@@ -348,7 +351,6 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                csv_file = Path(self.output_dir, self.experiment_name + '.csv')
                 df = pd.DataFrame(
                     {
                         'iter': i,
@@ -359,6 +361,7 @@ class BaciLMIterator(Iterator):
                         'mu': np.format_float_scientific(self.reg_param, precision=8),
                     }
                 )
+                csv_file = self.global_settings.result_file(".csv")
                 df.to_csv(
                     csv_file, mode="a", sep='\t', header=None, index=None, float_format='%.8f'
                 )

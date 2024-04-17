@@ -28,6 +28,7 @@ class MonteCarloIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         seed,
         num_samples,
         result_description=None,
@@ -35,13 +36,15 @@ class MonteCarloIterator(Iterator):
         """Initialise Monte Carlo iterator.
 
         Args:
-            model (model):              Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             seed  (int):                Seed for random number generation
             num_samples (int):          Number of samples to compute
             result_description (dict, opt):  Description of desired results
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.result_description = result_description
@@ -61,8 +64,8 @@ class MonteCarloIterator(Iterator):
         """Analyze the results."""
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, self.samples)
-            if self.result_description["write_results"] is True:
-                write_results(results, self.output_dir, self.experiment_name)
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))
 
                 # ----------------------------- WIP PLOT OPTIONS ----------------------------
                 if self.result_description['plot_results'] is True:

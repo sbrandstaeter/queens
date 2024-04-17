@@ -147,6 +147,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
         bbvi_instance = BBVIIterator(
             model=model,
             parameters=parameters,
+            global_settings=global_settings,
             result_description=result_description,
             variational_parameter_initialization=variational_params_initialization_approach,
             n_samples_per_iter=n_samples_per_iter,

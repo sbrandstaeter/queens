@@ -59,17 +59,6 @@ class Classifier:
         # Binary classification
         return np.round(self.classifier_obj.predict(x_test))
 
-    def save(self, path, file_name):
-        """Pickle the classifier.
-
-        Args:
-            path (str): Path to export the classifier
-            file_name (str): File name without suffix
-        """
-        pickle_file = Path(path) / (file_name + ".pickle")
-        with pickle_file.open('wb') as file:
-            pickle.dump(self.classifier_obj, file)
-
     def load(self, path, file_name):
         """Load pickled classifier.
 

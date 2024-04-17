@@ -144,6 +144,7 @@ class BMFMCModel(Model):
     def __init__(
         self,
         parameters,
+        global_settings,
         probabilistic_mapping,
         features_config,
         predictive_var,
@@ -160,6 +161,8 @@ class BMFMCModel(Model):
 
         Args:
             parameters (obj): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                  and the output directory
             probabilistic_mapping (obj): Instance of the probabilistic mapping, which models the
                                              probabilistic dependency between high-fidelity model,
                                              low-fidelity models and informative input features.
@@ -190,12 +193,16 @@ class BMFMCModel(Model):
         interface = BmfmcInterface(probabilistic_mapping=probabilistic_mapping)
 
         if path_to_hf_mc_reference_data is not None:
-            hf_data_iterator = DataIterator(path_to_hf_mc_reference_data, None, None)
+            hf_data_iterator = DataIterator(
+                path_to_hf_mc_reference_data, None, global_settings, None
+            )
         else:
             hf_data_iterator = None
 
         # ----------------------- create subordinate data iterators ------------------------------
-        self.lf_data_iterators = [DataIterator(path, None, None) for path in path_to_lf_mc_data]
+        self.lf_data_iterators = [
+            DataIterator(path, None, global_settings, None) for path in path_to_lf_mc_data
+        ]
 
         self.interface = interface
         self.features_config = features_config

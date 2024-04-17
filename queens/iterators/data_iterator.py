@@ -22,15 +22,17 @@ class DataIterator(Iterator):
     """
 
     @log_init_args
-    def __init__(self, path_to_data, result_description, parameters=None):
+    def __init__(self, path_to_data, result_description, global_settings, parameters=None):
         """Initialise data iterator.
 
         Args:
             path_to_data (string):      Path to pickle file containing data
-            result_description (dict):  Description of desired results
-            parameters (obj, optional): Parameters
+            result_description (dict):  Description of desired results        Args:
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
+            parameters (Parameters, optional): Parameters object
         """
-        super().__init__(None, parameters)
+        super().__init__(None, parameters, global_settings)
         self.samples = None
         self.output = None
         self.eigenfunc = (
@@ -53,8 +55,8 @@ class DataIterator(Iterator):
         """Analyze the results."""
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description)
-            if self.result_description["write_results"] is True:
-                write_results(results, self.output_dir, self.experiment_name)
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))
         # else:
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.info("Inputs %s", self.samples)

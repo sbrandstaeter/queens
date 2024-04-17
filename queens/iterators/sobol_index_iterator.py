@@ -43,6 +43,7 @@ class SobolIndexIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         seed,
         num_samples,
         calc_second_order,
@@ -53,8 +54,10 @@ class SobolIndexIterator(Iterator):
         """Initialize Saltelli SALib iterator object.
 
         Args:
-            model (model): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             seed (int): Seed for random number generation
             num_samples (int): Number of desired (random) samples
             calc_second_order (bool): Calculate second-order sensitivities
@@ -62,7 +65,7 @@ class SobolIndexIterator(Iterator):
             confidence_level (float): The confidence interval level
             result_description (dict): Dictionary with desired result description
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples
@@ -130,8 +133,8 @@ class SobolIndexIterator(Iterator):
         """Analyze the results."""
         results = self.process_results()
         if self.result_description is not None:
-            if self.result_description["write_results"] is True:
-                write_results(results, self.output_dir, self.experiment_name)
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))
             self.print_results(results)
             if self.result_description["plot_results"] is True:
                 self.plot_results(results)
@@ -212,11 +215,8 @@ class SobolIndexIterator(Iterator):
         Args:
             results (dict): Dictionary with Sobol indices and confidence intervals
         """
-        experiment_name = self.experiment_name
-
         # Plot first-order indices also called main effect
-        chart_name = experiment_name + '_S1.html'
-        chart_path = self.output_dir / chart_name
+        chart_path = self.global_settings.result_file(suffix="_S1", extension=".html")
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
@@ -238,8 +238,7 @@ class SobolIndexIterator(Iterator):
         fig.write_html(chart_path)
 
         # Plot total indices also called total effect
-        chart_name = experiment_name + '_ST.html'
-        chart_path = self.output_dir / chart_name
+        chart_path = self.global_settings.result_file(suffix="_ST", extension=".html")
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
@@ -274,8 +273,7 @@ class SobolIndexIterator(Iterator):
                 for j in range(i + 1, self.num_params + 1):
                     names.append(f"S{i}{j}")
 
-            chart_name = experiment_name + '_S2.html'
-            chart_path = self.output_dir / chart_name
+            chart_path = self.global_settings.result_file(suffix="_S2", extension=".html")
             bars = go.Bar(
                 x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
             )

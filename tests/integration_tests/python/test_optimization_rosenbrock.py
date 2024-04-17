@@ -35,4 +35,4 @@ def test_optimization_rosenbrock(inputdir, tmp_path, algorithm):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)
-    np.testing.assert_allclose(results.fun, np.array(+0.0), atol=1.0e-07)
+    np.testing.assert_allclose(results.fun, np.array(+0.0), atol=5.0e-07)

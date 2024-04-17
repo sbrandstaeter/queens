@@ -76,6 +76,7 @@ class SequentialMonteCarloIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         num_particles,
         result_description,
         seed,
@@ -84,29 +85,28 @@ class SequentialMonteCarloIterator(Iterator):
         num_rejuvenation_steps,
         plot_trace_every=0,
     ):
-        """TODO_doc.
+        """Initialize the SequentialMonteCarloIterator class.
 
         Args:
-            model: TODO_doc
-            parameters (obj): Parameters object
-            num_particles: TODO_doc
-            result_description: TODO_doc
-            seed: TODO_doc
-            temper_type: TODO_doc
-            mcmc_proposal_distribution: TODO_doc
-            num_rejuvenation_steps: TODO_doc
-            plot_trace_every: TODO_doc
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
+            num_particles (int): Number of particles
+            result_description (dict): Description of desired results.
+            seed (int): Seed for random number generator.
+            temper_type (str): Temper type ('bayes' or 'generic')
+            mcmc_proposal_distribution (obj): Proposal distribution for the mcmc kernel
+            num_rejuvenation_steps (int): number of samples per rejuvenation
+            plot_trace_every (int): Print the current trace every *plot_trace_every*-th iteration.
+                                    Default: 0 (do not print the trace).
         """
-        super().__init__(model, parameters)
-
-        _logger.info(
-            "Sequential Monte Carlo Iterator for experiment: %s",
-            self.experiment_name,
-        )
+        super().__init__(model, parameters, global_settings)
 
         self.mcmc_kernel = MetropolisHastingsIterator(
             model=model,
             parameters=parameters,
+            global_settings=global_settings,
             result_description=None,
             proposal_distribution=mcmc_proposal_distribution,
             num_samples=num_rejuvenation_steps,
@@ -156,7 +156,7 @@ class SequentialMonteCarloIterator(Iterator):
         self.gammas = []
 
         # parameters for the scaling of the covariance matrix
-        # values of a an b are taken from [3] p.1706
+        # values of a and b are taken from [3] p.1706
         self.a = 1.0 / 9.0
         self.b = 8.0 / 9.0
 
@@ -434,7 +434,7 @@ class SequentialMonteCarloIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(results, self.output_dir, self.experiment_name)
+                write_results(results, self.global_settings.result_file(".pickle"))
 
             if self.result_description["plot_results"]:
                 self.draw_trace('final')
@@ -470,5 +470,5 @@ class SequentialMonteCarloIterator(Iterator):
         }
         inference_data = az.convert_to_inference_data(data_dict)
         az.plot_trace(inference_data)
-        plt.savefig(f"{self.output_dir}/{self.experiment_name}" + f"_trace_{step}.png")
+        plt.savefig(self.global_settings.result_file(suffix=f"_trace_{step}", extension=".png"))
         plt.close("all")

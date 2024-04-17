@@ -16,6 +16,7 @@ def fixture_default_elementary_effects_iterator(
     my_iterator = ElementaryEffectsIterator(
         model=default_simulation_model,
         parameters=default_parameters_uniform_3d,
+        global_settings=_initialize_global_settings,
         num_trajectories=20,
         local_optimization=True,
         num_optimal_trajectories=4,

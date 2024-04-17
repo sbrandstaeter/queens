@@ -53,7 +53,7 @@ def fixture_generate_HF_MC_data(generate_X_mc):
 @pytest.fixture(name="_write_LF_MC_data_to_pickle")
 def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
-    file_name = 'LF_MC_data'
+    file_name = 'LF_MC_data.pickle'
     input_description = {
         "x1": {
             "type": "uniform",
@@ -73,7 +73,7 @@ def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_d
         'eigenfunc': None,
         'eigenvalue': None,
     }
-    write_results(data, tmp_path, file_name)
+    write_results(data, tmp_path / file_name)
 
 
 @pytest.fixture(name="design_method", params=['random', 'diverse_subset'])

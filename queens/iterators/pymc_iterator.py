@@ -24,7 +24,6 @@ class PyMCIterator(Iterator):
         Science. 2016.
 
     Attributes:
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
         result_description (dict): Settings for storing and visualizing the results
         discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
         num_chains (int): Number of chains to sample
@@ -55,6 +54,7 @@ class PyMCIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         num_burn_in,
         num_chains,
         num_samples,
@@ -70,8 +70,10 @@ class PyMCIterator(Iterator):
         """Initialize PyMC iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
@@ -85,7 +87,7 @@ class PyMCIterator(Iterator):
                                         functions
             progressbar (boolean): Setting for printing progress bar while sampling
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.result_description = result_description
         self.summary = summary
         self.pymc_sampler_stats = pymc_sampler_stats
@@ -316,9 +318,7 @@ class PyMCIterator(Iterator):
             self.result_description,
         )
         if self.result_description["write_results"]:
-            write_results(results, self.output_dir, self.experiment_name)
-
-        filebasename = f"{self.output_dir}/{self.experiment_name}"
+            write_results(results, self.global_settings.result_file(".pickle"))
 
         self.results_dict = results_dict
         if self.summary:
@@ -331,10 +331,10 @@ class PyMCIterator(Iterator):
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")
 
             _axes = az.plot_trace(self.results_dict, divergences=None)
-            plt.savefig(filebasename + "_trace.png")
+            plt.savefig(self.global_settings.result_file(suffix="_trace", extension=".png"))
 
             _axes = az.plot_autocorr(self.results_dict)
-            plt.savefig(filebasename + "_autocorr.png")
+            plt.savefig(self.global_settings.result_file(suffix="_autocorr", extension=".png"))
 
             _axes = az.plot_forest(
                 self.results_dict,
@@ -347,11 +347,11 @@ class PyMCIterator(Iterator):
                 ridgeplot_alpha=0.5,
                 ridgeplot_truncate=False,
             )
-            plt.savefig(filebasename + "_forest.png")
+            plt.savefig(self.global_settings.result_file(suffix="_forest", extension=".png"))
 
             if self.parameters.num_parameters < 17:
                 az.plot_density(self.results_dict, hdi_prob=0.99)
-                plt.savefig(filebasename + "_marginals.png")
+                plt.savefig(self.global_settings.result_file(suffix="_marginals", extension=".png"))
 
             plt.close("all")
 

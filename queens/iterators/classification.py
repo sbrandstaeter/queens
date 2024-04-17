@@ -34,7 +34,6 @@ class ClassificationIterator(Iterator):
     """Iterator for machine leaning based classification.
 
     Attributes:
-        model (model): Model to be evaluated by iterator
         result_description (dict):  Description of desired results
         num_sample_points (int): number of total points
         num_model_calls (int): total number of model calls
@@ -53,6 +52,7 @@ class ClassificationIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         num_sample_points,
         num_model_calls,
@@ -64,8 +64,10 @@ class ClassificationIterator(Iterator):
         """Initialize classification iterator.
 
         Args:
-            model (model): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict):  Description of desired results
             num_sample_points (int): number of total points
             num_model_calls (int): total number of model calls
@@ -78,7 +80,7 @@ class ClassificationIterator(Iterator):
         """
         if classifier.is_active and num_model_calls >= num_sample_points:
             raise ValueError("Number of sample points needs to be greater than num_model_calls.")
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.result_description = result_description
         self.samples = np.empty((0, self.parameters.num_parameters))
         self.classified_outputs = np.empty((0, 1))
@@ -160,8 +162,7 @@ class ClassificationIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.output_dir,
-                    self.experiment_name,
+                    self.global_settings.result_file(".pickle"),
                 )
 
         # plot decision boundary for the trained classifier
@@ -175,9 +176,9 @@ class ClassificationIterator(Iterator):
             )
 
         # save checkpoint
-        self.classifier.save(
-            self.output_dir,
-            self.experiment_name + "_classifier",
+        write_results(
+            self.classifier.classifier_obj,
+            self.global_settings.result_file(suffix="_classifier", extension=".pickle"),
         )
 
     def _evaluate_model(self, samples):

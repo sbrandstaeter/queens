@@ -34,6 +34,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self,
         model,
         parameters,
+        global_settings,
         num_samples,
         seed,
         num_burn_in=100,
@@ -52,8 +53,10 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         """Initialize Metropolis Hastings iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             seed (int): Seed for rng
             num_burn_in (int, opt): Number of burn-in steps
@@ -79,6 +82,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         super().__init__(
             model=model,
             parameters=parameters,
+            global_settings=global_settings,
             num_burn_in=num_burn_in,
             num_chains=num_chains,
             num_samples=num_samples,
@@ -92,7 +96,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             progressbar=progressbar,
         )
 
-        _logger.info("PyMC Metropolis-Hastings Iterator for experiment: %s", self.experiment_name)
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling

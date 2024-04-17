@@ -84,11 +84,11 @@ class OptimizationIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         initial_guess,
         result_description,
         verbose_output=False,
         bounds=Bounds(lb=-np.inf, ub=np.inf),
-        # bounds=(-np.inf, np.inf),
         constraints=None,
         max_feval=None,
         algorithm='L-BFGS-B',
@@ -100,6 +100,8 @@ class OptimizationIterator(Iterator):
         Args:
             model (Model): Model to be evaluated by iterator
             parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             initial_guess (array like): initial position at which the optimization starts
             result_description (dict): Description of desired post-processing.
             verbose_output (int): Integer encoding which kind of verbose information should be
@@ -148,8 +150,7 @@ class OptimizationIterator(Iterator):
                                        of Jacobian matrix. If None (default) then it is selected
                                        automatically. (see SciPy documentation for details)
         """
-        super().__init__(model, parameters)
-        _logger.info("Optimization Iterator for experiment: %s", self.experiment_name)
+        super().__init__(model, parameters, global_settings)
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
@@ -342,7 +343,10 @@ class OptimizationIterator(Iterator):
 
         if self.result_description:
             if self.result_description["write_results"]:
-                write_results(self.solution, self.output_dir, self.experiment_name)
+                write_results(
+                    self.solution,
+                    self.global_settings.result_file(".pickle"),
+                )
 
     def eval_model(self, positions):
         """Evaluate model at defined positions.

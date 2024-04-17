@@ -65,6 +65,7 @@ class MetropolisHastingsIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         proposal_distribution,
         num_samples,
@@ -80,8 +81,10 @@ class MetropolisHastingsIterator(Iterator):
         """Initialize Metropolis-Hastings iterator.
 
         Args:
-            model (obj, optional): Model to be evaluated by iterator.
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict): Description of desired results.
             proposal_distribution (obj): Proposal distribution.
             num_samples (int): Number of samples per chain.
@@ -97,8 +100,7 @@ class MetropolisHastingsIterator(Iterator):
                                              iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
-        super().__init__(model, parameters)
-        _logger.info("Metropolis-Hastings Iterator for experiment: %s", self.experiment_name)
+        super().__init__(model, parameters, global_settings)
 
         self.num_chains = num_chains
         self.num_samples = num_samples
@@ -308,7 +310,7 @@ class MetropolisHastingsIterator(Iterator):
                 self.result_description,
             )
             if self.result_description["write_results"]:
-                write_results(results, self.output_dir, self.experiment_name)
+                write_results(results, self.global_settings.result_file(".pickle"))
 
             _logger.info("Size of outputs %s", chain_core.shape)
             for i in range(self.num_chains):
@@ -344,11 +346,11 @@ class MetropolisHastingsIterator(Iterator):
             ess = az.ess(inference_data, relative=True)
             _logger.info(ess)
             az.plot_trace(inference_data)
-            filebasename = f"{self.output_dir}/{self.experiment_name}"
-            plt.savefig(filebasename + "_trace.png")
+
+            plt.savefig(self.global_settings.result_file(suffix="_trace", extension=".png"))
 
             az.plot_autocorr(inference_data)
-            plt.savefig(filebasename + "_autocorr.png")
+            plt.savefig(self.global_settings.result_file(suffix="_autocorr", extension=".png"))
             plt.close("all")
 
         return None

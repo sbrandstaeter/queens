@@ -10,7 +10,6 @@ from queens.utils.print_utils import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
-GLOBAL_SETTINGS = None
 
 
 class GlobalSettings:
@@ -44,7 +43,7 @@ class GlobalSettings:
         self.debug = debug
 
         # set up logging
-        log_file_path = self.output_dir / f'{self.experiment_name}.log'
+        log_file_path = self.result_file(".log")
         setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return_code, _, stdout, stderr = run_subprocess(
@@ -101,6 +100,32 @@ class GlobalSettings:
             )
         )
 
+    def result_file(self, extension: str, suffix: str = None) -> Path:
+        """Create path to a result file with a given extension.
+
+        Args:
+            extension (str): The extension of the file.
+            suffix (str, optional): The suffix to be appended to the experiment_name
+                                    i.e. the default stem of the filename.
+
+        Returns:
+            Path: Path of the file.
+        """
+        # Get the stem of the existing file name, should be the experiment_name
+        file_stem = self.experiment_name
+
+        # Append the suffix to the stem if provided
+        if suffix is not None:
+            file_stem += suffix
+
+        # Create a new file name with the updated stem and provided extension
+        file_name = file_stem + '.' + extension.lstrip(".")
+
+        # Create a new Path object with the updated file name
+        file_path = self.output_dir / file_name
+
+        return file_path
+
     def __enter__(self):
         """'enter'-function in order to use the global settings as a context.
 
@@ -110,8 +135,6 @@ class GlobalSettings:
             self
         """
         print_banner_and_description()
-        global GLOBAL_SETTINGS  # pylint: disable=global-statement
-        GLOBAL_SETTINGS = self
 
         return self
 
@@ -128,9 +151,6 @@ class GlobalSettings:
             exception_value: indicates exception instance
             traceback: traceback object
         """
-        global GLOBAL_SETTINGS  # pylint: disable=global-statement
-        GLOBAL_SETTINGS = None
-
         for shutdown_client in SHUTDOWN_CLIENTS.copy():
             SHUTDOWN_CLIENTS.remove(shutdown_client)
             shutdown_client()

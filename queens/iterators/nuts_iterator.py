@@ -46,6 +46,7 @@ class NUTSIterator(PyMCIterator):
         self,
         model,
         parameters,
+        global_settings,
         num_samples,
         seed,
         num_burn_in=100,
@@ -69,8 +70,10 @@ class NUTSIterator(PyMCIterator):
         """Initialize NUTS iterator.
 
         Args:
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             seed (int): Seed for rng
             num_burn_in (int, opt): Number of burn-in steps
@@ -96,6 +99,7 @@ class NUTSIterator(PyMCIterator):
         super().__init__(
             model=model,
             parameters=parameters,
+            global_settings=global_settings,
             num_burn_in=num_burn_in,
             num_chains=num_chains,
             num_samples=num_samples,
@@ -108,7 +112,6 @@ class NUTSIterator(PyMCIterator):
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
         )
-        _logger.info("NUTS Iterator for experiment: %s", self.experiment_name)
         self.max_treedepth = max_treedepth
         self.early_max_treedepth = early_max_treedepth
         self.step_size = step_size

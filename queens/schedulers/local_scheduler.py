@@ -3,7 +3,6 @@ import logging
 
 from dask.distributed import Client, LocalCluster
 
-import queens.global_settings
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
@@ -16,17 +15,24 @@ class LocalScheduler(Scheduler):
     """Local scheduler class for QUEENS."""
 
     @log_init_args
-    def __init__(self, max_concurrent=1, num_procs=1, num_procs_post=1, restart_workers=False):
+    def __init__(
+        self,
+        experiment_name,
+        max_concurrent=1,
+        num_procs=1,
+        num_procs_post=1,
+        restart_workers=False,
+    ):
         """Initialize local scheduler.
 
         Args:
+            experiment_name (str): name of the current experiment
             max_concurrent (int, opt): Number of concurrent jobs
             num_procs (int, opt): number of cores per job
             num_procs_post (int, opt): number of cores per job for post-processing
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
         """
-        experiment_name = queens.global_settings.GLOBAL_SETTINGS.experiment_name
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
         threads_per_worker = max(num_procs, num_procs_post)

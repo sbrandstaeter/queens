@@ -41,6 +41,7 @@ def fixture_default_bmfia_iterator(
     with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
+            global_settings=_initialize_global_settings,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -105,6 +106,7 @@ def test_init(
     with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
+            global_settings=_initialize_global_settings,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -130,22 +132,21 @@ def test_init(
     assert iterator.coord_cols == coord_cols
 
 
-def test_calculate_optimal_x_train(dummy_model, mocker, default_parameters_uniform_2d):
+def test_calculate_optimal_x_train(mocker, default_parameters_uniform_2d):
     """Test calculation of optimal *x_train*.
 
     **Note:** Here we return the input arguments of the design method to
     later be able to test if the arguments were correct.
     """
     expected_x_train = np.array([[1, 1]])  # return of mock_design
-    model = dummy_model
     initial_design_dict = {'test': 'test'}
     mo_1 = mocker.patch(
         'queens.iterators.bmfia_iterator.BMFIAIterator.get_design_method',
         return_value=my_mock_design,
     )
 
-    x_train, (arg0, arg1, arg2) = BMFIAIterator.calculate_initial_x_train(
-        initial_design_dict, model, default_parameters_uniform_2d
+    x_train, (arg0, arg1) = BMFIAIterator.calculate_initial_x_train(
+        initial_design_dict, default_parameters_uniform_2d
     )
 
     np.testing.assert_array_almost_equal(x_train, expected_x_train)
@@ -153,8 +154,7 @@ def test_calculate_optimal_x_train(dummy_model, mocker, default_parameters_unifo
 
     # test if the input arguments are correct
     assert arg0 == initial_design_dict
-    assert arg1 == dummy_model
-    assert arg2 == default_parameters_uniform_2d
+    assert arg1 == default_parameters_uniform_2d
 
 
 def test_get_design_method(mocker):
@@ -185,13 +185,11 @@ def test_get_design_method(mocker):
         BMFIAIterator.get_design_method(initial_design_dict)
 
 
-def test_random_design(dummy_model, default_parameters_uniform_2d, _initialize_global_settings):
+def test_random_design(default_parameters_uniform_2d, _initialize_global_settings):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])
-    x_out = BMFIAIterator.random_design(
-        initial_design_dict, dummy_model, default_parameters_uniform_2d
-    )
+    x_out = BMFIAIterator.random_design(initial_design_dict, default_parameters_uniform_2d)
 
     np.testing.assert_array_almost_equal(x_train, x_out, decimal=4)
 

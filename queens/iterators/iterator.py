@@ -2,8 +2,6 @@
 
 import abc
 
-import queens.global_settings
-
 
 class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
@@ -14,21 +12,22 @@ class Iterator(metaclass=abc.ABCMeta):
 
     Attributes:
         model (obj): Model to be evaluated by iterator.
-        experiment_name (str): Experiment name
-        output_dir (Path): Output directory
         parameters: Parameters object
+        global_settings (GlobalSettings): settings of the QUEENS experiment including its name and
+                                          the output directory
     """
 
-    def __init__(self, model, parameters):
+    def __init__(self, model, parameters, global_settings):
         """Initialize iterator object.
 
         Args:
             model (Model): Model to be evaluated by iterator.
             parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
         """
         self.model = model
-        self.experiment_name = queens.global_settings.GLOBAL_SETTINGS.experiment_name
-        self.output_dir = queens.global_settings.GLOBAL_SETTINGS.output_dir
+        self.global_settings = global_settings
         self.parameters = parameters
 
     def pre_run(self):

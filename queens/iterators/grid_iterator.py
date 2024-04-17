@@ -28,18 +28,21 @@ class GridIterator(Iterator):
         self,
         model,
         parameters,
+        global_settings,
         result_description,
         grid_design,
     ):
         """Initialize grid iterator.
 
         Args:
-            model (model): Model to be evaluated by iterator
-            parameters (obj): Parameters object
+            model (Model): Model to be evaluated by iterator
+            parameters (Parameters): Parameters object
+            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
+                                              and the output directory
             result_description (dict):  Description of desired results
             grid_design (dict): Dictionary containing grid information
         """
-        super().__init__(model, parameters)
+        super().__init__(model, parameters, global_settings)
         self.grid_dict = grid_design
         self.result_description = result_description
         self.samples = None
@@ -147,8 +150,8 @@ class GridIterator(Iterator):
         """Analyze the results."""
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, self.samples)
-            if self.result_description["write_results"] is True:
-                write_results(results, self.output_dir, self.experiment_name)
+            if self.result_description["write_results"]:
+                write_results(results, self.global_settings.result_file(".pickle"))
 
         # plot QoI over grid
         if qvis.grid_iterator_visualization_instance:
