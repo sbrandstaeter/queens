@@ -308,8 +308,8 @@ TEST_DICT = {
         "desired_result": np.array([6.4, 0.4]),
     },
     "rosenbrock60_residual_3d": {
-        "input": {"x1": 0.6},
-        "desired_result": np.array([6.4, 0.4]),
+        "input": {"x1": 0.3, "x2": 0.6, "x3": 0.5},
+        "desired_result": np.array([5.1, 0.7, 0.25]),
     },
     "sinus_test_fun": {"input": {"x1": 0.6}, "desired_result": 0.5646424733950354},
     "sobol_g_function": {
