@@ -37,7 +37,7 @@ def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
     run_iterator(iterator)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
+    result_file = tmp_path / "dummy_experiment_name.csv"
 
     data = pd.read_csv(
         result_file,
@@ -51,4 +51,4 @@ def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert (tmp_path / 'OptimizeLM.html').is_file()
+    assert (tmp_path / 'dummy_experiment_name.html').is_file()

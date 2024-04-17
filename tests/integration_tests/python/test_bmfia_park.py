@@ -7,8 +7,19 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from queens.main import run
+from queens.distributions.normal import NormalDistribution
+from queens.interfaces.bmfia_interface import BmfiaInterface
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.bmfia_iterator import BMFIAIterator
+from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
+from queens.main import run, run_iterator
+from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
+from queens.models.simulation_model import SimulationModel
+from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
+from queens.parameters.parameters import Parameters
 from queens.utils import injector
+from queens.utils.experimental_data_reader import ExperimentalDataReader
+from queens.utils.stochastic_optimizer import Adam
 
 
 @pytest.mark.max_time_for_test(30)
@@ -141,32 +152,121 @@ def fixture_expected_variational_cov():
     return exp_var_cov
 
 
-def test_bmfia_rpvi_NN_park(
-    inputdir,
+def test_bmfia_rpvi_nn_park(
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean_nn,
     expected_variational_cov_nn,
+    _initialize_global_settings,
 ):
     """Integration test for BMFIA.
 
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    template = inputdir / 'bmfia_rpvi_park_NN_template.yml'
     experimental_data_path = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": tmp_path,
-    }
-    input_file = tmp_path / 'bmfia_rpvi_park.yml'
-    injector.inject(dir_dict, template, input_file)
+    plot_dir = tmp_path
 
-    # run the main routine of QUEENS
-    run(Path(input_file), Path(tmp_path))
+    # Parameters
+    x1 = NormalDistribution(covariance=0.09, mean=0.5)
+    x2 = NormalDistribution(covariance=0.09, mean=0.5)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # get the results of the QUEENS run
-    result_file = tmp_path / 'bmfia_rpvi_park.pickle'
+    # Setup QUEENS stuff
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=experimental_data_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    mf_approx = GaussianNeuralNetworkModel(
+        activation_per_hidden_layer_lst=["elu", "elu"],
+        adams_training_rate=0.001,
+        data_scaling="standard_scaler",
+        nodes_per_hidden_layer_lst=[5, 5],
+        nugget_std=1e-05,
+        num_epochs=1,
+        optimizer_seed=42,
+        refinement_epochs_decay=0.7,
+        verbosity_on=True,
+    )
+    mf_interface = BmfiaInterface(
+        num_processors_multi_processing=1,
+        probabilistic_mapping_type="per_time_step",
+        parameters=parameters,
+    )
+    interface = DirectPythonInterface(
+        function="park91a_hifi_on_grid", num_workers=1, parameters=parameters
+    )
+    hf_model = SimulationModel(interface=interface)
+    interface = DirectPythonInterface(
+        function="park91a_lofi_on_grid_with_gradients",
+        num_workers=1,
+        parameters=parameters,
+    )
+    forward_model = SimulationModel(interface=interface)
+    lf_model = SimulationModel(interface=interface)
+    mf_subiterator = BMFIAIterator(
+        features_config="no_features",
+        initial_design={"num_HF_eval": 50, "seed": 1, "type": "random"},
+        hf_model=hf_model,
+        lf_model=lf_model,
+        parameters=parameters,
+    )
+    model = BMFGaussianModel(
+        noise_value=0.0001,
+        plotting_options={
+            "plot_booleans": [False, False],
+            "plot_names": ["bmfia_plot.png", "posterior.png"],
+            "plot_options_dict": {"x_lim": [0, 10], "y_lim": [0, 10]},
+            "plotting_dir": plot_dir,
+            "save_bool": [False, False],
+        },
+        experimental_data_reader=experimental_data_reader,
+        mf_approx=mf_approx,
+        mf_interface=mf_interface,
+        forward_model=forward_model,
+        mf_subiterator=mf_subiterator,
+    )
+    stochastic_optimizer = Adam(
+        learning_rate=0.01,
+        max_iteration=100,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+    )
+    method = RPVIIterator(
+        max_feval=100,
+        n_samples_per_iter=3,
+        random_seed=1,
+        result_description={
+            "iterative_field_names": ["variational_parameters", "elbo"],
+            "plotting_options": {
+                "plot_boolean": False,
+                "plot_name": "variational_params_convergence.jpg",
+                "plot_refresh_rate": None,
+                "plotting_dir": plot_dir,
+                "save_bool": False,
+            },
+            "write_results": True,
+        },
+        score_function_bool=False,
+        variational_distribution={
+            "variational_approximation_type": "mean_field",
+            "variational_family": "normal",
+        },
+        variational_parameter_initialization="prior",
+        variational_transformation=None,
+        model=model,
+        stochastic_optimizer=stochastic_optimizer,
+        parameters=parameters,
+    )
+
+    # Actual analysis
+    run_iterator(method)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
