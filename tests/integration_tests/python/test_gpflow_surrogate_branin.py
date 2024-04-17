@@ -3,7 +3,6 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import UniformDistribution
-from queens.global_settings import GlobalSettings
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -14,59 +13,58 @@ from queens.utils.io_utils import load_result
 
 
 def test_gpflow_surrogate_branin(
-    tmp_path, expected_mean, expected_variance, expected_posterior_samples
+    tmp_path,
+    expected_mean,
+    expected_variance,
+    expected_posterior_samples,
+    _initialize_global_settings,
 ):
     """Test case for GPflow based GP model."""
-    # Global settings
-    experiment_name = "gpflow_surrogate_branin"
-    output_dir = tmp_path
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
+    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False) as gs:
-        # Parameters
-        x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-        x2 = UniformDistribution(lower_bound=0, upper_bound=15)
-        parameters = Parameters(x1=x1, x2=x2)
+    # Setup QUEENS stuff
+    interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    training_iterator = MonteCarloIterator(
+        seed=42, num_samples=20, model=model, parameters=parameters
+    )
+    model = GPFlowRegressionModel(
+        train_likelihood_variance=False,
+        number_restarts=5,
+        number_training_iterations=1000,
+        number_posterior_samples=3,
+        seed_posterior_samples=42,
+        dimension_lengthscales=2,
+        plotting_options={
+            "plot_booleans": [False, False],
+            "plotting_dir": "dummy",
+            "plot_names": ["1D", "2D"],
+            "save_bool": [False, False],
+        },
+        training_iterator=training_iterator,
+    )
+    iterator = MonteCarloIterator(
+        seed=44,
+        num_samples=10,
+        result_description={
+            "write_results": True,
+            "plot_results": False,
+            "bayesian": False,
+            "num_support_points": 10,
+            "estimate_all": False,
+        },
+        model=model,
+        parameters=parameters,
+    )
 
-        # Setup QUEENS stuff
-        interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
-        model = SimulationModel(interface=interface)
-        training_iterator = MonteCarloIterator(
-            seed=42, num_samples=20, model=model, parameters=parameters
-        )
-        model = GPFlowRegressionModel(
-            train_likelihood_variance=False,
-            number_restarts=5,
-            number_training_iterations=1000,
-            number_posterior_samples=3,
-            seed_posterior_samples=42,
-            dimension_lengthscales=2,
-            plotting_options={
-                "plot_booleans": [False, False],
-                "plotting_dir": "dummy",
-                "plot_names": ["1D", "2D"],
-                "save_bool": [False, False],
-            },
-            training_iterator=training_iterator,
-        )
-        iterator = MonteCarloIterator(
-            seed=44,
-            num_samples=10,
-            result_description={
-                "write_results": True,
-                "plot_results": False,
-                "bayesian": False,
-                "num_support_points": 10,
-                "estimate_all": False,
-            },
-            model=model,
-            parameters=parameters,
-        )
+    # Actual analysis
+    run_iterator(iterator)
 
-        # Actual analysis
-        run_iterator(iterator)
-
-        # Load results
-        result_file = gs.output_dir / f"{gs.experiment_name}.pickle"
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
 
     results = load_result(result_file)
 

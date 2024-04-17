@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import UniformDistribution
-from queens.global_settings import GlobalSettings
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.grid_iterator import GridIterator
 from queens.main import run_iterator
@@ -13,43 +12,39 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_grid_iterator(tmp_path, expected_response, expected_grid):
+def test_grid_iterator(tmp_path, expected_response, expected_grid, _initialize_global_settings):
     """Integration test for the grid iterator."""
-    experiment_name = "grid_iterator_rosenbrock"
-    output_dir = tmp_path
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    with GlobalSettings(experiment_name=experiment_name, output_dir=output_dir, debug=False) as gs:
-        # Parameters
-        x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
-        x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
-        parameters = Parameters(x1=x1, x2=x2)
-
-        # Setup QUEENS stuff
-        interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
-        model = SimulationModel(interface=interface)
-        iterator = GridIterator(
-            grid_design={
-                "x1": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
-                "x2": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
+    # Setup QUEENS stuff
+    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = GridIterator(
+        grid_design={
+            "x1": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
+            "x2": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
+        },
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_booleans": [True],
+                "plotting_dir": "some/plotting/dir",
+                "plot_names": ["grid_plot.eps"],
+                "save_bool": [False],
             },
-            result_description={
-                "write_results": True,
-                "plotting_options": {
-                    "plot_booleans": [True],
-                    "plotting_dir": "some/plotting/dir",
-                    "plot_names": ["grid_plot.eps"],
-                    "save_bool": [False],
-                },
-            },
-            model=model,
-            parameters=parameters,
-        )
+        },
+        model=model,
+        parameters=parameters,
+    )
 
-        # Actual analysis
-        run_iterator(iterator)
+    # Actual analysis
+    run_iterator(iterator)
 
-        # Load results
-        result_file = gs.output_dir / f"{gs.experiment_name}.pickle"
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
 
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
