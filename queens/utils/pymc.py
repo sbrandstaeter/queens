@@ -1,7 +1,10 @@
 """Collection of utility functions and classes for PyMC."""
+from typing import Union
+
 import numpy as np
 import pymc as pm
 import pytensor.tensor as pt
+from pytensor import Variable
 
 from queens.distributions import beta, exponential, lognormal, normal, uniform
 
@@ -44,6 +47,27 @@ class PymcDistributionWrapper(pt.Op):
         (sample,) = inputs
         return [output_grads[0] * self.logpdf_grad(sample)]
 
+    def R_op(
+        self, inputs: list[Variable], eval_points: Union[Variable, list[Variable]]
+    ) -> list[Variable]:
+        """Construct a graph for the R-operator.
+
+        This method is primarily used by `Rop`.
+        For more information, see pymc documentation for the method.
+
+        Args:
+            inputs (list[Variable]): The input variables for the R operator.
+            eval_points (Union[Variable, list[Variable]]): Should have the same length as inputs.
+                                                           Each element of `eval_points` specifies
+                                                           the value of the corresponding input at
+                                                           the point where the R-operator is to be
+                                                           evaluated.
+
+        Returns:
+            list[Variable]
+        """
+        raise NotImplementedError
+
 
 class PymcGradientWrapper(pt.Op):
     """Op class for Data conversion.
@@ -65,8 +89,7 @@ class PymcGradientWrapper(pt.Op):
         """
         self.gradient_func = gradient_func
 
-    # pylint: disable-next=unused-argument
-    def perform(self, _node, inputs, output_storage, params=None):
+    def perform(self, _node, inputs, output_storage, _params=None):
         """Evaluate the gradient."""
         (sample,) = inputs
         if self.gradient_func is not None:
@@ -74,6 +97,27 @@ class PymcGradientWrapper(pt.Op):
             output_storage[0][0] = grads
         else:
             raise TypeError("Gradient function is not callable")
+
+    def R_op(
+        self, inputs: list[Variable], eval_points: Union[Variable, list[Variable]]
+    ) -> list[Variable]:
+        """Construct a graph for the R-operator.
+
+        This method is primarily used by `Rop`.
+        For more information, see pymc documentation for the method.
+
+        Args:
+            inputs (list[Variable]): The input variables for the R operator.
+            eval_points (Union[Variable, list[Variable]]): Should have the same length as inputs.
+                                                           Each element of `eval_points` specifies
+                                                           the value of the corresponding input at
+                                                           the point where the R-operator is to be
+                                                           evaluated.
+
+        Returns:
+            list[Variable]
+        """
+        raise NotImplementedError
 
 
 def from_config_create_pymc_distribution_dict(parameters, explicit_shape):

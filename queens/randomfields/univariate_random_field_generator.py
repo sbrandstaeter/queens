@@ -53,7 +53,7 @@ class UnivariateRandomFieldSimulator:
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, loc, phase_angles):
-        """TODO_doc: add a one-line explanation.
+        """Generate sample of Gaussian field.
 
         This method generates sample of standard Gaussian random field and evaluates it
         at *loc*. The actual generation based on series expansion methods is

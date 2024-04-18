@@ -111,6 +111,28 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         self.trunc_thres = num_terms
         self.stoch_dim = num_terms
 
+    def gen_sample_gauss_field(self, loc, phase_angles):
+        """Generate sample of Gaussian field.
+
+        This method generates sample of standard Gaussian random field and evaluates it
+        at *loc*. The actual generation based on series expansion methods is
+        implemented in the subclasses.
+
+        *gen_sample_gauss_field(loc, phase_angles)* inputs:
+
+        * *loc* location(s) at which realization of random field is evaluated
+        * *phase_angles* random phase angles or amplitudes used to generate realization of random
+        field.
+
+        Args:
+            loc (np.array): Location at which the field is evaluated
+            phase_angles (np.array): Pseudo random phase angles for field generation
+
+        Returns:
+            np.array: Value of random field at locations *x*
+        """
+        raise NotImplementedError()
+
     def compute_roots_of_characteristic_equation(self):
         """Compute roots of characteristic equation.
 
