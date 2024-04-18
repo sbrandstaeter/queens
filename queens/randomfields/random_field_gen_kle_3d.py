@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 
-from queens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
+from queens.randomfields.random_field_gen_kle import RandomFieldGenKLE
 
 
 class RandomFieldGenKLE3D(RandomFieldGenKLE):

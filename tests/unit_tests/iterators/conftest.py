@@ -31,8 +31,10 @@ def fixture_default_parameters_uniform_2d():
 @pytest.fixture(name="default_parameters_uniform_3d")
 def fixture_default_parameters_uniform_3d():
     """Parameters with 3 uniform distributions."""
-    rv = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    return Parameters(x1=rv, x2=deepcopy(rv), x3=deepcopy(rv))
+    random_variable = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    return Parameters(
+        x1=random_variable, x2=deepcopy(random_variable), x3=deepcopy(random_variable)
+    )
 
 
 @pytest.fixture(name="default_parameters_mixed")

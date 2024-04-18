@@ -4,8 +4,6 @@
 Greatest or Least Value of a      Function. The Computer Journal, 3(3),
 175–184. doi:10.1093/comjnl/3.3.175
 """
-# pylint: disable=invalid-name
-
 import numpy as np
 
 

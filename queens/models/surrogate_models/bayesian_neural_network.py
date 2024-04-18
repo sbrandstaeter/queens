@@ -163,20 +163,20 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         )
 
     @staticmethod
-    def negative_log_likelihood(y, rv_y):
+    def negative_log_likelihood(y, random_variable_y):
         """Evaluate the negative log.-likelihood of the random variable.
 
         Negative logarithmic likelihood of (tensorflow) random variable
-        *rv_y* evaluated at location *y*.
+        *random_variable_y* evaluated at location *y*.
 
         Args:
             y (float): Value/Realization of the random variable
-            rv_y (obj): Tensorflow probability random variable object
+            random_variable_y (obj): Tensorflow probability random variable object
 
         Returns:
-            negloglik (float): Negative logarithmic likelihood of *rv_y* at *y*
+            negloglik (float): Negative logarithmic likelihood of *random_variable_y* at *y*
         """
-        negloglik = -rv_y.log_prob(y)
+        negloglik = -random_variable_y.log_prob(y)
         return negloglik
 
     @staticmethod
@@ -324,24 +324,39 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         output = {}
 
         # sample over possible models (epistemic uncertainty)
-        y_rv_models = [
+        y_random_variable_models = [
             model_realization(x_test) for model_realization in self.model_realizations_lst
         ]
         # get mean of the individual gaussian models (aleatory uncertainty)
-        y_rv_model_means = np.array([y_rv.mean() for y_rv in y_rv_models]).squeeze()
+        y_random_variable_model_means = np.array(
+            [y_random_variable.mean() for y_random_variable in y_random_variable_models]
+        ).squeeze()
         # combine both sources of uncertainty averaging them
-        output['result'] = np.atleast_2d(y_rv_model_means.mean(axis=0)).T
+        output['result'] = np.atleast_2d(y_random_variable_model_means.mean(axis=0)).T
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:
-            y_rv_model_var = np.array([y_rv.variance() for y_rv in y_rv_models])
-            output["variance"] = y_rv_model_var.mean(axis=0)
-        elif full_cov is True:
-            y_rv_model_var = (
-                (np.array([y_rv.variance() for y_rv in y_rv_models])).squeeze().mean(axis=0)
+            y_random_variable_model_var = np.array(
+                [y_random_variable.variance() for y_random_variable in y_random_variable_models]
             )
-            y_rv_model_cov = np.cov(y_rv_model_means.T) + np.diag(y_rv_model_var)
-            output["variance"] = y_rv_model_cov
+            output["variance"] = y_random_variable_model_var.mean(axis=0)
+        elif full_cov is True:
+            y_random_variable_model_var = (
+                (
+                    np.array(
+                        [
+                            y_random_variable.variance()
+                            for y_random_variable in y_random_variable_models
+                        ]
+                    )
+                )
+                .squeeze()
+                .mean(axis=0)
+            )
+            y_random_variable_model_cov = np.cov(y_random_variable_model_means.T) + np.diag(
+                y_random_variable_model_var
+            )
+            output["variance"] = y_random_variable_model_cov
 
         return output
 
@@ -365,15 +380,17 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         output = {}
 
         # sample over possible models (epistemic uncertainty)
-        y_rv_models = [
+        y_random_variable_models = [
             model_realization(x_test) for model_realization in self.model_realizations_lst
         ]
-        y_rv_model_means = np.array([y_rv.mean() for y_rv in y_rv_models])
-        output['result'] = y_rv_model_means.mean(axis=0)
+        y_random_variable_model_means = np.array(
+            [y_random_variable.mean() for y_random_variable in y_random_variable_models]
+        )
+        output['result'] = y_random_variable_model_means.mean(axis=0)
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:
-            output["variance"] = y_rv_model_means.var(axis=0)
+            output["variance"] = y_random_variable_model_means.var(axis=0)
         elif full_cov is True:
             samples = self.predict_f_samples(x_test, self.num_posterior_samples)
             output["variance"] = np.cov(samples)
@@ -394,11 +411,13 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         Returns:
             samples (np.array): Samples of the latent function at locations *x_test*
         """
-        y_rv_models = [
+        y_random_variable_models = [
             model_realization(x_test) for model_realization in self.model_realizations_lst
         ]
-        y_rv_model_mean_samples = np.array([y_rv.mean() for y_rv in y_rv_models])
-        samples = np.reshape(y_rv_model_mean_samples, (x_test.shape[0], num_samples))
+        y_random_variable_model_mean_samples = np.array(
+            [y_random_variable.mean() for y_random_variable in y_random_variable_models]
+        )
+        samples = np.reshape(y_random_variable_model_mean_samples, (x_test.shape[0], num_samples))
 
         return samples
 
@@ -418,16 +437,18 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             samples (np.array): Posterior samples w.r.t. *y*
         """
         # sample the different model realizations (epistemic uncertainty)
-        y_rv_models = [
+        y_random_variable_models = [
             model_realization(x_test) for model_realization in self.model_realizations_lst
         ]
         # from each model draw one sample
-        y_rv_model_samples = np.array(
+        y_random_variable_model_samples = np.array(
             [
-                y_rv.sample(int(self.num_posterior_samples / self.num_samples_statistics))
-                for y_rv in y_rv_models
+                y_random_variable.sample(
+                    int(self.num_posterior_samples / self.num_samples_statistics)
+                )
+                for y_random_variable in y_random_variable_models
             ]
         )
 
-        samples = np.reshape(y_rv_model_samples, (x_test.shape[0], num_samples))
+        samples = np.reshape(y_random_variable_model_samples, (x_test.shape[0], num_samples))
         return samples

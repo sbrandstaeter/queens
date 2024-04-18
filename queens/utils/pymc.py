@@ -89,7 +89,7 @@ def from_config_create_pymc_distribution_dict(parameters, explicit_shape):
     """
     pymc_distribution_list = []
 
-    # loop over rvs and create list
+    # loop over random_variables and create list
     for name, distribution in zip(parameters.names, parameters.to_distribution_list()):
         pymc_distribution_list.append(
             from_config_create_pymc_distribution(distribution, name, explicit_shape)
@@ -108,11 +108,11 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         explicit_shape (int): Explicit shape parameter for distribution dimension
 
     Returns:
-        rv:     Random variable, distribution object in pymc format
+        random_variable:     Random variable, distribution object in pymc format
     """
     shape = (explicit_shape, distribution.dimension)
     if isinstance(distribution, normal.NormalDistribution):
-        rv = pm.MvNormal(
+        random_variable = pm.MvNormal(
             name,
             mu=distribution.mean,
             cov=distribution.covariance,
@@ -120,7 +120,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         )
     elif isinstance(distribution, uniform.UniformDistribution):
         if np.all(distribution.lower_bound == 0):
-            rv = pm.Uniform(
+            random_variable = pm.Uniform(
                 name,
                 lower=0,
                 upper=distribution.upper_bound,
@@ -128,14 +128,14 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             )
 
         elif np.all(distribution.upper_bound == 0):
-            rv = pm.Uniform(
+            random_variable = pm.Uniform(
                 name,
                 lower=distribution.lower_bound,
                 upper=0,
                 shape=shape,
             )
         else:
-            rv = pm.Uniform(
+            random_variable = pm.Uniform(
                 name,
                 lower=distribution.lower_bound,
                 upper=distribution.upper_bound,
@@ -147,20 +147,20 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         else:
             raise NotImplementedError("Only 1D lognormals supported")
 
-        rv = pm.LogNormal(
+        random_variable = pm.LogNormal(
             name,
             mu=distribution.mean,
             sigma=std,
             shape=shape,
         )
     elif isinstance(distribution, exponential.ExponentialDistribution):
-        rv = pm.Exponential(
+        random_variable = pm.Exponential(
             name,
             lam=distribution.rate,
             shape=shape,
         )
     elif isinstance(distribution, beta.BetaDistribution):
-        rv = pm.Beta(
+        random_variable = pm.Beta(
             name,
             alpha=distribution.a,
             beta=distribution.b,
@@ -168,4 +168,4 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         )
     else:
         raise NotImplementedError("Not supported distriubtion by QUEENS and/or PyMC")
-    return rv
+    return random_variable

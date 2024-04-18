@@ -22,7 +22,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def logpdf(self, x):  # pylint: disable=invalid-name
+    def logpdf(self, x):
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified the PMF is also accessed via the pdf.
@@ -32,7 +32,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def pdf(self, x):  # pylint: disable=invalid-name
+    def pdf(self, x):
         """Probability density function.
 
         Args:
@@ -94,7 +94,7 @@ class ContinuousDistribution(Distribution):
         self.dimension = dimension
 
     @abstractmethod
-    def cdf(self, x):  # pylint: disable=invalid-name
+    def cdf(self, x):
         """Cumulative distribution function.
 
         Args:
@@ -118,7 +118,7 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def grad_logpdf(self, x):  # pylint: disable=invalid-name
+    def grad_logpdf(self, x):
         """Gradient of the log pdf with respect to *x*.
 
         Args:
@@ -126,7 +126,7 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def pdf(self, x):  # pylint: disable=invalid-name
+    def pdf(self, x):
         """Probability density function.
 
         Args:
@@ -134,11 +134,11 @@ class ContinuousDistribution(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, q):  # pylint: disable=invalid-name
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
         """
 
     def check_1d(self):
@@ -225,7 +225,7 @@ class DiscreteDistribution(Distribution):
         """
 
     @abstractmethod
-    def logpdf(self, x):  # pylint: disable=invalid-name
+    def logpdf(self, x):
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified the PMF is also accessed via the pdf.
@@ -235,7 +235,7 @@ class DiscreteDistribution(Distribution):
         """
 
     @abstractmethod
-    def pdf(self, x):  # pylint: disable=invalid-name
+    def pdf(self, x):
         """Probability density function.
 
         Args:
@@ -243,7 +243,7 @@ class DiscreteDistribution(Distribution):
         """
 
     @abstractmethod
-    def cdf(self, x):  # pylint: disable=invalid-name
+    def cdf(self, x):
         """Cumulative distribution function.
 
         Args:
@@ -251,11 +251,11 @@ class DiscreteDistribution(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, q):  # pylint: disable=invalid-name
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf - quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
         """
 
     @abstractmethod

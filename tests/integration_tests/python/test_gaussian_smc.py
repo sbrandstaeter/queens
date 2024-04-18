@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.example_simulator_functions.gaussian_logpdf import gaussian_1d_logpdf, standard_normal
+from queens.example_simulator_functions.gaussian_logpdf import STANDARD_NORMAL, gaussian_1d_logpdf
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run
@@ -51,7 +51,7 @@ def target_density(self, samples):  # pylint: disable=unused-argument
 def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
-    samples = standard_normal.draw(10).flatten()
+    samples = STANDARD_NORMAL.draw(10).flatten()
 
     # evaluate the gaussian pdf for these 1000 samples
     pdf = []

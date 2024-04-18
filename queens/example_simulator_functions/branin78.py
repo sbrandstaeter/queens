@@ -5,7 +5,6 @@ Originates back to [1].
 [1]: Dixon, L. C. W., & Szego, G. P. (1978). The global optimization
 problem: an introduction.      Towards global optimization, 2, 1-15.
 """
-# pylint: disable=invalid-name
 
 import numpy as np
 

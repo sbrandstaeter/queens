@@ -11,6 +11,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.fields.random_fields import RandomField
 from queens.parameters.parameters import Parameters
 
+# pylint: disable=invalid-name
 
 # ------------ fixtures --------------------------
 @pytest.fixture(name="result_description")
@@ -45,15 +46,15 @@ def fixture_parameters():
     x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     pre_processor = PreProcessor()
-    rf_coords = pre_processor.coords_dict["random_inflow"]
-    rf = RandomField(
-        coords=rf_coords,
+    random_field_coords = pre_processor.coords_dict["random_inflow"]
+    random_field = RandomField(
+        coords=random_field_coords,
         corr_length=0.08,
-        std_hyperparam_rf=0.1,
+        std_hyperparam_random_field=0.1,
         mean_type='inflow_parabola',
         mean_param=1.5,
     )
-    return Parameters(x1=x1, x2=x2, random_inflow=rf)
+    return Parameters(x1=x1, x2=x2, random_inflow=random_field)
 
 
 @pytest.fixture(name="config")

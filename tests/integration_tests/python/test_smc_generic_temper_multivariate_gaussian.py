@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.example_simulator_functions.gaussian_logpdf import gaussian_4d, gaussian_4d_logpdf
+from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run
@@ -68,7 +68,7 @@ def target_density(self, samples):  # pylint: disable=unused-argument
 def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
-    samples = gaussian_4d.draw(10)
+    samples = GAUSSIAN_4D.draw(10)
     pdf = gaussian_4d_logpdf(samples)
 
     # write the data to a csv file in tmp_path

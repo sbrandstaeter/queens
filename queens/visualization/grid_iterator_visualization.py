@@ -143,7 +143,7 @@ class GridIteratorVisualization:
 
         return cls(paths, save_bools, plot_booleans, scale_types_list, var_names_list)
 
-    def plot_QoI_grid(self, output, samples, num_params, n_grid_p):
+    def plot_qoi_grid(self, output, samples, num_params, n_grid_p):
         """Plot Quantity of Interest over grid (so far support up to 2D grid).
 
         Args:

@@ -1,5 +1,4 @@
 """Sine test function."""
-# pylint: disable=invalid-name
 
 import numpy as np
 

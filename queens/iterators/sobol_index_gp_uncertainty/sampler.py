@@ -105,28 +105,28 @@ class Sampler:
         John Wiley & Sons, Ltd., 2008.
         https://doi.org/10.1002/9780470725184.
 
-        A:  sample matrix A
-        B:  sample matrix B
-        AB:  separated from A by only change in X_i; from B by change in X_{~i}
-        BA:  separated from B by only change in X_i; from A by change in X_{~i}
+        sample_matrix_a:  sample matrix A
+        sample_matrix_b:  sample matrix B
+        sample_matrix_ab:  separated from A by only change in X_i; from B by change in X_{~i}
+        sample_matrix_ba:  separated from B by only change in X_i; from A by change in X_{~i}
 
         Returns:
             samples (xr.Array): Monte-Carlo samples
         """
         samples = self._init_samples()
 
-        A, B = self._draw_base_samples()
-        samples.loc[{"sample_matrix": 'A'}] = A
-        samples.loc[{"sample_matrix": 'B'}] = B
+        sample_matrix_a, sample_matrix_b = self._draw_base_samples()
+        samples.loc[{"sample_matrix": 'A'}] = sample_matrix_a
+        samples.loc[{"sample_matrix": 'B'}] = sample_matrix_b
 
         for i, parameter_name in enumerate(self.parameter_names):
-            AB = A.copy()
-            AB[:, i] = B[:, i].flatten()
-            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = AB
+            sample_matrix_ab = sample_matrix_a.copy()
+            sample_matrix_ab[:, i] = sample_matrix_b[:, i].flatten()
+            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = sample_matrix_ab
             if self.calculate_second_order:
-                BA = B.copy()
-                BA[:, i] = A[:, i].flatten()
-                samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = BA
+                sample_matrix_ba = sample_matrix_b.copy()
+                sample_matrix_ba[:, i] = sample_matrix_a[:, i].flatten()
+                samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = sample_matrix_ba
 
         return samples
 
@@ -204,16 +204,16 @@ class Sampler:
         """Draw base sample matrices A and B.
 
         Returns:
-            A (ndarray): Saltelli A sample matrix
-            B (ndarray): Saltelli B sample matrix
+            sample_matrix_a (ndarray): Saltelli A sample matrix
+            sample_matrix_b (ndarray): Saltelli B sample matrix
         """
         draw_sample = self._get_base_sample_method()
-        base_sample_A, base_sample_B = draw_sample()
+        base_sample_matrix_a, base_sample_matrix_b = draw_sample()
 
-        A = self.parameters.inverse_cdf_transform(base_sample_A)
-        B = self.parameters.inverse_cdf_transform(base_sample_B)
+        sample_matrix_a = self.parameters.inverse_cdf_transform(base_sample_matrix_a)
+        sample_matrix_b = self.parameters.inverse_cdf_transform(base_sample_matrix_b)
 
-        return A, B
+        return sample_matrix_a, sample_matrix_b
 
     def _get_base_sample_method(self):
         """Get sampling approach for base samples.
@@ -240,18 +240,18 @@ class Sampler:
         https://arxiv.org/abs/2008.08051v4.
 
         Returns:
-            base_sample_A (ndarray): Saltelli A sample matrix in unit range
-            base_sample_B (ndarray): Saltelli B sample matrix in unit range
+            base_sample_matrix_a (ndarray): Saltelli A sample matrix in unit range
+            base_sample_matrix_b (ndarray): Saltelli B sample matrix in unit range
         """
         sobol_engine = qmc.Sobol(
             d=2 * self.number_parameters, scramble=True, seed=self.seed_monte_carlo
         )
         base_sequence = sobol_engine.random(n=self.number_monte_carlo_samples)
 
-        base_sample_A = base_sequence[:, : self.number_parameters]
-        base_sample_B = base_sequence[:, self.number_parameters :]
+        base_sample_matrix_a = base_sequence[:, : self.number_parameters]
+        base_sample_matrix_b = base_sequence[:, self.number_parameters :]
 
-        return base_sample_A, base_sample_B
+        return base_sample_matrix_a, base_sample_matrix_b
 
     def _base_sample_pseudo_random(self):
         """Get pseudo-random base samples.
@@ -259,14 +259,18 @@ class Sampler:
         Based on numpy random-number generator.
 
         Returns:
-            base_sample_A (ndarray): Saltelli A sample matrix in unit range
-            base_sample_B (ndarray): Saltelli B sample matrix in unit range
+            base_sample_matrix_a (ndarray): Saltelli A sample matrix in unit range
+            base_sample_matrix_b (ndarray): Saltelli B sample matrix in unit range
         """
         rng = np.random.default_rng(seed=self.seed_monte_carlo)
-        base_sample_A = rng.uniform(0, 1, (self.number_monte_carlo_samples, self.number_parameters))
-        base_sample_B = rng.uniform(0, 1, (self.number_monte_carlo_samples, self.number_parameters))
+        base_sample_matrix_a = rng.uniform(
+            0, 1, (self.number_monte_carlo_samples, self.number_parameters)
+        )
+        base_sample_matrix_b = rng.uniform(
+            0, 1, (self.number_monte_carlo_samples, self.number_parameters)
+        )
 
-        return base_sample_A, base_sample_B
+        return base_sample_matrix_a, base_sample_matrix_b
 
 
 class ThirdOrderSampler(Sampler):
@@ -368,11 +372,11 @@ class ThirdOrderSampler(Sampler):
         Saltelli, A., ed. Global Sensitivity Analysis: The Primer. Chichester, England; Hoboken, NJ:
         John Wiley & Sons, Ltd., 2008. https://doi.org/10.1002/9780470725184.
 
-        A:  sample matrix A
-        B:  sample matrix B
-        AB:  separated from A by only change in X_i; from B by change in X_{~i}
-        BA:  separated from B by only change in X_i; from A by change in X_{~i}
-        AB_ijk: separated from A by a change in X_i, X_j and X_k
+        sample_matrix_a:  sample matrix A
+        sample_matrix_b:  sample matrix B
+        sample_matrix_ab:  separated from A by only change in X_i; from B by change in X_{~i}
+        sample_matrix_ba:  separated from B by only change in X_i; from A by change in X_{~i}
+        sample_matrix_ab_ijk: separated from A by a change in X_i, X_j and X_k
 
         Returns:
             samples (xr.Array): Monte-Carlo sample matrices
@@ -383,30 +387,32 @@ class ThirdOrderSampler(Sampler):
             self.parameter_names.index(parameter) for parameter in self.third_order_parameters
         ]
 
-        A, B = self._draw_base_samples()
-        samples.loc[{"sample_matrix": 'A'}] = A
-        samples.loc[{"sample_matrix": 'B'}] = B
+        sample_matrix_a, sample_matrix_b = self._draw_base_samples()
+        samples.loc[{"sample_matrix": 'A'}] = sample_matrix_a
+        samples.loc[{"sample_matrix": 'B'}] = sample_matrix_b
 
         for i, parameter_name in enumerate(self.third_order_parameters):
-            AB = A.copy()
-            AB[:, third_order_parameter_indices[i]] = B[
+            sample_matrix_ab = sample_matrix_a.copy()
+            sample_matrix_ab[:, third_order_parameter_indices[i]] = sample_matrix_b[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = AB
+            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = sample_matrix_ab
 
-            BA = B.copy()
-            BA[:, third_order_parameter_indices[i]] = A[
+            sample_matrix_ba = sample_matrix_b.copy()
+            sample_matrix_ba[:, third_order_parameter_indices[i]] = sample_matrix_a[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = BA
+            samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = sample_matrix_ba
 
         # all columns from A except columns (i,j,k) for the third-order index interaction from B
-        AB_ijk = A.copy()
-        AB_ijk[:, third_order_parameter_indices] = B[:, third_order_parameter_indices]
+        sample_matrix_ab_ijk = sample_matrix_a.copy()
+        sample_matrix_ab_ijk[:, third_order_parameter_indices] = sample_matrix_b[
+            :, third_order_parameter_indices
+        ]
 
         samples.loc[
             {"sample_matrix": ['AB_' + '_'.join(self.third_order_parameters)]}
-        ] = np.expand_dims(AB_ijk, axis=1)
+        ] = np.expand_dims(sample_matrix_ab_ijk, axis=1)
 
         return samples
 

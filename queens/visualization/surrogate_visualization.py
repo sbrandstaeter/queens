@@ -309,9 +309,9 @@ class SurrogateVisualization:
             vmax=v_max,
         )
         # set colorbar
-        for PCM in ax.get_children():
-            if isinstance(PCM, ScalarMappable):
-                fig.colorbar(PCM, ax=ax)
+        for pcm in ax.get_children():
+            if isinstance(pcm, ScalarMappable):
+                fig.colorbar(pcm, ax=ax)
                 break
         ax.set_xlabel(self.parameter_names[0])
         ax.set_ylabel(self.parameter_names[1])

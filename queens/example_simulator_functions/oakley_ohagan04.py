@@ -1,5 +1,4 @@
 """Oakley O'Hagan 15D function."""
-# pylint: disable=invalid-name
 
 import numpy as np
 
@@ -123,7 +122,7 @@ def oakley_ohagan04(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14,
         ]
     )
 
-    M = np.array(
+    m = np.array(
         [
             [
                 -0.022482886,
@@ -387,7 +386,7 @@ def oakley_ohagan04(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14,
     term2 = np.dot(a2, np.sin(xx))
     term3 = np.dot(a3, np.cos(xx))
 
-    term4 = np.dot(np.dot(np.transpose(xx), M), xx)
+    term4 = np.dot(np.dot(np.transpose(xx), m), xx)
 
     y = term1 + term2 + term3 + term4
     return y[0, 0]

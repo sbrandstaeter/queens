@@ -72,7 +72,7 @@ class BetaDistribution(ContinuousDistribution):
         Returns:
             samples (np.ndarray): drawn samples from the distribution
         """
-        samples = self.scipy_beta.rvs(size=num_draws).reshape(-1, 1)
+        samples = self.scipy_beta.random_variables(size=num_draws).reshape(-1, 1)
         return samples
 
     def logpdf(self, x):
@@ -109,14 +109,14 @@ class BetaDistribution(ContinuousDistribution):
         pdf = self.scipy_beta.pdf(x).reshape(-1)
         return pdf
 
-    def ppf(self, q):
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
-        ppf = self.scipy_beta.ppf(q).reshape(-1)
+        ppf = self.scipy_beta.ppf(quantiles).reshape(-1)
         return ppf

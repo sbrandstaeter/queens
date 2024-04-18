@@ -398,7 +398,7 @@ class RMSprop(StochasticOptimizer):
             max_iteration=max_iteration,
         )
         self.beta = beta
-        self.v = ExponentialAveraging(coefficient=beta)  # pylint: disable=invalid-name
+        self.v = ExponentialAveraging(coefficient=beta)
         self.eps = eps
 
     def scheme_specific_gradient(self, gradient):
@@ -475,8 +475,8 @@ class Adam(StochasticOptimizer):
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.m = ExponentialAveraging(coefficient=beta_1)  # pylint: disable=invalid-name
-        self.v = ExponentialAveraging(coefficient=beta_2)  # pylint: disable=invalid-name
+        self.m = ExponentialAveraging(coefficient=beta_1)
+        self.v = ExponentialAveraging(coefficient=beta_2)
         self.eps = eps
 
     def scheme_specific_gradient(self, gradient):
@@ -556,8 +556,8 @@ class Adamax(StochasticOptimizer):
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.m = ExponentialAveraging(coefficient=beta_1)  # pylint: disable=invalid-name
-        self.u = 0  # pylint: disable=invalid-name
+        self.m = ExponentialAveraging(coefficient=beta_1)
+        self.u = 0
         self.eps = eps
 
     def scheme_specific_gradient(self, gradient):

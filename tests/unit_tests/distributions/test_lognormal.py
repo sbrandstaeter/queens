@@ -286,7 +286,7 @@ def test_init_lognormal_nonmatching_dimension():
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
-def logpdf(x, logpdf_const, normal_mean, precision):  # pylint: disable=invalid-name
+def logpdf(x, logpdf_const, normal_mean, precision):
     """Log pdf of lognormal (using jax.numpy).
 
     Args:

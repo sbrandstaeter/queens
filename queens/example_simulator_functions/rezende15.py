@@ -4,7 +4,6 @@
 Normalizing Flows. ArXiv:1505.      05770 [Cs, Stat].
 http://arxiv.org/abs/1505.05770
 """
-# pylint: disable=invalid-name
 
 import numpy as np
 
@@ -27,8 +26,8 @@ def rezende15_potential1(x, theta=None, as_logpdf=False):
     """
     if theta:
         cos, sin = np.cos(theta), np.sin(theta)
-        R = np.array(((cos, -sin), (sin, cos)))
-        x = np.dot(x, R.T)
+        r = np.array(((cos, -sin), (sin, cos)))
+        x = np.dot(x, r.T)
 
     # Construct z
     z_1, z_2 = x[:, 0], x[:, 1]

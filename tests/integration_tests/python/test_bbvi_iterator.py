@@ -170,7 +170,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
     return bbvi_instance
 
 
-def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument, invalid-name
+def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
     """Create visualization module."""
     output_array = []
     mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(

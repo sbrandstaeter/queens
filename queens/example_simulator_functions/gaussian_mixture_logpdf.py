@@ -10,7 +10,6 @@ algorithm’,      Geophysical Journal International, 194(3), pp.
 **TODO_doc**: In this module, reference [1] is defined twice, maybe one
 of them can be changed to [2]?
 """
-# pylint: disable=invalid-name
 
 
 import numpy as np
@@ -18,22 +17,22 @@ import numpy as np
 from queens.distributions.mixture import MixtureDistribution
 from queens.distributions.normal import NormalDistribution
 
-dim = 4
+DIM = 4
 
-mean1 = 0.5 * np.ones(dim)
-mean2 = -mean1
+MEAN_1 = 0.5 * np.ones(DIM)
+MEAN_2 = -MEAN_1
 
-std = 0.1
-cov = (std**2) * np.eye(dim)
+STD = 0.1
+COV = (STD**2) * np.eye(DIM)
 
-weight1 = 0.1
-weight2 = 1 - weight1
+WEIGHT_1 = 0.1
+WEIGHT_2 = 1 - WEIGHT_1
 
-gaussian_component_1 = NormalDistribution(mean1, cov)
-gaussian_component_2 = NormalDistribution(mean2, cov)
+GAUSSIAN_COMPONENT_1 = NormalDistribution(MEAN_1, COV)
+GAUSSIAN_COMPONENT_2 = NormalDistribution(MEAN_2, COV)
 
-gaussian_mixture = MixtureDistribution(
-    [weight1, weight2], [gaussian_component_1, gaussian_component_2]
+GAUSSIAN_MIXTURE = MixtureDistribution(
+    [WEIGHT_1, WEIGHT_2], [GAUSSIAN_COMPONENT_1, GAUSSIAN_COMPONENT_2]
 )
 
 
@@ -55,7 +54,7 @@ def gaussian_mixture_4d_logpdf(samples):
     References:
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
-    return gaussian_mixture.logpdf(samples)
+    return GAUSSIAN_MIXTURE.logpdf(samples)
 
 
 if __name__ == "__main__":

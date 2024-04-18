@@ -8,7 +8,7 @@ import pytest
 from mock import patch
 
 # fmt: off
-from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d, gaussian_2d_logpdf
+from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_2D, gaussian_2d_logpdf
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 
 # fmt: on
@@ -55,7 +55,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmp_path, _create_e
     )
 
 
-def target_density(self, samples): #pylint: disable=unused-argument
+def target_density(self, samples):  # pylint: disable=unused-argument
     """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)
@@ -67,7 +67,7 @@ def target_density(self, samples): #pylint: disable=unused-argument
 def fixture_create_experimental_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
-    samples = gaussian_2d.draw(10)
+    samples = GAUSSIAN_2D.draw(10)
     pdf = gaussian_2d_logpdf(samples)
 
     pdf = np.array(pdf)

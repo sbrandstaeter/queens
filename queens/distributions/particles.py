@@ -46,7 +46,7 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
         )
         return mean, covariance
 
-    def cdf(self, x):  # pylint: disable=invalid-name
+    def cdf(self, x):
         """Cumulative distribution function.
 
         Args:
@@ -79,7 +79,7 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
-    def logpdf(self, x):  # pylint: disable=invalid-name
+    def logpdf(self, x):
         """Log of the probability mass function.
 
         Args:
@@ -87,7 +87,7 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
         """
         return np.log(self.pdf(x))
 
-    def pdf(self, x):  # pylint: disable=invalid-name
+    def pdf(self, x):
         """Probability mass function.
 
         Args:
@@ -102,16 +102,16 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
 
         return self.probabilities[index]
 
-    def ppf(self, q):  # pylint: disable=invalid-name
+    def ppf(self, quantiles):
         """Percent point function (inverse of cdf-quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
 
         Returns:
             np.ndarray: Event samples corresponding to the quantiles
         """
         self.check_1d()
-        indices = np.searchsorted(np.cumsum(self.probabilities), q, side='left')
+        indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side='left')
         indices = np.clip(indices, 0, len(self.probabilities))
         return self.sample_space[indices]

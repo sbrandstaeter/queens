@@ -145,41 +145,49 @@ class SobolIndexIterator(Iterator):
         Args:
             results (dict): Dictionary with Sobol indices and confidence intervals
         """
-        S = results["sensitivity_indices"]
+        sensitivity_indices = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
 
-        additivity = np.sum(S["S1"])
+        additivity = np.sum(sensitivity_indices["S1"])
         higher_interactions = 1 - additivity
-        S_df = pd.DataFrame(
-            {key: value for (key, value) in S.items() if key not in ["S2", "S2_conf"]},
+        sensitivity_indices_df = pd.DataFrame(
+            {
+                key: value
+                for (key, value) in sensitivity_indices.items()
+                if key not in ["S2", "S2_conf"]
+            },
             index=parameter_names,
         )
         _logger.info("Main and Total Effects:")
-        _logger.info(S_df)
+        _logger.info(sensitivity_indices_df)
         _logger.info("Additivity, sum of main effects (for independent variables):")
         _logger.info('S_i = %s', additivity)
 
         if self.calc_second_order:
-            S2 = S["S2"]
-            S2_conf = S["S2_conf"]
+            second_order_indices = sensitivity_indices["S2"]
+            second_order_indices_conf = sensitivity_indices["S2_conf"]
 
             for j in range(self.parameters.num_parameters):
-                S2[j, j] = S["S1"][j]
+                second_order_indices[j, j] = sensitivity_indices["S1"][j]
                 for k in range(j + 1, self.parameters.num_parameters):
-                    S2[k, j] = S2[j, k]
-                    S2_conf[k, j] = S2_conf[j, k]
+                    second_order_indices[k, j] = second_order_indices[j, k]
+                    second_order_indices_conf[k, j] = second_order_indices_conf[j, k]
 
-            S2_df = pd.DataFrame(S2, columns=parameter_names, index=parameter_names)
-            S2_conf_df = pd.DataFrame(S2_conf, columns=parameter_names, index=parameter_names)
+            second_order_indices_df = pd.DataFrame(
+                second_order_indices, columns=parameter_names, index=parameter_names
+            )
+            second_order_indices_conf_df = pd.DataFrame(
+                second_order_indices_conf, columns=parameter_names, index=parameter_names
+            )
 
             _logger.info("Second Order Indices (diagonal entries are main effects):")
-            _logger.info(S2_df)
+            _logger.info(second_order_indices_df)
             _logger.info("Confidence Second Order Indices:")
-            _logger.info(S2_conf_df)
+            _logger.info(second_order_indices_conf_df)
 
             # we extract the upper triangular matrix which includes the diagonal entries
             # therefore we have to subtract the trace
-            second_order_interactions = np.sum(np.triu(S2, k=1))
+            second_order_interactions = np.sum(np.triu(second_order_indices, k=1))
             higher_interactions = higher_interactions - second_order_interactions
             str_second_order_interactions = f'S_ij = {second_order_interactions}'
 
@@ -261,11 +269,13 @@ class SobolIndexIterator(Iterator):
 
         # Plot second order indices (if applicable)
         if self.calc_second_order:
-            S2 = results["sensitivity_indices"]["S2"]
-            S2 = S2[np.triu_indices(self.num_params, k=1)]
+            second_order_indices = results["sensitivity_indices"]["S2"]
+            second_order_indices = second_order_indices[np.triu_indices(self.num_params, k=1)]
 
-            S2_conf = results["sensitivity_indices"]["S2_conf"]
-            S2_conf = S2_conf[np.triu_indices(self.num_params, k=1)]
+            second_order_indices_conf = results["sensitivity_indices"]["S2_conf"]
+            second_order_indices_conf = second_order_indices_conf[
+                np.triu_indices(self.num_params, k=1)
+            ]
 
             # build list of names of second-order indices
             names = []
@@ -275,7 +285,9 @@ class SobolIndexIterator(Iterator):
 
             chart_path = self.global_settings.result_file(suffix="_S2", extension=".html")
             bars = go.Bar(
-                x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
+                x=names,
+                y=second_order_indices,
+                error_y={"type": 'data', "array": second_order_indices_conf, "visible": True},
             )
             data = [bars]
 

@@ -6,9 +6,9 @@ from queens.randomfields.generic_external_random_field import GenericExternalRan
 from queens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from queens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 from queens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFourier3D
-from queens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
-from queens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
-from queens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
+from queens.randomfields.random_field_gen_kle_1d import RandomFieldGenKLE1D
+from queens.randomfields.random_field_gen_kle_2d import RandomFieldGenKLE2D
+from queens.randomfields.random_field_gen_kle_3d import RandomFieldGenKLE3D
 
 
 def create_univariate_random_field(
@@ -20,7 +20,7 @@ def create_univariate_random_field(
     field_bbox=None,
     num_terms_per_dim=None,
     total_terms=None,
-    std_hyperparam_rf=None,
+    std_hyperparam_random_field=None,
     mean_fun_params=None,
     mean_fun_type=None,
     num_samples=None,
@@ -45,7 +45,7 @@ def create_univariate_random_field(
                           representation only and without external definition)
         num_terms_per_dim (int): Number of terms per dimension (for spectral decomposition only)
         total_terms (int): Total Number of terms (spectral decomposition only)
-        std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
+        std_hyperparam_random_field (float): Hyperparameter for standard-deviation of random field
         mean_fun_params (lst): List of parameters for mean function parameterization
                                of random field
         mean_fun_type (str): Type of mean function that should be used
@@ -55,12 +55,12 @@ def create_univariate_random_field(
         dimension: TODO_doc
 
     Returns:
-        rf (obj): Instance of a random field generator class
+        random_field (obj): Instance of a random field generator class
     """
     if corrstruct == 'generic_external_random_field':
-        rf = GenericExternalRandomField(
+        random_field = GenericExternalRandomField(
             corr_length=corr_length,
-            std_hyperparam_rf=std_hyperparam_rf,
+            std_hyperparam_random_field=std_hyperparam_random_field,
             mean_fun_params=mean_fun_params,
             num_samples=num_samples,
             external_definition=external_definition,
@@ -71,7 +71,7 @@ def create_univariate_random_field(
 
     elif corrstruct == 'squared_exp':
         if spatial_dimension == 1:
-            rf = RandomFieldGenFourier1D(
+            random_field = RandomFieldGenFourier1D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -80,7 +80,7 @@ def create_univariate_random_field(
                 total_terms,
             )
         elif spatial_dimension == 2:
-            rf = RandomFieldGenFourier2D(
+            random_field = RandomFieldGenFourier2D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -89,7 +89,7 @@ def create_univariate_random_field(
                 total_terms,
             )
         elif spatial_dimension == 3:
-            rf = RandomFieldGenFourier3D(
+            random_field = RandomFieldGenFourier3D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -104,7 +104,7 @@ def create_univariate_random_field(
 
     elif corrstruct == 'exp':
         if spatial_dimension == 1:
-            rf = RandomFieldGenKLE1D(
+            random_field = RandomFieldGenKLE1D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -114,7 +114,7 @@ def create_univariate_random_field(
                 total_terms,
             )
         elif spatial_dimension == 2:
-            rf = RandomFieldGenKLE2D(
+            random_field = RandomFieldGenKLE2D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -124,7 +124,7 @@ def create_univariate_random_field(
                 total_terms,
             )
         elif spatial_dimension == 3:
-            rf = RandomFieldGenKLE3D(
+            random_field = RandomFieldGenKLE3D(
                 marg_pdf,
                 corr_length,
                 energy_frac,
@@ -140,7 +140,7 @@ def create_univariate_random_field(
             'Auto-correlation structure has to be'
             f' either "squared_exp" or "exp", not {corrstruct}'
         )
-    return rf
+    return random_field
 
 
 def calculate_one_truncated_realization_of_all_fields(

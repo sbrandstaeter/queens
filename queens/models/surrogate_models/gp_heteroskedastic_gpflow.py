@@ -242,12 +242,16 @@ class HeteroskedasticGPModel(SurrogateModel):
         # of inferred clusters
         kmeans = KMeans(n_clusters=self.num_inducing_points)
         kmeans.fit(self.x_train)
-        Z = kmeans.cluster_centers_
+        initial_inducing_points = kmeans.cluster_centers_
 
         inducing_variable = gpf.inducing_variables.SeparateIndependentInducingVariables(
             [
-                gpf.inducing_variables.InducingPoints(Z),  # This is U1 = f1(Z1)
-                gpf.inducing_variables.InducingPoints(Z),  # This is U2 = f2(Z2)
+                gpf.inducing_variables.InducingPoints(
+                    initial_inducing_points
+                ),  # This is U1 = f1(Z1)
+                gpf.inducing_variables.InducingPoints(
+                    initial_inducing_points
+                ),  # This is U2 = f2(Z2)
             ]
         )
 

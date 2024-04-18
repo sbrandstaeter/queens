@@ -691,8 +691,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
         """
         current_material_number = int(line.split()[1])
 
-        # TODO see how to use the random field lst here but also only address first rf for now # pylint: disable=fixme
-        # TODO maybe directly separate the rf types as different attributes # pylint: disable=fixme
+        # pylint: disable=fixme
+        # TODO see how to use the random field lst here
+        # TODO but also only address first random_field for now
+        # TODO maybe directly separate the random_field types as different attributes
+        # pylint: enable=fixme
         # get random fields of type material
         material_fields = [field for field in random_field_lst if field["type"] == "material"]
 
@@ -886,7 +889,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 )
 
                 # write the new fields to the dat file --------------------------------------------
-                for topo_node, rf1, rf2, rf3, f1, f2, f3 in zip(
+                for topo_node, random_field_1, random_field_2, random_field_3, f1, f2, f3 in zip(
                     node_set['topo_dnodes'],
                     realized_random_field_1,
                     realized_random_field_2,
@@ -896,8 +899,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     fun_3,
                 ):
                     print(
-                        f"E {topo_node} - NUMDOF 3 ONOFF 1 1 1 VAL {rf1} "
-                        f"{rf2} {rf3} FUNCT {int(f1)} {int(f2)} {int(f3)}"
+                        f"E {topo_node} - NUMDOF 3 ONOFF 1 1 1 VAL {random_field_1} "
+                        f"{random_field_2} {random_field_3} FUNCT {int(f1)} {int(f2)} {int(f3)}"
                     )
 
             else:
@@ -1172,7 +1175,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             random_fields_lst (lst): List containing descriptions of involved random fields
         """
         # iterate through all random fields that encode BCs
-        BCs_random_fields = (
+        boundary_conditions_random_fields = (
             random_field
             for random_field in random_fields_lst
             if (
@@ -1182,7 +1185,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             )
         )
         nodes_mesh_lst = []  # note, this is a list of dicts
-        for random_field in BCs_random_fields:
+        for random_field in boundary_conditions_random_fields:
             # get associated geometric set
             topology_name = random_field["external_instance"]
             topology_type = topology_name.split()[0]

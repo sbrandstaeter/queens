@@ -3,7 +3,6 @@
 This is a two-dimensional benchmark function for constraint Bayesian
 optimization.
 """
-# pylint: disable=invalid-name
 
 import numpy as np
 

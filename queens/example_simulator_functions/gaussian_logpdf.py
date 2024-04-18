@@ -3,34 +3,31 @@ import numpy as np
 
 from queens.distributions.normal import NormalDistribution
 
-# pylint: disable=invalid-name
-
-
 # 1d standard Gaussian
-standard_normal = NormalDistribution(0.0, 1)
+STANDARD_NORMAL = NormalDistribution(0.0, 1)
 
 # 2d Gaussian
-dim = 2
+DIM = 2
 
-mean = [0.0, 0.0]
-cov = [[1.0, 0.5], [0.5, 1.0]]
+MEAN_2D = [0.0, 0.0]
+COV_2D = [[1.0, 0.5], [0.5, 1.0]]
 
-A = np.eye(dim, dim)
-b = np.zeros(dim)
+A = np.eye(DIM, DIM)
+B = np.zeros(DIM)
 
-gaussian_2d = NormalDistribution(mean, cov)
+GAUSSIAN_2D = NormalDistribution(MEAN_2D, COV_2D)
 
 # 4d Gaussian
-cov = [
+COV_4D = [
     [2.691259143915389, 1.465825570809310, 0.347698874175537, 0.140030644426489],
     [1.465825570809310, 4.161662217930926, 0.423882544003853, 1.357386322235196],
     [0.347698874175537, 0.423882544003853, 2.928845742295657, 0.484200164430076],
     [0.140030644426489, 1.357386322235196, 0.484200164430076, 3.350315448057768],
 ]
 
-mean = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
+MEAN_4D = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
 
-gaussian_4d = NormalDistribution(mean, cov)
+GAUSSIAN_4D = NormalDistribution(MEAN_4D, COV_4D)
 
 
 def gaussian_1d_logpdf(x):
@@ -41,7 +38,7 @@ def gaussian_1d_logpdf(x):
     Returns:
         float: The logpdf evaluated at *x*
     """
-    y = np.atleast_2d(standard_normal.logpdf(x))
+    y = np.atleast_2d(STANDARD_NORMAL.logpdf(x))
     return y
 
 
@@ -54,8 +51,8 @@ def gaussian_2d_logpdf(samples):
     Returns:
         np.ndarray: logpdf
     """
-    model_data = np.dot(A, samples.T).T + b
-    y = gaussian_2d.logpdf(model_data)
+    model_data = np.dot(A, samples.T).T + B
+    y = GAUSSIAN_2D.logpdf(model_data)
     return y
 
 
@@ -68,5 +65,5 @@ def gaussian_4d_logpdf(samples):
     Returns:
         np.ndarray: logpdf
     """
-    y = gaussian_4d.logpdf(samples)
+    y = GAUSSIAN_4D.logpdf(samples)
     return y

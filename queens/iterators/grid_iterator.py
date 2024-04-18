@@ -154,8 +154,8 @@ class GridIterator(Iterator):
                 write_results(results, self.global_settings.result_file(".pickle"))
 
         # plot QoI over grid
-        if qvis.grid_iterator_visualization_instance:
-            qvis.grid_iterator_visualization_instance.plot_QoI_grid(
+        if qvis.grid_iterator_visualization_instance:  # pylint: disable=no-member
+            qvis.grid_iterator_visualization_instance.plot_qoi_grid(  # pylint: disable=no-member
                 self.output,
                 self.samples,
                 self.num_parameters,

@@ -4,6 +4,7 @@ import pytest
 
 from queens.interfaces.bmfmc_interface import BmfmcInterface
 
+# pylint: disable=invalid-name
 
 # -------- fixtures -----------------------------------
 class FakeRegression:

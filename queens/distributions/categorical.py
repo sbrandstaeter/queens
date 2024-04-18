@@ -72,7 +72,7 @@ class CategoricalDistribution(Distribution):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
-    def logpdf(self, x):  # pylint: disable=invalid-name
+    def logpdf(self, x):
         """Log of the probability *mass* function.
 
         Args:
@@ -83,7 +83,7 @@ class CategoricalDistribution(Distribution):
         """
         return np.log(self.pdf(x))
 
-    def pdf(self, x):  # pylint: disable=invalid-name
+    def pdf(self, x):
         """Probability *mass* function.
 
         Args:

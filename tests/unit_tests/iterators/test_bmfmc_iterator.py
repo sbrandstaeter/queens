@@ -1,5 +1,5 @@
 """TODO_doc."""
-
+# pylint: disable=invalid-name
 import numpy as np
 import pytest
 from mock import Mock

@@ -236,7 +236,7 @@ def test_init_normal_not_symmetric(mean_3d):
         NormalDistribution(mean=mean_3d, covariance=covariance)
 
 
-def logpdf(x, logpdf_const, mean, precision):  # pylint: disable=invalid-name
+def logpdf(x, logpdf_const, mean, precision):
     """Log pdf of normal distribution.
 
     Args:

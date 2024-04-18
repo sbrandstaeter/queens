@@ -1,5 +1,5 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
-
+# pylint: disable=invalid-name
 import copy
 import logging
 import multiprocessing as mp

@@ -57,7 +57,7 @@ class TestVisualizationGridIterator:
         samples = np.array([[1.0, 1.0], [2.0, 2.0], [1.0, 2.0], [2.0, 1.0]])
         num_params = 2
         n_grid_p = [2, 2]
-        qvis.grid_iterator_visualization_instance.plot_QoI_grid(
+        qvis.grid_iterator_visualization_instance.plot_qoi_grid(
             output, samples, num_params, n_grid_p
         )
         filepath = tmp_path / 'myplot.png'

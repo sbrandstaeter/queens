@@ -190,17 +190,18 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         return model
 
     @staticmethod
-    def negative_log_likelihood(y, rv_y):
-        """Negative log. likelihood of (tensorflow) random variable rv_y.
+    def negative_log_likelihood(y, random_variable_y):
+        """Negative log-likelihood of (tensorflow) random variable.
 
         Args:
             y (float): Value/Realization of the random variable
-            rv_y (obj): Tensorflow probability random variable object
+            random_variable_y (obj): Tensorflow probability random variable object
 
         Returns:
-            negative_log_likelihood (float): Negative logarithmic likelihood of rv_y at y
+            negative_log_likelihood (float): Negative logarithmic likelihood of random_variable_y
+                                             at y
         """
-        negative_log_likelihood = -rv_y.log_prob(y)
+        negative_log_likelihood = -random_variable_y.log_prob(y)
         return negative_log_likelihood
 
     def update_training_data(self, x_train, y_train):
