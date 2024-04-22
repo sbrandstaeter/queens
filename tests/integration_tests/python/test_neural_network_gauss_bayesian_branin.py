@@ -1,20 +1,17 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pytest
 
 from queens.main import run
+from queens.utils.io_utils import load_result
 
 
 def test_neural_network_gauss_bayesian_branin(inputdir, tmp_path, expected_mean, expected_var):
     """Test case for Bayesian neural network model."""
     run(inputdir / 'neural_network_gauss_bayesian_branin.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=4

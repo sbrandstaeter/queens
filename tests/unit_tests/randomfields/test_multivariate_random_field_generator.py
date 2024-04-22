@@ -14,6 +14,8 @@ from queens.randomfields.multivariate_random_field_generator import MultiVariate
 class TestMultivariateRandomFieldGenerator(unittest.TestCase):
     """TODO_doc."""
 
+    # pylint: disable=duplicate-code
+
     def setUp(self):
         """TODO_doc."""
         # setup some necessary variables to setup random field generators

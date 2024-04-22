@@ -1,12 +1,11 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pytest
 
 from queens.main import run
 from queens.utils.input_to_script import create_script_from_input_file
+from queens.utils.io_utils import load_result
 from queens.utils.run_subprocess import run_subprocess
 
 
@@ -76,9 +75,7 @@ def test_elementary_effects_sobol(
     """Test case for elementary effects on Sobol's G-function."""
     run(inputdir / 'elementary_effects_sobol.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
     np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)
@@ -99,9 +96,7 @@ def test_elementary_effects_sobol_from_script(
     # The False is needed due to the loading bars
     run_subprocess(command, raise_error_on_subprocess_failure=False)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
     np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)

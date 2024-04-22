@@ -25,11 +25,9 @@ def test_rpvi_iterator_park91a_hifi(
     Based on the *park91a_hifi* function.
     """
     template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
-    experimental_data_path = tmp_path
-    plot_dir = tmp_path
     dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
+        "experimental_data_path": tmp_path,
+        "plot_dir": tmp_path,
         "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
         "model": "model",
@@ -71,11 +69,9 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     Based on the *park91a_hifi* function.
     """
     template = inputdir / "rpvi_park91a_hifi_template.yml"
-    experimental_data_path = tmp_path
-    plot_dir = tmp_path
     dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
+        "experimental_data_path": tmp_path,
+        "plot_dir": tmp_path,
         "forward_model_name": "fd_model",
         "my_function": "park91a_hifi_on_grid",
         "model": "model_external",
@@ -111,7 +107,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = inputdir / "rpvi_park91a_hifi_template.yml"
-    experimental_data_path = tmp_path
+    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,

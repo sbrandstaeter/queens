@@ -1,11 +1,10 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pytest
 
 from queens.main import run
+from queens.utils.io_utils import load_result
 
 
 @pytest.mark.max_time_for_test(30)
@@ -13,9 +12,7 @@ def test_branin_gpflow_heteroskedastic(inputdir, tmp_path, expected_mean, expect
     """Test case for GPflow based heteroskedastic model."""
     run(inputdir / 'gp_heteroskedastic_surrogate_branin.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=2

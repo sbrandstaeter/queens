@@ -134,7 +134,7 @@ def test_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d
 
 def test_grad_logpdf_lognormal_1d(lognormal_1d, sample_pos_1d):
     """Test *grad_logpdf* method of LogNormal distribution class."""
-    sample_pos_1d = sample_pos_1d.reshape(-1, 1)
+    sample_pos_1d = sample_pos_1d.reshape(-1, 1)  # pylint: disable=duplicate-code
     grad_logpdf_jax = grad(logpdf, argnums=0)
     ref_sol_list = []
     for sample in sample_pos_1d:

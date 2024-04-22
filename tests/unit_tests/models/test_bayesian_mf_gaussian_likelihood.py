@@ -1,4 +1,5 @@
 """Unit tests for Bayesian multi-fidelity Gaussian likelihood function."""
+
 # pylint: disable=invalid-name
 from unittest import mock
 
@@ -13,21 +14,6 @@ from queens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures and params ---------------
-@pytest.fixture(name="result_description")
-def fixture_result_description():
-    """Fixture for a dummy result description."""
-    description = {"write_results": True}
-    return description
-
-
-@pytest.fixture(name="dummy_model")
-def fixture_dummy_model():
-    """Fixture for dummy model."""
-    interface = 'my_dummy_interface'
-    model = SimulationModel(interface)
-    return model
-
-
 @pytest.fixture(name="default_interface")
 def fixture_default_interface():
     """Dummy BMFIA interface for testing."""
@@ -89,12 +75,12 @@ def fixture_default_bmfia_iterator(_initialize_global_settings):
 @pytest.fixture(name="default_mf_likelihood")
 def fixture_default_mf_likelihood(
     mocker,
-    dummy_model,
+    dummy_simulation_model,
     default_interface,
     default_bmfia_iterator,
 ):
     """Default multi-fidelity Gaussian likelihood object."""
-    forward_model = dummy_model
+    forward_model = dummy_simulation_model
     coords_mat = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 2, 3, 4])
     y_obs = np.array([[1, 2], [3, 4]])
@@ -180,9 +166,9 @@ def fixture_mock_model():
 
 
 # ------------ unit_tests -------------------------
-def test_init(mocker, dummy_model, default_interface, default_bmfia_iterator):
+def test_init(mocker, dummy_simulation_model, default_interface, default_bmfia_iterator):
     """Test the init of the multi-fidelity Gaussian likelihood function."""
-    forward_model = dummy_model
+    forward_model = dummy_simulation_model
     coords_mat = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 2, 3, 4])
     y_obs = np.array([[1], [3]])

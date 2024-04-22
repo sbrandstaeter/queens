@@ -6,6 +6,7 @@ import pytest
 from queens.example_simulator_functions.park91a import park91a_hifi
 from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
+from tests.utils import assert_surrogate_model_output
 
 
 @pytest.fixture(name="my_model")
@@ -41,25 +42,16 @@ def test_gaussian_nn_one_dim(my_model):
 
     # --- get the mean and variance of the model (no gradient call here) ---
     output = my_model.predict(x_test)
-    mean = output['result']
-    variance = output['variance']
-
-    np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
-    np.testing.assert_array_almost_equal(variance, var_ref, decimal=2)
+    assert_surrogate_model_output(output, mean_ref, var_ref)
 
     # -- now call the gradient function of the model---
     output = my_model.predict(x_test, gradient_bool=True)
-    mean = output['result']
-    variance = output['variance']
-    gradient_mean = output['grad_mean']
-    gradient_variance = output['grad_var']
+
     gradient_variance_ref = np.zeros(gradient_mean_ref.shape)
-
-    np.testing.assert_array_almost_equal(mean, mean_ref, decimal=1)
-    np.testing.assert_array_almost_equal(variance, var_ref, decimal=2)
-
-    np.testing.assert_array_almost_equal(gradient_mean, gradient_mean_ref, decimal=1)
-    np.testing.assert_array_almost_equal(gradient_variance, gradient_variance_ref, decimal=2)
+    decimals = (1, 2, 1, 2)
+    assert_surrogate_model_output(
+        output, mean_ref, var_ref, gradient_mean_ref, gradient_variance_ref, decimals
+    )
 
 
 def test_gaussian_nn_two_dim(my_model):
@@ -94,22 +86,13 @@ def test_gaussian_nn_two_dim(my_model):
 
     # --- get the mean and variance of the model (no gradient call here) ---
     output = my_model.predict(x_test)
-    mean = output['result']
-    variance = output['variance']
-
-    np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
-    np.testing.assert_array_almost_equal(variance, var_ref, decimal=2)
+    assert_surrogate_model_output(output, mean_ref, var_ref)
 
     # -- now call the gradient function of the model---
     output = my_model.predict(x_test, gradient_bool=True)
-    mean = output['result']
-    variance = output['variance']
-    gradient_mean = output['grad_mean']
-    gradient_variance = output['grad_var']
+
     gradient_variance_ref = np.zeros(gradient_mean_ref.shape)
-
-    np.testing.assert_array_almost_equal(mean, mean_ref, decimal=2)
-    np.testing.assert_array_almost_equal(variance, var_ref, decimal=2)
-
-    np.testing.assert_array_almost_equal(gradient_mean, gradient_mean_ref, decimal=1)
-    np.testing.assert_array_almost_equal(gradient_variance, gradient_variance_ref, decimal=2)
+    decimals = (2, 2, 1, 2)
+    assert_surrogate_model_output(
+        output, mean_ref, var_ref, gradient_mean_ref, gradient_variance_ref, decimals
+    )

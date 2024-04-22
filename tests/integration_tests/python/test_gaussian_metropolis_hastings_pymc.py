@@ -1,9 +1,8 @@
 """Test PyMC MH Sampler."""
-import pickle
+
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 from mock import patch
 
@@ -11,9 +10,10 @@ from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpd
 from queens.main import run
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
-def test_gaussian_mh(inputdir, tmp_path, _create_experimental_data):
+def test_gaussian_mh(inputdir, tmp_path, _create_experimental_data_zero):
     """Test case for mh iterator."""
     template = inputdir / "mh_gaussian.yml"
     experimental_data_path = tmp_path
@@ -23,9 +23,7 @@ def test_gaussian_mh(inputdir, tmp_path, _create_experimental_data):
     with patch.object(GaussianLikelihood, "evaluate", target_density):
         run(Path(input_file), Path(tmp_path))
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([-0.5680310153118374, 0.9247536392514567])
@@ -39,15 +37,3 @@ def target_density(self, samples):  # pylint: disable=unused-argument
     log_likelihood = gaussian_2d_logpdf(samples).flatten()
 
     return log_likelihood
-
-
-@pytest.fixture(name="_create_experimental_data")
-def fixture_create_experimental_data(tmp_path):
-    """Generate 2 samples from the same gaussian."""
-    samples = np.array([0, 0]).flatten()
-
-    # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': samples}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
-    df = pd.DataFrame.from_dict(data_dict)
-    df.to_csv(experimental_data_path, index=False)
