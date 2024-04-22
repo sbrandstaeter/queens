@@ -7,12 +7,11 @@
 absl-py==2.1.0
     # via
     #   chex
-    #   keras
     #   optax
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
-arviz==0.17.1
+arviz==0.18.0
     # via
     #   -r requirements.in
     #   pymc
@@ -27,7 +26,9 @@ black==22.3.0
 bokeh==2.4.3
     # via -r requirements.in
 cachetools==5.3.3
-    # via pymc
+    # via
+    #   google-auth
+    #   pymc
 certifi==2024.2.2
     # via requests
 cffi==1.16.0
@@ -58,19 +59,17 @@ cons==0.4.6
     #   etuples
     #   minikanren
     #   pytensor
-contourpy==1.2.0
+contourpy==1.2.1
     # via matplotlib
 coverage[toml]==7.4.4
-    # via
-    #   coverage
-    #   pytest-cov
+    # via pytest-cov
 cryptography==42.0.5
     # via paramiko
 cycler==0.12.1
     # via matplotlib
 cython==0.29.35
     # via -r requirements.in
-dask==2024.3.1
+dask==2024.4.2
     # via
     #   -r requirements.in
     #   dask-jobqueue
@@ -89,7 +88,7 @@ dill==0.3.8
     # via
     #   multiprocess
     #   pathos
-distributed==2024.3.1
+distributed==2024.4.2
     # via
     #   -r requirements.in
     #   dask-jobqueue
@@ -97,8 +96,8 @@ diversipy==0.8
     # via -r requirements.in
 dm-tree==0.1.8
     # via
+    #   arviz
     #   chex
-    #   keras
     #   tensorflow-probability
 dropstackframe==0.1.0
     # via check-shapes
@@ -106,21 +105,19 @@ etuples==0.3.9
     # via
     #   minikanren
     #   pytensor
-exceptiongroup==1.2.0
+exceptiongroup==1.2.1
     # via pytest
-execnet==2.0.2
+execnet==2.1.1
     # via pytest-xdist
 fabric==3.2.2
     # via -r requirements.in
-fastprogress==1.0.3
-    # via pymc
-filelock==3.13.1
+filelock==3.13.4
     # via pytensor
-flatbuffers==24.3.7
+flatbuffers==24.3.25
     # via tensorflow
-fonttools==4.50.0
+fonttools==4.51.0
     # via matplotlib
-fsspec==2024.3.0
+fsspec==2024.3.1
     # via dask
 future==1.0.0
     # via autograd
@@ -130,22 +127,27 @@ gast==0.5.4
     #   tensorflow-probability
 gnuplotlib==0.41
     # via -r requirements.in
+google-auth==2.29.0
+    # via
+    #   google-auth-oauthlib
+    #   tensorboard
+google-auth-oauthlib==1.2.0
+    # via tensorboard
 google-pasta==0.2.0
     # via tensorflow
 gpflow==2.9.1
     # via -r requirements.in
-grpcio==1.62.1
+grpcio==1.62.2
     # via
     #   tensorboard
     #   tensorflow
 h5netcdf==1.3.0
     # via arviz
-h5py==3.10.0
+h5py==3.11.0
     # via
     #   h5netcdf
-    #   keras
     #   tensorflow
-idna==3.6
+idna==3.7
     # via requests
 importlib-metadata==6.11.0
     # via
@@ -159,15 +161,14 @@ invoke==2.2.0
     # via fabric
 iteration-utilities==0.11.0
     # via scikit-activeml
-jax[cpu]==0.4.25
+jax==0.4.26
     # via
     #   -r requirements.in
     #   chex
     #   optax
-jaxlib==0.4.25
+jaxlib==0.4.26
     # via
     #   chex
-    #   jax
     #   optax
 jinja2==3.1.3
     # via
@@ -179,13 +180,13 @@ joblib==1.2.0
     #   particles
     #   scikit-activeml
     #   scikit-learn
-keras==3.0.5
+keras==2.15.0
     # via tensorflow
 kiwisolver==1.4.5
     # via matplotlib
 lark==1.1.9
     # via check-shapes
-libclang==16.0.6
+libclang==18.1.1
     # via tensorflow
 llvmlite==0.40.1
     # via numba
@@ -222,7 +223,6 @@ ml-dtypes==0.3.2
     # via
     #   jax
     #   jaxlib
-    #   keras
     #   tensorflow
 mock==5.1.0
     # via -r requirements.in
@@ -240,8 +240,6 @@ multiprocess==0.70.16
     #   salib
 mypy-extensions==1.0.0
     # via black
-namex==0.0.7
-    # via keras
 numba==0.57.0
     # via
     #   -r requirements.in
@@ -263,7 +261,6 @@ numpy==1.23.5
     #   h5py
     #   jax
     #   jaxlib
-    #   keras
     #   matplotlib
     #   ml-dtypes
     #   numba
@@ -288,6 +285,8 @@ numpy==1.23.5
     #   xarray-einstats
 numpysane==0.40
     # via gnuplotlib
+oauthlib==3.2.2
+    # via requests-oauthlib
 opt-einsum==3.3.0
     # via
     #   jax
@@ -325,15 +324,15 @@ pathos==0.3.2
     # via -r requirements.in
 pathspec==0.12.1
     # via black
-pillow==10.2.0
+pillow==10.3.0
     # via
     #   bokeh
     #   matplotlib
 platformdirs==4.2.0
     # via black
-plotly==5.20.0
+plotly==5.21.0
     # via -r requirements.in
-pluggy==1.4.0
+pluggy==1.5.0
     # via pytest
 pox==0.3.4
     # via pathos
@@ -347,9 +346,15 @@ psutil==5.9.8
     # via distributed
 py==1.11.0
     # via -r requirements.in
+pyasn1==0.6.0
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.0
+    # via google-auth
 pycodestyle==2.11.1
     # via pytest-codestyle
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydoe==0.3.8
     # via -r requirements.in
@@ -357,13 +362,13 @@ pyfiglet==1.0.2
     # via -r requirements.in
 pygments==2.17.2
     # via rich
-pymc==5.11.0
+pymc==5.13.1
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
 pyparsing==3.1.2
     # via matplotlib
-pytensor==2.18.6
+pytensor==2.20.0
     # via pymc
 pytest==8.1.1
     # via
@@ -374,9 +379,9 @@ pytest==8.1.1
     #   pytest-xdist
 pytest-codestyle==2.0.1
     # via -r requirements.in
-pytest-cov==4.1.0
+pytest-cov==5.0.0
     # via -r requirements.in
-pytest-mock==3.12.0
+pytest-mock==3.14.0
     # via -r requirements.in
 pytest-xdist==3.5.0
     # via -r requirements.in
@@ -393,9 +398,15 @@ pyyaml==6.0.1
     #   dask
     #   distributed
 requests==2.31.0
-    # via tensorflow
+    # via
+    #   requests-oauthlib
+    #   tensorboard
+requests-oauthlib==2.0.0
+    # via google-auth-oauthlib
 rich==13.7.1
-    # via keras
+    # via pymc
+rsa==4.9
+    # via google-auth
 salib==1.4.8
     # via -r requirements.in
 scikit-activeml==0.4.1
@@ -440,27 +451,25 @@ tblib==3.0.0
     # via distributed
 tenacity==8.2.3
     # via plotly
-tensorboard==2.16.2
+tensorboard==2.15.2
     # via tensorflow
 tensorboard-data-server==0.7.2
     # via tensorboard
-tensorflow==2.16.1
+tensorflow==2.15.1
     # via
     #   -r requirements.in
     #   gpflow
-    #   tensorflow-probability
-    #   tf-keras
+tensorflow-estimator==2.15.0
+    # via tensorflow
 tensorflow-io-gcs-filesystem==0.36.0
     # via tensorflow
-tensorflow-probability[tf]==0.24.0
+tensorflow-probability==0.23.0
     # via
     #   -r requirements.in
     #   gpflow
 termcolor==2.4.0
     # via tensorflow
-tf-keras==2.16.0
-    # via tensorflow-probability
-threadpoolctl==3.3.0
+threadpoolctl==3.4.0
     # via scikit-learn
 tomli==2.0.1
     # via
@@ -482,7 +491,7 @@ tornado==6.4
     #   distributed
 tqdm==4.66.2
     # via -r requirements.in
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via
     #   arviz
     #   bokeh
@@ -497,15 +506,15 @@ urllib3==2.2.1
     #   requests
 vtk==9.3.0
     # via -r requirements.in
-werkzeug==3.0.1
+werkzeug==3.0.2
     # via tensorboard
 wheel==0.43.0
     # via astunparse
-wrapt==1.16.0
+wrapt==1.14.1
     # via
     #   deprecated
     #   tensorflow
-xarray==2024.2.0
+xarray==2024.3.0
     # via
     #   -r requirements.in
     #   arviz

@@ -6,7 +6,7 @@
 #
 alabaster==0.7.16
     # via sphinx
-argcomplete==3.2.3
+argcomplete==3.3.0
     # via commitizen
 astroid==3.1.0
     # via pylint
@@ -20,7 +20,7 @@ beautifulsoup4==4.12.3
     # via nbconvert
 bleach==6.1.0
     # via nbconvert
-build==1.1.1
+build==1.2.1
     # via pip-tools
 certifi==2024.2.2
     # via
@@ -40,7 +40,7 @@ click==8.1.7
     #   pip-tools
 colorama==0.4.6
     # via commitizen
-commitizen==3.18.4
+commitizen==3.24.0
     # via -r dev-requirements.in
 decli==0.6.1
     # via commitizen
@@ -54,19 +54,19 @@ distlib==0.3.8
     # via virtualenv
 docformatter==1.7.5
     # via -r dev-requirements.in
-docutils==0.20.1
+docutils==0.21.1
     # via
     #   nbsphinx
     #   sphinx
 fastjsonschema==2.19.1
     # via nbformat
-filelock==3.13.1
+filelock==3.13.4
     # via
     #   -c requirements.txt
     #   virtualenv
-identify==2.5.35
+identify==2.5.36
     # via pre-commit
-idna==3.6
+idna==3.7
     # via
     #   -c requirements.txt
     #   requests
@@ -115,9 +115,9 @@ mistune==3.0.2
     # via nbconvert
 nbclient==0.10.0
     # via nbconvert
-nbconvert==7.16.2
+nbconvert==7.16.3
     # via nbsphinx
-nbformat==5.10.3
+nbformat==5.10.4
     # via
     #   nbclient
     #   nbconvert
@@ -153,9 +153,9 @@ plumbum==1.8.2
     # via pandoc
 ply==3.11
     # via pandoc
-pre-commit==3.6.2
+pre-commit==3.7.0
     # via -r dev-requirements.in
-pre-commit-hooks==4.5.0
+pre-commit-hooks==4.6.0
     # via -r dev-requirements.in
 prompt-toolkit==3.0.36
     # via questionary
@@ -184,11 +184,11 @@ pyyaml==6.0.1
     #   commitizen
     #   pre-commit
     #   yamllint
-pyzmq==25.1.2
+pyzmq==26.0.2
     # via jupyter-client
 questionary==2.0.1
     # via commitizen
-referencing==0.33.0
+referencing==0.34.0
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -217,7 +217,7 @@ snowballstemmer==2.2.0
     #   sphinx
 soupsieve==2.5
     # via beautifulsoup4
-sphinx==7.2.6
+sphinx==7.3.7
     # via
     #   -r dev-requirements.in
     #   nbsphinx
@@ -249,6 +249,7 @@ tomli==2.0.1
     #   pre-commit-hooks
     #   pylint
     #   pyproject-hooks
+    #   sphinx
 tomlkit==0.12.4
     # via
     #   commitizen
@@ -257,7 +258,7 @@ tornado==6.4
     # via
     #   -c requirements.txt
     #   jupyter-client
-traitlets==5.14.2
+traitlets==5.14.3
     # via
     #   jupyter-client
     #   jupyter-core
@@ -265,7 +266,7 @@ traitlets==5.14.2
     #   nbconvert
     #   nbformat
     #   nbsphinx
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via
     #   -c requirements.txt
     #   astroid
@@ -275,7 +276,7 @@ urllib3==2.2.1
     # via
     #   -c requirements.txt
     #   requests
-virtualenv==20.25.1
+virtualenv==20.25.3
     # via pre-commit
 wcwidth==0.2.13
     # via prompt-toolkit
