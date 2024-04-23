@@ -416,8 +416,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             dist = np.linalg.norm(p - np1m, ord=2)
             if np.dot(np2m - np1m, npp - np1m) < 0:
                 dist *= -1
-            if dist < distance:
-                distance = dist
+            distance = min(distance, dist)
 
         return distance
 

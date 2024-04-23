@@ -33,9 +33,8 @@ jinja2
 arviz # Bayesian visualization
 gpflow # LV and variational GPs
 optax # google jax based optimizer
-tensorflow
-tensorflow-probability
-jax[cpu]
+tensorflow<2.16 # This is a current restriction by gpflow. We should remove this in the future
+tensorflow-probability<0.24  # This is a restriction by tensorflow 2.15
 jax
 scikit-activeml>=0.4.1
 pymc

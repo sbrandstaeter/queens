@@ -142,7 +142,7 @@ def minimize(
 
     def jac_wrapper(x_flat, *args):
         x = unravel(x_flat)
-        g_flat, _ = ravel_pytree(jac(x, *args))
+        g_flat, _ = ravel_pytree(jac(x, *args))  # pylint: disable=not-callable
         return onp.array(g_flat)
 
     # Wrap the callback to consume a pytree

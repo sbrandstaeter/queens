@@ -249,6 +249,7 @@ class LogpdfGPModel(Model):
         upper_index = min(self.batch_size, x_test.shape[0])
         while lower_index < x_test.shape[0]:
             x_batch = x_test[lower_index:upper_index]
+            # pylint: disable-next=not-callable
             log_likelihood[lower_index:upper_index] = self.jit_func_generate_output(x_batch)
             lower_index = upper_index
             upper_index = min(upper_index + self.batch_size, x_test.shape[0])
@@ -270,7 +271,7 @@ class LogpdfGPModel(Model):
         """
 
         def loss(x):
-            return -self.partial_hyperparameter_log_prob(x)
+            return -self.partial_hyperparameter_log_prob(x)  # pylint: disable=not-callable
 
         initial_samples = np.random.exponential(
             scale=1.0e0, size=(self.num_optimizations, self.num_dim + 2)
