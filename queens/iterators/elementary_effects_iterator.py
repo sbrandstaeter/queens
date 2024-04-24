@@ -18,7 +18,7 @@ from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
 if not mpl.get_backend().lower() == 'agg':
-    mpl.use('TkAgg')
+    mpl.use('Agg')
 
 _logger = logging.getLogger(__name__)
 
