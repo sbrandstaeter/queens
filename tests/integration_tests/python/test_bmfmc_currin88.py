@@ -126,7 +126,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         BMFMC_reference=False,
         y_pdf_support_min=-0.5,
         y_pdf_support_max=15.0,
-        path_to_lf_mc_data=path_lf_mc_pickle_file,
+        path_to_lf_mc_data=(path_lf_mc_pickle_file,),
         path_to_hf_mc_reference_data=None,
         features_config="opt_features",
         num_features=1,
