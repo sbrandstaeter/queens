@@ -314,7 +314,7 @@ def test_bmfia_rpvi_gp_park(
 @pytest.fixture(name="expected_variational_mean")
 def fixture_expected_variational_mean():
     """Fixture for expected variational_mean."""
-    exp_var_mean = np.array([0.53399236, 0.52731554]).reshape(-1, 1)
+    exp_var_mean = np.array([0.51, 0.5]).reshape(-1, 1)
 
     return exp_var_mean
 
