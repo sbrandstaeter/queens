@@ -145,11 +145,21 @@ class StaticStateSpaceModel(ssp.StaticModel):
         self.likelihood_model = likelihood_model
         self.n_sims = 0
 
+    def logpyt(self, theta, t):
+        """Log-likelihood of Y_t, given parameter and previous datapoints.
+
+        Args:
+            theta (dict-like): theta['par'] is a ndarray containing the N values for parameter par
+            t (int): time
+        """
+        raise NotImplementedError("StaticModel: logpyt not implemented")
+
     def loglik(self, theta, t=None):
         """Log. Likelihood function for *particles* SMC implementation.
 
         Args:
             theta (obj): Samples at which to evaluate the likelihood
+            t (int): time (if set to None, the full log-likelihood is returned)
 
         Returns:
             The log likelihood

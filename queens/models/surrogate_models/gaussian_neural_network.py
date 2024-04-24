@@ -264,6 +264,13 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         if self.loss_plot_path:
             plot_loss(history, self.loss_plot_path)
 
+    def grad(self, samples, upstream_gradient):
+        """Evaluate gradient of model w.r.t.
+
+        current set of input samples.
+        """
+        raise NotImplementedError
+
     def predict(self, x_test, support='y', gradient_bool=False):
         """Predict the output distribution at x_test.
 
