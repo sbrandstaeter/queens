@@ -679,3 +679,30 @@ def test_fisher_information_matrix_mixture(distributions):
         ),
         fisher_information_matrix,
     )
+
+
+def test_total_grad_params_logpdf_mean_field(mean_field_distribution):
+    """Test total_grad_params_logpdf method for mean field distribution."""
+    np.random.seed(42)
+    variational_parameters = np.random.randn(mean_field_distribution.n_parameters)
+    std_samples = np.random.randn(2, mean_field_distribution.dimension)
+    gradient = mean_field_distribution.total_grad_params_logpdf(variational_parameters, std_samples)
+
+    expected_gradient = np.array([[0.0, 0.0, 0.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]])
+    np.testing.assert_almost_equal(gradient, expected_gradient)
+
+
+def test_total_grad_params_logpdf_fullrank(fullrank_distribution):
+    """Test total_grad_params_logpdf method for fullrank distribution."""
+    np.random.seed(42)
+    variational_parameters = np.random.randn(fullrank_distribution.n_parameters)
+    std_samples = np.random.randn(2, fullrank_distribution.dimension)
+    gradient = fullrank_distribution.total_grad_params_logpdf(variational_parameters, std_samples)
+
+    expected_gradient = np.array(
+        [
+            [0.0, 0.0, 0.0, -0.656586, 0.0, 4.271005, 0.0, 0.0, 2.130042],
+            [0.0, 0.0, 0.0, -0.656586, 0.0, 4.271005, 0.0, 0.0, 2.130042],
+        ]
+    )
+    np.testing.assert_almost_equal(gradient, expected_gradient, decimal=5)
