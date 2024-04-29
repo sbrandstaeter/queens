@@ -10,10 +10,11 @@ from queens.main import run
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.utils import injector
 from queens.utils.io_utils import load_result
-from tests.utils import target_density_gaussian_2d
 
 
-def test_gaussian_hmc(inputdir, tmp_path, _create_experimental_data_zero):
+def test_gaussian_hmc(
+    inputdir, tmp_path, target_density_gaussian_2d, _create_experimental_data_zero
+):
     """Test case for hmc iterator."""
     template = inputdir / "hmc_gaussian.yml"
     # pylint: disable=duplicate-code

@@ -1,11 +1,6 @@
-"""Utility methods for the entire test suite."""
+"""Utility methods used by the integration tests.."""
 
 import numpy as np
-
-from queens.example_simulator_functions.gaussian_logpdf import (
-    gaussian_1d_logpdf,
-    gaussian_2d_logpdf,
-)
 
 
 def assert_surrogate_model_output(
@@ -34,23 +29,3 @@ def assert_surrogate_model_output(
     if grad_var_ref is not None:
         gradient_variance = output['grad_var']
         np.testing.assert_array_almost_equal(gradient_variance, grad_var_ref, decimal=decimals[3])
-
-
-def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
-    """Target posterior density."""
-    samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
-
-    return log_likelihood
-
-
-def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
-    """Target likelihood density."""
-    samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_2d_logpdf(samples).flatten()
-
-    cov = [[1.0, 0.5], [0.5, 1.0]]
-    cov_inverse = np.linalg.inv(cov)
-    gradient = -np.dot(cov_inverse, samples.T).T
-
-    return log_likelihood, gradient

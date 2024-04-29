@@ -8,10 +8,11 @@ from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarl
 from queens.main import run
 from queens.utils import injector
 from queens.utils.io_utils import load_result
-from tests.utils import target_density_gaussian_1d
 
 
-def test_gaussian_smc(inputdir, tmp_path, _create_experimental_data_gaussian):
+def test_gaussian_smc(
+    inputdir, tmp_path, target_density_gaussian_1d, _create_experimental_data_gaussian
+):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     template = inputdir / "smc_gaussian.yml"
     experimental_data_path = tmp_path  # pylint: disable=duplicate-code

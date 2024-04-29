@@ -11,10 +11,9 @@ from queens.main import run
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.utils import injector
 from queens.utils.io_utils import load_result
-from tests.utils import target_density_gaussian_2d
 
 
-def test_gaussian_nuts(inputdir, tmp_path, _create_experimental_data):
+def test_gaussian_nuts(inputdir, tmp_path, target_density_gaussian_2d, _create_experimental_data):
     """Test case for nuts iterator."""
     template = inputdir / "nuts_gaussian.yml"
     experimental_data_path = tmp_path
