@@ -12,7 +12,7 @@ import queens.visualization.bmfmc_visualization as qvis
 from queens.interfaces.bmfmc_interface import BmfmcInterface
 from queens.iterators.data_iterator import DataIterator
 from queens.models.model import Model
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.fields.kl_field import KarhunenLoeveRandomField as RandomField
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

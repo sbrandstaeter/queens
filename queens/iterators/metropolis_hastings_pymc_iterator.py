@@ -17,7 +17,7 @@ _logger = logging.getLogger(__name__)
 
 
 class MetropolisHastingsPyMCIterator(PyMCIterator):
-    """Iterator based on HMC algorithm.
+    """Iterator based on MH-MCMC algorithm.
 
     The Metropolis Hastings sampler is a basic MCMC sampler.
 

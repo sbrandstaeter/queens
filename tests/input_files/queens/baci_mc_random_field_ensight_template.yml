@@ -39,11 +39,11 @@ data_processor_baci:
     target_time_lst: [last]
 parameters:
   mat_param:
-    type: random_field
+    type: kl
     corr_length: 5.0
-    std_hyperparam_random_field: 0.03
-    mean_type: constant
-    mean_param: 0.25
+    std: 0.03
+    mean: 0.25
+    explained_variance: 0.98
 interface:
   type: job_interface
   scheduler_name: scheduler

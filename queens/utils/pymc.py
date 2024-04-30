@@ -6,7 +6,7 @@ import pymc as pm
 import pytensor.tensor as pt
 from pytensor import Variable
 
-from queens.distributions import beta, exponential, lognormal, normal, uniform
+from queens.distributions import beta, exponential, lognormal, mean_field_normal, normal, uniform
 
 
 class PymcDistributionWrapper(pt.Op):
@@ -162,6 +162,14 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             cov=distribution.covariance,
             shape=shape,
         )
+    elif isinstance(distribution, mean_field_normal.MeanFieldNormalDistribution):
+        random_variable = pm.Normal(
+            name,
+            mu=distribution.mean,
+            sigma=distribution.covariance,
+            shape=shape,
+        )
+
     elif isinstance(distribution, uniform.UniformDistribution):
         if np.all(distribution.lower_bound == 0):
             random_variable = pm.Uniform(
@@ -186,7 +194,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
                 shape=shape,
             )
     elif isinstance(distribution, lognormal.LogNormalDistribution):
-        if distribution.dimension == 1:
+        if distribution.covariance.size == 1:
             std = distribution.covariance[0, 0] ** (1 / 2)
         else:
             raise NotImplementedError("Only 1D lognormals supported")
