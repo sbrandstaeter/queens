@@ -169,18 +169,16 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_elbo_grad = -total_grad_variational_batch
 
         else:
-            grad_variational_batch = self.variational_distribution_obj.grad_logpdf_sample(
-                sample_batch, self.variational_params
+            grad_variational_batch = self.variational_distribution_obj.grad_sample_logpdf(
+                self.variational_params, sample_batch
             )
             upstream_gradient = grad_log_likelihood_batch + grad_log_priors - grad_variational_batch
             sample_elbo_grad = 0
 
-        sample_elbo_grad += (
-            self.variational_distribution_obj.grad_variational_parameters_reparameterization(
-                standard_normal_sample_batch,
-                self.variational_params,
-                upstream_gradient=upstream_gradient,
-            )
+        sample_elbo_grad += self.variational_distribution_obj.grad_params_reparameterization(
+            self.variational_params,
+            standard_normal_sample_batch,
+            upstream_gradient=upstream_gradient,
         )
 
         # MC estimate of elbo gradient
