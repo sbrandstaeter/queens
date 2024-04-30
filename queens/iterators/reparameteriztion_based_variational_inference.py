@@ -154,30 +154,34 @@ class RPVIIterator(VariationalInferenceIterator):
         )
 
         grad_log_priors = self.parameters.grad_joint_logpdf(sample_batch)
-        grad_variational_batch = self.variational_distribution_obj.grad_logpdf_sample(
-            sample_batch, self.variational_params
-        )
-
         log_likelihood_batch, grad_log_likelihood_batch = self.evaluate_and_gradient(sample_batch)
 
-        upstream_gradient = grad_log_likelihood_batch + grad_log_priors - grad_variational_batch
-        # calculate the elbo gradient per sample
-        sample_elbo_grad = (
+        # check if score function should be added to the derivative
+        # Using the score function might lead to a larger variance in the estimate, in doubt turn
+        # it off
+        if self.score_function_bool:
+            total_grad_variational_batch = (
+                self.variational_distribution_obj.total_grad_params_logpdf(
+                    self.variational_params, standard_normal_sample_batch
+                )
+            )
+            upstream_gradient = grad_log_likelihood_batch + grad_log_priors
+            sample_elbo_grad = -total_grad_variational_batch
+
+        else:
+            grad_variational_batch = self.variational_distribution_obj.grad_logpdf_sample(
+                sample_batch, self.variational_params
+            )
+            upstream_gradient = grad_log_likelihood_batch + grad_log_priors - grad_variational_batch
+            sample_elbo_grad = 0
+
+        sample_elbo_grad += (
             self.variational_distribution_obj.grad_variational_parameters_reparameterization(
                 standard_normal_sample_batch,
                 self.variational_params,
                 upstream_gradient=upstream_gradient,
             )
         )
-
-        # check if score function should be added to the derivative
-        # Using the score function might lead to a larger variance in the estimate, in doubt turn
-        # it off
-        if self.score_function_bool:
-            score_function = self.variational_distribution_obj.grad_params_logpdf(
-                self.variational_params, sample_batch
-            ).T
-            sample_elbo_grad = sample_elbo_grad - score_function
 
         # MC estimate of elbo gradient
         grad_elbo = np.mean(sample_elbo_grad, axis=0)

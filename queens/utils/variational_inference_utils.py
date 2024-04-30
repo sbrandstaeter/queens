@@ -297,6 +297,22 @@ class MeanFieldNormalVariational(VariationalDistribution):
         )
         return score
 
+    def total_grad_params_logpdf(self, variational_parameters, standard_normal_sample_batch):
+        """Total logpdf reparameterization gradient.
+
+        Total logpdf reparameterization gradient w.r.t. the variational parameters.
+
+        Args:
+            variational_parameters (np.ndarray): Variational parameters
+            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample batch
+
+        Returns:
+            total_grad (np.ndarray): Total Logpdf reparameterization gradient
+        """
+        total_grad = np.zeros((standard_normal_sample_batch.shape[0], variational_parameters.size))
+        total_grad[:, self.dimension :] = 1.0
+        return total_grad
+
     def grad_logpdf_sample(self, sample_batch, variational_parameters):
         """Computes the gradient of the logpdf w.r.t. *x*.
 
@@ -619,6 +635,24 @@ class FullRankNormalVariational(VariationalDistribution):
                 indx += 1
         score = np.vstack((dlnN_dmu, dlnN_dsigma))
         return score
+
+    def total_grad_params_logpdf(self, variational_parameters, standard_normal_sample_batch):
+        """Total logpdf reparameterization gradient.
+
+        Total logpdf reparameterization gradient w.r.t. the variational parameters.
+
+        Args:
+            variational_parameters (np.ndarray): Variational parameters
+            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample batch
+
+        Returns:
+            total_grad (np.ndarray): Total Logpdf reparameterization gradient
+        """
+        idx = np.tril_indices(self.dimension, k=0, m=self.dimension)
+        cholesky_diagonal_idx = np.where(np.equal(*idx))[0] + self.dimension
+        total_grad = np.zeros((standard_normal_sample_batch.shape[0], variational_parameters.size))
+        total_grad[:, cholesky_diagonal_idx] = -1 / variational_parameters[cholesky_diagonal_idx]
+        return total_grad
 
     def grad_logpdf_sample(self, sample_batch, variational_parameters):
         """Computes the gradient of the logpdf w.r.t. to the *x*.
