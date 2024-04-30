@@ -11,8 +11,8 @@ from scipy.stats import multivariate_normal as mvn
 from queens.global_settings import GlobalSettings
 from queens.iterators.black_box_variational_bayes import BBVIIterator
 from queens.main import run
+from queens.stochastic_optimizers import Adam
 from queens.utils import injector
-from queens.utils.stochastic_optimizer import Adam
 
 
 def test_bbvi_density_match(
