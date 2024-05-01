@@ -1,4 +1,5 @@
 """Collect fixtures used by the integration tests."""
+
 import getpass
 import json
 import logging
@@ -10,6 +11,10 @@ import numpy as np
 import pytest
 import yaml
 
+from queens.example_simulator_functions.gaussian_logpdf import (
+    gaussian_1d_logpdf,
+    gaussian_2d_logpdf,
+)
 from queens.utils.path_utils import relative_path_from_queens
 from queens.utils.remote_operations import RemoteConnection
 
@@ -309,3 +314,35 @@ def fixture_baci_example_expected_output():
         ]
     )
     return result
+
+
+@pytest.fixture(name="target_density_gaussian_1d")
+def fixture_target_density_gaussian_1d():
+    """Patch function mimicking a 1D Gaussian distribution."""
+
+    def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
+        """Target posterior density."""
+        samples = np.atleast_2d(samples)
+        log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
+
+        return log_likelihood
+
+    return target_density_gaussian_1d
+
+
+@pytest.fixture(name="target_density_gaussian_2d")
+def fixture_target_density_gaussian_2d():
+    """Patch function mimicking a 2D Gaussian distribution."""
+
+    def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
+        """Target likelihood density."""
+        samples = np.atleast_2d(samples)
+        log_likelihood = gaussian_2d_logpdf(samples).flatten()
+
+        cov = [[1.0, 0.5], [0.5, 1.0]]
+        cov_inverse = np.linalg.inv(cov)
+        gradient = -np.dot(cov_inverse, samples.T).T
+
+        return log_likelihood, gradient
+
+    return target_density_gaussian_2d

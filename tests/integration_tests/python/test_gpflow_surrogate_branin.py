@@ -1,11 +1,10 @@
 """Integration test for GPflow based GP model."""
 
-import pickle
-
 import numpy as np
 import pytest
 
 from queens.main import run
+from queens.utils.io_utils import load_result
 
 
 def test_gpflow_surrogate_branin(
@@ -14,9 +13,7 @@ def test_gpflow_surrogate_branin(
     """Test case for GPflow based GP model."""
     run(inputdir / 'gpflow_surrogate_branin.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=3

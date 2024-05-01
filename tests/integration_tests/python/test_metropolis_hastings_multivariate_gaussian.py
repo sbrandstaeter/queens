@@ -1,7 +1,5 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -15,6 +13,7 @@ from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIter
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 def test_metropolis_hastings_multivariate_gaussian(inputdir, tmp_path, _create_experimental_data):
@@ -30,9 +29,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmp_path, _create_e
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
             run(input_file, tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     # note that the analytical solution would be:
     # posterior mean: [0.29378531 -1.97175141]

@@ -1,4 +1,5 @@
 """Unit tests for Monte Carlo iterator."""
+
 import numpy as np
 import pytest
 

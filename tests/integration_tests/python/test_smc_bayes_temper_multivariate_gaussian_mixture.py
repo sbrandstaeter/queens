@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +15,7 @@ from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIter
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 def test_smc_bayes_temper_multivariate_gaussian_mixture(
@@ -23,19 +23,17 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 ):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.yml")
-    experimental_data_path = tmp_path
+    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = tmp_path / "multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml"
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(dir_dict, template, input_file)  # pylint: disable=duplicate-code
 
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
             run(input_file, tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     # note that the analytical solution would be:
     # posterior mean: [-0.4 -0.4 -0.4 -0.4]

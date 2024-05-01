@@ -1,18 +1,16 @@
 """Test cases for Sobol index estimation with metamodel uncertainty."""
-import pickle
 
 import numpy as np
 
 from queens.main import run
+from queens.utils.io_utils import load_result
 
 
 def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmp_path):
     """Test case for Sobol indices based on GP realizations."""
     run(inputdir / 'sobol_indices_ishigami_gp_uncertainty.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     expected_s1 = np.array(
         [
@@ -45,9 +43,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmp_path):
     """Test case for third-order Sobol indices."""
     run(inputdir / 'sobol_indices_ishigami_gp_uncertainty_third_order.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     expected_s3 = np.array(
         [[0.23426643, 0.00801287, 0.00230968, 0.00729179, 0.17544544, 0.09419407, 0.16736517]]
@@ -60,9 +56,7 @@ def test_sobol_indices_ishigami_gp_mean(inputdir, tmp_path):
     """Test case for Sobol indices based on GP mean."""
     run(inputdir / 'sobol_indices_ishigami_gp_mean.yml', tmp_path)
 
-    result_file = tmp_path / "xxx.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     expected_s1 = np.array(
         [

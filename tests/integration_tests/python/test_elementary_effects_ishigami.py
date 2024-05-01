@@ -1,11 +1,11 @@
 """TODO_doc."""
 
 import logging
-import pickle
 
 import pytest
 
 from queens.main import run
+from queens.utils.io_utils import load_result
 
 _logger = logging.getLogger(__name__)
 
@@ -14,9 +14,7 @@ def test_elementary_effects_ishigami(inputdir, tmp_path):
     """Test case for elementary effects iterator."""
     run(inputdir / 'elementary_effects_ishigami.yml', tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     _logger.info(results)
 

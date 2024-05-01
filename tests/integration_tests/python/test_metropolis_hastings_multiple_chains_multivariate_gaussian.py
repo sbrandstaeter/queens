@@ -1,7 +1,5 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +10,7 @@ from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIter
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
@@ -19,18 +18,20 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
 ):
     """Test case for Metropolis Hastings iterator."""
     template = inputdir / "metropolis_hastings_multiple_chains_multivariate_gaussian.yml"
-    experimental_data_path = tmp_path
+    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = tmp_path / "multivariate_gaussian_metropolis_hastings_multiple_chains_realiz.yml"
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(dir_dict, template, input_file)  # pylint: disable=duplicate-code
     # mock methods related to likelihood
-    with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
-        with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
+    with patch.object(
+        SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_2d
+    ):
+        with patch.object(
+            MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
+        ):
             run(input_file, tmp_path)
 
-    result_file = tmp_path / 'xxx.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / 'xxx.pickle')
 
     # note that the analytical solution would be:
     # posterior mean: [0.29378531 -1.97175141]
@@ -68,7 +69,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
     )
 
 
-def target_density(self, samples):  # pylint: disable=unused-argument
+def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
     """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)

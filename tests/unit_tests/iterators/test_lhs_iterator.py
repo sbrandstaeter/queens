@@ -14,6 +14,7 @@ def fixture_default_lhs_iterator(
     default_simulation_model.interface.parameters = default_parameters_mixed
 
     # create LHS iterator
+    # pylint: disable=duplicate-code
     my_iterator = LHSIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,

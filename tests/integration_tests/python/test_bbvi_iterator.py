@@ -1,4 +1,5 @@
 """Integration tests for the BBVI iterator."""
+
 import pickle
 from collections import namedtuple
 
@@ -66,7 +67,7 @@ def test_bbvi_iterator_park91a_hifi(
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = inputdir / "bbvi_park91a_hifi_template.yml"
-    experimental_data_path = tmp_path
+    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,

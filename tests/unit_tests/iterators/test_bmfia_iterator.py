@@ -1,4 +1,5 @@
 """Unit tests for Bayesian multi-fidelity inverse analysis iterator."""
+
 # pylint: disable=invalid-name
 from unittest.mock import patch
 
@@ -6,35 +7,19 @@ import numpy as np
 import pytest
 
 from queens.iterators.bmfia_iterator import BMFIAIterator
-from queens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures and params -----------------------------------
-@pytest.fixture(name="result_description")
-def fixture_result_description():
-    """Fixture for a dummy result description."""
-    description = {"write_results": True}
-    return description
-
-
-@pytest.fixture(name="dummy_model")
-def fixture_dummy_model():
-    """Fixture for dummy model."""
-    interface = 'my_dummy_interface'
-    model = SimulationModel(interface)
-    return model
-
-
 @pytest.fixture(name="default_bmfia_iterator")
 def fixture_default_bmfia_iterator(
-    dummy_model, _initialize_global_settings, default_parameters_uniform_2d
+    dummy_simulation_model, _initialize_global_settings, default_parameters_uniform_2d
 ):
     """Dummy iterator for testing."""
     features_config = 'no_features'
-    hf_model = dummy_model
-    lf_model = dummy_model
+    hf_model = dummy_simulation_model
+    lf_model = dummy_simulation_model
     x_train = np.array([[1, 2], [3, 4]])
-    x_cols = None
+    x_cols = None  # pylint: disable=duplicate-code
     num_features = None
     coord_cols = None
 
@@ -91,13 +76,13 @@ def my_mock_design(*args):
 # -------------- Actual tests -------------------------------------
 def test_init(
     _initialize_global_settings,
-    dummy_model,
+    dummy_simulation_model,
     default_parameters_uniform_2d,
 ):
     """Test the init of the Bayesian multi-fidelity iterator."""
     features_config = 'no_features'
-    hf_model = dummy_model
-    lf_model = dummy_model
+    hf_model = dummy_simulation_model
+    lf_model = dummy_simulation_model
     x_train = np.array([[1, 1, 1], [2, 2, 2]])
     x_cols = [1, 2]
     num_features = 2
