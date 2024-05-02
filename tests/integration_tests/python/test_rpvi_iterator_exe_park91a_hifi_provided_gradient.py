@@ -7,6 +7,14 @@ import pytest
 
 from queens.main import run
 from queens.utils import injector
+from queens.utils.run_subprocess import run_subprocess
+
+
+@pytest.fixture(name="python_path")
+def fixture_python_path():
+    """Current python path."""
+    _, _, stdout, _ = run_subprocess("which python")
+    return stdout.strip()
 
 
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
@@ -15,6 +23,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
+    python_path,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -22,7 +31,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
-    executable = str(executable) + " p"
+    executable = f"{python_path} {executable} p"
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
@@ -62,6 +71,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
+    python_path,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -69,8 +79,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
-
-    executable = str(executable) + " s"
+    executable = f"{python_path} {executable} s"
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
@@ -109,6 +118,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
+    python_path,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
@@ -117,13 +127,13 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     experimental_data_path = tmp_path
     # standard executable of forward run
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
-    executable = str(executable) + " s"
+    executable = f"{python_path} {executable} s"
     # adjoint executable (here we actually use the same executable but call it with
     # a different flag "a" for adjoint)
     adjoint_executable = (
         example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     )
-    adjoint_executable = str(adjoint_executable) + " a"
+    adjoint_executable = f"{python_path} {adjoint_executable} a"
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,

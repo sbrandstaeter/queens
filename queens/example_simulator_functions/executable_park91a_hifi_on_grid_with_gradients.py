@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 """High-fidelity Park91a with x3 and x4 as fixed coordinates as executable."""
+
 import sys
 from pathlib import Path
 
