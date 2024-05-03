@@ -10,7 +10,7 @@ import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disab
 from queens.main import run
 from queens.utils import config_directories, injector, io_utils
 from queens.utils.fcc_utils import from_config_create_object
-from tests.integration_tests.conftest import (  # pylint: disable=wrong-import-order; BRUTEFORCE_CLUSTER_TYPE,
+from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     THOUGHT_CLUSTER_TYPE,
 )

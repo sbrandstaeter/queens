@@ -1,15 +1,14 @@
 """Benchmark test for BMFIA with Python test function."""
 
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
 
-import queens.visualization.bmfia_visualization as qvis
 from queens.example_simulator_functions.park91a import park91a_hifi
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
+from test_utils.benchmarks import assert_weights_and_samples
 
 
 def test_bmfia_park_hf_smc(
@@ -35,19 +34,9 @@ def test_bmfia_park_hf_smc(
     run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "smc_park_mf.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "smc_park_mf.pickle")
 
-    samples = results['raw_output_data']['particles'].squeeze()
-    weights = results['raw_output_data']['weights'].squeeze()
-
-    # some plotting
-    dim_labels_lst = ['x_s', 'y_s']
-    qvis.bmfia_visualization_instance.plot_posterior_from_samples(samples, weights, dim_labels_lst)
-
-    np.testing.assert_array_almost_equal(weights, expected_weights, decimal=5)
-    np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
+    assert_weights_and_samples(results, expected_weights, expected_samples)
 
 
 @pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")

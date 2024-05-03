@@ -51,7 +51,7 @@ def test_correct_sampling(default_lhs_iterator):
     )
 
 
-def test_correct_results(default_lhs_iterator):
+def test_correct_results(default_lhs_iterator, ref_result_iterator):
     """Test if we get correct results."""
     default_lhs_iterator.pre_run()
     default_lhs_iterator.core_run()
@@ -59,21 +59,7 @@ def test_correct_results(default_lhs_iterator):
     # np.set_printoptions(precision=10)
 
     # check if samples are identical too
-    ref_results = np.array(
-        [
-            [1.7868040337],
-            [-13.8624183835],
-            [6.3423271929],
-            [6.1674472752],
-            [5.3528917433],
-            [-0.7472766806],
-            [5.0007066283],
-            [6.4763926539],
-            [-6.4173504897],
-            [3.1739282221],
-        ]
-    )
 
     np.testing.assert_allclose(
-        default_lhs_iterator.output["result"][0:10], ref_results, 1e-09, 1e-09
+        default_lhs_iterator.output["result"][0:10], ref_result_iterator, 1e-09, 1e-09
     )

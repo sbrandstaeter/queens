@@ -4,6 +4,7 @@ import numpy as np
 
 from queens.main import run
 from queens.utils.io_utils import load_result
+from test_utils.integration_tests import assert_sobol_index_iterator_results
 
 
 def test_sobol_indices_ishigami(inputdir, tmp_path):
@@ -42,17 +43,4 @@ def test_sobol_indices_ishigami(inputdir, tmp_path):
         ]
     )
 
-    np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_result["S1"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["S1_conf"], expected_result["S1_conf"]
-    )
-
-    np.testing.assert_allclose(results["sensitivity_indices"]["ST"], expected_result["ST"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["ST_conf"], expected_result["ST_conf"]
-    )
-
-    np.testing.assert_allclose(results["sensitivity_indices"]["S2"], expected_result["S2"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["S2_conf"], expected_result["S2_conf"]
-    )
+    assert_sobol_index_iterator_results(results, expected_result)

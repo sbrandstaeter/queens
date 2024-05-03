@@ -8,13 +8,11 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 import pytest
 import yaml
 
-from queens.example_simulator_functions.gaussian_logpdf import (
-    gaussian_1d_logpdf,
-    gaussian_2d_logpdf,
-)
+from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 from queens.utils.path_utils import relative_path_from_queens
 from queens.utils.remote_operations import RemoteConnection
 
@@ -316,33 +314,31 @@ def fixture_baci_example_expected_output():
     return result
 
 
-@pytest.fixture(name="target_density_gaussian_1d")
-def fixture_target_density_gaussian_1d():
-    """Patch function mimicking a 1D Gaussian distribution."""
+@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
+def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
+    """Create experimental data."""
+    # Fix random seed
+    np.random.seed(seed=1)
 
-    def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
-        """Target posterior density."""
-        samples = np.atleast_2d(samples)
-        log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
+    # True input values
+    x1 = 0.5
+    x2 = 0.2
 
-        return log_likelihood
+    y_vec = park91a_hifi_on_grid(x1, x2)
 
-    return target_density_gaussian_1d
+    # Artificial noise
+    sigma_n = 0.001
+    noise_vec = np.random.normal(loc=0, scale=sigma_n, size=(y_vec.size,))
 
+    # Inverse crime: Add artificial noise to model output for the true value
+    y_fake = y_vec + noise_vec
 
-@pytest.fixture(name="target_density_gaussian_2d")
-def fixture_target_density_gaussian_2d():
-    """Patch function mimicking a 2D Gaussian distribution."""
-
-    def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
-        """Target likelihood density."""
-        samples = np.atleast_2d(samples)
-        log_likelihood = gaussian_2d_logpdf(samples).flatten()
-
-        cov = [[1.0, 0.5], [0.5, 1.0]]
-        cov_inverse = np.linalg.inv(cov)
-        gradient = -np.dot(cov_inverse, samples.T).T
-
-        return log_likelihood, gradient
-
-    return target_density_gaussian_2d
+    # write fake data to csv
+    data_dict = {
+        'x3': X3,
+        'x4': X4,
+        'y_obs': y_fake,
+    }
+    experimental_data_path = tmp_path / 'experimental_data.csv'
+    dataframe = pd.DataFrame.from_dict(data_dict)
+    dataframe.to_csv(experimental_data_path, index=False)

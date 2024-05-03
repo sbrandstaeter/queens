@@ -13,7 +13,7 @@ from queens.utils.io_utils import load_result
 
 
 def test_gaussian_hmc(
-    inputdir, tmp_path, target_density_gaussian_2d, _create_experimental_data_zero
+    inputdir, tmp_path, target_density_gaussian_2d_with_grad, _create_experimental_data_zero
 ):
     """Test case for hmc iterator."""
     template = inputdir / "hmc_gaussian.yml"
@@ -23,7 +23,9 @@ def test_gaussian_hmc(
     input_file = tmp_path / "gaussian_hmc_realiz.yml"
     injector.inject(dir_dict, template, input_file)
 
-    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d):
+    with patch.object(
+        GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
+    ):
         run(Path(input_file), Path(tmp_path))
 
     results = load_result(tmp_path / 'xxx.pickle')

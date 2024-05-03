@@ -4,13 +4,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from queens.example_simulator_functions.gaussian_logpdf import STANDARD_NORMAL, gaussian_1d_logpdf
-from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
+from queens.example_simulator_functions.gaussian_logpdf import (
+    GAUSSIAN_2D,
+    STANDARD_NORMAL,
+    gaussian_1d_logpdf,
+    gaussian_2d_logpdf,
+)
+from queens.example_simulator_functions.park91a import park91a_hifi
+from test_utils.integration_tests import get_input_park91a
 
 
-@pytest.fixture(name="_create_experimental_data_gaussian")
-def fixture_create_experimental_data_gaussian(tmp_path):
-    """Create dummy Gaussian data."""
+@pytest.fixture(name="_create_experimental_data_gaussian_1d")
+def fixture_create_experimental_data_gaussian_1d(tmp_path):
+    """Create dummy 1D Gaussian data."""
     # generate 10 samples from the same gaussian
     samples = STANDARD_NORMAL.draw(10).flatten()
 
@@ -28,34 +34,20 @@ def fixture_create_experimental_data_gaussian(tmp_path):
     dataframe.to_csv(experimental_data_path, index=False)
 
 
-@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
-def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
-    """Create experimental data."""
-    # Fix random seed
-    np.random.seed(seed=1)
+@pytest.fixture(name="_create_experimental_data_gaussian_2d")
+def fixture_create_experimental_data_gaussian_2d(tmp_path):
+    """Create dummy 1D Gaussian data."""
+    # generate 10 samples from the same gaussian
+    samples = GAUSSIAN_2D.draw(10)
+    pdf = gaussian_2d_logpdf(samples)
 
-    # True input values
-    x1 = 0.5
-    x2 = 0.2
+    pdf = np.array(pdf)
 
-    y_vec = park91a_hifi_on_grid(x1, x2)
-
-    # Artificial noise
-    sigma_n = 0.001
-    noise_vec = np.random.normal(loc=0, scale=sigma_n, size=(y_vec.size,))
-
-    # Inverse crime: Add artificial noise to model output for the true value
-    y_fake = y_vec + noise_vec
-
-    # write fake data to csv
-    data_dict = {
-        'x3': X3,
-        'x4': X4,
-        'y_obs': y_fake,
-    }
+    # write the data to a csv file in tmp_path
+    data_dict = {'y_obs': pdf}
     experimental_data_path = tmp_path / 'experimental_data.csv'
-    dataframe = pd.DataFrame.from_dict(data_dict)
-    dataframe.to_csv(experimental_data_path, index=False)
+    df = pd.DataFrame.from_dict(data_dict)
+    df.to_csv(experimental_data_path, index=False)
 
 
 @pytest.fixture(name="_create_experimental_data_zero")
@@ -68,3 +60,82 @@ def fixture_create_experimental_data_zero(tmp_path):
     experimental_data_path = tmp_path / 'experimental_data.csv'
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)
+
+
+@pytest.fixture(name="training_data_park91a")
+def fixture_training_data_park91a():
+    """Get training data from the park91a benchmark function."""
+    # create training inputs
+    n_train = 7
+    x_train, x_3, x_4 = get_input_park91a(n_train)
+
+    # evaluate the testing/benchmark function at training inputs
+    y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
+    y_train = y_train.reshape(-1, 1)
+
+    return x_train, y_train
+
+
+@pytest.fixture(name="testing_data_park91a")
+def fixture_testing_data_park91a():
+    """Get testing data for the park91a benchmark function."""
+    # create testing inputs
+    n_test = 25
+    x_test, x_3, x_4 = get_input_park91a(n_test)
+
+    # evaluate the testing/benchmark function at testing inputs
+    mean_ref, gradient_mean_ref = park91a_hifi(
+        x_test[:, 0], x_test[:, 1], x_3, x_4, gradient_bool=True
+    )
+    mean_ref = mean_ref.reshape(-1, 1)
+    gradient_mean_ref = np.array(gradient_mean_ref).T
+    var_ref = np.zeros(mean_ref.shape)
+    gradient_variance_ref = np.zeros(gradient_mean_ref.shape)
+
+    return x_test, mean_ref, var_ref, gradient_mean_ref, gradient_variance_ref
+
+
+@pytest.fixture(name="target_density_gaussian_1d")
+def fixture_target_density_gaussian_1d():
+    """Patch function mimicking a 1D Gaussian distribution."""
+
+    def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
+        """Target posterior density."""
+        samples = np.atleast_2d(samples)
+        log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
+
+        return log_likelihood
+
+    return target_density_gaussian_1d
+
+
+@pytest.fixture(name="target_density_gaussian_2d")
+def fixture_target_density_gaussian_2d():
+    """Patch function mimicking a 2D Gaussian distribution."""
+
+    def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
+        """Target likelihood density."""
+        samples = np.atleast_2d(samples)
+        log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)
+
+        return log_likelihood
+
+    return target_density_gaussian_2d
+
+
+@pytest.fixture(name="target_density_gaussian_2d_with_grad")
+def fixture_target_density_gaussian_2d_with_grad():
+    """Patch function mimicking a 2D Gaussian distribution."""
+
+    def target_density_gaussian_2d_with_grad(self, samples):  # pylint: disable=unused-argument
+        """Target likelihood density."""
+        samples = np.atleast_2d(samples)
+        log_likelihood = gaussian_2d_logpdf(samples).flatten()
+
+        cov = [[1.0, 0.5], [0.5, 1.0]]
+        cov_inverse = np.linalg.inv(cov)
+        gradient = -np.dot(cov_inverse, samples.T).T
+
+        return log_likelihood, gradient
+
+    return target_density_gaussian_2d_with_grad

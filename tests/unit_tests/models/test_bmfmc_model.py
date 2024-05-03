@@ -1,4 +1,5 @@
 """Test BMFMC model."""
+
 import numpy as np
 import pytest
 from mock import Mock, patch
@@ -12,6 +13,7 @@ from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
 from queens.parameters.parameters import Parameters
 
 # pylint: disable=invalid-name
+
 
 # ------------ fixtures --------------------------
 @pytest.fixture(name="result_description")
