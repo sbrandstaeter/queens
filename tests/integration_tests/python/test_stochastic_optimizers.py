@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from queens.utils.stochastic_optimizer import SGD, Adam, Adamax, RMSprop
+from queens.stochastic_optimizers import SGD, Adam, Adamax, RMSprop
 
 
 def test_rmsprop_max(rmsprop_optimizer):

@@ -16,6 +16,7 @@ from queens.models.bmfmc_model import BMFMCModel
 from queens.parameters.parameters import from_config_create_parameters
 from queens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
 from queens.schedulers import Scheduler
+from queens.stochastic_optimizers import VALID_TYPES as VALID_STOCHASTIC_OPTIMIZER_TYPES
 from queens.utils.classifier import VALID_CLASSIFIER_LEARNING_TYPES, VALID_CLASSIFIER_TYPES
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.experimental_data_reader import (
@@ -24,7 +25,6 @@ from queens.utils.experimental_data_reader import (
 from queens.utils.import_utils import get_module_class
 from queens.utils.iterative_averaging_utils import VALID_TYPES as VALID_ITERATIVE_AVERAGING_TYPES
 from queens.utils.remote_operations import VALID_CONNECTION_TYPES
-from queens.utils.stochastic_optimizer import VALID_TYPES as VALID_STOCHASTIC_OPTIMIZER_TYPES
 
 _logger = logging.getLogger(__name__)
 
