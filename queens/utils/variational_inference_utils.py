@@ -1,7 +1,6 @@
 """Variational distribution utils."""
 
 # pylint: disable=too-many-lines
-# pylint: disable=invalid-name
 import abc
 
 import numpy as np
@@ -22,17 +21,6 @@ class VariationalDistribution:
     def __init__(self, dimension):
         """Initialize variational distribution."""
         self.dimension = dimension
-
-    @abc.abstractmethod
-    def construct_variational_parameters(self):
-        """Construct the variational parameters from distribution parameters.
-
-        The inputs to this methods are the parameters that would be needed to construct a QUEENS
-        distribution object, e.g. for a Gaussian distribution the inputs are mean and covariance
-
-        Returns:
-            variational_parameters (np.ndarray): Variational parameters
-        """
 
     @abc.abstractmethod
     def reconstruct_distribution_parameters(self, variational_parameters):
@@ -170,7 +158,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return variational_parameters
 
     @staticmethod
-    def construct_variational_parameters(mean, covariance):  # pylint: disable=arguments-differ
+    def construct_variational_parameters(mean, covariance):
         """Construct the variational parameters from mean and covariance.
 
         Args:
@@ -287,12 +275,12 @@ class MeanFieldNormalVariational(VariationalDistribution):
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         mean = mean.flatten()
         cov = np.diag(cov)
-        dlnN_dmu = (x - mean) / cov
-        dlnN_dsigma = (x - mean) ** 2 / cov - np.ones(x.shape)
+        dlogpdf_dmu = (x - mean) / cov
+        dlogpdf_dsigma = (x - mean) ** 2 / cov - np.ones(x.shape)
         score = np.concatenate(
             [
-                dlnN_dmu.T.reshape(self.dimension, len(x)),
-                dlnN_dsigma.T.reshape(self.dimension, len(x)),
+                dlogpdf_dmu.T.reshape(self.dimension, len(x)),
+                dlogpdf_dsigma.T.reshape(self.dimension, len(x)),
             ]
         )
         return score
@@ -313,12 +301,12 @@ class MeanFieldNormalVariational(VariationalDistribution):
         total_grad[:, self.dimension :] = 1.0
         return total_grad
 
-    def grad_logpdf_sample(self, sample_batch, variational_parameters):
-        """Computes the gradient of the logpdf w.r.t. *x*.
+    def grad_sample_logpdf(self, variational_parameters, sample_batch):
+        """Computes the gradient of the logpdf w.r.t. to the *x*.
 
         Args:
-            sample_batch (np.ndarray): Row-wise samples
             variational_parameters (np.ndarray): Variational parameters
+            sample_batch (np.ndarray): Row-wise samples
 
         Returns:
             gradients_batch (np.ndarray): Gradients of the log-pdf w.r.t. the
@@ -385,15 +373,14 @@ class MeanFieldNormalVariational(VariationalDistribution):
 
         return samples_mat, standard_normal_sample_batch
 
-    def grad_variational_parameters_reparameterization(
-        self, standard_normal_sample_batch, variational_parameters, upstream_gradient
+    def grad_params_reparameterization(
+        self, variational_parameters, standard_normal_sample_batch, upstream_gradient
     ):
         r"""Calculate the gradient of the reparameterization.
 
         Args:
-            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample
-                                                    batch
             variational_parameters (np.ndarray): Variational parameters
+            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample batch
             upstream_gradient (np.array): Upstream gradient
 
         Returns:
@@ -479,13 +466,13 @@ class FullRankNormalVariational(VariationalDistribution):
                 )
         else:
             mean = np.zeros(self.dimension)
-            L = np.ones((self.dimension * (self.dimension + 1)) // 2)
-            variational_parameters = np.concatenate([mean, L])
+            cholesky = np.ones((self.dimension * (self.dimension + 1)) // 2)
+            variational_parameters = np.concatenate([mean, cholesky])
 
         return variational_parameters
 
     @staticmethod
-    def construct_variational_parameters(mean, covariance):  # pylint: disable=arguments-differ
+    def construct_variational_parameters(mean, covariance):
         """Construct the variational parameters from mean and covariance.
 
         Args:
@@ -552,10 +539,10 @@ class FullRankNormalVariational(VariationalDistribution):
         Returns:
             samples (np.ndarray): Row-wise samples of the variational distribution
         """
-        mean, _, L = self.reconstruct_distribution_parameters(
+        mean, _, cholesky = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
-        sample = np.dot(L, np.random.randn(self.dimension, n_draws)).T + mean.reshape(1, -1)
+        sample = np.dot(cholesky, np.random.randn(self.dimension, n_draws)).T + mean.reshape(1, -1)
         return sample
 
     def logpdf(self, variational_parameters, x):
@@ -568,7 +555,7 @@ class FullRankNormalVariational(VariationalDistribution):
         Returns:
             logpdf (np.ndarray): Row vector of the logpdfs
         """
-        mean, cov, L = self.reconstruct_distribution_parameters(
+        mean, cov, cholesky = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
         x = np.atleast_2d(x)
@@ -579,7 +566,7 @@ class FullRankNormalVariational(VariationalDistribution):
 
         logpdf = (
             -0.5 * self.dimension * np.log(2 * np.pi)
-            - np.sum(np.log(np.abs(np.diag(L))))
+            - np.sum(np.log(np.abs(np.diag(cholesky))))
             - 0.5 * col_dot_prod(x.T - mean, u)
         )
         return logpdf.flatten()
@@ -611,29 +598,29 @@ class FullRankNormalVariational(VariationalDistribution):
         Returns:
             score (np.ndarray): Column-wise scores
         """
-        mean, cov, L = self.reconstruct_distribution_parameters(
+        mean, cov, cholesky = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
         x = np.atleast_2d(x)
         # Helper variable
         q = np.linalg.solve(cov, x.T - mean)
-        dlnN_dmu = q.copy()
+        dlogpdf_dmu = q.copy()
         diag_indx = np.cumsum(np.arange(1, self.dimension + 1)) - 1
         n_params_chol = (self.dimension * (self.dimension + 1)) // 2
-        dlnN_dsigma = np.zeros((n_params_chol, 1))
+        dlogpdf_dsigma = np.zeros((n_params_chol, 1))
         # Term due to determinant
-        dlnN_dsigma[diag_indx] = -1.0 / (np.diag(L).reshape(-1, 1))
-        dlnN_dsigma = np.tile(dlnN_dsigma, (1, len(x)))
+        dlogpdf_dsigma[diag_indx] = -1.0 / (np.diag(cholesky).reshape(-1, 1))
+        dlogpdf_dsigma = np.tile(dlogpdf_dsigma, (1, len(x)))
         # Term due to normalization
-        b = np.matmul(L.T, q)
+        b = np.matmul(cholesky.T, q)
         indx = 0
-        f = np.zeros(dlnN_dsigma.shape)
+        f = np.zeros(dlogpdf_dsigma.shape)
         for r in range(0, self.dimension):
             for s in range(0, r + 1):
-                dlnN_dsigma[indx, :] += q[r, :] * b[s, :]
+                dlogpdf_dsigma[indx, :] += q[r, :] * b[s, :]
                 f[indx, :] += q[r, :] * b[s, :]
                 indx += 1
-        score = np.vstack((dlnN_dmu, dlnN_dsigma))
+        score = np.vstack((dlogpdf_dmu, dlogpdf_dsigma))
         return score
 
     def total_grad_params_logpdf(self, variational_parameters, standard_normal_sample_batch):
@@ -654,13 +641,12 @@ class FullRankNormalVariational(VariationalDistribution):
         total_grad[:, cholesky_diagonal_idx] = -1 / variational_parameters[cholesky_diagonal_idx]
         return total_grad
 
-    def grad_logpdf_sample(self, sample_batch, variational_parameters):
+    def grad_sample_logpdf(self, variational_parameters, sample_batch):
         """Computes the gradient of the logpdf w.r.t. to the *x*.
 
         Args:
-            sample_batch (np.ndarray): Row-wise samples
             variational_parameters (np.ndarray): Variational parameters
-
+            sample_batch (np.ndarray): Row-wise samples
 
         Returns:
             gradients_batch (np.ndarray): Gradients of the log-pdf w.r.t. the
@@ -689,7 +675,7 @@ class FullRankNormalVariational(VariationalDistribution):
         Returns:
             FIM (np.ndarray): Matrix (num parameters x num parameters)
         """
-        _, cov, L = self.reconstruct_distribution_parameters(
+        _, cov, cholesky = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
 
@@ -698,18 +684,18 @@ class FullRankNormalVariational(VariationalDistribution):
             mu_block = np.linalg.inv(cov + 1e-8 * np.eye(len(cov)))
             n_params_chol = (dimension * (dimension + 1)) // 2
             sigma_block = np.zeros((n_params_chol, n_params_chol))
-            A_list = []
+            matrix_list = []
             # Improvements of this implementation are welcomed!
             for r in range(0, dimension):
                 for s in range(0, r + 1):
-                    A_q = np.zeros(L.shape)
-                    A_q[r, s] = 1
-                    A_q = L @ A_q.T
-                    A_q = np.linalg.solve(cov, A_q + A_q.T)
-                    A_list.append(A_q)
+                    matrix_q = np.zeros(cholesky.shape)
+                    matrix_q[r, s] = 1
+                    matrix_q = cholesky @ matrix_q.T
+                    matrix_q = np.linalg.solve(cov, matrix_q + matrix_q.T)
+                    matrix_list.append(matrix_q)
             for p in range(n_params_chol):
                 for q in range(p + 1):
-                    val = 0.5 * np.trace(A_list[p] @ A_list[q])
+                    val = 0.5 * np.trace(matrix_list[p] @ matrix_list[q])
                     sigma_block[p, q] = val
                     sigma_block[q, p] = val
             return mu_block, sigma_block
@@ -754,22 +740,21 @@ class FullRankNormalVariational(VariationalDistribution):
             distribution
         """
         standard_normal_sample_batch = np.random.normal(0, 1, size=(n_samples, self.dimension))
-        mean, _, L = self.reconstruct_distribution_parameters(
+        mean, _, cholesky = self.reconstruct_distribution_parameters(
             variational_parameters, return_cholesky=True
         )
-        samples_mat = mean + np.dot(L, standard_normal_sample_batch.T)
+        samples_mat = mean + np.dot(cholesky, standard_normal_sample_batch.T)
 
         return samples_mat.T, standard_normal_sample_batch
 
-    def grad_variational_parameters_reparameterization(
-        self, standard_normal_sample_batch, variational_parameters, upstream_gradient
+    def grad_params_reparameterization(
+        self, variational_parameters, standard_normal_sample_batch, upstream_gradient
     ):
         r"""Calculate the gradient of the reparameterization.
 
         Args:
-            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample
-                                                    batch
             variational_parameters (np.ndarray): Variational parameters
+            standard_normal_sample_batch (np.ndarray): Standard normal distributed sample batch
             upstream_gradient (np.array): Upstream gradient
 
         Returns:
@@ -873,9 +858,7 @@ class MixtureModel(VariationalDistribution):
 
         return np.concatenate([variational_parameters_components, variational_parameters_weights])
 
-    def construct_variational_parameters(
-        self, component_parameters_list, weights
-    ):  # pylint: disable=arguments-differ
+    def construct_variational_parameters(self, component_parameters_list, weights):
         """Construct the variational parameters from the probabilities.
 
         Args:
@@ -1168,9 +1151,7 @@ class JointVariational(VariationalDistribution):
 
         return variational_parameters
 
-    def construct_variational_parameters(
-        self, distributions_parameters_list
-    ):  # pylint: disable=arguments-differ
+    def construct_variational_parameters(self, distributions_parameters_list):
         """Construct the variational parameters from the distribution list.
 
         Args:
@@ -1395,9 +1376,7 @@ class ParticleVariational(VariationalDistribution):
         super().__init__(self.particles_obj.dimension)
         self.n_parameters = len(sample_space)
 
-    def construct_variational_parameters(
-        self, probabilities, sample_space
-    ):  # pylint: disable=arguments-differ
+    def construct_variational_parameters(self, probabilities, sample_space):
         """Construct the variational parameters from the probabilities.
 
         Args:
