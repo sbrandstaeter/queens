@@ -13,6 +13,7 @@ from queens.iterators.black_box_variational_bayes import BBVIIterator
 from queens.main import run
 from queens.stochastic_optimizers import Adam
 from queens.utils import injector
+from queens.variational_distributions import MeanFieldNormalVariational
 
 
 def test_bbvi_density_match(
@@ -31,7 +32,7 @@ def test_bbvi_density_match(
 
     # actual main call of bbvi with patched density for posterior
     with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', target_density):
-        variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
+        variational_distr_obj = dummy_bbvi_instance.variational_distribution
         mean = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
         var_params = variational_distr_obj.construct_variational_parameters(mean, cov)
@@ -192,11 +193,5 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
 
 @pytest.fixture(name="my_variational_distribution")
 def fixture_my_variational_distribution():
-    """Create visualization module."""
-    dimension = 5
-    distribution_options = {
-        "variational_family": "normal",
-        "variational_approximation_type": "mean_field",
-        "dimension": dimension,
-    }
-    return distribution_options
+    """Create variational distribution."""
+    return MeanFieldNormalVariational(dimension=5)

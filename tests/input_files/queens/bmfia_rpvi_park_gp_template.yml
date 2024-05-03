@@ -1,5 +1,6 @@
 experiment_name: bmfia_rpvi_park
 method:
+  type: rpvi
   max_feval: 100
   model_name: model
   n_samples_per_iter: 3
@@ -15,12 +16,12 @@ method:
     write_results: true
   score_function_bool: false
   stochastic_optimizer_name: optimizer
-  type: rpvi
-  variational_distribution:
-    variational_approximation_type: mean_field
-    variational_family: normal
+  variational_distribution_name: variational_distribution
   variational_parameter_initialization: prior
   variational_transformation: null
+variational_distribution:
+  type: mean_field_variational
+  dimension: 2
 optimizer:
   learning_rate: 0.03
   max_iteration: 10000000

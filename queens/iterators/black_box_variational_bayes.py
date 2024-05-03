@@ -450,18 +450,18 @@ class BBVIIterator(VariationalInferenceIterator):
         self.n_sims += n_samples
 
         # Draw samples for the current iteration
-        self.sample_set = self.variational_distribution_obj.draw(self.variational_params, n_samples)
+        self.sample_set = self.variational_distribution.draw(self.variational_params, n_samples)
 
         # Calls the (unnormalized) probabilistic model
         self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(self.sample_set)
 
     def _evaluate_variational_distribution_for_batch(self):
         """Evaluate logpdf and score function."""
-        self.log_variational_mat = self.variational_distribution_obj.logpdf(
+        self.log_variational_mat = self.variational_distribution.logpdf(
             self.variational_params, self.sample_set
         )
 
-        self.grad_params_log_variational_mat = self.variational_distribution_obj.grad_params_logpdf(
+        self.grad_params_log_variational_mat = self.variational_distribution.grad_params_logpdf(
             self.variational_params, self.sample_set
         )
 
@@ -609,13 +609,12 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         inv_weights = 0
         n_mixture = len(variational_params_list)
-        log_pdf_current_iteration = self.variational_distribution_obj.logpdf(
+        log_pdf_current_iteration = self.variational_distribution.logpdf(
             self.variational_params, samples
         )
         for params in variational_params_list:
             inv_weights += np.exp(
-                self.variational_distribution_obj.logpdf(params, samples)
-                - log_pdf_current_iteration
+                self.variational_distribution.logpdf(params, samples) - log_pdf_current_iteration
             )
         weights = n_mixture / inv_weights
         return weights

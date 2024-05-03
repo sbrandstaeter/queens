@@ -25,6 +25,7 @@ from queens.utils.experimental_data_reader import (
 from queens.utils.import_utils import get_module_class
 from queens.utils.iterative_averaging_utils import VALID_TYPES as VALID_ITERATIVE_AVERAGING_TYPES
 from queens.utils.remote_operations import VALID_CONNECTION_TYPES
+from queens.variational_distributions import VALID_TYPES as VALID_VARIATIONAL_DISTRIBUTION_TYPES
 
 _logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ VALID_TYPES = {
     **VALID_MODEL_TYPES,
     **VALID_SCHEDULER_TYPES,
     **VALID_STOCHASTIC_OPTIMIZER_TYPES,
+    **VALID_VARIATIONAL_DISTRIBUTION_TYPES,
 }
 
 

@@ -5,9 +5,7 @@ method:
   max_feval: 100000
   n_samples_per_iter: 10
   score_function_bool: false
-  variational_distribution:
-    variational_approximation_type: mean_field
-    variational_family: normal
+  variational_distribution_name: variational_distribution
   stochastic_optimizer_name: optimizer
   natural_gradient: true
   FIM_dampening: true
@@ -25,6 +23,9 @@ method:
       plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
+variational_distribution:
+  type: mean_field_variational
+  dimension: 2
 optimizer:
   type: adam
   learning_rate: 0.05

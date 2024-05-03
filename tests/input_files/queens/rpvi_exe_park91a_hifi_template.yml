@@ -5,9 +5,7 @@ method:
   max_feval: 10
   n_samples_per_iter: 3
   score_function_bool: true
-  variational_distribution:
-    variational_approximation_type: fullrank
-    variational_family: normal
+  variational_distribution_name: variational_distribution
   stochastic_optimizer_name: optimizer
   natural_gradient: true
   FIM_dampening: true
@@ -24,6 +22,9 @@ method:
       plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
+variational_distribution:
+  type: full_rank_variational
+  dimension: 2
 optimizer:
   type: adam
   optimization_type: max

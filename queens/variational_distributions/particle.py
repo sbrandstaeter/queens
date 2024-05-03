@@ -17,7 +17,7 @@ class ParticleVariational(VariationalDistribution):
         dimension (int): Number of random variables
     """
 
-    def __init__(self, dimension, sample_space):
+    def __init__(self, sample_space):
         """Initialize variational distribution."""
         self.particles_obj = ParticleDiscreteDistribution(np.ones(len(sample_space)), sample_space)
         super().__init__(self.particles_obj.dimension)

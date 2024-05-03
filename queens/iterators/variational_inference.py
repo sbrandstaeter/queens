@@ -8,7 +8,7 @@ import numpy as np
 import queens.visualization.variational_inference_visualization as qvis
 from queens.iterators.iterator import Iterator
 from queens.utils.process_outputs import write_results
-from queens.variational_distributions import create_variational_distribution
+from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
 
 _logger = logging.getLogger(__name__)
 
@@ -45,9 +45,8 @@ class VariationalInferenceIterator(Iterator):
         random_seed (int): Seed for the random number generators.
         max_feval (int): Maximum number of simulation runs for this analysis.
         num_parameters (int): Actual number of model input parameters that should be calibrated.
-        variational_family (str): Density type for variational approximation.
         stochastic_optimizer (obj): QUEENS stochastic optimizer object.
-        variational_distribution_obj (VariationalDistribution): Variational distribution object.
+        variational_distribution (VariationalDistribution): Variational distribution object.
         n_sims (int): Number of probabilistic model calls.
         variational_params (np.array): Row vector containing the variational parameters.
         elbo: TODO_doc
@@ -86,7 +85,7 @@ class VariationalInferenceIterator(Iterator):
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
                                               and the output directory
             result_description (dict): Settings for storing and visualizing the results
-            variational_distribution (dict): Description of variational distribution
+            variational_distribution (VariationalDistribution): Variational distribution object
             variational_params_initialization (str): Flag to decide how to initialize the
                                                      variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
@@ -121,13 +120,7 @@ class VariationalInferenceIterator(Iterator):
         self.max_feval = max_feval
         self.num_parameters = self.parameters.num_parameters
         self.stochastic_optimizer = stochastic_optimizer
-
-        variational_distribution.update({"dimension": self.num_parameters})
-        self.variational_distribution_obj = create_variational_distribution(
-            variational_distribution
-        )
-        self.variational_family = variational_distribution["variational_family"]
-
+        self.variational_distribution = variational_distribution
         self.n_sims = 0
         self.variational_params = None
         self.elbo = -np.inf
@@ -237,14 +230,15 @@ class VariationalInferenceIterator(Iterator):
         """
         if self.variational_params_initialization_approach == "random":
             self.variational_params = (
-                self.variational_distribution_obj.initialize_variational_parameters(random=True)
+                self.variational_distribution.initialize_variational_parameters(random=True)
             )
         elif self.variational_params_initialization_approach == "prior":
-            if self.variational_family == "normal":
+            if isinstance(
+                self.variational_distribution,
+                (MeanFieldNormalVariational, FullRankNormalVariational),
+            ):
                 mu, cov = self._initialize_variational_params_from_prior()
-                var_params = self.variational_distribution_obj.construct_variational_parameters(
-                    mu, cov
-                )
+                var_params = self.variational_distribution.construct_variational_parameters(mu, cov)
                 self.variational_params = var_params
             else:
                 raise ValueError(
@@ -337,7 +331,7 @@ class VariationalInferenceIterator(Iterator):
         if self.iteration_data:
             result_description.update({"iteration_data": self.iteration_data.to_dict()})
 
-        distribution_dict = self.variational_distribution_obj.export_dict(self.variational_params)
+        distribution_dict = self.variational_distribution.export_dict(self.variational_params)
         if self.variational_transformation == "exp":
             distribution_dict.update(
                 {"variational_transformation": self.variational_transformation}
@@ -375,7 +369,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             fisher (np.array): fisher information matrix of the variational distribution
         """
-        fim = self.variational_distribution_obj.fisher_information_matrix(self.variational_params)
+        fim = self.variational_distribution.fisher_information_matrix(self.variational_params)
         if self.fim_dampening_bool:
             if self.stochastic_optimizer.iteration > self.fim_decay_start_iter:
                 dampening_coefficient = self.fim_dampening_coefficient * np.exp(

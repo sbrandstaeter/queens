@@ -149,7 +149,7 @@ class RPVIIterator(VariationalInferenceIterator):
         (
             sample_batch,
             standard_normal_sample_batch,
-        ) = self.variational_distribution_obj.conduct_reparameterization(
+        ) = self.variational_distribution.conduct_reparameterization(
             self.variational_params, self.n_samples_per_iter
         )
 
@@ -160,22 +160,20 @@ class RPVIIterator(VariationalInferenceIterator):
         # Using the score function might lead to a larger variance in the estimate, in doubt turn
         # it off
         if self.score_function_bool:
-            total_grad_variational_batch = (
-                self.variational_distribution_obj.total_grad_params_logpdf(
-                    self.variational_params, standard_normal_sample_batch
-                )
+            total_grad_variational_batch = self.variational_distribution.total_grad_params_logpdf(
+                self.variational_params, standard_normal_sample_batch
             )
             upstream_gradient = grad_log_likelihood_batch + grad_log_priors
             sample_elbo_grad = -total_grad_variational_batch
 
         else:
-            grad_variational_batch = self.variational_distribution_obj.grad_sample_logpdf(
+            grad_variational_batch = self.variational_distribution.grad_sample_logpdf(
                 self.variational_params, sample_batch
             )
             upstream_gradient = grad_log_likelihood_batch + grad_log_priors - grad_variational_batch
             sample_elbo_grad = 0
 
-        sample_elbo_grad += self.variational_distribution_obj.grad_params_reparameterization(
+        sample_elbo_grad += self.variational_distribution.grad_params_reparameterization(
             self.variational_params,
             standard_normal_sample_batch,
             upstream_gradient=upstream_gradient,
@@ -195,7 +193,7 @@ class RPVIIterator(VariationalInferenceIterator):
             log_likelihood (np.array): Vector of log-likelihood values for different input samples.
         """
         log_prior = self.parameters.joint_logpdf(sample_batch)
-        logpdf_variational = self.variational_distribution_obj.logpdf(
+        logpdf_variational = self.variational_distribution.logpdf(
             self.variational_params, sample_batch
         )
         self.elbo = float(np.mean(log_likelihood + log_prior - logpdf_variational))

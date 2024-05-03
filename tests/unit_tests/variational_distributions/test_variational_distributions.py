@@ -70,7 +70,7 @@ def fixture_mixture_distribution(mean_field_distribution):
 @pytest.fixture(name="particles_distribution")
 def fixture_particles_distribution():
     """Particles distribution."""
-    return ParticleVariational(1, [[1], [2]])
+    return ParticleVariational([[1], [2]])
 
 
 @pytest.fixture(name="joint_distribution")
