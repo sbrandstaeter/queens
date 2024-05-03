@@ -43,7 +43,7 @@ parameters:
     corr_length: 5.0
     std: 0.03
     mean: 0.25
-    explained_variance: 0.98
+    explained_variance: 0.95
 interface:
   type: job_interface
   scheduler_name: scheduler

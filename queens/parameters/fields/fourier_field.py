@@ -1,7 +1,7 @@
 """Fourier Random fields class."""
 
 import numpy as np
-from scipy.spatial import ConvexHull
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from scipy.spatial.distance import pdist
 
 from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
