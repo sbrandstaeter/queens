@@ -17,6 +17,7 @@ method:
   variational_transformation:
   variational_parameter_initialization: prior
   random_seed: 1
+  verbose_every_n_iter: 1000
   result_description:
     write_results: true
     plotting_options:
