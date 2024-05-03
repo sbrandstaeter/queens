@@ -6,7 +6,6 @@ analysis method, which can be used for parameter fixing (ranking).
 
 import logging
 
-import matplotlib as mpl
 import numpy as np
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
@@ -16,9 +15,6 @@ from queens.distributions.uniform import UniformDistribution
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
-
-if not mpl.get_backend().lower() == 'agg':
-    mpl.use('TkAgg')
 
 _logger = logging.getLogger(__name__)
 
