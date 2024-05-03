@@ -8,11 +8,11 @@ import scipy
 from queens.distributions.mixture import MixtureDistribution
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.particles import ParticleDiscreteDistribution
-from queens.utils.variational_inference_utils import (
+from queens.variational_distributions import (
     FullRankNormalVariational,
     JointVariational,
     MeanFieldNormalVariational,
-    MixtureModel,
+    MixtureModelVariational,
     ParticleVariational,
 )
 
@@ -64,7 +64,7 @@ def fixture_fullrank_distribution():
 @pytest.fixture(name="mixture_distribution")
 def fixture_mixture_distribution(mean_field_distribution):
     """Mixutre models of mean field distributions."""
-    return MixtureModel(mean_field_distribution, mean_field_distribution.dimension, 2)
+    return MixtureModelVariational(mean_field_distribution, mean_field_distribution.dimension, 2)
 
 
 @pytest.fixture(name="particles_distribution")

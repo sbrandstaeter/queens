@@ -7,8 +7,8 @@ import numpy as np
 
 import queens.visualization.variational_inference_visualization as qvis
 from queens.iterators.iterator import Iterator
-from queens.utils import variational_inference_utils
 from queens.utils.process_outputs import write_results
+from queens.variational_distributions import create_variational_distribution
 
 _logger = logging.getLogger(__name__)
 
@@ -123,8 +123,8 @@ class VariationalInferenceIterator(Iterator):
         self.stochastic_optimizer = stochastic_optimizer
 
         variational_distribution.update({"dimension": self.num_parameters})
-        self.variational_distribution_obj = (
-            variational_inference_utils.create_variational_distribution(variational_distribution)
+        self.variational_distribution_obj = create_variational_distribution(
+            variational_distribution
         )
         self.variational_family = variational_distribution["variational_family"]
 
