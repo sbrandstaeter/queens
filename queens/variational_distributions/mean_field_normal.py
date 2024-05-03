@@ -200,7 +200,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
             total_grad (np.ndarray): Total Logpdf reparameterization gradient
         """
         total_grad = np.zeros((standard_normal_sample_batch.shape[0], variational_parameters.size))
-        total_grad[:, self.dimension :] = 1.0
+        total_grad[:, self.dimension :] = -1.0
         return total_grad
 
     def grad_sample_logpdf(self, variational_parameters, sample_batch):

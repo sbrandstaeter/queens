@@ -688,7 +688,9 @@ def test_total_grad_params_logpdf_mean_field(mean_field_distribution):
     std_samples = np.random.randn(2, mean_field_distribution.dimension)
     gradient = mean_field_distribution.total_grad_params_logpdf(variational_parameters, std_samples)
 
-    expected_gradient = np.array([[0.0, 0.0, 0.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0, 1.0, 1.0]])
+    expected_gradient = np.array(
+        [[0.0, 0.0, 0.0, -1.0, -1.0, -1.0], [0.0, 0.0, 0.0, -1.0, -1.0, -1.0]]
+    )
     np.testing.assert_almost_equal(gradient, expected_gradient)
 
 
