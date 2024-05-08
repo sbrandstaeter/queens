@@ -3,22 +3,57 @@
 import numpy as np
 from mock import patch
 
+from queens.distributions.normal import NormalDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from queens.main import run
-from queens.utils import injector
+from queens.main import run_iterator
+from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
 
 def test_gaussian_smc(
-    inputdir, tmp_path, target_density_gaussian_1d, _create_experimental_data_gaussian_1d
+    tmp_path,
+    target_density_gaussian_1d,
+    _create_experimental_data_gaussian_1d,
+    _initialize_global_settings,
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = inputdir / "smc_gaussian.yml"
-    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
-    dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = tmp_path / "gaussian_smc_realiz.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x = NormalDistribution(mean=2.0, covariance=1.0)
+    parameters = Parameters(x=x)
+
+    # Setup QUEENS stuff
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=tmp_path,
+        output_label="y_obs",
+    )
+    mcmc_proposal_distribution = NormalDistribution(mean=0.0, covariance=1.0)
+    interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="fixed_variance",
+        noise_value=1.0,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = SequentialMonteCarloIterator(
+        seed=42,
+        num_particles=10,
+        temper_type="bayes",
+        plot_trace_every=0,
+        num_rejuvenation_steps=3,
+        result_description={"write_results": True, "plot_results": True, "cov": False},
+        mcmc_proposal_distribution=mcmc_proposal_distribution,
+        model=model,
+        parameters=parameters,
+    )
+
+    # Actual analysis
     # mock methods related to likelihood
     with patch.object(
         SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_1d
@@ -26,10 +61,11 @@ def test_gaussian_smc(
         with patch.object(
             MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_1d
         ):
-            run(input_file, tmp_path)
+            run_iterator(iterator)
 
-    results = load_result(tmp_path / 'xxx.pickle')
-
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
     # note that the analytical solution would be:
     # posterior mean: [1.]
     # posterior var: [0.5]

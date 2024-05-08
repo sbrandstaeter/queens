@@ -5,28 +5,70 @@ import pickle
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
+from queens.distributions.normal import NormalDistribution
 from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from queens.main import run
-from queens.utils import injector
+from queens.main import run_iterator
+from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 
 
-def test_smc_generic_temper_multivariate_gaussian(inputdir, tmp_path, _create_experimental_data):
+def test_smc_generic_temper_multivariate_gaussian(
+    tmp_path, _create_experimental_data, _initialize_global_settings
+):
     """Test SMC with a multivariate Gaussian and generic tempering."""
-    template = inputdir / "smc_generic_temper_multivariate_gaussian.yml"
-    experimental_data_path = tmp_path
-    dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = tmp_path / "multivariate_gaussian_smc_generic_temper_realiz.yml"
-    injector.inject(dir_dict, template, input_file)
-    # mock methods related to likelihood
-    with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
-        with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-            run(input_file, tmp_path)
+    # Parameters
+    x1 = NormalDistribution(mean=1.0, covariance=5.0)
+    x2 = NormalDistribution(mean=3.0, covariance=5.0)
+    x3 = NormalDistribution(mean=-3.0, covariance=5.0)
+    x4 = NormalDistribution(mean=1.0, covariance=5.0)
+    parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
-    result_file = tmp_path / 'GaussSMCGenTemp.pickle'
+    # Setup QUEENS stuff
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=tmp_path,
+        output_label="y_obs",
+    )
+    mcmc_proposal_distribution = NormalDistribution(
+        mean=[0.0, 0.0, 0.0, 0.0],
+        covariance=[
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+    )
+    interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="fixed_variance",
+        noise_value=1.0,
+        nugget_noise_variance=1e-05,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = SequentialMonteCarloIterator(
+        seed=42,
+        num_particles=200,
+        temper_type="generic",
+        plot_trace_every=0,
+        num_rejuvenation_steps=20,
+        result_description={"write_results": True, "plot_results": False, "cov": True},
+        mcmc_proposal_distribution=mcmc_proposal_distribution,
+        model=model,
+        parameters=parameters,
+    )
+
+    # Actual analysis
+    run_iterator(iterator)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
