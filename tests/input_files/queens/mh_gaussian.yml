@@ -21,7 +21,7 @@ model:
 experimental_data_reader:
   type: experimental_data_reader
   file_name_identifier: '*.csv'
-  csv_data_base_dir: {{ experimental_data_path }}
+  csv_data_base_dir: experimental_data_path
   output_label: y_obs
 forward_model:
   type: simulation_model
