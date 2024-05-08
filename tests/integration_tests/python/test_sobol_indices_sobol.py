@@ -2,21 +2,56 @@
 
 import numpy as np
 
-from queens.main import run
+from queens.distributions.uniform import UniformDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_sobol_index_iterator_results
 
 
-def test_sobol_indices_sobol(inputdir, tmp_path):
+def test_sobol_indices_sobol(tmp_path, _initialize_global_settings):
     """Test Sobol Index iterator with Sobol G-function.
 
     Including first, second and total order indices. The test should
     converge to the analytical solution defined in the Sobol G-function
     implementation (see *sobol.py*).
     """
-    run(inputdir / 'sobol_indices_sobol.yml', tmp_path)
+    # Parameters
+    x1 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x2 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x3 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x4 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x5 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x6 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x7 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x8 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x9 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x10 = UniformDistribution(lower_bound=0, upper_bound=1)
+    parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
-    results = load_result(tmp_path / 'xxx.pickle')
+    # Setup QUEENS stuff
+    interface = DirectPythonInterface(function="sobol_g_function", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = SobolIndexIterator(
+        seed=42,
+        calc_second_order=True,
+        num_samples=128,
+        confidence_level=0.95,
+        num_bootstrap_samples=10,
+        result_description={"write_results": True, "plot_results": True},
+        model=model,
+        parameters=parameters,
+    )
+
+    # Actual analysis
+    run_iterator(iterator)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     expected_result = {}
 
