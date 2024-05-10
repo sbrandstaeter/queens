@@ -3,9 +3,8 @@ import jax.scipy.stats as jax_stats
 import numpy as np
 import pytest
 import scipy
-from jax import grad
+from jax import config, grad
 from jax import numpy as jnp
-from jax.config import config
 
 from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
 
