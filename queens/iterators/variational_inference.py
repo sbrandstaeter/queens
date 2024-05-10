@@ -269,7 +269,7 @@ class VariationalInferenceIterator(Iterator):
         mean_list_prior = []
         std_list_prior = []
         if self.parameters.num_parameters > 0:
-            for params in self.parameters.to_list():
+            for params in self.parameters.to_distribution_list():
                 mean_list_prior.append(params.mean)
                 std_list_prior.append(params.covariance.squeeze())
 

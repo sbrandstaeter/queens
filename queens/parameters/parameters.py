@@ -93,7 +93,7 @@ class Parameters:
                 joint_parameters_dim += parameter_obj.dimension
             elif isinstance(parameter_obj, RandomField):
                 joint_parameters_keys += parameter_obj.coords['keys']
-                joint_parameters_dim += parameter_obj.dim_truncated
+                joint_parameters_dim += parameter_obj.dimension
                 random_field_flag = True
             else:
                 raise NotImplementedError(
@@ -157,6 +157,36 @@ class Parameters:
             j += parameter.dimension
         return grad_logpdf
 
+    def latent_grad(self, upstream_gradient):
+        """Gradient of the rvs and rfs w.r.t. latent variables.
+
+        Args:
+            upstream_gradient (np.array): Upstream gradient
+        Returns:
+            gradient (np.ndarray): Gradient of the joint rvs/rfs w.r.t. the samples
+        """
+        if self.random_field_flag:
+            upstream_gradient = np.atleast_2d(upstream_gradient)
+            gradient = np.zeros(shape=(upstream_gradient.shape[0], self.num_parameters))
+            index_latent = 0
+            index_field = 0
+            for parameter in self.to_list():
+                if isinstance(parameter, RandomField):
+                    gradient[
+                        :, index_latent : index_latent + parameter.dimension
+                    ] = parameter.latent_gradient(
+                        upstream_gradient[:, index_field : index_field + parameter.dim_coords]
+                    )
+                    index_field += parameter.dim_coords
+                else:
+                    gradient[
+                        :, index_latent : index_latent + parameter.dimension
+                    ] = upstream_gradient[:, index_field : index_field + parameter.dimension]
+                    index_field += parameter.dimension
+                index_latent += parameter.dimension
+            return gradient
+        return upstream_gradient
+
     def inverse_cdf_transform(self, samples):
         """Transform samples to unit interval.
 
@@ -207,12 +237,12 @@ class Parameters:
         for parameter in self.to_list():
             if isinstance(parameter, RandomField):
                 sample_expanded[
-                    index_expanded : index_expanded + parameter.dimension
+                    index_expanded : index_expanded + parameter.dim_coords
                 ] = parameter.expanded_representation(
-                    truncated_sample[index_truncated : index_truncated + parameter.dim_truncated]
+                    truncated_sample[index_truncated : index_truncated + parameter.dimension]
                 )
-                index_expanded += parameter.dimension
-                index_truncated += parameter.dim_truncated
+                index_expanded += parameter.dim_coords
+                index_truncated += parameter.dimension
             else:
                 sample_expanded[
                     index_expanded : index_expanded + parameter.dimension
@@ -230,22 +260,17 @@ class Parameters:
         parameter_list = list(self.dict.values())
         return parameter_list
 
-    def latent_grad(self, upstream_gradient):
-        """Gradient w.r.t. latent variables.
-
-        Compute the gradient of the random variables or random fields w.r.t. latent variabels
-        Args:
-            upstream_gradient (np.array): Upstream gradient
-        Returns:
-            gradient (np.ndarray): Gradient of the joint random_variables/random_fields
-                                   w.r.t. the samples
-        """
-        return upstream_gradient
-
     def to_distribution_list(self):
         """Return the distributions of the parameters as list.
 
         Returns:
-            parameter_list (list): List of distributions of parameters
+            distribution_list (list): List of distributions of parameters
         """
-        return list(self.dict.values())
+        distribution_list = []
+        for parameter in self.to_list():
+            if isinstance(parameter, RandomField):
+                distribution_list.append(parameter.distribution)
+            else:
+                distribution_list.append(parameter)
+
+        return distribution_list

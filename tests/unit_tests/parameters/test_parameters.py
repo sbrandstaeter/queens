@@ -124,11 +124,11 @@ def fixture_parameters_options_3():
             "covariance": np.diag([1, 2]),
         },
         "random_inflow": {
-            "type": "random_field",
+            "type": "kl",
             "corr_length": 1.0,
-            "std_hyperparam_random_field": 0.001,
-            "mean_type": "constant",
-            "mean_param": 0,
+            "std": 0.001,
+            "mean": 0,
+            "explained_variance": 0.98,
         },
     }
     return parameters_dict
@@ -146,7 +146,7 @@ def fixture_pre_processor():
             self.coords_dict = {
                 'random_inflow': {
                     'keys': ['random_inflow_0', 'random_inflow_1', 'random_inflow_2'],
-                    'coords': [0.0, 0.5, 1.0],
+                    'coords': [[0.0], [0.5], [1.0]],
                 }
             }
 

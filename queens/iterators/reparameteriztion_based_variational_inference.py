@@ -235,8 +235,8 @@ class RPVIIterator(VariationalInferenceIterator):
 
         Returns:
             log_likelihood (np.array): Vector of log-likelihood values for different input samples.
-            grad_log_likelihood_x (np.array): Row-wise gradients of log-Likelihood w.r.t. to input
-                                              samples.
+            grad_log_likelihood_batch (np.array): Row-wise gradients of log-Likelihood w.r.t.
+                                                  latent input samples.
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)
@@ -247,4 +247,5 @@ class RPVIIterator(VariationalInferenceIterator):
         self.iteration_data.add(n_sims=self.n_sims, samples=sample_batch)
         if hasattr(self.model, "normal_distribution"):
             self.iteration_data.add(likelihood_variance=self.model.normal_distribution.covariance)
-        return log_likelihood, grad_log_likelihood_x
+        grad_log_likelihood_batch = self.parameters.latent_grad(grad_log_likelihood_x)
+        return log_likelihood, grad_log_likelihood_batch

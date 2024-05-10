@@ -1,5 +1,11 @@
 """Random Fields."""
 
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.fields.fourier_field import FourierRandomField
+from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
+from queens.parameters.fields.piece_wise_field import PieceWiseRandomField
 
-VALID_TYPES = {'random_field': RandomField}
+VALID_TYPES = {
+    'kl': KarhunenLoeveRandomField,
+    'fourier': FourierRandomField,
+    'piece-wise': PieceWiseRandomField,
+}

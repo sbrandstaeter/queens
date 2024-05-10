@@ -208,7 +208,7 @@ def create_chaospy_joint_distribution(parameters):
     cp_distribution_list = []
 
     # loop over random_variables and create joint
-    for parameter in parameters.to_list():
+    for parameter in parameters.to_distribution_list():
         if parameter.dimension != 1:
             raise ValueError("Multidimensional random variables are not supported yet.")
 
