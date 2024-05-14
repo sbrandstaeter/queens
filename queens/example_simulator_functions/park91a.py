@@ -161,48 +161,26 @@ def park91a_hifi(x1, x2, x3, x4, gradient_bool=False):
     y = term1 + term2
 
     if gradient_bool:
-        term1a = x1 / 2
-        term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
-        term1 = term1a * term1b
-
-        term2a = x1 + 3 * x4
-        term2b = np.exp(1 + np.sin(x3))
-        term2 = term2a * term2b
-
-        y = term1 + term2
-
         # ----
-        term1a = x1 / 2
         d_term1a_dx1 = 1 / 2
-        term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
         d_term1b_dx1 = (
             1
             / (2 * np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)))
             * (-2 * (x2 + x3**2) * x4 * x1 ** (-3))
         )
-        term1 = term1a * term1b
         d_term1_dx1 = d_term1a_dx1 * term1b + term1a * d_term1b_dx1
 
-        term2a = x1 + 3 * x4
         d_term2a_dx1 = 1
-        term2b = np.exp(1 + np.sin(x3))
         d_term2b_dx1 = 0
-        term2 = term2a * term2b
         d_term2_dx1 = d_term2a_dx1 * term2b + term2a * d_term2b_dx1
 
         dy_dx1 = d_term1_dx1 + d_term2_dx1
 
         # ----
-        term1a = x1 / 2
         d_term1a_dx2 = 0
-        term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
         d_term1b_dx2 = 1 / (2 * np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2))) * x4 / (x1**2)
-        term1 = term1a * term1b
         d_term1_dx2 = d_term1a_dx2 * term1b + term1a * d_term1b_dx2
 
-        term2a = x1 + 3 * x4
-        term2b = np.exp(1 + np.sin(x3))
-        term2 = term2a * term2b
         d_term2_dx2 = 0
 
         dy_dx2 = d_term1_dx2 + d_term2_dx2
