@@ -114,14 +114,17 @@ def test_elementary_effects_sobol(
         },
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
-
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-        results = load_result(result_file)
+    results = load_result(result_file)
 
     np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
     np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)

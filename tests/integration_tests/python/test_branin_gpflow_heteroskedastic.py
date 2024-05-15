@@ -6,8 +6,8 @@ from queens.distributions.uniform import UniformDistribution
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
+from queens.models import HeteroskedasticGPModel
 from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.heteroskedastic_GPflow import HeteroskedasticGPModel
 from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
@@ -26,7 +26,11 @@ def test_branin_gpflow_heteroskedastic(
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
-        seed=42, num_samples=100, model=model, parameters=parameters
+        seed=42,
+        num_samples=100,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = HeteroskedasticGPModel(
         eval_fit=None,
@@ -59,14 +63,17 @@ def test_branin_gpflow_heteroskedastic(
         },
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
 
     results = load_result(result_file)
 

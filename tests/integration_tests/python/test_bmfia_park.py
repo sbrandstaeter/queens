@@ -5,6 +5,7 @@ import pickle
 
 import numpy as np
 import pytest
+from pylint.lint import load_results
 
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
@@ -19,8 +20,8 @@ from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
 from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
 from queens.parameters.parameters import Parameters
+from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
-from queens.utils.stochastic_optimizer import Adam
 
 
 @pytest.mark.max_time_for_test(30)
@@ -94,6 +95,7 @@ def test_bmfia_smc_park(
         lf_model=lf_model,
         hf_model=hf_model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.001,
@@ -119,16 +121,18 @@ def test_bmfia_smc_park(
         mcmc_proposal_distribution=mcmc_proposal_distribution,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_results(result_file)
 
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
@@ -251,6 +255,7 @@ def test_bmfia_rpvi_gp_park(
         hf_model=hf_model,
         lf_model=lf_model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
@@ -291,10 +296,14 @@ def test_bmfia_rpvi_gp_park(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(method)
+    run_iterator(
+        method,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -386,6 +395,7 @@ def test_bmfia_rpvi_nn_park(
         hf_model=hf_model,
         lf_model=lf_model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
@@ -434,10 +444,14 @@ def test_bmfia_rpvi_nn_park(
         model=model,
         stochastic_optimizer=stochastic_optimizer,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(method)
+    run_iterator(
+        method,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
