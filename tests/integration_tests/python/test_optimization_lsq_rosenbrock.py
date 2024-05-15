@@ -13,7 +13,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_optimization_lsq_rosenbrock(tmp_path):
+def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
     """Test case for optimization iterator with the least squares."""
     # Global settings
     experiment_name = "ResRosenbrockLSQ"
@@ -35,10 +35,14 @@ def test_optimization_lsq_rosenbrock(tmp_path):
             bounds=[float("-inf"), float("inf")],
             model=model,
             parameters=parameters,
+            global_settings=_initialize_global_settings,
         )
 
         # Actual analysis
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
         # Load results
         result_file = gs.output_dir / f"{gs.experiment_name}.pickle"
@@ -48,7 +52,7 @@ def test_optimization_lsq_rosenbrock(tmp_path):
     np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))
 
 
-def test_optimization_lsq_rosenbrock_error(tmp_path):
+def test_optimization_lsq_rosenbrock_error(tmp_path, _initialize_global_settings):
     """Test error for optimization iterator with the least squares."""
     # Global settings
     experiment_name = "ErrRosenbrockLSQ"
@@ -73,10 +77,14 @@ def test_optimization_lsq_rosenbrock_error(tmp_path):
             bounds=[float("-inf"), float("inf")],
             model=model,
             parameters=parameters,
+            global_settings=_initialize_global_settings,
         )
 
         # Actual analysis
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
         # Load results
         result_file = gs.output_dir / f"{gs.experiment_name}.pickle"

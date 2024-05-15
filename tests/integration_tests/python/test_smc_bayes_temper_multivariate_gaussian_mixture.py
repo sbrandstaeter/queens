@@ -66,13 +66,17 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
         mcmc_proposal_distribution=mcmc_proposal_distribution,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-            run_iterator(iterator)
+            run_iterator(
+                iterator,
+                global_settings=_initialize_global_settings,
+            )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

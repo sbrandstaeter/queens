@@ -25,7 +25,11 @@ def test_branin_gpflow_svgp(tmp_path, expected_mean, expected_var, _initialize_g
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
-        seed=42, num_samples=100, model=model, parameters=parameters
+        seed=42,
+        num_samples=100,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPflowSVGPModel(
         plotting_options={
@@ -55,10 +59,14 @@ def test_branin_gpflow_svgp(tmp_path, expected_mean, expected_var, _initialize_g
         },
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

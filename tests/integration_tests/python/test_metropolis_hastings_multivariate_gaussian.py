@@ -62,12 +62,15 @@ def test_metropolis_hastings_multivariate_gaussian(
     # Actual analysis
     # mock methods related to likelihood
     with patch.object(
-        SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_2d
+            SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_2d
     ):
         with patch.object(
-            MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
+                MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
         ):
-            run_iterator(iterator, _initialize_global_settings)
+            run_iterator(
+                iterator,
+                global_settings=_initialize_global_settings,
+            )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

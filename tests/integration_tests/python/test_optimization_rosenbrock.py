@@ -42,10 +42,14 @@ def test_optimization_rosenbrock(tmp_path, algorithm, _initialize_global_setting
         bounds=[float("-inf"), float("inf")],
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

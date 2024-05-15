@@ -50,6 +50,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         proposal_distribution=proposal_distribution,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
@@ -60,7 +61,10 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         with patch.object(
             MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
         ):
-            run_iterator(iterator)
+            run_iterator(
+                iterator,
+                global_settings=_initialize_global_settings,
+            )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

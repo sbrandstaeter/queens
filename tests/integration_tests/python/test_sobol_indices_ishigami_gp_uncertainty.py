@@ -25,10 +25,20 @@ def test_sobol_indices_ishigami_gp_uncertainty(tmp_path, _initialize_global_sett
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
-        seed=42, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=42,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     testing_iterator = LHSIterator(
-        seed=30, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=30,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -53,10 +63,14 @@ def test_sobol_indices_ishigami_gp_uncertainty(tmp_path, _initialize_global_sett
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -101,10 +115,20 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(tmp_path, _initialize
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
-        seed=42, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=42,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     testing_iterator = LHSIterator(
-        seed=30, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=30,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -130,10 +154,14 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(tmp_path, _initialize
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -158,10 +186,20 @@ def test_sobol_indices_ishigami_gp_mean(tmp_path, _initialize_global_settings):
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
-        seed=42, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=42,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     testing_iterator = LHSIterator(
-        seed=30, num_samples=100, num_iterations=10, model=model, parameters=parameters
+        seed=30,
+        num_samples=100,
+        num_iterations=10,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -185,14 +223,18 @@ def test_sobol_indices_ishigami_gp_mean(tmp_path, _initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    result = load_result(result_file)
+    results = load_result(result_file)
 
     expected_s1 = np.array(
         [

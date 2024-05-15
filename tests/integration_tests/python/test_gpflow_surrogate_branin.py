@@ -29,7 +29,11 @@ def test_gpflow_surrogate_branin(
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
-        seed=42, num_samples=20, model=model, parameters=parameters
+        seed=42,
+        num_samples=20,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPFlowRegressionModel(
         train_likelihood_variance=False,
@@ -58,10 +62,14 @@ def test_gpflow_surrogate_branin(
         },
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

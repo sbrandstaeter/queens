@@ -16,8 +16,8 @@ from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.stochastic_optimizers import Adam
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.iterative_averaging_utils import MovingAveraging
 from queens.variational_distributions import MeanFieldNormalVariational
 
@@ -139,10 +139,14 @@ def test_bbvi_iterator_park91a_hifi(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

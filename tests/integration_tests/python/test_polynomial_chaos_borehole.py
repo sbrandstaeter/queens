@@ -37,10 +37,14 @@ def test_polynomial_chaos_pseudo_spectral_borehole(tmp_path, _initialize_global_
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -49,7 +53,7 @@ def test_polynomial_chaos_pseudo_spectral_borehole(tmp_path, _initialize_global_
     assert results["covariance"] == pytest.approx([1312.23414971])
 
 
-def test_polynomial_chaos_collocation_borehole(inputdir, tmp_path, _initialize_global_settings):
+def test_polynomial_chaos_collocation_borehole(tmp_path, _initialize_global_settings):
     """Test for the PC iterator using a collocation approach."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
@@ -74,10 +78,14 @@ def test_polynomial_chaos_collocation_borehole(inputdir, tmp_path, _initialize_g
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

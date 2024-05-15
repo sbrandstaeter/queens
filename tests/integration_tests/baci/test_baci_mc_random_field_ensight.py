@@ -1,7 +1,5 @@
 """Test BACI with RF materials."""
 
-import pickle
-
 import numpy as np
 import pytest
 from mock import patch
@@ -14,8 +12,8 @@ from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
-from queens.parameters.parameters import Parameters
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
+from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.io_utils import load_result
 
@@ -79,6 +77,7 @@ def test_write_random_material_to_dat(
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
@@ -86,7 +85,10 @@ def test_write_random_material_to_dat(
         return self.mean + self.std**2 * np.linalg.norm(self.coords['coords'], axis=1) * sample[0]
 
     with patch.object(KarhunenLoeveRandomField, "expanded_representation", expanded_representation):
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

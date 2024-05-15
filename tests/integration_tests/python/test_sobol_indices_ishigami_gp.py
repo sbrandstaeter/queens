@@ -31,6 +31,7 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     model = GPFlowRegressionModel(
         number_restarts=10,
@@ -47,10 +48,14 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
         result_description={"write_results": True, "plot_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

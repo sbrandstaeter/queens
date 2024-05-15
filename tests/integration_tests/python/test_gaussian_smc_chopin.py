@@ -4,7 +4,6 @@ import numpy as np
 from mock import patch
 
 from queens.distributions.normal import NormalDistribution
-
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
 from queens.main import run_iterator
@@ -52,13 +51,17 @@ def test_gaussian_smc_chopin_adaptive_tempering(
         result_description={"write_results": True, "plot_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
     with patch.object(
         SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density_gaussian_1d
     ):
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

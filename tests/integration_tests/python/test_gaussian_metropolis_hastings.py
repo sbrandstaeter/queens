@@ -49,13 +49,17 @@ def test_gaussian_metropolis_hastings(
         proposal_distribution=proposal_distribution,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
     with patch.object(
         MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_1d
     ):
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

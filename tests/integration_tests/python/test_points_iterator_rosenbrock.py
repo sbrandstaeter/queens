@@ -28,10 +28,14 @@ def test_points_iterator(tmp_path, expected_results, _initialize_global_settings
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -58,12 +62,16 @@ def test_points_iterator_failure(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     with pytest.raises(
         ValueError, match="Non-matching number of points for the different parameters: x1: 1, x2: 2"
     ):
-        run_iterator(iterator)
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
 
 @pytest.fixture(name="inputs")

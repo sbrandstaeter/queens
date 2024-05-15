@@ -62,6 +62,7 @@ def test_baci_mc_ensight(
         path_to_postprocessor=post_ensight,
         post_file_prefix="baci_mc_ensight",
         data_processor=data_processor,
+        experiment_name="baci_mc_ensight",
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     model = SimulationModel(interface=interface)
@@ -71,10 +72,14 @@ def test_baci_mc_ensight(
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

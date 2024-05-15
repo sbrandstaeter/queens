@@ -133,8 +133,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         probabilistic_mapping=probabilistic_mapping,
         hf_model=hf_model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
     iterator = BMFMCIterator(
+        global_settings=_initialize_global_settings,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -157,7 +159,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

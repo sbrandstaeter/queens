@@ -62,10 +62,14 @@ def test_smc_generic_temper_multivariate_gaussian(
         mcmc_proposal_distribution=mcmc_proposal_distribution,
         model=model,
         parameters=parameters,
+        global_settings=_initialize_global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator)
+    run_iterator(
+        iterator,
+        global_settings=_initialize_global_settings,
+    )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
