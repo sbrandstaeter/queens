@@ -322,9 +322,11 @@ def from_config_create_parameters(parameters_options, python_code):
                 distribution_class, parameter_dict
             )
         elif issubclass(parameter_class, RandomField):
-            parameter_dict["coords"] = VariableName(f"pre_processor.coords_dict[{parameter_name}]")
+            parameter_dict["coords"] = VariableName(
+                f"random_field_preprocessor.coords_dict['{parameter_name}']"
+            )
             new_obj = create_initialization_call_from_class_and_arguments(
-                parameter_class, parameter_dict
+                distribution_class, parameter_dict
             )
         else:
             raise NotImplementedError(f"Parameter type '{parameter_class.__name__}' not supported.")
