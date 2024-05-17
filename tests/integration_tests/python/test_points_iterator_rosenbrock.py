@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_points_iterator(tmp_path, expected_results, _initialize_global_settings):
+def test_points_iterator(tmp_path, inputs, expected_results, _initialize_global_settings):
     """Integration test for the points iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -24,7 +24,7 @@ def test_points_iterator(tmp_path, expected_results, _initialize_global_settings
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(
-        points={"x1": "x1", "x2": "x2"},
+        points=inputs,
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
@@ -49,16 +49,16 @@ def test_points_iterator(tmp_path, expected_results, _initialize_global_settings
 
 def test_points_iterator_failure(_initialize_global_settings):
     """Test failure of the points iterator."""
+    inputs = {"x1": [1], "x2": [1, 2]}
     # Parameters
     x1 = FreeVariable(dimension=1)
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
-
     # Setup QUEENS stuff
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(
-        points={"x1": "x1", "x2": "x2"},
+        points=inputs,
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
