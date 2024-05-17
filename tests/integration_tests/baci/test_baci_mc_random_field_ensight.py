@@ -5,7 +5,6 @@ import pytest
 from mock import patch
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
-from queens.distributions.uniform import UniformDistribution
 from queens.drivers.mpi_driver import MpiDriver
 from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
@@ -37,9 +36,29 @@ def test_write_random_material_to_dat(
     baci_input_preprocessed = dat_file_preprocessed
 
     # Parameters
-    nue = UniformDistribution(lower_bound=0.4, upper_bound=0.49)
-    young = UniformDistribution(lower_bound=500, upper_bound=1000)
-    parameters = Parameters(nue=nue, young=young)
+    random_field_preprocessor = BaciDatExternalGeometry(
+        list_geometric_sets=["DSURFACE 1"],
+        associated_material_numbers_geometric_set=[[10, 11]],
+        random_fields=[
+            {
+                "name": "mat_param",
+                "type": "material",
+                "external_instance": "DSURFACE 1",
+            }
+        ],
+        input_template=baci_input,
+        input_template_preprocessed=baci_input_preprocessed,
+    )
+    random_field_preprocessor.main_run()
+    random_field_preprocessor.write_random_fields_to_dat()
+    mat_param = KarhunenLoeveRandomField(
+        corr_length=5.0,
+        std=0.03,
+        mean=0.25,
+        explained_variance=0.95,
+        coords=random_field_preprocessor.coords_dict["mat_param"],
+    )
+    parameters = Parameters(mat_param=mat_param)
 
     # Setup QUEENS stuff
     external_geometry = BaciDatExternalGeometry(
@@ -47,7 +66,7 @@ def test_write_random_material_to_dat(
         input_template=baci_input_preprocessed,
     )
     data_processor = DataProcessorEnsight(
-        file_name_identifier="baci_mc_ensight_*structure.case",
+        file_name_identifier="baci_*structure.case",
         file_options_dict={
             "delete_field_data": False,
             "geometric_target": ["geometric_set", "DSURFACE 1"],
@@ -55,20 +74,20 @@ def test_write_random_material_to_dat(
                 "vtk_field_type": "structure",
                 "vtk_array_type": "point_array",
                 "vtk_field_label": "displacement",
-                "field_components": [0, 1, 2],
+                "field_components": [0, 1],
             },
             "target_time_lst": ["last"],
         },
         external_geometry=external_geometry,
     )
     scheduler = LocalScheduler(
-        experiment_name=_initialize_global_settings.experiment_name,
-        num_procs=2,
+        num_procs=1,
         num_procs_post=1,
-        max_concurrent=2,
+        max_concurrent=1,
+        experiment_name=_initialize_global_settings.experiment_name,
     )
     driver = MpiDriver(
-        input_template=baci_input,
+        input_template=baci_input_preprocessed,
         path_to_executable=baci_release,
         path_to_postprocessor=post_ensight,
         post_file_prefix="baci_mc_random_field_ensight",
@@ -77,8 +96,8 @@ def test_write_random_material_to_dat(
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
-        seed=42,
-        num_samples=2,
+        seed=1,
+        num_samples=3,
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
