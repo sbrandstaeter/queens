@@ -61,7 +61,12 @@ def test_write_random_material_to_dat(
         },
         external_geometry=external_geometry,
     )
-    scheduler = LocalScheduler(num_procs=2, num_procs_post=1, max_concurrent=2)
+    scheduler = LocalScheduler(
+        experiment_name=_initialize_global_settings.experiment_name,
+        num_procs=2,
+        num_procs_post=1,
+        max_concurrent=2,
+    )
     driver = MpiDriver(
         input_template=baci_input,
         path_to_executable=baci_release,
