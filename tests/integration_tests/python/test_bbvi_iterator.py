@@ -1,6 +1,5 @@
 """Integration tests for the BBVI iterator."""
 
-import pickle
 from collections import namedtuple
 
 import numpy as np
@@ -18,6 +17,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
+from queens.utils.io_utils import load_result
 from queens.utils.iterative_averaging_utils import MovingAveraging
 from queens.variational_distributions import MeanFieldNormalVariational
 
@@ -150,8 +150,8 @@ def test_bbvi_iterator_park91a_hifi(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
+
     elbo_list = results["iteration_data"]["elbo"]
 
     # Actual tests
