@@ -1,6 +1,5 @@
 """Test HMC Sampler."""
 
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -9,7 +8,7 @@ from mock import patch
 from queens.distributions.normal import NormalDistribution
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.hmc_iterator import HMCIterator
-from queens.main import run, run_iterator
+from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -18,7 +17,10 @@ from queens.utils.io_utils import load_result
 
 
 def test_gaussian_hmc(
-    tmp_path, target_density_gaussian_2d_with_grad, _create_experimental_data, _initialize_global_settings
+    tmp_path,
+    target_density_gaussian_2d_with_grad,
+    _create_experimental_data_zero,
+    _initialize_global_settings,
 ):
     """Test case for hmc iterator."""
     # Parameters
@@ -52,21 +54,15 @@ def test_gaussian_hmc(
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad):
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    input_file = load_result(result_file)
-
-    with patch.object(
-        GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
-    ):
-        run(Path(input_file), Path(tmp_path))
-
-    results = load_result(tmp_path / 'xxx.pickle')
+    results = load_result(result_file)
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([0.19363280864587615, -1.1303341362165935])
