@@ -1,20 +1,20 @@
 """TODO_doc."""
-
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
 from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.utils.experimental_data_reader import ExperimentalDataReader
+from queens.utils.io_utils import load_result
 
 
 def test_smc_generic_temper_multivariate_gaussian(
@@ -66,15 +66,16 @@ def test_smc_generic_temper_multivariate_gaussian(
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
+        with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
+            run_iterator(
+                iterator,
+                global_settings=_initialize_global_settings,
+            )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     # note that the analytical solution can be found in multivariate_gaussian_4D_logpdf
     # we only have a very inaccurate approximation here:
