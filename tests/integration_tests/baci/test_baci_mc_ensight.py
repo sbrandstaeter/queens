@@ -67,7 +67,6 @@ def test_baci_mc_ensight(
         path_to_postprocessor=post_ensight,
         post_file_prefix="baci_mc_ensight",
         data_processor=data_processor,
-        experiment_name="baci_mc_ensight",
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     model = SimulationModel(interface=interface)
