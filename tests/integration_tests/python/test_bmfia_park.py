@@ -1,11 +1,8 @@
 """Integration tests for the BMFIA."""
 
 # pylint: disable=invalid-name
-import pickle
-
 import numpy as np
 import pytest
-from pylint.lint import load_results
 
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
@@ -22,6 +19,8 @@ from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
 from queens.parameters.parameters import Parameters
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
+from queens.utils.io_utils import load_result
+from queens.variational_distributions import MeanFieldNormalVariational
 
 
 @pytest.mark.max_time_for_test(30)
@@ -132,7 +131,7 @@ def test_bmfia_smc_park(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_results(result_file)
+    results = load_result(result_file)
 
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
@@ -204,13 +203,7 @@ def test_bmfia_rpvi_gp_park(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup QUEENS stuff
-    stochastic_optimizer = Adam(
-        learning_rate=0.03,
-        max_iteration=10000000,
-        optimization_type="max",
-        rel_l1_change_threshold=-1,
-        rel_l2_change_threshold=-1,
-    )
+    variational_distribution = MeanFieldNormalVariational(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
@@ -287,12 +280,9 @@ def test_bmfia_rpvi_gp_park(
             "write_results": True,
         },
         score_function_bool=False,
-        variational_distribution={
-            "variational_approximation_type": "mean_field",
-            "variational_family": "normal",
-        },
         variational_parameter_initialization="prior",
         variational_transformation=None,
+        variational_distribution=variational_distribution,
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
@@ -307,10 +297,7 @@ def test_bmfia_rpvi_gp_park(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
-    # get the results of the QUEENS run
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']
@@ -356,6 +343,7 @@ def test_bmfia_rpvi_nn_park(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup QUEENS stuff
+    variational_distribution = MeanFieldNormalVariational(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
@@ -435,12 +423,9 @@ def test_bmfia_rpvi_nn_park(
             "write_results": True,
         },
         score_function_bool=False,
-        variational_distribution={
-            "variational_approximation_type": "mean_field",
-            "variational_family": "normal",
-        },
         variational_parameter_initialization="prior",
         variational_transformation=None,
+        variational_distribution=variational_distribution,
         model=model,
         stochastic_optimizer=stochastic_optimizer,
         parameters=parameters,
@@ -455,8 +440,7 @@ def test_bmfia_rpvi_nn_park(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']

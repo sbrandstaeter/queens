@@ -58,6 +58,11 @@ class GaussianLikelihood(LikelihoodModel):
             y_obs (array_like): Vector with observations
             experimental_data_reader (obj): Experimental data reader
         """
+        if y_obs is not None and experimental_data_reader is not None:
+            warnings.warn(
+                "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
+                "Only provided 'y_obs' is used."
+            )
         if y_obs is None:
             if experimental_data_reader is None:
                 raise InvalidOptionError(
@@ -65,11 +70,6 @@ class GaussianLikelihood(LikelihoodModel):
                     "'experimental_data_reader' for GaussianLikelihood."
                 )
             y_obs = experimental_data_reader.get_experimental_data()[0]
-        if y_obs is not None and experimental_data_reader is not None:
-            warnings.warn(
-                "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
-                "Only provided 'y_obs' is used."
-            )
 
         super().__init__(forward_model, y_obs)
 
