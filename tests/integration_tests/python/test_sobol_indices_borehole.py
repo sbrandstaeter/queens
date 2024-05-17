@@ -47,7 +47,6 @@ def test_sobol_indices_borehole(tmp_path, _initialize_global_settings):
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(tmp_path / 'xxx.pickle')
     results = load_result(result_file)
 
     expected_first_order_indices = np.array(
