@@ -19,7 +19,7 @@ from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.iterative_averaging_utils import MovingAveraging
-from queens.variational_distributions import MeanFieldNormalVariational
+from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
 
 
 def test_bbvi_density_match(
@@ -84,6 +84,7 @@ def test_bbvi_iterator_park91a_hifi(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup QUEENS stuff
+    variational_distribution = FullRankNormalVariational(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.01,
         optimization_type="max",
@@ -111,10 +112,6 @@ def test_bbvi_iterator_park91a_hifi(
         max_feval=100,
         n_samples_per_iter=2,
         memory=20,
-        variational_distribution={
-            "variational_approximation_type": "fullrank",
-            "variational_family": "normal",
-        },
         model_eval_iteration_period=1000,
         natural_gradient=True,
         FIM_dampening=True,
@@ -136,6 +133,7 @@ def test_bbvi_iterator_park91a_hifi(
                 "save_bool": False,
             },
         },
+        variational_distribution=variational_distribution,
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
