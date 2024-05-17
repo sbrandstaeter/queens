@@ -3,17 +3,11 @@
 import numpy as np
 from mock import patch
 
-
 from queens.distributions.normal import NormalDistribution
-
-# fmt: off
 from queens.interfaces.direct_python_interface import DirectPythonInterface
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+from queens.iterators import MetropolisHastingsIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-
-# fmt: on
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.utils.experimental_data_reader import ExperimentalDataReader
@@ -60,17 +54,13 @@ def test_metropolis_hastings_multivariate_gaussian(
     )
 
     # Actual analysis
-    # mock methods related to likelihood
     with patch.object(
-        SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_2d
+        MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
     ):
-        with patch.object(
-            MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
-        ):
-            run_iterator(
-                iterator,
-                global_settings=_initialize_global_settings,
-            )
+        run_iterator(
+            iterator,
+            global_settings=_initialize_global_settings,
+        )
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
