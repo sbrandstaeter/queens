@@ -1,4 +1,5 @@
 """Beta Distribution."""
+
 import numpy as np
 import scipy.linalg
 import scipy.stats
@@ -41,7 +42,7 @@ class BetaDistribution(ContinuousDistribution):
         scale = upper_bound - lower_bound
         scipy_beta = scipy.stats.beta(scale=scale, loc=lower_bound, a=a, b=b)
         mean = scipy_beta.mean()
-        covariance = scipy_beta.var().reshape(1, 1)
+        covariance = scipy_beta.var()
 
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -72,7 +73,7 @@ class BetaDistribution(ContinuousDistribution):
         Returns:
             samples (np.ndarray): drawn samples from the distribution
         """
-        samples = self.scipy_beta.random_variables(size=num_draws).reshape(-1, 1)
+        samples = self.scipy_beta.rvs(size=num_draws).reshape(-1, 1)
         return samples
 
     def logpdf(self, x):
@@ -94,7 +95,7 @@ class BetaDistribution(ContinuousDistribution):
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
         raise NotImplementedError(
-            'This method is currently not implemented for the beta distribution.'
+            "This method is currently not implemented for the beta distribution."
         )
 
     def pdf(self, x):
