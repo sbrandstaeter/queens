@@ -2,11 +2,35 @@ __pycache__
 # do not track doc files that are automatically build
 doc/build
 doc/source/*.rst
+
 # but keep index.rst
 !doc/source/index.rst
 !doc/source/intro.rst
 !doc/source/tutorials.rst
 !doc/source/architecture.rst
+
+# C extensions
+*.so
+
+# distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # notebook checkpoints
 *.ipynb_checkpoints
@@ -39,3 +63,15 @@ requirements.tmp
 .vscode/settings.json
 .vscode/launch.json
 *.code-workspace
+
+# environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# best editor ever files
+*.swp
