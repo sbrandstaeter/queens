@@ -10,16 +10,9 @@ from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.valid_options_utils import get_option
+from queens.visualization.gnuplot_vis import gnuplot_gp_convergence
 
 _logger = logging.getLogger(__name__)
-
-try:
-    from queens.visualization.gnuplot_vis import gnuplot_gp_convergence
-except FileNotFoundError:
-    _logger.warning("Cannot import gnuplotlib! No terminal plots available...")
-
-    def gnuplot_gp_convergence(*_args, **_kwargs):
-        """Provide a dummy plot function."""
 
 
 class GPJittedModel(SurrogateModel):
@@ -50,7 +43,7 @@ class GPJittedModel(SurrogateModel):
     """
 
     valid_kernels_dict = {
-        'squared_exponential': (
+        "squared_exponential": (
             utils_jitted.squared_exponential,
             utils_jitted.posterior_mean_squared_exponential,
             utils_jitted.posterior_var_squared_exponential,
@@ -58,7 +51,7 @@ class GPJittedModel(SurrogateModel):
             utils_jitted.grad_posterior_mean_squared_exponential,
             utils_jitted.grad_posterior_var_squared_exponential,
         ),
-        'matern_3_2': (
+        "matern_3_2": (
             utils_jitted.matern_3_2,
             utils_jitted.posterior_mean_matern_3_2,
             utils_jitted.posterior_var_matern_3_2,
@@ -317,7 +310,7 @@ class GPJittedModel(SurrogateModel):
         """
         raise NotImplementedError
 
-    def predict(self, x_test, support='f', gradient_bool=False):
+    def predict(self, x_test, support="f", gradient_bool=False):
         """Predict the posterior distribution of the trained GP at x_test.
 
         Args:
@@ -360,13 +353,13 @@ class GPJittedModel(SurrogateModel):
 
         if np.any(var.flatten() <= 0.0):
             raise ValueError(
-                'Posterior variance has negative values! It seems like the condition of your '
-                'covariance matrix is rather bad. Please increase the noise variance lower bound!'
-                f'Your current noise variance lower bound is: {self.noise_variance_lower_bound}.'
+                "Posterior variance has negative values! It seems like the condition of your "
+                "covariance matrix is rather bad. Please increase the noise variance lower bound!"
+                f"Your current noise variance lower bound is: {self.noise_variance_lower_bound}."
             )
 
         output = {"x_test": x_test}
-        output['result'] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
+        output["result"] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec).reshape(
             -1, 1
         ) + self.mean_function(x_test)
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2).reshape(-1, 1)
@@ -389,7 +382,10 @@ class GPJittedModel(SurrogateModel):
                 grad_post_mean_test_mat, self.scaler_x.standard_deviation
             ) + self.gradient_mean_function(x_test)
             output["grad_var"] = self.scaler_y.inverse_transform_grad_var(
-                grad_post_var_test_vec, var, output["variance"], self.scaler_x.standard_deviation
+                grad_post_var_test_vec,
+                var,
+                output["variance"],
+                self.scaler_x.standard_deviation,
             )
 
         return output
@@ -402,10 +398,10 @@ class GPJittedModel(SurrogateModel):
             of the probabilistic mapping object
         """
         state_dict = {
-            'hyper_params_lst': self.hyper_params,
-            'k_mat': self.k_mat,
-            'k_mat_inv': self.k_mat_inv,
-            'cholesky_k_mat': self.cholesky_k_mat,
+            "hyper_params_lst": self.hyper_params,
+            "k_mat": self.k_mat,
+            "k_mat_inv": self.k_mat_inv,
+            "cholesky_k_mat": self.cholesky_k_mat,
         }
         return state_dict
 
@@ -418,10 +414,10 @@ class GPJittedModel(SurrogateModel):
         """
         # conduct some checks
         valid_keys = [
-            'hyper_params_lst',
-            'k_mat',
-            'k_mat_inv',
-            'cholesky_k_mat',
+            "hyper_params_lst",
+            "k_mat",
+            "k_mat_inv",
+            "cholesky_k_mat",
         ]
 
         keys = list(state_dict.keys())
@@ -429,10 +425,10 @@ class GPJittedModel(SurrogateModel):
             raise ValueError("The provided dictionary does not contain valid keys!")
 
         # Actually set the new state of the object
-        self.hyper_params = state_dict['hyper_params_lst']
-        self.k_mat = state_dict['k_mat']
-        self.k_mat_inv = state_dict['k_mat_inv']
-        self.cholesky_k_mat = state_dict['cholesky_k_mat']
+        self.hyper_params = state_dict["hyper_params_lst"]
+        self.k_mat = state_dict["k_mat"]
+        self.k_mat_inv = state_dict["k_mat_inv"]
+        self.cholesky_k_mat = state_dict["cholesky_k_mat"]
 
     @staticmethod
     def zero_mean_fun(_samples):
