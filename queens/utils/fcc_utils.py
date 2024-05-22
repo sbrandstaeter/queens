@@ -13,6 +13,7 @@ from queens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
 from queens.iterators.iterator import Iterator
 from queens.models import VALID_TYPES as VALID_MODEL_TYPES
 from queens.models.bmfmc_model import BMFMCModel
+from queens.parameters.fields import VALID_TYPES as VALID_RANDOM_FIELD_TYPES
 from queens.parameters.parameters import from_config_create_parameters
 from queens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
 from queens.schedulers import Scheduler
@@ -43,6 +44,7 @@ VALID_TYPES = {
     **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_ITERATOR_TYPES,
     **VALID_MODEL_TYPES,
+    **VALID_RANDOM_FIELD_TYPES,
     **VALID_SCHEDULER_TYPES,
     **VALID_STOCHASTIC_OPTIMIZER_TYPES,
     **VALID_VARIATIONAL_DISTRIBUTION_TYPES,
