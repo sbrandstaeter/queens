@@ -7,9 +7,19 @@ import numpy as np
 import pytest
 
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
-from queens.main import run
-from queens.utils import config_directories, injector, io_utils
+from queens.data_processor.data_processor_ensight import DataProcessorEnsight
+from queens.distributions.uniform import UniformDistribution
+from queens.drivers.mpi_driver import MpiDriver
+from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.interfaces.job_interface import JobInterface
+from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
+from queens.utils import config_directories, io_utils
 from queens.utils.fcc_utils import from_config_create_object
+from queens.utils.io_utils import load_result
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     THOUGHT_CLUSTER_TYPE,
@@ -76,7 +86,6 @@ class TestDaskCluster:
 
     def test_baci_mc_ensight_cluster(
         self,
-        inputdir,
         tmp_path,
         third_party_inputs,
         cluster_settings,
@@ -84,6 +93,7 @@ class TestDaskCluster:
         baci_example_expected_mean,
         baci_example_expected_var,
         baci_example_expected_output,
+        _initialize_global_settings,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
 
@@ -115,27 +125,70 @@ class TestDaskCluster:
             third_party_inputs, "baci", "meshtying3D_patch_lin_duallagr_new_struct.dat"
         )
 
-        template_options = {
-            **baci_cluster_paths,
-            **cluster_settings,
-            'experiment_name': experiment_name,
-            'input_template': baci_input_file_template,
-        }
-        queens_input_file_template = inputdir / "baci_mc_ensight_cluster_template.yml"
-        queens_input_file = tmp_path / f"baci_mc_ensight_cluster_{cluster_name}.yml"
-        injector.inject(
-            template_options, queens_input_file_template, queens_input_file, strict=False
-        )
+        # A main run is needed as you are using dask
+        def run(_initialize_global_settings):
+            # Parameters
+            nue = UniformDistribution(lower_bound=0.4, upper_bound=0.49)
+            young = UniformDistribution(lower_bound=500, upper_bound=1000)
+            parameters = Parameters(nue=nue, young=young)
 
-        # get json file as config dictionary
-        run(queens_input_file, tmp_path)
+            # Setup QUEENS stuff
+            external_geometry = BaciDatExternalGeometry(
+                list_geometric_sets=["DSURFACE 1"], input_template="baci_input"
+            )
+            data_processor = DataProcessorEnsight(
+                file_name_identifier="baci_mc_ensight_*structure.case",
+                file_options_dict={
+                    "delete_field_data": False,
+                    "geometric_target": ["geometric_set", "DSURFACE 1"],
+                    "physical_field_dict": {
+                        "vtk_field_type": "structure",
+                        "vtk_array_type": "point_array",
+                        "vtk_field_label": "displacement",
+                        "field_components": [0, 1, 2],
+                    },
+                    "target_time_lst": ["last"],
+                },
+                external_geometry=external_geometry,
+            )
+            scheduler = LocalScheduler(
+                num_procs=2,
+                num_procs_post=1,
+                max_concurrent=2,
+                global_settings=_initialize_global_settings,
+            )
+            driver = MpiDriver(
+                input_template="baci_input",
+                path_to_executable="baci_release",
+                path_to_postprocessor="post_ensight",
+                post_file_prefix="baci_mc_ensight",
+                data_processor=data_processor,
+            )
+            interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+            model = SimulationModel(interface=interface)
+            iterator = MonteCarloIterator(
+                seed=42,
+                num_samples=2,
+                result_description={"write_results": True, "plot_results": False},
+                model=model,
+                parameters=parameters,
+                global_settings=_initialize_global_settings,
+            )
 
-        # The data has to be deleted before the assertion
-        self.delete_simulation_data(queens_input_file)
+            # Actual analysis
+            run_iterator(iterator, _initialize_global_settings)
 
-        # Check if we got the expected results
-        result_file_name = tmp_path / f"{experiment_name}.pickle"
-        results = io_utils.load_result(result_file_name)
+            # Load results
+            result_file = tmp_path / "dummy_experiment_name.pickle"
+            results = load_result(result_file)
+
+        # main run
+        if __name__ == "__main__":
+            run(_initialize_global_settings)
+
+        # Load results
+        result_file = tmp_path / "dummy_experiment_name.pickle"
+        results = load_result(result_file)
 
         # assert statements
         np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
