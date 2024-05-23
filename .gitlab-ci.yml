@@ -282,12 +282,15 @@ license_check:
   script:
     - "echo TEST_TIMING_OPTION: $TEST_TIMING_OPTION"
     - "echo PYTEST_OPTIONAL_PARAMETERS: $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
-    name: coverage_report
+    name: $CI_PIPELINE_ID-ubuntu_test_suite
     paths:
       - html_coverage_report
+      - test_junit.xml
+    reports:
+      junit: test_junit.xml
     when: on_success
     expire_in: 3 days
 
@@ -328,6 +331,15 @@ imcs-ubuntu_full_test_suite:
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
       --color=yes
       --pipeline-id=$CI_PIPELINE_ID
+      --junitxml=test_junit.xml
+  artifacts:
+    name: $CI_PIPELINE_ID-cluster_test_suite
+    paths:
+      - test_junit.xml
+    reports:
+      junit: test_junit.xml
+    when: on_success
+    expire_in: 3 days
 
 lnm-cluster_tests:
   extends:
