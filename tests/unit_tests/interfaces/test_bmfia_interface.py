@@ -1,4 +1,5 @@
 """Unit tests for the Bayesian multi-fidelity inverse analysis interface."""
+
 # pylint: disable=invalid-name
 import time
 
@@ -418,7 +419,7 @@ def test_set_optimized_state_of_probabilistic_mappings(
 
 def test_optimize_hyper_params(mocker, dummy_reg_obj):
     """Test the training of a single mapping."""
-    mo_1 = mocker.patch(__name__ + '.DummyRegression.train')
+    mo_1 = mocker.patch.object(DummyRegression, 'train')
     state_dict = BmfiaInterface.optimize_hyper_params(dummy_reg_obj)
 
     # asserts / tests

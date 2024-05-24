@@ -1,10 +1,12 @@
 """Test BMFMC interface."""
+
 import numpy as np
 import pytest
 
 from queens.interfaces.bmfmc_interface import BmfmcInterface
 
 # pylint: disable=invalid-name
+
 
 # -------- fixtures -----------------------------------
 class FakeRegression:
@@ -99,8 +101,8 @@ def test_build_approximation(mocker, default_interface):
     """Test training of surrogate model."""
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
-    mp1 = mocker.patch('tests.unit_tests.interfaces.test_bmfmc_interface.FakeRegression.setup')
-    mp2 = mocker.patch('tests.unit_tests.interfaces.test_bmfmc_interface.FakeRegression.train')
+    mp1 = mocker.patch.object(FakeRegression, 'setup')
+    mp2 = mocker.patch.object(FakeRegression, 'train')
 
     default_interface.build_approximation(Z, Y)
     mp1.assert_called_once()
