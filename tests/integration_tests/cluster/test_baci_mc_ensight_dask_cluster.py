@@ -9,17 +9,17 @@ import pytest
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
 from queens.distributions.uniform import UniformDistribution
-from queens.drivers.mpi_driver import MpiDriver
+from queens.drivers import JobscriptDriver
 from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils import config_directories, io_utils
 from queens.utils.fcc_utils import from_config_create_object
 from queens.utils.io_utils import load_result
+from queens.utils.remote_operations import RemoteConnection
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     THOUGHT_CLUSTER_TYPE,
@@ -94,6 +94,7 @@ class TestDaskCluster:
         baci_example_expected_var,
         baci_example_expected_output,
         _initialize_global_settings,
+        gateway,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
 
@@ -115,8 +116,9 @@ class TestDaskCluster:
             baci_example_expected_var (np.ndarray): Expected var for the MC samples
             baci_example_expected_output (np.ndarray): Expected output for the MC samples
             patched_base_directory (str): directory of the test simulation data on the cluster
+            gateway: TODO
         """
-        cluster_name = cluster_settings["name"]
+        cluster_name = cluster_settings.pop("name")
 
         # unique experiment name
         experiment_name = f"baci_mc_ensight_{cluster_name}"
@@ -125,70 +127,84 @@ class TestDaskCluster:
             third_party_inputs, "baci", "meshtying3D_patch_lin_duallagr_new_struct.dat"
         )
 
-        # A main run is needed as you are using dask
-        def run(_initialize_global_settings):
-            # Parameters
-            nue = UniformDistribution(lower_bound=0.4, upper_bound=0.49)
-            young = UniformDistribution(lower_bound=500, upper_bound=1000)
-            parameters = Parameters(nue=nue, young=young)
+        # Parameters
+        nue = UniformDistribution(lower_bound=0.4, upper_bound=0.49)
+        young = UniformDistribution(lower_bound=500, upper_bound=1000)
+        parameters = Parameters(nue=nue, young=young)
 
-            # Setup QUEENS stuff
-            external_geometry = BaciDatExternalGeometry(
-                list_geometric_sets=["DSURFACE 1"], input_template="baci_input"
-            )
-            data_processor = DataProcessorEnsight(
-                file_name_identifier="baci_mc_ensight_*structure.case",
-                file_options_dict={
-                    "delete_field_data": False,
-                    "geometric_target": ["geometric_set", "DSURFACE 1"],
-                    "physical_field_dict": {
-                        "vtk_field_type": "structure",
-                        "vtk_array_type": "point_array",
-                        "vtk_field_label": "displacement",
-                        "field_components": [0, 1, 2],
-                    },
-                    "target_time_lst": ["last"],
+        # Setup QUEENS stuff
+        external_geometry = BaciDatExternalGeometry(
+            list_geometric_sets=["DSURFACE 1"],
+            input_template=baci_input_file_template,
+        )
+        data_processor = DataProcessorEnsight(
+            file_name_identifier=f"baci_mc_ensight_{cluster_name}*.case",
+            file_options_dict={
+                "delete_field_data": False,
+                "geometric_target": ["geometric_set", "DSURFACE 1"],
+                "physical_field_dict": {
+                    "vtk_field_type": "structure",
+                    "vtk_array_type": "point_array",
+                    "vtk_field_label": "displacement",
+                    "field_components": [0, 1, 2],
                 },
-                external_geometry=external_geometry,
-            )
-            scheduler = LocalScheduler(
-                num_procs=2,
-                num_procs_post=1,
-                max_concurrent=2,
-                global_settings=_initialize_global_settings,
-            )
-            driver = MpiDriver(
-                input_template="baci_input",
-                path_to_executable="baci_release",
-                path_to_postprocessor="post_ensight",
-                post_file_prefix="baci_mc_ensight",
-                data_processor=data_processor,
-            )
-            interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
-            model = SimulationModel(interface=interface)
-            iterator = MonteCarloIterator(
-                seed=42,
-                num_samples=2,
-                result_description={"write_results": True, "plot_results": False},
-                model=model,
-                parameters=parameters,
-                global_settings=_initialize_global_settings,
-            )
+                "target_time_lst": ["last"],
+            },
+            external_geometry=external_geometry,
+        )
 
-            # Actual analysis
-            run_iterator(iterator, _initialize_global_settings)
+        remote_connection = RemoteConnection(
+            host=cluster_settings["host"],
+            user=cluster_settings["user"],
+            remote_python=cluster_settings["remote_python"],
+            remote_queens_repository=cluster_settings["remote_queens_repository"],
+            gateway=gateway,
+        )
 
-            # Load results
-            result_file = tmp_path / "dummy_experiment_name.pickle"
-            results = load_result(result_file)
+        scheduler = cluster_scheduler.ClusterScheduler(
+            workload_manager=cluster_settings["workload_manager"],
+            walltime="00:10:00",
+            max_jobs=1,
+            min_jobs=1,
+            num_procs=1,
+            num_procs_post=1,
+            num_nodes=1,
+            remote_connection=remote_connection,
+            cluster_internal_address=cluster_settings["cluster_internal_address"],
+            experiment_name=_initialize_global_settings.experiment_name,
+            queue=cluster_settings.get("queue"),
+        )
 
-        # main run
-        if __name__ == "__main__":
-            run(_initialize_global_settings)
+        driver = JobscriptDriver(
+            input_template=baci_input_file_template,
+            path_to_executable=baci_cluster_paths["path_to_executable"],
+            dask_jobscript_template=cluster_settings["dask_jobscript_template"],
+            path_to_postprocessor=baci_cluster_paths["path_to_post_ensight"],
+            post_file_prefix=f"baci_mc_ensight_{cluster_name}",
+            cluster_script_path=cluster_settings["cluster_script_path"],
+            data_processor=data_processor,
+        )
+
+        interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+        model = SimulationModel(interface=interface)
+        iterator = MonteCarloIterator(
+            seed=42,
+            num_samples=2,
+            result_description={"write_results": True, "plot_results": False},
+            model=model,
+            parameters=parameters,
+            global_settings=_initialize_global_settings,
+        )
+
+        # Actual analysis
+        run_iterator(iterator, _initialize_global_settings)
 
         # Load results
         result_file = tmp_path / "dummy_experiment_name.pickle"
         results = load_result(result_file)
+
+        # The data has to be deleted before the assertion
+        self.delete_simulation_data(queens_input_file)
 
         # assert statements
         np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
@@ -197,18 +213,13 @@ class TestDaskCluster:
             results['raw_output_data']['result'], baci_example_expected_output, decimal=6
         )
 
-    def delete_simulation_data(self, input_file_path):
+    def delete_simulation_data(self, remote_connection):
         """Delete simulation data on the cluster.
 
-        This approach deletes test simulation data older then 7 days
+        This approach deletes test simulation data older than 7 days
         Args:
             input_file_path (pathlib.Path): Path to input file
         """
-        # Create a remote connection
-        remote_connection_option = io_utils.load_input_file(input_file_path)["my_remote_connection"]
-        remote_connection = from_config_create_object(remote_connection_option)
-        remote_connection.open()
-
         # Delete data from tests older then 1 week
         command = (
             "find "
