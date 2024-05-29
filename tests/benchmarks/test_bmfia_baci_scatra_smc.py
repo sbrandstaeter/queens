@@ -22,8 +22,9 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, dir_dict, expected_weights, e
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "bmfia_baci_scatra_smc.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     assert_weights_and_samples(results, expected_weights, expected_samples)
 

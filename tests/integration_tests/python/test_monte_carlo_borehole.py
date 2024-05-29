@@ -42,9 +42,8 @@ def test_monte_carlo_borehole(tmp_path, _initialize_global_settings):
     )
 
     # Load results
-
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
     results = load_result(result_file)
+
     assert results["mean"] == pytest.approx(60.4546131041304)
     assert results["var"] == pytest.approx(1268.1681250046817)

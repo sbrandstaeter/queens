@@ -20,8 +20,9 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, dir_dict):
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "bmfia_baci_scatra_smc.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     samples = results['input_data'].squeeze()
     weights = results['raw_output_data'].squeeze()

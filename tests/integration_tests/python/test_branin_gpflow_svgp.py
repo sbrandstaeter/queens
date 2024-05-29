@@ -70,7 +70,6 @@ def test_branin_gpflow_svgp(tmp_path, expected_mean, expected_var, _initialize_g
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
     results = load_result(result_file)
     assert_monte_carlo_iterator_results(results, expected_mean, expected_var)
 

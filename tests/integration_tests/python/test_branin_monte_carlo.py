@@ -37,7 +37,7 @@ def test_branin_monte_carlo(tmp_path, _initialize_global_settings):
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
     results = load_result(result_file)
+
     assert results["mean"] == pytest.approx(55.81419875080866)
     assert results["var"] == pytest.approx(2754.1188056842070)

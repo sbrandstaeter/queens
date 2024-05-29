@@ -37,6 +37,7 @@ def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
         global_settings=_initialize_global_settings,
     )
 
+    # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
     results = load_result(result_file)
 

@@ -1,7 +1,4 @@
 """TODO_doc."""
-
-import pickle
-
 import numpy as np
 import pytest
 
@@ -11,6 +8,7 @@ from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.utils.io_utils import load_result
 
 
 @pytest.fixture(name="algorithm", params=['COBYLA', 'SLSQP'])
@@ -57,7 +55,7 @@ def test_optimization_paraboloid_constrained(tmp_path, algorithm, _initialize_gl
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
+
     np.testing.assert_allclose(results.x, np.array([+1.4, +1.7]), rtol=1.0e-4)
     np.testing.assert_allclose(results.fun, np.array(+0.8), atol=1.0e-07)

@@ -33,8 +33,9 @@ def test_bmfia_park_hf_smc(
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "smc_park_mf.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     assert_weights_and_samples(results, expected_weights, expected_samples)
 

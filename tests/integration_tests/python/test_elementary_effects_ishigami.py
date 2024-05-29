@@ -53,11 +53,9 @@ def test_elementary_effects_ishigami(tmp_path, _initialize_global_settings):
         global_settings=_initialize_global_settings,
     )
 
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-
     # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
     results = load_result(result_file)
-
     _logger.info(results)
 
     assert results["sensitivity_indices"]['mu'][0] == pytest.approx(15.46038594, abs=1e-7)

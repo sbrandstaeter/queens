@@ -73,7 +73,6 @@ def test_gpflow_surrogate_branin(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-
     results = load_result(result_file)
 
     np.testing.assert_array_almost_equal(

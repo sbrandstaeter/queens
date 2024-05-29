@@ -3,8 +3,6 @@
 Based on the Rosenbrock test function.
 """
 
-import pickle
-
 import numpy as np
 import pytest
 
@@ -14,6 +12,7 @@ from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.utils.io_utils import load_result
 
 
 @pytest.fixture(
@@ -53,7 +52,7 @@ def test_optimization_rosenbrock(tmp_path, algorithm, _initialize_global_setting
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
+
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)
     np.testing.assert_allclose(results.fun, np.array(+0.0), atol=5.0e-07)

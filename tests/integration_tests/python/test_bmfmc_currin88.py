@@ -1,8 +1,6 @@
 """TODO_doc."""
 
 # pylint: disable=invalid-name
-import pickle
-
 import numpy as np
 import pytest
 from scipy.stats import entropy
@@ -17,6 +15,7 @@ from queens.models.bmfmc_model import BMFMCModel
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
 from queens.parameters.parameters import Parameters
+from queens.utils.io_utils import load_result
 from queens.utils.process_outputs import write_results
 
 
@@ -166,8 +165,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     # get the y_support and calculate HF MC reference
     y_pdf_support = results['raw_output_data']['y_pdf_support']

@@ -4,7 +4,7 @@ import numpy as np
 
 from queens.main import run
 from queens.utils.injector import inject
-from queens.utils.pickle_utils import load_pickle
+from queens.utils.io_utils import load_result
 
 
 def test_classification_iterator(inputdir, tmp_path):
@@ -30,8 +30,10 @@ def test_classification_iterator(inputdir, tmp_path):
         output_file=input_path,
     )
     run(input_path, tmp_path)
-    result_file = tmp_path / f"{experiment_name}.pickle"
-    results = load_pickle(result_file)
+
+    # Load results
+    result_file = tmp_path / "classification_nn_rosenbrock.pickle"
+    results = load_result(result_file)
 
     expected_results_classified = np.ones((12, 1))
     expected_results_classified[-2:] = 0
