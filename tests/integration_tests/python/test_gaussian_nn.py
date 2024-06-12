@@ -6,7 +6,7 @@ import pytest
 from queens.example_simulator_functions.park91a import park91a_hifi
 from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
-from tests.integration_tests.utils import (  # pylint: disable=wrong-import-order
+from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
     assert_surrogate_model_output,
 )
 

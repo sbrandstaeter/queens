@@ -68,6 +68,7 @@ match = '(?!__init__).*\.py'
 [tool.pytest.ini_options]
 addopts = '-m "not benchmark and not lnm_cluster and not imcs_cluster" --doctest-modules --doctest-continue-on-failure --doctest-ignore-import-errors'
 testpaths = ["tests"]
+pythonpath = ["test_utils"]
 markers = [
     "benchmark: Benchmark tests, involving full QUEENS-iterator runs for performance benchmarks (excluded from the main pipeline)",
     "integration_tests: Integration tests with Python interface",
