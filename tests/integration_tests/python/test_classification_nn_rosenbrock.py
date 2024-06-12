@@ -1,7 +1,5 @@
 """Integration test for the classification iterator."""
 
-from pathlib import Path
-
 import numpy as np
 from sklearn.neural_network._multilayer_perceptron import MLPClassifier
 
@@ -17,9 +15,20 @@ from queens.utils.io_utils import load_result
 
 def test_classification_iterator(tmp_path, _initialize_global_settings):
     """Integration test for the classification iterator."""
-    classification_function_path = Path("hdd/rabe/workspace/queens/queens/classification_function")
-    # External imports
-    classify = lambda x: x > 80
+
+    def classification_function(x):
+        """Classification function.
+
+        Classes are defined in the following way:
+        1 or True if the value of x is larger than a threshold.
+        0 or False if the value of x is smaller than equal to a threshold.
+
+        Args:
+            x (np.array): unclassified data
+        Returns:
+            classified data
+        """
+        return x > 80
 
     # Parameters
     x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
@@ -27,7 +36,6 @@ def test_classification_iterator(tmp_path, _initialize_global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup QUEENS stuff
-    classification_function = classify
     classifier_obj = MLPClassifier()
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
@@ -58,16 +66,6 @@ def test_classification_iterator(tmp_path, _initialize_global_settings):
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
-
-    # create classification function called classify
-    classification_function_name = "classify"
-    classification_function_path.write_text(
-        f"{classification_function_name} = lambda x: x>80", encoding="utf-8"
-    )
-
-    # Load results
-    result_file = tmp_path / "classification_nn_rosenbrock.pickle"
     results = load_result(result_file)
 
     expected_results_classified = np.ones((12, 1))
