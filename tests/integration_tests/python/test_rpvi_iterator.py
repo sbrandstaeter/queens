@@ -1,5 +1,7 @@
 """Integration test for reparameterization trick VI."""
 
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -343,7 +345,8 @@ def test_gaussian_rpvi(
     )
 
     # Actual analysis
-    run_iterator(iterator, _initialize_global_settings)
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
+        run_iterator(iterator, _initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

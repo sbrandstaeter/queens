@@ -16,8 +16,7 @@ from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.utils import config_directories, io_utils
-from queens.utils.fcc_utils import from_config_create_object
+from queens.utils import config_directories
 from queens.utils.io_utils import load_result
 from queens.utils.remote_operations import RemoteConnection
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
@@ -120,9 +119,6 @@ class TestDaskCluster:
         """
         cluster_name = cluster_settings.pop("name")
 
-        # unique experiment name
-        experiment_name = f"baci_mc_ensight_{cluster_name}"
-
         baci_input_file_template = Path(
             third_party_inputs, "baci", "meshtying3D_patch_lin_duallagr_new_struct.dat"
         )
@@ -204,7 +200,7 @@ class TestDaskCluster:
         results = load_result(result_file)
 
         # The data has to be deleted before the assertion
-        self.delete_simulation_data(queens_input_file)
+        self.delete_simulation_data(remote_connection)
 
         # assert statements
         np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
@@ -216,7 +212,7 @@ class TestDaskCluster:
     def delete_simulation_data(self, remote_connection):
         """Delete simulation data on the cluster.
 
-        This approach deletes test simulation data older than 7 days
+        This approach deletes test simulation data older than seven days
         Args:
             input_file_path (pathlib.Path): Path to input file
         """

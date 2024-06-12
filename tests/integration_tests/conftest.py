@@ -50,7 +50,7 @@ class ClusterConfig:
     default_python_path: str
     cluster_script_path: Path
     dask_jobscript_template: Path
-    queue: Optional[str] = 'null'
+    queue: Optional[str] = None
 
     dict = asdict
 

@@ -1,35 +1,70 @@
 """Integration test for the classification iterator."""
 
-import numpy as np
+from pathlib import Path
 
-from queens.main import run
-from queens.utils.injector import inject
+import numpy as np
+from sklearn.neural_network._multilayer_perceptron import MLPClassifier
+
+from queens.distributions.uniform import UniformDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.classification import ClassificationIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.classifier import ActiveLearningClassifier
 from queens.utils.io_utils import load_result
 
 
-def test_classification_iterator(inputdir, tmp_path):
+def test_classification_iterator(tmp_path, _initialize_global_settings):
     """Integration test for the classification iterator."""
-    input_template = inputdir / "classification_nn_rosenbrock_template.yaml"
-    classification_function_path = tmp_path / "classification_function.py"
+    classification_function_path = Path("hdd/rabe/workspace/queens/queens/classification_function")
+    # External imports
+    classify = lambda x: x > 80
+
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    parameters = Parameters(x1=x1, x2=x2)
+
+    # Setup QUEENS stuff
+    classification_function = classify
+    classifier_obj = MLPClassifier()
+    classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
+    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = ClassificationIterator(
+        num_sample_points=10000,
+        num_model_calls=12,
+        random_sampling_frequency=2,
+        seed=42,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_bool": False,
+                "plotting_dir": tmp_path,
+                "plot_name": "neural_classifier_convergence_plot",
+                "save_bool": True,
+            },
+        },
+        classification_function=classification_function,
+        classifier=classifier,
+        model=model,
+        parameters=parameters,
+        global_settings=_initialize_global_settings,
+    )
+
+    # Actual analysis
+    run_iterator(iterator, _initialize_global_settings)
+
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     # create classification function called classify
     classification_function_name = "classify"
     classification_function_path.write_text(
         f"{classification_function_name} = lambda x: x>80", encoding="utf-8"
     )
-    experiment_name = "classification_nn_rosenbrock"
-    input_path = tmp_path / f"{experiment_name}.yaml"
-    inject(
-        params={
-            "experiment_name": experiment_name,
-            "plotting_dir": str(tmp_path),
-            "classification_function_name": classification_function_name,
-            "external_module_path": str(classification_function_path),
-        },
-        template_path=input_template,
-        output_file=input_path,
-    )
-    run(input_path, tmp_path)
 
     # Load results
     result_file = tmp_path / "classification_nn_rosenbrock.pickle"
