@@ -16,7 +16,10 @@ from queens.utils.io_utils import load_result
 
 
 def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
-    tmp_path, target_density_gaussian_2d, _create_experimental_data_2d, _initialize_global_settings
+    tmp_path,
+    target_density_gaussian_2d,
+    _create_experimental_data_gaussian_2d,
+    _initialize_global_settings,
 ):
     """Test case for Metropolis Hastings iterator."""
     # Parameters
