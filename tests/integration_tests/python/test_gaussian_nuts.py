@@ -16,8 +16,10 @@ from queens.utils.io_utils import load_result
 
 
 def test_gaussian_nuts(
-    tmp_path, target_density_gaussian_2d_with_grad, _create_experimental_data
-, _initialize_global_settings
+    tmp_path,
+    target_density_gaussian_2d_with_grad,
+    _create_experimental_data,
+    _initialize_global_settings,
 ):
     """Test case for nuts iterator."""
     # Parameters

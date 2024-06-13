@@ -54,7 +54,9 @@ def test_gaussian_hmc(
     )
 
     # Actual analysis
-    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad):
+    with patch.object(
+        GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
+    ):
         run_iterator(
             iterator,
             global_settings=_initialize_global_settings,
