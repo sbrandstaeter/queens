@@ -230,8 +230,8 @@ code_analysis:
     - .codechecks_settings
   stage: codechecks
   script:
-    - isort --check-only queens/ > track_isort.txt
-    - black --check queens > track_black.txt
+    - isort --check-only queens tests > track_isort.txt
+    - black --check queens tests > track_black.txt
     - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt
     - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt
   artifacts:
