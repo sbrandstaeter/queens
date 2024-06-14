@@ -284,11 +284,20 @@ def fixture_reset_loggers():
     reset_logging()
 
 
+@pytest.fixture(name="test_name")
+def fixture_test_name(request):
+    """Return the test's name."""
+    test_name = request.node.name
+    _logger.info("Name of current test: %s", test_name)
+    _logger.info("the above name will be used as the experiment_name")
+    return test_name
+
+
 @pytest.fixture(name="_initialize_global_settings")
-def fixture_initialize_global_settings(tmp_path):
+def fixture_initialize_global_settings(test_name, tmp_path):
     """Initialize GlobalSettings object."""
     # Setup and initialize global settings
-    global_settings = GlobalSettings(experiment_name="dummy_experiment_name", output_dir=tmp_path)
+    global_settings = GlobalSettings(experiment_name=test_name, output_dir=tmp_path)
 
     # wrap the tests in a global settings context
     with global_settings:
