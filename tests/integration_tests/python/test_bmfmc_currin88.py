@@ -161,8 +161,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     # get the y_support and calculate HF MC reference
     y_pdf_support = results['raw_output_data']['y_pdf_support']

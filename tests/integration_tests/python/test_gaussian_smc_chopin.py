@@ -61,8 +61,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     # note that the analytical solution would be:
     # posterior mean: [1.]

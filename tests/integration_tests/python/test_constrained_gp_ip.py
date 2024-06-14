@@ -149,8 +149,7 @@ def test_constrained_gp_ip_park(
     run_iterator(adaptive_sampling_iterator, _initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     particles = results['particles'][-1]
     weights = results['weights'][-1]

@@ -53,8 +53,7 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, _initialize_globa
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([-0.5680310153118374, 0.9247536392514567])

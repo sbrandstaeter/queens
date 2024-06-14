@@ -37,8 +37,7 @@ def test_branin_data_iterator(tmp_path, mocker, ref_result_iterator, _initialize
     # Actual analysis
     run_iterator(iterator, global_settings=_initialize_global_settings)
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     assert results["mean"] == pytest.approx(1.3273452195599997)
     assert results["var"] == pytest.approx(44.82468751096612)

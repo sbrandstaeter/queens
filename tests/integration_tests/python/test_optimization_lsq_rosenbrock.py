@@ -35,8 +35,7 @@ def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]))
     np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))
@@ -67,8 +66,7 @@ def test_optimization_lsq_rosenbrock_error(tmp_path, _initialize_global_settings
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0, -0.001039]), rtol=1e-06, atol=1e-06)
     np.testing.assert_allclose(results.fun[:2], np.array([+0.0, +0.0]), rtol=1e-07, atol=0)

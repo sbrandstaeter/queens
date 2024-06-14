@@ -36,8 +36,7 @@ def test_branin_latin_hyper_cube(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     assert results["mean"] == pytest.approx(53.17279969296224)
     assert results["var"] == pytest.approx(2581.6502630157715)

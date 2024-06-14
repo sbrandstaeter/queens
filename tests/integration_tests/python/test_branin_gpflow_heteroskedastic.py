@@ -70,8 +70,7 @@ def test_branin_gpflow_heteroskedastic(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=2

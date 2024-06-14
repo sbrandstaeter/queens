@@ -60,8 +60,7 @@ def test_gaussian_hmc(
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([0.19363280864587615, -1.1303341362165935])

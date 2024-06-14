@@ -36,8 +36,7 @@ def test_optimization_lsq_parabola(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     np.testing.assert_allclose(results.x, np.array([+0.3]))
     np.testing.assert_allclose(results.fun, np.array([+0.0]))

@@ -40,8 +40,7 @@ def test_latin_hyper_cube_borehole(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     assert results["mean"] == pytest.approx(62.05240444441511)
     assert results["var"] == pytest.approx(1371.7554224384000)

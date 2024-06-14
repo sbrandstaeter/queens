@@ -48,8 +48,7 @@ def test_optimization_rosenbrock(tmp_path, algorithm, _initialize_global_setting
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)
     np.testing.assert_allclose(results.fun, np.array(+0.0), atol=5.0e-07)

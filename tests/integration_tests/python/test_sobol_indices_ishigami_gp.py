@@ -55,8 +55,7 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     expected_result_s1 = np.array([0.37365542, 0.49936914, -0.00039217])
     expected_result_s1_conf = np.array([0.14969221, 0.18936135, 0.0280309])

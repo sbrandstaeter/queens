@@ -83,8 +83,7 @@ def test_baci_mc_ensight(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     # assert statements
     np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)

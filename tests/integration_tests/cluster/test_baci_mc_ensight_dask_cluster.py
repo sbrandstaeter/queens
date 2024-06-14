@@ -196,8 +196,7 @@ class TestDaskCluster:
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
         # Load results
-        result_file = tmp_path / "dummy_experiment_name.pickle"
-        results = load_result(result_file)
+        results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
         # The data has to be deleted before the assertion
         self.delete_simulation_data(remote_connection)
@@ -214,7 +213,7 @@ class TestDaskCluster:
 
         This approach deletes test simulation data older than seven days
         Args:
-            input_file_path (pathlib.Path): Path to input file
+            remote_connection (RemoteConnection): connection to remote cluster.
         """
         # Delete data from tests older then 1 week
         command = (

@@ -65,8 +65,7 @@ def test_classification_iterator(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / "dummy_experiment_name.pickle"
-    results = load_result(result_file)
+    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
 
     expected_results_classified = np.ones((12, 1))
     expected_results_classified[-2:] = 0
