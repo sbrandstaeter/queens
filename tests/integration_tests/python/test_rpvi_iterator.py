@@ -87,7 +87,7 @@ def test_rpvi_iterator_park91a_hifi(
     )
 
     # Actual analysis
-    run_iterator(iterator, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -169,7 +169,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     )
 
     # Actual analysis
-    run_iterator(iterator, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -247,7 +247,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     )
 
     # Actual analysis
-    run_iterator(iterator, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -346,7 +346,7 @@ def test_gaussian_rpvi(
 
     # Actual analysis
     with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
-        run_iterator(iterator, _initialize_global_settings)
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

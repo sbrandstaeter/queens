@@ -109,10 +109,7 @@ def test_write_random_material_to_dat(
         return self.mean + self.std**2 * np.linalg.norm(self.coords['coords'], axis=1) * sample[0]
 
     with patch.object(KarhunenLoeveRandomField, "expanded_representation", expanded_representation):
-        run_iterator(
-            iterator,
-            global_settings=_initialize_global_settings,
-        )
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

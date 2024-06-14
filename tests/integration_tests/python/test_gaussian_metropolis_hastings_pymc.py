@@ -50,10 +50,7 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, _initialize_globa
 
     # Actual analysis
     with patch.object(GaussianLikelihood, "evaluate", target_density):
-        run_iterator(
-            iterator,
-            global_settings=_initialize_global_settings,
-        )
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

@@ -63,10 +63,7 @@ def test_branin_gpflow_svgp(tmp_path, expected_mean, expected_var, _initialize_g
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

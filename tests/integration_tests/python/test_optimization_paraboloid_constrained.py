@@ -48,10 +48,7 @@ def test_optimization_paraboloid_constrained(tmp_path, algorithm, _initialize_gl
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

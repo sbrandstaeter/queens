@@ -41,10 +41,7 @@ def test_grid_iterator(tmp_path, expected_response, expected_grid, _initialize_g
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

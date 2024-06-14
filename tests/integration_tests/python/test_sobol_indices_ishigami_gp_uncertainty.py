@@ -67,10 +67,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(tmp_path, _initialize_global_sett
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -158,10 +155,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(tmp_path, _initialize
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -227,10 +221,7 @@ def test_sobol_indices_ishigami_gp_mean(tmp_path, _initialize_global_settings):
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

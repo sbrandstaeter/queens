@@ -68,10 +68,7 @@ def test_smc_generic_temper_multivariate_gaussian(
     # Actual analysis
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-            run_iterator(
-                iterator,
-                global_settings=_initialize_global_settings,
-            )
+            run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

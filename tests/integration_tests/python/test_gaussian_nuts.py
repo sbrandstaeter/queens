@@ -57,10 +57,7 @@ def test_gaussian_nuts(
     with patch.object(
         GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
     ):
-        run_iterator(
-            iterator,
-            global_settings=_initialize_global_settings,
-        )
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

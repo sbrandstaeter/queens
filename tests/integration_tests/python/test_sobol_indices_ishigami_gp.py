@@ -52,10 +52,7 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

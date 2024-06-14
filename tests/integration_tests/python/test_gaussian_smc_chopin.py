@@ -58,10 +58,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
     with patch.object(
         SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density_gaussian_1d
     ):
-        run_iterator(
-            iterator,
-            global_settings=_initialize_global_settings,
-        )
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

@@ -116,7 +116,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    method = RPVIIterator(
+    iterator = RPVIIterator(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -145,7 +145,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
 
     # Actual analysis
-    run_iterator(method, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -225,7 +225,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    method = RPVIIterator(
+    iterator = RPVIIterator(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -254,7 +254,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
 
     # Actual analysis
-    run_iterator(method, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -357,7 +357,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    method = RPVIIterator(
+    iterator = RPVIIterator(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -386,7 +386,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
 
     # Actual analysis
-    run_iterator(method, _initialize_global_settings)
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

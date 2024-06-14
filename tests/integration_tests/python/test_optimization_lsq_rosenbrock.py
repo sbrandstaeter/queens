@@ -32,10 +32,7 @@ def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -67,10 +64,7 @@ def test_optimization_lsq_rosenbrock_error(tmp_path, _initialize_global_settings
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

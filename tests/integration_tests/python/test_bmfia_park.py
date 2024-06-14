@@ -124,10 +124,7 @@ def test_bmfia_smc_park(
     )
 
     # Actual analysis
-    run_iterator(
-        iterator,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -264,7 +261,7 @@ def test_bmfia_rpvi_gp_park(
         forward_model=forward_model,
         mf_subiterator=mf_subiterator,
     )
-    method = RPVIIterator(
+    iterator = RPVIIterator(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,
@@ -290,10 +287,7 @@ def test_bmfia_rpvi_gp_park(
     )
 
     # Actual analysis
-    run_iterator(
-        method,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"
@@ -407,7 +401,7 @@ def test_bmfia_rpvi_nn_park(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
     )
-    method = RPVIIterator(
+    iterator = RPVIIterator(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,
@@ -433,10 +427,7 @@ def test_bmfia_rpvi_nn_park(
     )
 
     # Actual analysis
-    run_iterator(
-        method,
-        global_settings=_initialize_global_settings,
-    )
+    run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
     result_file = tmp_path / "dummy_experiment_name.pickle"

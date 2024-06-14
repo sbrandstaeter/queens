@@ -193,7 +193,7 @@ class TestDaskCluster:
         )
 
         # Actual analysis
-        run_iterator(iterator, _initialize_global_settings)
+        run_iterator(iterator, global_settings=_initialize_global_settings)
 
         # Load results
         result_file = tmp_path / "dummy_experiment_name.pickle"
