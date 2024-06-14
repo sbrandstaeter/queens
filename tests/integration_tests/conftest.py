@@ -46,11 +46,11 @@ class ClusterConfig:
     host: str
     workload_manager: str
     jobscript_template: Path
-    cluster_internal_address: str
+    cluster_internal_address: str | None
     default_python_path: str
     cluster_script_path: Path
     dask_jobscript_template: Path
-    queue: Optional[str] = None
+    queue: Optional[str | None] = None
 
     dict = asdict
 
@@ -61,7 +61,7 @@ THOUGHT_CONFIG = ClusterConfig(
     workload_manager="slurm",
     queue="normal",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
-    cluster_internal_address="null",
+    cluster_internal_address=None,
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
     dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
