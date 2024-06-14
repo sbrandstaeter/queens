@@ -13,7 +13,6 @@ import pytest
 import yaml
 
 from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
-from queens.global_settings import GlobalSettings
 from queens.utils.path_utils import relative_path_from_queens
 from queens.utils.remote_operations import RemoteConnection
 
@@ -103,17 +102,6 @@ CLUSTER_CONFIGS = {
 def fixture_user():
     """Name of user calling the test suite."""
     return getpass.getuser()
-
-
-@pytest.fixture(name="_initialize_global_settings")
-def fixture_initialize_global_settings(tmp_path):
-    """Initialize GlobalSettings object."""
-    # Setup and initialize global settings
-    global_settings = GlobalSettings(experiment_name="dummy_experiment_name", output_dir=tmp_path)
-
-    # wrap the tests in a global settings context
-    with global_settings:
-        yield global_settings
 
 
 @pytest.fixture(name="remote_user", scope="session")
