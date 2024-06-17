@@ -282,15 +282,19 @@ license_check:
   script:
     - "echo TEST_TIMING_OPTION: $TEST_TIMING_OPTION"
     - "echo PYTEST_OPTIONAL_PARAMETERS: $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: $CI_PIPELINE_ID-ubuntu_test_suite
     paths:
       - html_coverage_report
       - test_junit.xml
+      - xml_coverage_report.xml
     reports:
       junit: test_junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: xml_coverage_report.xml
     when: on_success
     expire_in: 3 days
 
