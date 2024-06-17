@@ -3,7 +3,6 @@
 import numpy as np
 import pytest
 
-from queens.example_simulator_functions.park91a import park91a_hifi
 from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
 from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
@@ -56,35 +55,13 @@ def test_gaussian_nn_one_dim(my_model):
     )
 
 
-def test_gaussian_nn_two_dim(my_model):
+def test_gaussian_nn_two_dim(my_model, training_data_park91a, testing_data_park91a):
     """Test two dimensional gaussian nn."""
-    n_train = 7
-    x_3, x_4 = 0.5, 0.5
-    x_1 = np.linspace(0.001, 0.999, n_train)
-    x_2 = np.linspace(0.001, 0.999, n_train)
-    xx_1, xx_2 = np.meshgrid(x_1, x_2)
-    x_train = np.vstack((xx_1.flatten(), xx_2.flatten())).T
-
-    # evaluate the testing/benchmark function at training inputs, train model
-    y_train = park91a_hifi(x_train[:, 0], x_train[:, 1], x_3, x_4, gradient_bool=False)
-    y_train = y_train.reshape(-1, 1)
+    x_train, y_train = training_data_park91a
     my_model.setup(x_train, y_train)
     my_model.train()
 
-    # evaluate the testing/benchmark function at testing inputs
-    n_test = 25
-    x_3, x_4 = 0.5, 0.5
-    x_1 = np.linspace(0.001, 0.999, n_test)
-    x_2 = np.linspace(0.001, 0.999, n_test)
-    xx_1, xx_2 = np.meshgrid(x_1, x_2)
-    x_test = np.vstack((xx_1.flatten(), xx_2.flatten())).T
-
-    mean_ref, gradient_mean_ref = park91a_hifi(
-        x_test[:, 0], x_test[:, 1], x_3, x_4, gradient_bool=True
-    )
-    mean_ref = mean_ref.reshape(-1, 1)
-    gradient_mean_ref = np.array(gradient_mean_ref).T
-    var_ref = np.zeros(mean_ref.shape)
+    x_test, mean_ref, var_ref, gradient_mean_ref, gradient_variance_ref = testing_data_park91a
 
     # --- get the mean and variance of the model (no gradient call here) ---
     output = my_model.predict(x_test)
@@ -93,7 +70,6 @@ def test_gaussian_nn_two_dim(my_model):
     # -- now call the gradient function of the model---
     output = my_model.predict(x_test, gradient_bool=True)
 
-    gradient_variance_ref = np.zeros(gradient_mean_ref.shape)
     decimals = (2, 2, 1, 2)
     assert_surrogate_model_output(
         output, mean_ref, var_ref, gradient_mean_ref, gradient_variance_ref, decimals

@@ -5,6 +5,7 @@ import pytest
 
 from queens.main import run
 from queens.utils.io_utils import load_result
+from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
 
 @pytest.mark.max_time_for_test(60)
@@ -13,13 +14,7 @@ def test_branin_gpflow_svgp(inputdir, tmp_path, expected_mean, expected_var):
     run(inputdir / 'gpflow_svgp_surrogate_branin.yml', tmp_path)
 
     results = load_result(tmp_path / 'xxx.pickle')
-
-    np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["result"], expected_mean, decimal=4
-    )
-    np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["variance"], expected_var, decimal=2
-    )
+    assert_monte_carlo_iterator_results(results, expected_mean, expected_var)
 
 
 @pytest.fixture(name="expected_mean")

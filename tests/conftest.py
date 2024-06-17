@@ -6,6 +6,7 @@ import socket
 from pathlib import Path
 from time import perf_counter
 
+import numpy as np
 import pytest
 
 from queens.utils import config_directories
@@ -240,6 +241,26 @@ def fixture_example_simulator_fun_dir():
     """Return the path to the example simulator functions."""
     input_files_path = relative_path_from_source("example_simulator_functions")
     return input_files_path
+
+
+@pytest.fixture(name="ref_result_iterator")
+def fixture_ref_result_iterator():
+    """Reference results of an iterator."""
+    ref_result_iterator = np.array(
+        [
+            [1.7868040337],
+            [-13.8624183835],
+            [6.3423271929],
+            [6.1674472752],
+            [5.3528917433],
+            [-0.7472766806],
+            [5.0007066283],
+            [6.4763926539],
+            [-6.4173504897],
+            [3.1739282221],
+        ]
+    )
+    return ref_result_iterator
 
 
 def pytest_sessionfinish():

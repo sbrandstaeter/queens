@@ -1,44 +1,17 @@
 """TODO_doc."""
 
-import numpy as np
 import pytest
 
 from queens.main import run
 from queens.utils.io_utils import load_result
 
 
-def test_branin_data_iterator(inputdir, tmp_path, mocker):
+def test_branin_data_iterator(inputdir, tmp_path, mocker, ref_result_iterator):
     """Test case for data iterator."""
     output = {}
-    output['result'] = np.array(
-        [
-            [1.7868040337],
-            [-13.8624183835],
-            [6.3423271929],
-            [6.1674472752],
-            [5.3528917433],
-            [-0.7472766806],
-            [5.0007066283],
-            [6.4763926539],
-            [-6.4173504897],
-            [3.1739282221],
-        ]
-    )
+    output['result'] = ref_result_iterator
 
-    samples = np.array(
-        [
-            [1.7868040337],
-            [-13.8624183835],
-            [6.3423271929],
-            [6.1674472752],
-            [5.3528917433],
-            [-0.7472766806],
-            [5.0007066283],
-            [6.4763926539],
-            [-6.4173504897],
-            [3.1739282221],
-        ]
-    )
+    samples = ref_result_iterator
 
     mocker.patch(
         'queens.iterators.data_iterator.DataIterator.read_pickle_file',

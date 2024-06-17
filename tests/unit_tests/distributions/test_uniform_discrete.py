@@ -1,8 +1,10 @@
 """Test discrete uniform distributions."""
+
 import numpy as np
 import pytest
 
 from queens.distributions.uniform_discrete import UniformDiscreteDistribution
+from test_utils.unit_tests.distributions import covariance_discrete
 
 
 @pytest.fixture(name="reference_data", params=[1, 2])
@@ -51,13 +53,9 @@ def test_init_success(reference_data, distribution_for_init):
         axis=0,
     )
 
-    reference_covariance = np.sum(
-        [
-            probability * np.outer(value, value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    ) - np.outer(reference_mean, reference_mean)
+    reference_covariance = covariance_discrete(
+        reference_probabilities, reference_sample_space, reference_mean
+    )
 
     np.testing.assert_allclose(reference_probabilities, distribution_for_init.probabilities)
     np.testing.assert_allclose(reference_sample_space, distribution_for_init.sample_space)

@@ -13,14 +13,18 @@ from queens.utils import injector
 from queens.utils.io_utils import load_result
 
 
-def test_gaussian_nuts(inputdir, tmp_path, target_density_gaussian_2d, _create_experimental_data):
+def test_gaussian_nuts(
+    inputdir, tmp_path, target_density_gaussian_2d_with_grad, _create_experimental_data
+):
     """Test case for nuts iterator."""
     template = inputdir / "nuts_gaussian.yml"
     experimental_data_path = tmp_path
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = tmp_path / "gaussian_nuts_realiz.yml"
     injector.inject(dir_dict, template, input_file)
-    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d):
+    with patch.object(
+        GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
+    ):
         run(Path(input_file), Path(tmp_path))
 
     results = load_result(tmp_path / 'xxx.pickle')

@@ -8,7 +8,6 @@ import pytest
 from mock import Mock, patch
 
 from queens.interfaces.bmfia_interface import BmfiaInterface
-from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
 from queens.models.simulation_model import SimulationModel
 
@@ -34,40 +33,13 @@ def fixture_default_interface():
 
 
 @pytest.fixture(name="default_bmfia_iterator")
-def fixture_default_bmfia_iterator(_initialize_global_settings):
+def fixture_default_bmfia_iterator(get_patched_bmfia_iterator):
     """Dummy iterator for testing."""
-    features_config = 'no_features'
+    parameters = "dummy_parameters"
     hf_model = 'dummy_hf_model'
     lf_model = Mock()
-    x_train = np.array([[1, 2], [3, 4]])
-    Y_LF_train = np.array([[2], [3]])
-    Y_HF_train = np.array([[2.2], [3.3]])
-    Z_train = np.array([[4], [5]])
-    coords_experimental_data = np.array([[1, 2], [3, 4]])
-    time_vec = np.array([1, 3])
-    y_obs = np.array([[2.1], [3.1]])
-    x_cols = None
-    num_features = None
-    coord_cols = None
 
-    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
-        iterator = BMFIAIterator(
-            parameters="dummy_parameters",
-            global_settings=_initialize_global_settings,
-            features_config=features_config,
-            hf_model=hf_model,
-            lf_model=lf_model,
-            initial_design={},
-            X_cols=x_cols,
-            num_features=num_features,
-            coord_cols=coord_cols,
-        )
-    iterator.Y_LF_train = Y_LF_train
-    iterator.Y_HF_train = Y_HF_train
-    iterator.Z_train = Z_train
-    iterator.coords_experimental_data = coords_experimental_data
-    iterator.time_vec = time_vec
-    iterator.y_obs_vec = y_obs
+    iterator = get_patched_bmfia_iterator(parameters, hf_model, lf_model)
 
     return iterator
 

@@ -1,12 +1,11 @@
 """Integration test for reparametrization trick VI as executable."""
 
-import pickle
-
 import numpy as np
 import pytest
 
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 from queens.utils.run_subprocess import run_subprocess
 
 
@@ -26,6 +25,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     python_path,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
+    # pylint: disable=duplicate-code
     # generate json input file from template
     template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
@@ -53,9 +53,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     np.random.seed(211)
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -74,6 +72,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     python_path,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
+    # pylint: disable=duplicate-code
     # generate json input file from template
     template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
@@ -101,9 +100,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     np.random.seed(211)
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -121,6 +118,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     python_path,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
+    # pylint: disable=duplicate-code
     # generate json input file from template
     template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
@@ -155,9 +153,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     np.random.seed(211)
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25

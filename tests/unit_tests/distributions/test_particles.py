@@ -1,8 +1,10 @@
 """Test discrete particles distributions."""
+
 import numpy as np
 import pytest
 
 from queens.distributions.particles import ParticleDiscreteDistribution
+from test_utils.unit_tests.distributions import covariance_discrete
 
 
 @pytest.fixture(name="reference_data", params=[1, 2])
@@ -93,13 +95,9 @@ def test_init_covariance(reference_data, distributions):
     """Test covariance in the init method."""
     _, reference_probabilities, reference_sample_space, _, reference_mean = reference_data
 
-    reference_covariance = np.sum(
-        [
-            probability * np.outer(value, value)
-            for probability, value in zip(reference_probabilities, reference_sample_space)
-        ],
-        axis=0,
-    ) - np.outer(reference_mean, reference_mean)
+    reference_covariance = covariance_discrete(
+        reference_probabilities, reference_sample_space, reference_mean
+    )
 
     np.testing.assert_allclose(reference_covariance, distributions.covariance)
 

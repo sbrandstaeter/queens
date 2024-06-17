@@ -1,6 +1,5 @@
 """Integration test for reparameterization trick VI."""
 
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +11,7 @@ from queens.distributions.normal import NormalDistribution
 from queens.main import run
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 def test_rpvi_iterator_park91a_hifi(
@@ -46,9 +46,7 @@ def test_rpvi_iterator_park91a_hifi(
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -90,9 +88,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -129,9 +125,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     # actual main call of vi_rp
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -179,9 +173,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, _create_experimental_data, forward_mo
         run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = tmp_path / "rpvi_gaussian.pickle"
-    with open(result_file, "rb") as handle:
-        results = pickle.load(handle)
+    results = load_result(tmp_path / "rpvi_gaussian.pickle")
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
     posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)

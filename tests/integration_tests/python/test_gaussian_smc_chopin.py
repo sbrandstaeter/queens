@@ -11,7 +11,7 @@ from queens.utils.io_utils import load_result
 
 
 def test_gaussian_smc_chopin_adaptive_tempering(
-    inputdir, tmp_path, target_density_gaussian_1d, _create_experimental_data_gaussian
+    inputdir, tmp_path, target_density_gaussian_1d, _create_experimental_data_gaussian_1d
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     template = inputdir / "smc_chopin_gaussian.yml"
