@@ -1,134 +1,115 @@
-------------
+---------------------------
 Architecture Overview
-------------
-Here, we will present a brief overview across the fundamental design principles
-governing the architecture of QUEENS.
+---------------------------
+Here, we present a brief overview of the fundamental architecture of QUEENS.
 
 Data processor
---------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.data_processor
+   queens.data_processor
 
-
-Database
-------------
-.. toctree::
-   :maxdepth: 4
-
-   pqueens.database
 
 Distributions
--------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.distributions
+   queens.distributions
 
 
 Drivers
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.drivers
+   queens.drivers
+
+
+Example simulator functions
+---------------------------
+.. toctree::
+   :maxdepth: 4
+
+   queens.example_simulator_functions
 
 
 External geometry
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.external_geometry
+   queens.external_geometry
 
 
 Interfaces
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.interfaces
+   queens.interfaces
 
 
 Iterators
--------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.iterators
+   queens.iterators
 
 
 Models
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.models
+   queens.models
 
 
 Parameters
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.parameters
+   queens.parameters
 
-
-Random fields
----------------
-.. toctree::
-   :maxdepth: 4
-
-   pqueens.randomfields
-
-Regression approximations
----------------
-.. toctree::
-   :maxdepth: 4
-
-   pqueens.regression_approximations
-
-Regression approximations mf
----------------
-.. toctree::
-   :maxdepth: 4
-
-   pqueens.regression_approximations_mf
-
-
-Resources
----------------
-.. toctree::
-   :maxdepth: 4
-
-   pqueens.resources
 
 Schedulers
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.schedulers
+   queens.schedulers
 
 
-Tests
----------------
+Stochastic optimizers
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.tests
+   queens.stochastic_optimizers
+
 
 Utils
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.utils
+   queens.utils
+
+
+Variational distributions
+---------------------------
+.. toctree::
+   :maxdepth: 4
+
+   queens.variational_distributions
+
 
 Visualization
----------------
+---------------------------
 .. toctree::
    :maxdepth: 4
 
-   pqueens.visualization
+   queens.visualization
