@@ -24,7 +24,7 @@ def main(pylint_json_path):
             "fingerprint": hashlib.sha1(
                 (code_warning["symbol"] + code_warning["message"] + code_warning["path"]).encode()
             ).hexdigest(),
-            "location": {"path": code_warning["path"], "lines": {"begins": code_warning["line"]}},
+            "location": {"path": code_warning["path"], "lines": {"begin": code_warning["line"]}},
         }
         codeclimate_json.append(code_climate_warning)
 
