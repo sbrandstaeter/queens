@@ -246,7 +246,7 @@ code_analysis:
       - pylint_codeclimate.json
     reports:
       codequality: pylint_codeclimate.json
-    when: on_failure
+    when: always
     expire_in: 4 weeks
 #----------------------------------------------------------------------------------------------
 documentation:
