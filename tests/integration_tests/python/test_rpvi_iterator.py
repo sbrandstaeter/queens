@@ -1,10 +1,9 @@
 """Integration test for reparameterization trick VI."""
 
-from unittest.mock import patch
-
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.interfaces.direct_python_interface import DirectPythonInterface
