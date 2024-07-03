@@ -17,7 +17,7 @@ def test_gaussian_metropolis_hastings(
     tmp_path,
     target_density_gaussian_1d,
     _create_experimental_data_gaussian_1d,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for Metropolis Hastings iterator."""
     # Parameters
@@ -49,17 +49,17 @@ def test_gaussian_metropolis_hastings(
         proposal_distribution=proposal_distribution,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     with patch.object(
         MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_1d
     ):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # note that the analytical solution would be:
     # posterior mean: [1.]

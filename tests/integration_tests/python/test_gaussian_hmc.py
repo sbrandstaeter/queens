@@ -20,7 +20,7 @@ def test_gaussian_hmc(
     tmp_path,
     target_density_gaussian_2d_with_grad,
     _create_experimental_data_zero,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for hmc iterator."""
     # Parameters
@@ -50,17 +50,17 @@ def test_gaussian_hmc(
         result_description={"write_results": True, "plot_results": False, "cov": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     with patch.object(
         GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
     ):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([0.19363280864587615, -1.1303341362165935])

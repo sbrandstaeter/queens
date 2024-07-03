@@ -11,7 +11,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_polynomial_chaos_pseudo_spectral_borehole(_initialize_global_settings):
+def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
     """Test case for the PC iterator using a pseudo spectral approach."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
@@ -37,19 +37,19 @@ def test_polynomial_chaos_pseudo_spectral_borehole(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
     assert results["mean"] == pytest.approx(61.78966587)
     assert results["covariance"] == pytest.approx([1312.23414971])
 
 
-def test_polynomial_chaos_collocation_borehole(_initialize_global_settings):
+def test_polynomial_chaos_collocation_borehole(global_settings):
     """Test for the PC iterator using a collocation approach."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
@@ -74,13 +74,13 @@ def test_polynomial_chaos_collocation_borehole(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
     assert results["mean"] == pytest.approx(62.05018243)
     assert results["covariance"] == pytest.approx([1273.81372103])

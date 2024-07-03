@@ -38,7 +38,7 @@ def my_mock_design(*args):
 
 # -------------- Actual tests -------------------------------------
 def test_init(
-    _initialize_global_settings,
+    global_settings,
     dummy_simulation_model,
     default_parameters_uniform_2d,
 ):
@@ -55,7 +55,7 @@ def test_init(
         # pylint: disable=duplicate-code
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
-            global_settings=_initialize_global_settings,
+            global_settings=global_settings,
             features_config=features_config,
             hf_model=hf_model,
             lf_model=lf_model,
@@ -134,7 +134,7 @@ def test_get_design_method(mocker):
         BMFIAIterator.get_design_method(initial_design_dict)
 
 
-def test_random_design(default_parameters_uniform_2d, _initialize_global_settings):
+def test_random_design(default_parameters_uniform_2d):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])

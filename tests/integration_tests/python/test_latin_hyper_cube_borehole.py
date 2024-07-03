@@ -10,7 +10,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_latin_hyper_cube_borehole(_initialize_global_settings):
+def test_latin_hyper_cube_borehole(global_settings):
     """Test case for latin hyper cube iterator."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
@@ -33,14 +33,14 @@ def test_latin_hyper_cube_borehole(_initialize_global_settings):
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert results["mean"] == pytest.approx(62.05240444441511)
     assert results["var"] == pytest.approx(1371.7554224384000)

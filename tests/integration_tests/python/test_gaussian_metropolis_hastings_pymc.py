@@ -15,7 +15,7 @@ from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
 
-def test_gaussian_mh(tmp_path, _create_experimental_data_zero, _initialize_global_settings):
+def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
     """Test case for mh iterator."""
     # Parameters
     x1 = NormalDistribution(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
@@ -45,15 +45,15 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, _initialize_globa
         result_description={"write_results": True, "plot_results": False, "cov": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     with patch.object(GaussianLikelihood, "evaluate", target_density):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([-0.5680310153118374, 0.9247536392514567])

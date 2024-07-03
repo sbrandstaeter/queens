@@ -87,7 +87,7 @@ def test_constrained_gp_ip_park(
     parameters,
     expected_mean,
     expected_std,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test."""
     num_steps = 3
@@ -114,7 +114,7 @@ def test_constrained_gp_ip_park(
     initial_train_iterator = MonteCarloIterator(
         model=None,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         seed=seed,
         num_samples=num_initial_samples,
     )
@@ -122,7 +122,7 @@ def test_constrained_gp_ip_park(
     solving_iterator = SequentialMonteCarloChopinIterator(
         model=logpdf_gp_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         seed=42,
         waste_free=True,
         feynman_kac_model="adaptive_tempering",
@@ -137,7 +137,7 @@ def test_constrained_gp_ip_park(
     adaptive_sampling_iterator = AdaptiveSamplingIterator(
         model=logpdf_gp_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         likelihood_model=likelihood_model,
         initial_train_iterator=initial_train_iterator,
         solving_iterator=solving_iterator,
@@ -145,10 +145,10 @@ def test_constrained_gp_ip_park(
         num_steps=num_steps,
     )
 
-    run_iterator(adaptive_sampling_iterator, _initialize_global_settings)
+    run_iterator(adaptive_sampling_iterator, global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     particles = results['particles'][-1]
     weights = results['weights'][-1]

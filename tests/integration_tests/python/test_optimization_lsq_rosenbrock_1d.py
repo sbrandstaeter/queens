@@ -10,7 +10,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_optimization_lsq_rosenbrock_1d(_initialize_global_settings):
+def test_optimization_lsq_rosenbrock_1d(global_settings):
     """Test special case for optimization iterator with the least squares.
 
     Special case: 1 unknown but 2 residuals.
@@ -29,14 +29,14 @@ def test_optimization_lsq_rosenbrock_1d(_initialize_global_settings):
         bounds=[float("-inf"), float("inf")],
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results.x, np.array([+1.0]))
     np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))

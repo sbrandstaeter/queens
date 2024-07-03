@@ -16,7 +16,7 @@ def test_gpflow_surrogate_branin(
     expected_mean,
     expected_variance,
     expected_posterior_samples,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for GPflow based GP model."""
     # Parameters
@@ -32,7 +32,7 @@ def test_gpflow_surrogate_branin(
         num_samples=20,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = GPFlowRegressionModel(
         train_likelihood_variance=False,
@@ -61,14 +61,14 @@ def test_gpflow_surrogate_branin(
         },
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=3

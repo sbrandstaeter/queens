@@ -12,7 +12,7 @@ from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_sobol_index_iterator_results
 
 
-def test_sobol_indices_ishigami(_initialize_global_settings):
+def test_sobol_indices_ishigami(global_settings):
     """Test case for Salib based Saltelli iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -32,14 +32,14 @@ def test_sobol_indices_ishigami(_initialize_global_settings):
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_result = {}
 

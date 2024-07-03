@@ -14,7 +14,7 @@ from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
 
 @pytest.mark.max_time_for_test(60)
-def test_branin_gpflow_svgp(expected_mean, expected_var, _initialize_global_settings):
+def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
     """Test case for GPflow based SVGP model."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -29,7 +29,7 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, _initialize_global_sett
         num_samples=100,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = GPflowSVGPModel(
         plotting_options={
@@ -59,14 +59,14 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, _initialize_global_sett
         },
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert_monte_carlo_iterator_results(results, expected_mean, expected_var)
 

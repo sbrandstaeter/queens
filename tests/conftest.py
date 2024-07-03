@@ -293,8 +293,8 @@ def fixture_test_name(request):
     return test_name
 
 
-@pytest.fixture(name="_initialize_global_settings")
-def fixture_initialize_global_settings(test_name, tmp_path):
+@pytest.fixture(name="global_settings")
+def fixture_global_settings(test_name, tmp_path):
     """Initialize GlobalSettings object."""
     # Setup and initialize global settings
     global_settings = GlobalSettings(experiment_name=test_name, output_dir=tmp_path)

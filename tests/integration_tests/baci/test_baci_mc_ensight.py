@@ -20,7 +20,7 @@ def test_baci_mc_ensight(
     baci_example_expected_mean,
     baci_example_expected_var,
     baci_example_expected_output,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test simple BACI run."""
     # generate json input file from template
@@ -55,7 +55,7 @@ def test_baci_mc_ensight(
         external_geometry=external_geometry,
     )
     scheduler = LocalScheduler(
-        experiment_name=_initialize_global_settings.experiment_name,
+        experiment_name=global_settings.experiment_name,
         num_procs=2,
         num_procs_post=1,
         max_concurrent=2,
@@ -75,14 +75,14 @@ def test_baci_mc_ensight(
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # assert statements
     np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)

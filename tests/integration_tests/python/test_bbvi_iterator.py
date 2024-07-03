@@ -69,7 +69,7 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    tmp_path, _create_experimental_data_park91a_hifi_on_grid, _initialize_global_settings
+    tmp_path, _create_experimental_data_park91a_hifi_on_grid, global_settings
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     experimental_data_path = tmp_path  # pylint: disable=duplicate-code
@@ -137,14 +137,14 @@ def test_bbvi_iterator_park91a_hifi(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     elbo_list = results["iteration_data"]["elbo"]
 

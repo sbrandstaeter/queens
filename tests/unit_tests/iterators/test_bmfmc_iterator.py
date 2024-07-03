@@ -58,7 +58,7 @@ def fixture_initial_design():
 
 @pytest.fixture(name="default_bmfmc_iterator")
 def fixture_default_bmfmc_iterator(
-    _initialize_global_settings,
+    global_settings,
     default_parameters_uniform_2d,
     default_bmfmc_model,
     result_description,
@@ -68,7 +68,7 @@ def fixture_default_bmfmc_iterator(
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         result_description=result_description,
         initial_design=initial_design,
     )
@@ -81,13 +81,13 @@ def test_init(
     default_bmfmc_model,
     result_description,
     initial_design,
-    _initialize_global_settings,
+    global_settings,
 ):
     """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         result_description=result_description,
         initial_design=initial_design,
     )

@@ -19,7 +19,7 @@ def test_gaussian_nuts(
     tmp_path,
     target_density_gaussian_2d_with_grad,
     _create_experimental_data,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for nuts iterator."""
     # Parameters
@@ -50,17 +50,17 @@ def test_gaussian_nuts(
         result_description={"write_results": True, "plot_results": False, "cov": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     with patch.object(
         GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
     ):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert results['mean'].mean(axis=0) == pytest.approx(
         np.array([-0.2868793496608573, 0.6474274597130008])

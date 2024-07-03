@@ -18,7 +18,7 @@ def fixture_dummy_simulation_model():
 
 
 @pytest.fixture(name="get_patched_bmfia_iterator")
-def fixture_get_patched_bmfia_iterator(_initialize_global_settings):
+def fixture_get_patched_bmfia_iterator(global_settings):
     """Function that returns a dummy BMFIA iterator for testing."""
 
     def get_patched_bmfia_iterator(parameters, hf_model, lf_model):
@@ -31,7 +31,7 @@ def fixture_get_patched_bmfia_iterator(_initialize_global_settings):
         with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
             iterator = BMFIAIterator(
                 parameters=parameters,
-                global_settings=_initialize_global_settings,
+                global_settings=global_settings,
                 features_config=features_config,
                 hf_model=hf_model,
                 lf_model=lf_model,

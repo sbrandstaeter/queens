@@ -7,7 +7,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_branin_data_iterator(mocker, ref_result_iterator, _initialize_global_settings):
+def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):
     """Test case for data iterator."""
     # Global settings
     output = {}
@@ -31,13 +31,13 @@ def test_branin_data_iterator(mocker, ref_result_iterator, _initialize_global_se
             "num_support_points": 5,
         },
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     assert results["mean"] == pytest.approx(1.3273452195599997)
     assert results["var"] == pytest.approx(44.82468751096612)

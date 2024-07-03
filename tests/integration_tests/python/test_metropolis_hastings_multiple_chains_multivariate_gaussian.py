@@ -19,7 +19,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
     tmp_path,
     target_density_gaussian_2d,
     _create_experimental_data_gaussian_2d,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for Metropolis Hastings iterator."""
     # Parameters
@@ -53,7 +53,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         proposal_distribution=proposal_distribution,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
@@ -64,10 +64,10 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         with patch.object(
             MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
         ):
-            run_iterator(iterator, global_settings=_initialize_global_settings)
+            run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # note that the analytical solution would be:
     # posterior mean: [0.29378531 -1.97175141]

@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_points_iterator(inputs, expected_results, _initialize_global_settings):
+def test_points_iterator(inputs, expected_results, global_settings):
     """Integration test for the points iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -28,14 +28,14 @@ def test_points_iterator(inputs, expected_results, _initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_array_equal(
         results["output"]["result"],
@@ -43,7 +43,7 @@ def test_points_iterator(inputs, expected_results, _initialize_global_settings):
     )
 
 
-def test_points_iterator_failure(_initialize_global_settings):
+def test_points_iterator_failure(global_settings):
     """Test failure of the points iterator."""
     inputs = {"x1": [1], "x2": [1, 2]}
     # Parameters
@@ -58,13 +58,13 @@ def test_points_iterator_failure(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     with pytest.raises(
         ValueError, match="Non-matching number of points for the different parameters: x1: 1, x2: 2"
     ):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
 
 @pytest.fixture(name="inputs")

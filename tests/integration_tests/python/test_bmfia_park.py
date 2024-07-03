@@ -29,7 +29,7 @@ def test_bmfia_smc_park(
     _create_experimental_data_park91a_hifi_on_grid,
     expected_samples,
     expected_weights,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Integration test for BMFIA.
 
@@ -94,7 +94,7 @@ def test_bmfia_smc_park(
         lf_model=lf_model,
         hf_model=hf_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.001,
@@ -120,14 +120,14 @@ def test_bmfia_smc_park(
         mcmc_proposal_distribution=mcmc_proposal_distribution,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
@@ -184,7 +184,7 @@ def test_bmfia_rpvi_gp_park(
     _create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean,
     expected_variational_cov,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Integration test for BMFIA.
 
@@ -244,7 +244,7 @@ def test_bmfia_rpvi_gp_park(
         hf_model=hf_model,
         lf_model=lf_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
@@ -282,14 +282,14 @@ def test_bmfia_rpvi_gp_park(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']
@@ -319,7 +319,7 @@ def test_bmfia_rpvi_nn_park(
     _create_experimental_data_park91a_hifi_on_grid,
     expected_variational_mean_nn,
     expected_variational_cov_nn,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Integration test for BMFIA.
 
@@ -375,7 +375,7 @@ def test_bmfia_rpvi_nn_park(
         hf_model=hf_model,
         lf_model=lf_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
@@ -421,14 +421,14 @@ def test_bmfia_rpvi_nn_park(
         model=model,
         stochastic_optimizer=stochastic_optimizer,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']

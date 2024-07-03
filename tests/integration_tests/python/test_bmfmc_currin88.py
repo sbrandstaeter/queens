@@ -96,7 +96,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     generate_HF_MC_data,
     generate_LF_MC_data,
     design_method,
-    _initialize_global_settings,
+    global_settings,
 ):
     """TODO_doc: add a one-line explanation.
 
@@ -132,10 +132,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         probabilistic_mapping=probabilistic_mapping,
         hf_model=hf_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     iterator = BMFMCIterator(
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -158,10 +158,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # get the y_support and calculate HF MC reference
     y_pdf_support = results['raw_output_data']['y_pdf_support']

@@ -89,15 +89,13 @@ def test_insert_new_obj(config_2, dummy_obj, inserted_config_2):
     assert config == inserted_config_2
 
 
-def test_from_config_create_object_iterator(
-    mocker, config_1, _initialize_global_settings, parameters
-):
+def test_from_config_create_object_iterator(mocker, config_1, global_settings, parameters):
     """Test case for from_config_create_object function."""
     mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=MonteCarloIterator)
     mp2 = mocker.patch(
         "queens.iterators.monte_carlo_iterator.MonteCarloIterator.__init__", return_value=None
     )
-    from_config_create_object(config_1, _initialize_global_settings, parameters)
+    from_config_create_object(config_1, global_settings, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == {**config_1, "parameters": parameters}
@@ -117,9 +115,7 @@ def test_from_config_create_object_model(parameters, mocker, config_1):
     assert mp2.call_count == 1
 
 
-def test_from_config_create_object_interface(
-    mocker, config_1, parameters, _initialize_global_settings
-):
+def test_from_config_create_object_interface(mocker, config_1, parameters, global_settings):
     """Test case for from_config_create_object function."""
     mp1 = mocker.patch(
         "queens.utils.fcc_utils.get_module_class", return_value=DirectPythonInterface
@@ -128,7 +124,7 @@ def test_from_config_create_object_interface(
         "queens.interfaces.direct_python_interface.DirectPythonInterface.__init__",
         return_value=None,
     )
-    from_config_create_object(config_1, _initialize_global_settings, parameters)
+    from_config_create_object(config_1, global_settings, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == {**config_1, "parameters": parameters}
@@ -136,40 +132,40 @@ def test_from_config_create_object_interface(
     assert mp2.call_count == 1
 
 
-def test_from_config_create_iterator_runtime_error_case_1(_initialize_global_settings):
+def test_from_config_create_iterator_runtime_error_case_1(global_settings):
     """Test case for from_config_create_iterator function.
 
     Configuration fails due to missing 'method' description.
     """
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
-        from_config_create_iterator({'c': 'd'}, _initialize_global_settings)
+        from_config_create_iterator({'c': 'd'}, global_settings)
 
 
-def test_from_config_create_iterator_runtime_error_case_2(_initialize_global_settings):
+def test_from_config_create_iterator_runtime_error_case_2(global_settings):
     """Test case for from_config_create_iterator function.
 
     Configuration fails due to circular dependencies.
     """
     config = {'a': {'b_name': 'd'}, 'd': {'e_name': 'a'}}
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
-        from_config_create_iterator(config, _initialize_global_settings)
+        from_config_create_iterator(config, global_settings)
 
 
-def test_from_config_create_iterator_invalid_option_error_case_1(_initialize_global_settings):
+def test_from_config_create_iterator_invalid_option_error_case_1(global_settings):
     """Test case for from_config_create_iterator function.
 
     Configuration fails due to invalid class type 'bla'.
     """
     config = {'a': {'type': 'bla'}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
-        from_config_create_iterator(config, _initialize_global_settings)
+        from_config_create_iterator(config, global_settings)
 
 
-def test_from_config_create_iterator_invalid_option_error_case_2(_initialize_global_settings):
+def test_from_config_create_iterator_invalid_option_error_case_2(global_settings):
     """Test case for from_config_create_iterator function.
 
     Configuration fails due to missing options for 'monte_carlo'.
     """
     config = {'a': {'type': 'monte_carlo'}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
-        from_config_create_iterator(config, _initialize_global_settings)
+        from_config_create_iterator(config, global_settings)

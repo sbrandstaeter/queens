@@ -91,7 +91,7 @@ class TestDaskCluster:
         baci_example_expected_mean,
         baci_example_expected_var,
         baci_example_expected_output,
-        _initialize_global_settings,
+        global_settings,
         gateway,
     ):
         """Test remote BACI simulations with DASK jobqueue and MC iterator.
@@ -115,6 +115,7 @@ class TestDaskCluster:
             baci_example_expected_output (np.ndarray): Expected output for the MC samples
             patched_base_directory (str): directory of the test simulation data on the cluster
             gateway: TODO
+            global_settings: object containing experiment name and tmp_path
         """
         cluster_name = cluster_settings.pop("name")
 
@@ -166,7 +167,7 @@ class TestDaskCluster:
             num_nodes=1,
             remote_connection=remote_connection,
             cluster_internal_address=cluster_settings["cluster_internal_address"],
-            experiment_name=_initialize_global_settings.experiment_name,
+            experiment_name=global_settings.experiment_name,
             queue=cluster_settings.get("queue"),
         )
 
@@ -188,14 +189,14 @@ class TestDaskCluster:
             result_description={"write_results": True, "plot_results": False},
             model=model,
             parameters=parameters,
-            global_settings=_initialize_global_settings,
+            global_settings=global_settings,
         )
 
         # Actual analysis
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
         # Load results
-        results = load_result(_initialize_global_settings.result_file(".pickle"))
+        results = load_result(global_settings.result_file(".pickle"))
 
         # The data has to be deleted before the assertion
         self.delete_simulation_data(remote_connection)

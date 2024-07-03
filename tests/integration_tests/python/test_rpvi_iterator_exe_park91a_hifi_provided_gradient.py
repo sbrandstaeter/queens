@@ -51,7 +51,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
     mpi_command,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
@@ -85,7 +85,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         num_procs=1,
         num_procs_post=1,
         max_concurrent=1,
-        experiment_name=_initialize_global_settings.experiment_name,
+        experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(
         file_name_identifier="*_output.csv",
@@ -141,14 +141,14 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -165,7 +165,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
     mpi_command,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
@@ -199,7 +199,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         num_procs=1,
         num_procs_post=1,
         max_concurrent=1,
-        experiment_name=_initialize_global_settings.experiment_name,
+        experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(
         file_name_identifier="*_output.csv",
@@ -249,14 +249,14 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -272,7 +272,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
     mpi_command,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
@@ -312,7 +312,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         num_procs=1,
         num_procs_post=1,
         max_concurrent=1,
-        experiment_name=_initialize_global_settings.experiment_name,
+        experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(
         file_name_identifier="*_output.csv",
@@ -380,14 +380,14 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25

@@ -8,7 +8,7 @@ from queens.iterators.lhs_iterator import LHSIterator
 
 @pytest.fixture(name="default_lhs_iterator")
 def fixture_default_lhs_iterator(
-    _initialize_global_settings, default_simulation_model, default_parameters_mixed
+    global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Default latin hypercube sampling iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed
@@ -18,7 +18,7 @@ def fixture_default_lhs_iterator(
     my_iterator = LHSIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         seed=42,
         num_samples=100,
         num_iterations=1,

@@ -75,7 +75,7 @@ def test_elementary_effects_sobol(
     expected_result_mu,
     expected_result_mu_star,
     expected_result_sigma,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test case for elementary effects on Sobol's G-function."""
     # Parameters
@@ -113,13 +113,13 @@ def test_elementary_effects_sobol(
         },
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
     np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)

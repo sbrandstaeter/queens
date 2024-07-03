@@ -22,7 +22,7 @@ from queens.variational_distributions.mean_field_normal import MeanFieldNormalVa
 def test_rpvi_iterator_park91a_hifi(
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Integration test for the rpvi iterator.
 
@@ -83,14 +83,14 @@ def test_rpvi_iterator_park91a_hifi(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -103,7 +103,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     _write_custom_likelihood_model,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Integration test for the rpvi iterator.
 
@@ -164,14 +164,14 @@ def test_rpvi_iterator_park91a_hifi_external_module(
         stochastic_optimizer=stochastic_optimizer,
         model=model_external,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -183,7 +183,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # Parameters
@@ -241,14 +241,14 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -279,9 +279,7 @@ def fixture_forward_model(request):
 
 
 @pytest.mark.max_time_for_test(20)
-def test_gaussian_rpvi(
-    tmp_path, _create_experimental_data, forward_model, _initialize_global_settings
-):
+def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, global_settings):
     """Test RPVI with univariate Gaussian."""
     # Parameters
     x1 = NormalDistribution(mean=0.0, covariance=1.0)
@@ -338,15 +336,15 @@ def test_gaussian_rpvi(
         stochastic_optimizer=stochastic_optimizer,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
     posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)

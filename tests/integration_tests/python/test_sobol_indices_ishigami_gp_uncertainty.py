@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_ishigami_gp_uncertainty(_initialize_global_settings):
+def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
     """Test case for Sobol indices based on GP realizations."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -30,7 +30,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(_initialize_global_settings):
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     testing_iterator = LHSIterator(
         seed=30,
@@ -38,7 +38,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(_initialize_global_settings):
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -63,14 +63,14 @@ def test_sobol_indices_ishigami_gp_uncertainty(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_s1 = np.array(
         [
@@ -99,7 +99,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(_initialize_global_settings):
     np.testing.assert_allclose(results['total_order'].values, expected_st, atol=1e-05)
 
 
-def test_sobol_indices_ishigami_gp_uncertainty_third_order(_initialize_global_settings):
+def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
     """Test case for third-order Sobol indices."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -116,7 +116,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(_initialize_global_se
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     testing_iterator = LHSIterator(
         seed=30,
@@ -124,7 +124,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(_initialize_global_se
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -150,14 +150,14 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(_initialize_global_se
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_s3 = np.array(
         [[0.23426643, 0.00801287, 0.00230968, 0.00729179, 0.17544544, 0.09419407, 0.16736517]]
@@ -166,7 +166,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(_initialize_global_se
     np.testing.assert_allclose(results['third_order'].values, expected_s3, atol=1e-05)
 
 
-def test_sobol_indices_ishigami_gp_mean(_initialize_global_settings):
+def test_sobol_indices_ishigami_gp_mean(global_settings):
     """Test case for Sobol indices based on GP mean."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -183,7 +183,7 @@ def test_sobol_indices_ishigami_gp_mean(_initialize_global_settings):
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     testing_iterator = LHSIterator(
         seed=30,
@@ -191,7 +191,7 @@ def test_sobol_indices_ishigami_gp_mean(_initialize_global_settings):
         num_iterations=10,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
@@ -215,14 +215,14 @@ def test_sobol_indices_ishigami_gp_mean(_initialize_global_settings):
         result_description={"write_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_s1 = np.array(
         [

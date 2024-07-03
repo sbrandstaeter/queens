@@ -22,7 +22,7 @@ from queens.utils.io_utils import load_result
 
 
 def test_smc_bayes_temper_multivariate_gaussian_mixture(
-    tmp_path, _create_experimental_data, _initialize_global_settings
+    tmp_path, _create_experimental_data, global_settings
 ):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     # Parameters
@@ -66,17 +66,17 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
         mcmc_proposal_distribution=mcmc_proposal_distribution,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-            run_iterator(iterator, global_settings=_initialize_global_settings)
+            run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # note that the analytical solution would be:
     # posterior mean: [-0.4 -0.4 -0.4 -0.4]

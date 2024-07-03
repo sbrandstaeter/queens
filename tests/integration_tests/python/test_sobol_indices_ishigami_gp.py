@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_ishigami_gp(_initialize_global_settings):
+def test_sobol_indices_ishigami_gp(global_settings):
     """Test Sobol indices estimation with Gaussian process surrogate."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -31,7 +31,7 @@ def test_sobol_indices_ishigami_gp(_initialize_global_settings):
         result_description={"write_results": True, "plot_results": False},
         model=simulation_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
     gpflow_regression_model = GPFlowRegressionModel(
         number_restarts=10,
@@ -48,14 +48,14 @@ def test_sobol_indices_ishigami_gp(_initialize_global_settings):
         result_description={"write_results": True, "plot_results": True},
         model=gpflow_regression_model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_result_s1 = np.array([0.37365542, 0.49936914, -0.00039217])
     expected_result_s1_conf = np.array([0.14969221, 0.18936135, 0.0280309])

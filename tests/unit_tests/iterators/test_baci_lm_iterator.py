@@ -40,23 +40,19 @@ def fixture_fix_tolerance(request):
 
 
 @pytest.fixture(name="output_csv")
-def fixture_output_csv(_initialize_global_settings):
+def fixture_output_csv(global_settings):
     """Absolute path to output csv file."""
-    return _initialize_global_settings.output_dir / (
-        _initialize_global_settings.experiment_name + '.csv'
-    )
+    return global_settings.output_dir / (global_settings.experiment_name + '.csv')
 
 
 @pytest.fixture(name="output_html")
-def fixture_output_html(_initialize_global_settings):
+def fixture_output_html(global_settings):
     """Absolute path to output html file."""
-    return _initialize_global_settings.output_dir / (
-        _initialize_global_settings.experiment_name + '.html'
-    )
+    return global_settings.output_dir / (global_settings.experiment_name + '.html')
 
 
 @pytest.fixture(name="default_baci_lm_iterator")
-def fixture_default_baci_lm_iterator(_initialize_global_settings):
+def fixture_default_baci_lm_iterator(global_settings):
     """TODO_doc."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     model = SimulationModel(interface="interface")
@@ -64,7 +60,7 @@ def fixture_default_baci_lm_iterator(_initialize_global_settings):
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         result_description={'write_results': True, 'plot_results': True},
         initial_guess=[0.1, 0.2],
         jac_rel_step=1e-05,
@@ -97,7 +93,7 @@ def fixture_fix_plotly_fig():
     return fig
 
 
-def test_init(_initialize_global_settings):
+def test_init(global_settings):
     """TODO_doc."""
     initial_guess = np.array([1, 2.2])
     bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
@@ -114,7 +110,7 @@ def test_init(_initialize_global_settings):
     my_baci_lm_iterator = BaciLMIterator(
         model=model,
         parameters="dummy_parameters",
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         result_description=result_description,
         initial_guess=initial_guess,
         bounds=bounds,

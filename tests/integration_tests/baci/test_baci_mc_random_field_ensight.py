@@ -23,7 +23,7 @@ def test_write_random_material_to_dat(
     baci_link_paths,
     expected_mean,
     expected_var,
-    _initialize_global_settings,
+    global_settings,
 ):
     """Test BACI with random field for material parameters."""
     dat_template = third_party_inputs / "baci" / "coarse_plate_dirichlet_template.dat"
@@ -84,7 +84,7 @@ def test_write_random_material_to_dat(
         num_procs=1,
         num_procs_post=1,
         max_concurrent=1,
-        experiment_name=_initialize_global_settings.experiment_name,
+        experiment_name=global_settings.experiment_name,
     )
     driver = MpiDriver(
         input_template=baci_input_preprocessed,
@@ -101,7 +101,7 @@ def test_write_random_material_to_dat(
         result_description={"write_results": True, "plot_results": False},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
@@ -109,10 +109,10 @@ def test_write_random_material_to_dat(
         return self.mean + self.std**2 * np.linalg.norm(self.coords['coords'], axis=1) * sample[0]
 
     with patch.object(KarhunenLoeveRandomField, "expanded_representation", expanded_representation):
-        run_iterator(iterator, global_settings=_initialize_global_settings)
+        run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Check if we got the expected results
     np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=8)

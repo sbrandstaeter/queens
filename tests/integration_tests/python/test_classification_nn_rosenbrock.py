@@ -13,7 +13,7 @@ from queens.utils.classifier import ActiveLearningClassifier
 from queens.utils.io_utils import load_result
 
 
-def test_classification_iterator(tmp_path, _initialize_global_settings):
+def test_classification_iterator(tmp_path, global_settings):
     """Integration test for the classification iterator."""
 
     def classification_function(x):
@@ -58,14 +58,14 @@ def test_classification_iterator(tmp_path, _initialize_global_settings):
         classifier=classifier,
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    results = load_result(_initialize_global_settings.result_file(".pickle"))
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_results_classified = np.ones((12, 1))
     expected_results_classified[-2:] = 0

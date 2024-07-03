@@ -10,7 +10,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
+def test_baci_lm_rosenbrock_res(tmp_path, global_settings):
     """Test case for Levenberg Marquardt iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -31,14 +31,14 @@ def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
         result_description={"write_results": True, "plot_results": True},
         model=model,
         parameters=parameters,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
     )
 
     # Actual analysis
-    run_iterator(iterator, global_settings=_initialize_global_settings)
+    run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    result_file = _initialize_global_settings.result_file(".csv")
+    result_file = global_settings.result_file(".csv")
     data = pd.read_csv(
         result_file,
         sep='\t',
@@ -51,4 +51,4 @@ def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert (tmp_path / f'{_initialize_global_settings.experiment_name}.html').is_file()
+    assert (tmp_path / f'{global_settings.experiment_name}.html').is_file()
