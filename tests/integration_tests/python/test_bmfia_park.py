@@ -1,6 +1,5 @@
 """Integration tests for the BMFIA."""
 
-# pylint: disable=invalid-name
 import numpy as np
 import pytest
 
