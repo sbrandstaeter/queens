@@ -23,17 +23,17 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
 
     # Setup QUEENS stuff
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
-    model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=50,
         num_iterations=10,
         result_description={"write_results": True, "plot_results": False},
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=_initialize_global_settings,
     )
-    model = GPFlowRegressionModel(
+    gpflow_regression_model = GPFlowRegressionModel(
         number_restarts=10,
         number_training_iterations=1000,
         dimension_lengthscales=3,
@@ -46,7 +46,7 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
         confidence_level=0.95,
         num_bootstrap_samples=1000,
         result_description={"write_results": True, "plot_results": True},
-        model=model,
+        model=gpflow_regression_model,
         parameters=parameters,
         global_settings=_initialize_global_settings,
     )

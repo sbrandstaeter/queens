@@ -14,6 +14,7 @@ from queens.iterators.grid_iterator import GridIterator
 from queens.iterators.iterator import Iterator
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from queens.utils.io_utils import load_result
 
 _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)
@@ -91,8 +92,7 @@ class AdaptiveSamplingIterator(Iterator):
         np.random.seed(self.seed)
 
         if self.restart_file:
-            with open(self.restart_file, 'rb') as handle:
-                results = pickle.load(handle)
+            results = load_result(self.restart_file)
             self.x_train = results['x_train'][-1]
             self.model_outputs = results['model_outputs'][-1]
             self.y_train = results['y_train'][-1]
@@ -199,9 +199,7 @@ class AdaptiveSamplingIterator(Iterator):
             }
             cs_div = np.nan
         else:
-            with open(pickle_file, 'rb') as handle:
-                results = pickle.load(handle)
-
+            results = load_result(self.restart_file)
             particles_prev = results['particles'][-1]
             weights_prev = results['weights'][-1]
             samples_prev = particles_prev[
