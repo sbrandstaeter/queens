@@ -10,7 +10,6 @@ from queens.distributions.normal import NormalDistribution
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
-from queens.models import SimulationModel
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.parameters.parameters import Parameters
@@ -127,7 +126,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         coordinate_labels=["x3", "x4"],
     )
     interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
-    forward_model = SimulationModel(
+    forward_model = DifferentiableSimulationModelFD(
         finite_difference_method="2-point", step_size=1e-07, interface=interface
     )
     model = GaussianLikelihood(
