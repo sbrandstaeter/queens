@@ -77,15 +77,14 @@ def test_bmfia_smc_park(
     mcmc_proposal_distribution = NormalDistribution(
         mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]]
     )
-    interface = DirectPythonInterface(
+    lf_interface = DirectPythonInterface(
         num_workers=1, function="park91a_lofi_on_grid", parameters=parameters
     )
-    forward_model = SimulationModel(interface=interface)
-    lf_model = SimulationModel(interface=interface)
-    interface = DirectPythonInterface(
+    lf_model = SimulationModel(interface=lf_interface)
+    hf_interface = DirectPythonInterface(
         num_workers=1, function="park91a_hifi_on_grid", parameters=parameters
     )
-    hf_model = SimulationModel(interface=interface)
+    hf_model = SimulationModel(interface=hf_interface)
     mf_subiterator = BMFIAIterator(
         features_config="man_features",
         X_cols=[0],
@@ -107,7 +106,7 @@ def test_bmfia_smc_park(
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
-        forward_model=forward_model,
+        forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
     iterator = SequentialMonteCarloIterator(
@@ -225,17 +224,16 @@ def test_bmfia_rpvi_gp_park(
         mean_function_type="identity_multi_fidelity",
         stochastic_optimizer=stochastic_optimizer,
     )
-    interface = DirectPythonInterface(
+    hf_interface = DirectPythonInterface(
         function="park91a_hifi_on_grid", num_workers=1, parameters=parameters
     )
-    hf_model = SimulationModel(interface=interface)
-    interface = DirectPythonInterface(
+    hf_model = SimulationModel(interface=hf_interface)
+    lf_interface = DirectPythonInterface(
         function="park91a_lofi_on_grid_with_gradients",
         num_workers=1,
         parameters=parameters,
     )
-    forward_model = SimulationModel(interface=interface)
-    lf_model = SimulationModel(interface=interface)
+    lf_model = SimulationModel(interface=lf_interface)
     mf_subiterator = BMFIAIterator(
         features_config="man_features",
         num_features=1,
@@ -257,7 +255,7 @@ def test_bmfia_rpvi_gp_park(
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
-        forward_model=forward_model,
+        forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
     iterator = RPVIIterator(
@@ -358,17 +356,16 @@ def test_bmfia_rpvi_nn_park(
         probabilistic_mapping_type="per_time_step",
         parameters=parameters,
     )
-    interface = DirectPythonInterface(
+    hf_interface = DirectPythonInterface(
         function="park91a_hifi_on_grid", num_workers=1, parameters=parameters
     )
-    hf_model = SimulationModel(interface=interface)
-    interface = DirectPythonInterface(
+    hf_model = SimulationModel(interface=hf_interface)
+    lf_interface = DirectPythonInterface(
         function="park91a_lofi_on_grid_with_gradients",
         num_workers=1,
         parameters=parameters,
     )
-    forward_model = SimulationModel(interface=interface)
-    lf_model = SimulationModel(interface=interface)
+    lf_model = SimulationModel(interface=lf_interface)
     mf_subiterator = BMFIAIterator(
         features_config="no_features",
         initial_design={"num_HF_eval": 50, "seed": 1, "type": "random"},
@@ -389,7 +386,7 @@ def test_bmfia_rpvi_nn_park(
         experimental_data_reader=experimental_data_reader,
         mf_approx=mf_approx,
         mf_interface=mf_interface,
-        forward_model=forward_model,
+        forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
     stochastic_optimizer = Adam(
