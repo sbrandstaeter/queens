@@ -19,7 +19,7 @@ def test_optimization_lsq_parabola(global_settings):
     x1 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="parabola_residual", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(

@@ -18,7 +18,7 @@ def test_grid_iterator(expected_response, expected_grid, global_settings):
     x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = GridIterator(

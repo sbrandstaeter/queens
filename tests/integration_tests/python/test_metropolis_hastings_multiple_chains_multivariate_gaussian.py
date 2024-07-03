@@ -27,7 +27,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
     x2 = NormalDistribution(mean=-2.0, covariance=0.01)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=tmp_path,

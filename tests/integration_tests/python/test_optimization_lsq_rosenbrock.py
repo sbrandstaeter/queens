@@ -18,7 +18,7 @@ def test_optimization_lsq_rosenbrock(global_settings):
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
@@ -49,7 +49,7 @@ def test_optimization_lsq_rosenbrock_error(global_settings):
     x3 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60_residual_3d", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(

@@ -28,7 +28,7 @@ def test_smc_generic_temper_multivariate_gaussian(
     x4 = NormalDistribution(mean=1.0, covariance=5.0)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=tmp_path,

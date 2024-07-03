@@ -46,7 +46,7 @@ def test_bmfia_smc_park(
     x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
@@ -198,7 +198,7 @@ def test_bmfia_rpvi_gp_park(
     x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = MeanFieldNormalVariational(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
@@ -334,7 +334,7 @@ def test_bmfia_rpvi_nn_park(
     x2 = NormalDistribution(covariance=0.09, mean=0.5)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = MeanFieldNormalVariational(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",

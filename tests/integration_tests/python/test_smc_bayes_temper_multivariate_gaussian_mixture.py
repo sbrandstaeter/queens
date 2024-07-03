@@ -32,7 +32,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
     x4 = UniformDistribution(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=tmp_path,

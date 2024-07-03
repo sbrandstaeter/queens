@@ -22,7 +22,7 @@ def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):
 
     parameters = Parameters()
 
-    # Setup QUEENS stuff
+    # Setup iterator
     iterator = DataIterator(
         path_to_data="/path_to_data/some_data.pickle",
         result_description={

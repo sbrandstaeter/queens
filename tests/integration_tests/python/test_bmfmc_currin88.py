@@ -111,7 +111,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     x2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     probabilistic_mapping = GPFlowRegressionModel(
         train_likelihood_variance=False,
         number_restarts=2,

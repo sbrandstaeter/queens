@@ -83,7 +83,7 @@ def test_bbvi_iterator_park91a_hifi(
     x2 = NormalDistribution(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = FullRankNormalVariational(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.01,

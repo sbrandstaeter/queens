@@ -60,7 +60,7 @@ def test_write_random_material_to_dat(
     )
     parameters = Parameters(mat_param=mat_param)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     external_geometry = BaciDatExternalGeometry(
         list_geometric_sets=["DSURFACE 1"],
         input_template=baci_input_preprocessed,

@@ -10,6 +10,7 @@ from queens.distributions.normal import NormalDistribution
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
+from queens.models import SimulationModel
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.parameters.parameters import Parameters
@@ -33,7 +34,7 @@ def test_rpvi_iterator_park91a_hifi(
     x2 = NormalDistribution(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = MeanFieldNormalVariational(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
@@ -110,7 +111,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     x2 = NormalDistribution(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = MeanFieldNormalVariational(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
@@ -126,7 +127,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         coordinate_labels=["x3", "x4"],
     )
     interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
-    forward_model = DifferentiableSimulationModelFD(
+    forward_model = SimulationModel(
         finite_difference_method="2-point", step_size=1e-07, interface=interface
     )
     model = GaussianLikelihood(
@@ -205,7 +206,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     x2 = NormalDistribution(mean=10.0, covariance=100.0)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     variational_distribution = MeanFieldNormalVariational(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.05,

@@ -25,7 +25,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
     x = NormalDistribution(mean=2.0, covariance=1.0)
     parameters = Parameters(x=x)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=tmp_path,

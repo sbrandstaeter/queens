@@ -20,7 +20,7 @@ def test_points_iterator(inputs, expected_results, global_settings):
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(
@@ -50,7 +50,8 @@ def test_points_iterator_failure(global_settings):
     x1 = FreeVariable(dimension=1)
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
-    # Setup QUEENS stuff
+
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(

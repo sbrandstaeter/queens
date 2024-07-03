@@ -128,7 +128,7 @@ class TestDaskCluster:
         young = UniformDistribution(lower_bound=500, upper_bound=1000)
         parameters = Parameters(nue=nue, young=young)
 
-        # Setup QUEENS stuff
+        # Setup iterator
         external_geometry = BaciDatExternalGeometry(
             list_geometric_sets=["DSURFACE 1"],
             input_template=baci_input_file_template,

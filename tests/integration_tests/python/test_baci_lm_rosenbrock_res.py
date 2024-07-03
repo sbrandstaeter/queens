@@ -17,7 +17,7 @@ def test_baci_lm_rosenbrock_res(tmp_path, global_settings):
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = BaciLMIterator(

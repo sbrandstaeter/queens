@@ -19,7 +19,7 @@ def test_branin_latin_hyper_cube(global_settings):
     x2 = UniformDistribution(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = LHSIterator(

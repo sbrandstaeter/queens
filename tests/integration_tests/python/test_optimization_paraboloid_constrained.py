@@ -29,7 +29,7 @@ def test_optimization_paraboloid_constrained(algorithm, global_settings):
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="paraboloid", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(

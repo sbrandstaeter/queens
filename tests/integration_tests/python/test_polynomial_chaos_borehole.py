@@ -24,7 +24,7 @@ def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
     kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="borehole83_lofi", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PolynomialChaosIterator(
@@ -62,7 +62,7 @@ def test_polynomial_chaos_collocation_borehole(global_settings):
     kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="borehole83_lofi", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = PolynomialChaosIterator(

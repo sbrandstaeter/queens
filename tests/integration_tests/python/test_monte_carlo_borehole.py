@@ -23,7 +23,7 @@ def test_monte_carlo_borehole(global_settings):
     kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="borehole83_lofi", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(

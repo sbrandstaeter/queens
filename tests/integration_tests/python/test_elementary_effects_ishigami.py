@@ -22,7 +22,7 @@ def test_elementary_effects_ishigami(global_settings):
     x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = ElementaryEffectsIterator(

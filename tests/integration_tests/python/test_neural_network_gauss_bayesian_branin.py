@@ -22,7 +22,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
     x2 = UniformDistribution(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(

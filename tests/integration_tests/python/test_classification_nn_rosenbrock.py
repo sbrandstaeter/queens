@@ -35,7 +35,7 @@ def test_classification_iterator(tmp_path, global_settings):
     x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2)
 
-    # Setup QUEENS stuff
+    # Setup iterator
     classifier_obj = MLPClassifier()
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
     interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
