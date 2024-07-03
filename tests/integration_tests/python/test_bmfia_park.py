@@ -127,7 +127,7 @@ def test_bmfia_smc_park(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
@@ -289,7 +289,7 @@ def test_bmfia_rpvi_gp_park(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']
@@ -428,7 +428,7 @@ def test_bmfia_rpvi_nn_park(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']

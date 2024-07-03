@@ -90,7 +90,7 @@ def test_rpvi_iterator_park91a_hifi(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -171,7 +171,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -248,7 +248,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -346,7 +346,7 @@ def test_gaussian_rpvi(
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
     posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)

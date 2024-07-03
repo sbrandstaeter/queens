@@ -11,7 +11,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_borehole(tmp_path, _initialize_global_settings):
+def test_sobol_indices_borehole(_initialize_global_settings):
     """Test case for Sobol Index iterator."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
@@ -43,7 +43,7 @@ def test_sobol_indices_borehole(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     expected_first_order_indices = np.array(
         [

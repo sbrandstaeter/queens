@@ -85,7 +85,6 @@ class TestDaskCluster:
 
     def test_baci_mc_ensight_cluster(
         self,
-        tmp_path,
         third_party_inputs,
         cluster_settings,
         baci_cluster_paths,
@@ -196,7 +195,7 @@ class TestDaskCluster:
         run_iterator(iterator, global_settings=_initialize_global_settings)
 
         # Load results
-        results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+        results = load_result(_initialize_global_settings.result_file(".pickle"))
 
         # The data has to be deleted before the assertion
         self.delete_simulation_data(remote_connection)

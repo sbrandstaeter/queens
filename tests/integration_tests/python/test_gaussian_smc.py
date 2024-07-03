@@ -65,7 +65,7 @@ def test_gaussian_smc(
             run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
     # note that the analytical solution would be:
     # posterior mean: [1.]
     # posterior var: [0.5]

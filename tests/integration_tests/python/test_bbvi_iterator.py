@@ -144,7 +144,7 @@ def test_bbvi_iterator_park91a_hifi(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     elbo_list = results["iteration_data"]["elbo"]
 

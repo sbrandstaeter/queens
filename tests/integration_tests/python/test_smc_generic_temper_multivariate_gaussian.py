@@ -71,7 +71,7 @@ def test_smc_generic_temper_multivariate_gaussian(
             run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # note that the analytical solution can be found in multivariate_gaussian_4D_logpdf
     # we only have a very inaccurate approximation here:

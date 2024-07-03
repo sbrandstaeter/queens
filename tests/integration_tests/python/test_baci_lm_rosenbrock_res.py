@@ -38,7 +38,7 @@ def test_baci_lm_rosenbrock_res(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    result_file = tmp_path / f"{_initialize_global_settings.experiment_name}.csv"
+    result_file = _initialize_global_settings.result_file(".csv")
     data = pd.read_csv(
         result_file,
         sep='\t',

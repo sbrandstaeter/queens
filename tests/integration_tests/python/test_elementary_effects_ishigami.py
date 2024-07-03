@@ -14,7 +14,7 @@ from queens.utils.io_utils import load_result
 _logger = logging.getLogger(__name__)
 
 
-def test_elementary_effects_ishigami(tmp_path, _initialize_global_settings):
+def test_elementary_effects_ishigami(_initialize_global_settings):
     """Test case for elementary effects iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -51,7 +51,7 @@ def test_elementary_effects_ishigami(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
     _logger.info(results)
 
     assert results["sensitivity_indices"]['mu'][0] == pytest.approx(15.46038594, abs=1e-7)

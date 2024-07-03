@@ -16,7 +16,7 @@ from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
 
 def test_neural_network_gauss_bayesian_branin(
-    tmp_path, expected_mean, expected_var, _initialize_global_settings
+    expected_mean, expected_var, _initialize_global_settings
 ):
     """Test case for Bayesian neural network model."""
     # Parameters
@@ -73,7 +73,7 @@ def test_neural_network_gauss_bayesian_branin(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
     assert_monte_carlo_iterator_results(results, expected_mean, expected_var)
 
 

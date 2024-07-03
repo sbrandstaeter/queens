@@ -11,7 +11,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_grid_iterator(tmp_path, expected_response, expected_grid, _initialize_global_settings):
+def test_grid_iterator(expected_response, expected_grid, _initialize_global_settings):
     """Integration test for the grid iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
@@ -44,7 +44,7 @@ def test_grid_iterator(tmp_path, expected_response, expected_grid, _initialize_g
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_array_equal(
         results["raw_output_data"]["result"],

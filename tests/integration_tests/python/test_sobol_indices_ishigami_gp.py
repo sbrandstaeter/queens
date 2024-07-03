@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
+def test_sobol_indices_ishigami_gp(_initialize_global_settings):
     """Test Sobol indices estimation with Gaussian process surrogate."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
@@ -55,7 +55,7 @@ def test_sobol_indices_ishigami_gp(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     expected_result_s1 = np.array([0.37365542, 0.49936914, -0.00039217])
     expected_result_s1_conf = np.array([0.14969221, 0.18936135, 0.0280309])

@@ -24,7 +24,7 @@ def fixture_algorithm(request):
     return request.param
 
 
-def test_optimization_rosenbrock(tmp_path, algorithm, _initialize_global_settings):
+def test_optimization_rosenbrock(algorithm, _initialize_global_settings):
     """Test different solution algorithms in optimization iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -48,7 +48,7 @@ def test_optimization_rosenbrock(tmp_path, algorithm, _initialize_global_setting
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)
     np.testing.assert_allclose(results.fun, np.array(+0.0), atol=5.0e-07)

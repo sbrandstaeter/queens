@@ -13,7 +13,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_points_iterator(tmp_path, inputs, expected_results, _initialize_global_settings):
+def test_points_iterator(inputs, expected_results, _initialize_global_settings):
     """Integration test for the points iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -35,7 +35,7 @@ def test_points_iterator(tmp_path, inputs, expected_results, _initialize_global_
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_array_equal(
         results["output"]["result"],

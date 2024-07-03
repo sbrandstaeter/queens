@@ -10,7 +10,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_branin_monte_carlo(tmp_path, _initialize_global_settings):
+def test_branin_monte_carlo(_initialize_global_settings):
     """Test case for Monte Carlo iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -33,7 +33,7 @@ def test_branin_monte_carlo(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     assert results["mean"] == pytest.approx(55.81419875080866)
     assert results["var"] == pytest.approx(2754.1188056842070)

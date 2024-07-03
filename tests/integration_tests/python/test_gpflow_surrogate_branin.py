@@ -13,7 +13,6 @@ from queens.utils.io_utils import load_result
 
 
 def test_gpflow_surrogate_branin(
-    tmp_path,
     expected_mean,
     expected_variance,
     expected_posterior_samples,
@@ -69,7 +68,7 @@ def test_gpflow_surrogate_branin(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=3

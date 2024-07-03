@@ -82,7 +82,6 @@ def fixture_expected_std():
 
 
 def test_constrained_gp_ip_park(
-    tmp_path,
     approx_type,
     likelihood_model,
     parameters,
@@ -149,7 +148,7 @@ def test_constrained_gp_ip_park(
     run_iterator(adaptive_sampling_iterator, _initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     particles = results['particles'][-1]
     weights = results['weights'][-1]

@@ -15,7 +15,6 @@ from queens.utils.io_utils import load_result
 
 
 def test_baci_mc_ensight(
-    tmp_path,
     third_party_inputs,
     baci_link_paths,
     baci_example_expected_mean,
@@ -83,7 +82,7 @@ def test_baci_mc_ensight(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # assert statements
     np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)

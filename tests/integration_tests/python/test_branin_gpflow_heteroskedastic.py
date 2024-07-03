@@ -13,9 +13,7 @@ from queens.utils.io_utils import load_result
 
 
 @pytest.mark.max_time_for_test(30)
-def test_branin_gpflow_heteroskedastic(
-    tmp_path, expected_mean, expected_var, _initialize_global_settings
-):
+def test_branin_gpflow_heteroskedastic(expected_mean, expected_var, _initialize_global_settings):
     """Test case for GPflow based heteroskedastic model."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -70,7 +68,7 @@ def test_branin_gpflow_heteroskedastic(
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=2

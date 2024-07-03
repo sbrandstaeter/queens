@@ -76,7 +76,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     # note that the analytical solution would be:
     # posterior mean: [-0.4 -0.4 -0.4 -0.4]

@@ -17,7 +17,7 @@ def fixture_algorithm(request):
     return request.param
 
 
-def test_optimization_paraboloid_constrained(tmp_path, algorithm, _initialize_global_settings):
+def test_optimization_paraboloid_constrained(algorithm, _initialize_global_settings):
     """Test different solution algorithms in optimization iterator.
 
     COBYLA: constrained but unbounded
@@ -51,7 +51,7 @@ def test_optimization_paraboloid_constrained(tmp_path, algorithm, _initialize_gl
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results.x, np.array([+1.4, +1.7]), rtol=1.0e-4)
     np.testing.assert_allclose(results.fun, np.array(+0.8), atol=1.0e-07)

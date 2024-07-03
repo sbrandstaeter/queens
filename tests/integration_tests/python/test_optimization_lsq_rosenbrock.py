@@ -11,7 +11,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
+def test_optimization_lsq_rosenbrock(_initialize_global_settings):
     """Test case for optimization iterator with the least squares."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -35,13 +35,13 @@ def test_optimization_lsq_rosenbrock(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]))
     np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))
 
 
-def test_optimization_lsq_rosenbrock_error(tmp_path, _initialize_global_settings):
+def test_optimization_lsq_rosenbrock_error(_initialize_global_settings):
     """Test error for optimization iterator with the least squares."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -66,7 +66,7 @@ def test_optimization_lsq_rosenbrock_error(tmp_path, _initialize_global_settings
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0, -0.001039]), rtol=1e-06, atol=1e-06)
     np.testing.assert_allclose(results.fun[:2], np.array([+0.0, +0.0]), rtol=1e-07, atol=0)

@@ -12,7 +12,7 @@ from queens.utils.io_utils import load_result
 
 
 @pytest.mark.max_time_for_test(20)
-def test_branin_latin_hyper_cube(tmp_path, _initialize_global_settings):
+def test_branin_latin_hyper_cube(_initialize_global_settings):
     """Test case for latin hyper cube iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -36,7 +36,7 @@ def test_branin_latin_hyper_cube(tmp_path, _initialize_global_settings):
     run_iterator(iterator, global_settings=_initialize_global_settings)
 
     # Load results
-    results = load_result(tmp_path / f"{_initialize_global_settings.experiment_name}.pickle")
+    results = load_result(_initialize_global_settings.result_file(".pickle"))
 
     assert results["mean"] == pytest.approx(53.17279969296224)
     assert results["var"] == pytest.approx(2581.6502630157715)
