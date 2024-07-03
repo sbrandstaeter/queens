@@ -24,12 +24,12 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
 
     # Setup iterator
     interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
-    model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
         seed=42,
         num_samples=100,
         result_description=None,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )

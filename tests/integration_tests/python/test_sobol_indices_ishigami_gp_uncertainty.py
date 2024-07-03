@@ -23,12 +23,12 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
 
     # Setup iterator
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
-    model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -36,7 +36,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         seed=30,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -109,12 +109,12 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
 
     # Setup iterator
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
-    model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -122,11 +122,11 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         seed=30,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GPFlowRegressionModel(
+    gpflow_regression_model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
         train_likelihood_variance=False,
         number_restarts=5,
@@ -148,7 +148,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         seed_posterior_samples=42,
         first_order_estimator="Saltelli2010",
         result_description={"write_results": True},
-        model=model,
+        model=gpflow_regression_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -176,12 +176,12 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
 
     # Setup iterator
     interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
-    model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -189,11 +189,11 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         seed=30,
         num_samples=100,
         num_iterations=10,
-        model=model,
+        model=simulation_model,
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GPFlowRegressionModel(
+    gpflow_regression_model = GPFlowRegressionModel(
         error_measures=["nash_sutcliffe_efficiency"],
         train_likelihood_variance=False,
         number_restarts=5,
@@ -213,7 +213,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         num_procs=6,
         first_order_estimator="Janon2014",
         result_description={"write_results": True},
-        model=model,
+        model=gpflow_regression_model,
         parameters=parameters,
         global_settings=global_settings,
     )

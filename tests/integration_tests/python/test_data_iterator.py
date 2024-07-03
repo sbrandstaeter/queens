@@ -9,7 +9,6 @@ from queens.utils.io_utils import load_result
 
 def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):
     """Test case for data iterator."""
-    # Global settings
     output = {}
     output['result'] = ref_result_iterator
 
