@@ -1,6 +1,6 @@
 """Integration tests for the BMFIA."""
+
 # pylint: disable=invalid-name
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +8,7 @@ import pytest
 
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 @pytest.fixture(name="expected_variational_mean")
@@ -43,8 +44,7 @@ def test_bmfia_smc_park(
 
     # get the results of the QUEENS run
     result_file = tmp_path / 'smc_park_mf.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
@@ -81,8 +81,7 @@ def test_bmfia_rpvi_gp_park(
 
     # get the results of the QUEENS run
     result_file = tmp_path / 'bmfia_rpvi_park.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']
@@ -118,8 +117,7 @@ def test_bmfia_rpvi_NN_park(
 
     # get the results of the QUEENS run
     result_file = tmp_path / 'bmfia_rpvi_park.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     variational_mean = results['variational_distribution']['mean']
     variational_cov = results['variational_distribution']['covariance']

@@ -1,6 +1,6 @@
 """TODO_doc."""
+
 # pylint: disable=invalid-name
-import pickle
 
 import numpy as np
 from scipy.stats import entropy
@@ -8,6 +8,7 @@ from scipy.stats import entropy
 import queens.utils.pdf_estimation as est
 from queens.main import run
 from queens.utils import injector
+from queens.utils.io_utils import load_result
 
 
 # ---- actual integration tests -------------------------------------------------
@@ -40,12 +41,9 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # actual main call of BMFMC
-
     # get the results of the QUEENS run
     result_file = tmp_path / 'bmfmc_currin88.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    results = load_result(result_file)
 
     # get the y_support and calculate HF MC reference
     y_pdf_support = results['raw_output_data']['y_pdf_support']
