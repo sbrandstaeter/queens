@@ -62,9 +62,8 @@ def rosenbrock60_residual_3d(x1, x2, x3):
     Returns:
         ndarray: Vector of residuals of the Rosenbrock function
     """
-    # Compute residuals
-    res1 = 10.0 * (x2 - x1 * x1)
-    res2 = 1.0 - x1
+    # Reuse the rosenbrock60_residual function for res1 and res2
+    res1, res2 = rosenbrock60_residual(x1, x2)
     res3 = x3**2
 
     return np.array([res1, res2, res3])
