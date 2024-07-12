@@ -1,4 +1,5 @@
 """Test stochastic optimizers."""
+
 import numpy as np
 import pytest
 

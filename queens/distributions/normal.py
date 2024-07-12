@@ -1,4 +1,5 @@
 """Normal distribution."""
+
 import numpy as np
 import scipy.linalg
 import scipy.stats

@@ -1,4 +1,5 @@
 """Classification visualization."""
+
 import itertools
 import math
 from pathlib import Path

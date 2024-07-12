@@ -9,6 +9,7 @@ References:
     Computer Physics Communications, 181(2), 259–270.
     https://doi.org/10.1016/j.cpc.2009.09.018
 """
+
 import numpy as np
 
 # values  of G*_6 in Table 5 of [1]

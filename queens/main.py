@@ -1,4 +1,5 @@
 """Main module of QUEENS containing the high-level control routine."""
+
 import logging
 import sys
 import time

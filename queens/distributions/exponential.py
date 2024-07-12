@@ -1,4 +1,5 @@
 """Exponential distribution."""
+
 import numpy as np
 
 from queens.distributions.distributions import ContinuousDistribution

@@ -1,4 +1,5 @@
 """Wrapped functions of subprocess stdlib module."""
+
 import logging
 import subprocess
 

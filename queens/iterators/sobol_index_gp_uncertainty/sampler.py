@@ -1,4 +1,5 @@
 """Helper class for generating Monte-Carlo samples for Sobol indices."""
+
 import logging
 
 import numpy as np
@@ -410,9 +411,9 @@ class ThirdOrderSampler(Sampler):
             :, third_order_parameter_indices
         ]
 
-        samples.loc[
-            {"sample_matrix": ['AB_' + '_'.join(self.third_order_parameters)]}
-        ] = np.expand_dims(sample_matrix_ab_ijk, axis=1)
+        samples.loc[{"sample_matrix": ['AB_' + '_'.join(self.third_order_parameters)]}] = (
+            np.expand_dims(sample_matrix_ab_ijk, axis=1)
+        )
 
         return samples
 

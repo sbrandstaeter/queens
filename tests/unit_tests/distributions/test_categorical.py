@@ -1,4 +1,5 @@
 """Test categorical distributions."""
+
 import numpy as np
 import pytest
 

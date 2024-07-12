@@ -1,4 +1,5 @@
 """Helper classes for estimation of Sobol indices."""
+
 import logging
 import multiprocessing as mp
 import time

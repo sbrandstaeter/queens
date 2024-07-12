@@ -1,4 +1,5 @@
 """Grid Iterator."""
+
 import numpy as np
 
 import queens.visualization.grid_iterator_visualization as qvis

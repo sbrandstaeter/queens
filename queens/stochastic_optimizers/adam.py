@@ -1,4 +1,5 @@
 """Adam optimizer."""
+
 import logging
 
 import numpy as np
@@ -54,6 +55,7 @@ class Adam(StochasticOptimizer):
             beta_2 (float): :math:`beta_1` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
         """
+        # pylint:disable=duplicate-code
         super().__init__(
             learning_rate=learning_rate,
             optimization_type=optimization_type,

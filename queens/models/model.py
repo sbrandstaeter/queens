@@ -1,4 +1,5 @@
 """Model class."""
+
 import abc
 from typing import final
 

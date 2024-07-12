@@ -1,4 +1,5 @@
 """QUEENS scheduler parent class."""
+
 import abc
 import logging
 import time

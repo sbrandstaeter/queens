@@ -1,4 +1,5 @@
 """Unit tests for the adjoint model."""
+
 from pathlib import Path
 
 import numpy as np

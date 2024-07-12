@@ -1,4 +1,5 @@
 """Global Settings module."""
+
 import logging
 from pathlib import Path
 

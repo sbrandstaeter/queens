@@ -1,4 +1,5 @@
 """Mean-field normal distribution."""
+
 import numpy as np
 import scipy.stats
 from scipy.special import erf  # pylint:disable=no-name-in-module

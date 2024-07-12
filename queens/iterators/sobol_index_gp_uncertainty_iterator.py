@@ -1,4 +1,5 @@
 """Iterator for Sobol indices with GP uncertainty."""
+
 import logging
 import multiprocessing as mp
 import time
@@ -72,7 +73,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         num_procs=mp.cpu_count() - 2,
         second_order=False,
         third_order=False,
-        **additional_options  # Using kwargs should only be an intermediate solution.
+        **additional_options,  # Using kwargs should only be an intermediate solution.
     ):
         """Initialize Sobol index iterator with GP uncertainty.
 

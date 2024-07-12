@@ -6,7 +6,6 @@ analysis and UQ.
 It is nonlinear and non-monotonous.
 """
 
-
 import numpy as np
 
 # default parameter values

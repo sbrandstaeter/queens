@@ -49,9 +49,7 @@ def test_init():
 
 def test_evaluate(default_fd_model):
     """Test the evaluation method."""
-    default_fd_model.interface.evaluate = lambda x: {
-        "result": np.sum(x**2, axis=1, keepdims=True)
-    }
+    default_fd_model.interface.evaluate = lambda x: {"result": np.sum(x**2, axis=1, keepdims=True)}
     samples = np.random.random((3, 2))
 
     expected_mean = np.sum(samples**2, axis=1, keepdims=True)

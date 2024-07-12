@@ -1,4 +1,5 @@
 """ASCII art module."""
+
 import logging
 
 import pyfiglet

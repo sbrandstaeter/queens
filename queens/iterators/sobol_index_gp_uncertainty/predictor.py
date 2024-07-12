@@ -1,4 +1,5 @@
 """Helper classes for Gaussian process prediction for Sobol indices."""
+
 import logging
 import time
 

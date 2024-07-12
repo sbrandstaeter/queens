@@ -1,4 +1,5 @@
 """Test injector util."""
+
 import pytest
 
 from queens.utils.exceptions import InjectionError

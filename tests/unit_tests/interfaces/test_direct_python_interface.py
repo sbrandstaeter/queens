@@ -1,4 +1,5 @@
 """Testing suite for DirectPythonInterface."""
+
 import logging
 
 import numpy as np

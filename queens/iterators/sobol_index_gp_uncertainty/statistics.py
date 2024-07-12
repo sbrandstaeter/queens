@@ -1,4 +1,5 @@
 """Helper classes for statistics of Sobol index estimates."""
+
 import logging
 
 import numpy as np

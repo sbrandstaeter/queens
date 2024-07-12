@@ -1,4 +1,5 @@
 """Stochastic optimizer."""
+
 import abc
 import logging
 

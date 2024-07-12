@@ -1,4 +1,5 @@
 """Collection of utility functions and classes for PyMC."""
+
 from typing import Union
 
 import numpy as np

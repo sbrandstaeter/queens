@@ -1,4 +1,5 @@
 """Levenberg Marquardt iterator."""
+
 import logging
 
 import numpy as np

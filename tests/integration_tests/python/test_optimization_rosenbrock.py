@@ -2,6 +2,7 @@
 
 Based on the Rosenbrock test function.
 """
+
 import pickle
 
 import numpy as np

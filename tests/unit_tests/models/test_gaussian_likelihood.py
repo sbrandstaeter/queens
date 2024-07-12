@@ -1,4 +1,5 @@
 """Unit tests for gaussian likelihood model."""
+
 from collections import namedtuple
 
 import numpy as np

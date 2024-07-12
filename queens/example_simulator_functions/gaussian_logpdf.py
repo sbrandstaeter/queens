@@ -1,4 +1,5 @@
 """Gaussian distributions."""
+
 import numpy as np
 
 from queens.distributions.normal import NormalDistribution

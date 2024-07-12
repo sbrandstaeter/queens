@@ -1,4 +1,5 @@
 """Command Line Interface utils collection."""
+
 import argparse
 import logging
 import sys

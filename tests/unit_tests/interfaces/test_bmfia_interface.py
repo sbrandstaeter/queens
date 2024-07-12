@@ -663,7 +663,12 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
     }
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
-    (mean, variance, grad_mean, grad_var,) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
+    (
+        mean,
+        variance,
+        grad_mean,
+        grad_var,
+    ) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
         Z_LF, support, probabilistic_mapping_obj_lst, None, None
     )
 
@@ -703,7 +708,12 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
     }
 
     probabilistic_mapping_obj_lst = [map_1, map_2]
-    (mean, variance, grad_mean, grad_var,) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
+    (
+        mean,
+        variance,
+        grad_mean,
+        grad_var,
+    ) = BmfiaInterface.evaluate_and_gradient_per_coordinate(
         Z_LF, support, probabilistic_mapping_obj_lst, None, None
     )
 

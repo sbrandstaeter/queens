@@ -1,4 +1,5 @@
 """Test valid options utils."""
+
 import pytest
 
 from queens.utils.exceptions import InvalidOptionError

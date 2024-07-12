@@ -406,9 +406,7 @@ class DimensionMethods3D:
             np.kron(np.ones(shape=(number_expansion_terms,)), wave_numbers),
             np.ones(shape=(number_expansion_terms,)),
         )
-        dim_three_wave_numbers = np.kron(
-            np.ones(shape=(number_expansion_terms**2,)), wave_numbers
-        )
+        dim_three_wave_numbers = np.kron(np.ones(shape=(number_expansion_terms**2,)), wave_numbers)
         index = dim_one_wave_numbers + dim_two_wave_numbers + dim_three_wave_numbers
         covarance_index = index <= trunc_threshold
         latent_index = np.kron(covarance_index, np.ones(shape=(8,))).astype(bool)

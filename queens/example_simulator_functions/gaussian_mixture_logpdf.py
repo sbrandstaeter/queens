@@ -11,7 +11,6 @@ algorithm’,      Geophysical Journal International, 194(3), pp.
 of them can be changed to [2]?
 """
 
-
 import numpy as np
 
 from queens.distributions.mixture import MixtureDistribution

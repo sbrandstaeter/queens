@@ -2,6 +2,7 @@
 
 @author: Sebastian Brandstaeter
 """
+
 import numpy as np
 import pytest
 
