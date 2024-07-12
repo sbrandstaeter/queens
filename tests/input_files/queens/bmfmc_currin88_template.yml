@@ -1,0 +1,51 @@
+experiment_name: bmfmc_currin88
+method:
+  type: bmfmc
+  model_name: joint_density_approx
+  result_description:
+    write_results: true
+    plotting_options:
+      plot_booleans: [false, false, false]
+      plotting_dir: {{ plot_dir }}
+      plot_names: [pdfs.eps, manifold.eps, ranking.eps]
+      save_bool: [false, false, false]
+      animation_bool: false
+  initial_design:
+    num_HF_eval: 100
+    num_bins: 50
+    method: {{ design_method }}
+    seed: 1
+    master_LF: 0
+joint_density_approx:
+  type: bmfmc_model
+  predictive_var: false
+  BMFMC_reference: false
+  y_pdf_support_min: -0.5
+  y_pdf_support_max: 15.0
+  path_to_lf_mc_data: [{{ lf_mc_pickle_file }}]
+  hf_model_name: high_fidelity_model
+  path_to_hf_mc_reference_data: null
+  features_config: opt_features
+  num_features: 1
+  probabilistic_mapping_name: probabilistic_mapping
+probabilistic_mapping:
+  type: gp_approximation_gpflow
+  train_likelihood_variance: false
+  number_restarts: 2
+  number_training_iterations: 1000
+  dimension_lengthscales: 2
+high_fidelity_model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: currin88_hifi
+parameters:
+  x1:
+    type: uniform
+    lower_bound: 0.0
+    upper_bound: 1.0
+  x2:
+    type: uniform
+    lower_bound: 0.0
+    upper_bound: 1.0

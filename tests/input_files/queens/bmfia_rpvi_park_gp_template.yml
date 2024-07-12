@@ -1,0 +1,111 @@
+experiment_name: bmfia_rpvi_park
+method:
+  type: rpvi
+  max_feval: 100
+  model_name: model
+  n_samples_per_iter: 3
+  random_seed: 1
+  result_description:
+    iterative_field_names: ["variational_parameters", "elbo"]
+    plotting_options:
+      plot_boolean: false
+      plot_name: variational_params_convergence.jpg
+      plot_refresh_rate: null
+      plotting_dir: {{ plot_dir }}
+      save_bool: false
+    write_results: true
+  score_function_bool: false
+  stochastic_optimizer_name: optimizer
+  variational_distribution_name: variational_distribution
+  variational_parameter_initialization: prior
+  variational_transformation: null
+variational_distribution:
+  type: mean_field_variational
+  dimension: 2
+optimizer:
+  learning_rate: 0.03
+  max_iteration: 10000000
+  optimization_type: max
+  rel_l1_change_threshold: -1
+  rel_l2_change_threshold: -1
+  type: adam
+model:
+  type: bmf_gaussian
+  mf_interface_name: bmfia_interface
+  mf_approx_name: mf_approx
+  mf_subiterator_name: bmfia_iterator
+  forward_model_name: lf_model
+  noise_value: 0.0001
+  plotting_options:
+    plot_booleans:
+      - false
+      - false
+    plot_names:
+      - bmfia_plot.png
+      - posterior.png
+    plotting_dir: {{ plot_dir }}
+    save_bool:
+      - false
+      - false
+  experimental_data_reader_name: experimental_data_reader
+experimental_data_reader:
+  type: experimental_data_reader
+  file_name_identifier: '*.csv'
+  csv_data_base_dir: {{ experimental_data_path }}
+  output_label: y_obs
+  coordinate_labels: [x3, x4]
+mf_approx:
+  type: gp_jitted
+  data_scaling: standard_scaler
+  initial_hyper_params_lst:
+    - 0.05
+    - 1.0
+    - 0.05
+  kernel_type: squared_exponential
+  noise_var_lb: 1.0e-06
+  mean_function_type: identity_multi_fidelity
+  stochastic_optimizer_name: gp_optimizer
+bmfia_interface:
+  type: bmfia_interface
+  num_processors_multi_processing: 4
+  probabilistic_mapping_type: per_coordinate
+bmfia_iterator:
+  type: bmfia
+  hf_model_name: hf_model
+  lf_model_name: lf_model
+  features_config: man_features
+  num_features: 1
+  X_cols: [0]
+  initial_design:
+    num_HF_eval: 50
+    seed: 1
+    type: random
+gp_optimizer:
+  learning_rate: 0.008
+  optimization_type: max
+  rel_l1_change_threshold: 0.004
+  rel_l2_change_threshold: 0.004
+  type: adam
+hf_interface:
+  function: park91a_hifi_on_grid
+  num_workers: 1
+  type: direct_python_interface
+hf_model:
+  interface_name: hf_interface
+  type: simulation_model
+lf_interface:
+  function: park91a_lofi_on_grid_with_gradients
+  num_workers: 1
+  type: direct_python_interface
+lf_model:
+  interface_name: lf_interface
+  type: simulation_model
+parameters:
+  x1:
+    lower_bound: 0.01
+    type: uniform
+    upper_bound: 0.99
+  x2:
+    lower_bound: 0.01
+    type: uniform
+    upper_bound: 0.99

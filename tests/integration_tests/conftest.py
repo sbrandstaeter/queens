@@ -12,8 +12,10 @@ import pandas as pd
 import pytest
 import yaml
 
+from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
 from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.process_outputs import write_results
 from queens.utils.remote_operations import RemoteConnection
 
 _logger = logging.getLogger(__name__)
@@ -403,3 +405,142 @@ def fixture_expected_result_sigma():
         ]
     )
     return expected_result_sigma
+
+
+# pylint: disable=invalid-name
+# ---- fixtures for bmfmc tests----------------------------------------------------------------
+@pytest.fixture(name="generate_X_mc")
+def fixture_generate_X_mc():
+    """TODO_doc."""
+    # generate 5000 uniform samples for x1 and x2 in [0,1]
+    np.random.seed(1)
+    n_samples = 1000
+    X_mc = np.random.uniform(low=0.0, high=1.0, size=(n_samples, 2))
+    return X_mc
+
+
+@pytest.fixture(name="generate_LF_MC_data")
+def fixture_generate_LF_MC_data(generate_X_mc):
+    """TODO_doc."""
+    y = []
+    for x_vec in generate_X_mc:
+        params = {'x1': x_vec[0], 'x2': x_vec[1]}
+        y.append(currin88_lofi(**params))
+
+    Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
+
+    return Y_LF_mc
+
+
+@pytest.fixture(name="generate_HF_MC_data")
+def fixture_generate_HF_MC_data(generate_X_mc):
+    """TODO_doc."""
+    y = []
+    for x_vec in generate_X_mc:
+        params = {'x1': x_vec[0], 'x2': x_vec[1]}
+        y.append(currin88_hifi(**params))
+
+    Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
+
+    return Y_LF_mc
+
+
+@pytest.fixture(name="_write_LF_MC_data_to_pickle")
+def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
+    """TODO_doc."""
+    file_name = 'LF_MC_data.pickle'
+    input_description = {
+        "x1": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+        },
+        "x2": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+        },
+    }
+    data = {
+        'input_data': generate_X_mc,
+        'input_description': input_description,
+        'output': generate_LF_MC_data,
+        'eigenfunc': None,
+        'eigenvalue': None,
+    }
+    write_results(data, tmp_path / file_name)
+
+
+@pytest.fixture(name="design_method", params=['random', 'diverse_subset'])
+def fixture_design_method(request):
+    """TODO_doc."""
+    design = request.param
+    return design
+
+
+# ---- fixtures for bmfia tests-------------------------------------------
+@pytest.fixture(name="expected_samples")
+def fixture_expected_samples():
+    """Fixture for expected SMC samples."""
+    samples = np.array(
+        [
+            [0.51711296, 0.55200585],
+            [0.4996905, 0.6673229],
+            [0.48662203, 0.68802404],
+            [0.49806929, 0.66276797],
+            [0.49706481, 0.68586978],
+            [0.50424704, 0.65139028],
+            [0.51437955, 0.57678317],
+            [0.51275639, 0.58981357],
+            [0.50163956, 0.65389397],
+            [0.52127371, 0.61237995],
+        ]
+    )
+
+    return samples
+
+
+@pytest.fixture(name="expected_weights")
+def fixture_expected_weights():
+    """Fixture for expected SMC weights."""
+    weights = np.array(
+        [
+            0.00183521,
+            0.11284748,
+            0.16210619,
+            0.07066473,
+            0.10163831,
+            0.09845534,
+            0.10742886,
+            0.15461861,
+            0.09222745,
+            0.0981778,
+        ]
+    )
+    return weights
+
+
+@pytest.fixture(name="expected_variational_cov")
+def fixture_expected_variational_cov():
+    """Fixture for expected variational covariance."""
+    exp_var_cov = np.array([[0.00142648, 0.0], [0.0, 0.00347234]])
+    return exp_var_cov
+
+
+@pytest.fixture(name="expected_variational_mean_nn")
+def fixture_expected_variational_mean_nn():
+    """Fixture for expected variational_mean."""
+    exp_var_mean = np.array([0.19221321, 0.33134219]).reshape(-1, 1)
+
+    return exp_var_mean
+
+
+@pytest.fixture(name="expected_variational_cov_nn")
+def fixture_expected_variational_cov_nn():
+    """Fixture for expected variational covariance."""
+    exp_var_cov = np.array([[0.01245263, 0.0], [0.0, 0.01393423]])
+    return exp_var_cov
+
+
+# pylint: enable=invalid-name
+# add fixtures not related to bmfia or bmfmc below
