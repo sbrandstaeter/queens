@@ -43,8 +43,6 @@ def test_bmfia_smc_park(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    # generate yml input file from template
-
     experimental_data_path = tmp_path
     plot_dir = tmp_path
 
