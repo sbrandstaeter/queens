@@ -26,7 +26,7 @@ def test_classification_iterator(tmp_path, global_settings):
         Args:
             x (np.array): unclassified data
         Returns:
-            classified data
+             classified data (np.array)
         """
         return x > 80
 
