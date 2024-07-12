@@ -11,6 +11,7 @@ from queens.iterators.reparameteriztion_based_variational_inference import RPVII
 from queens.main import run_iterator
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.stochastic_optimizers.adam import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
@@ -219,9 +220,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         output_label="y_obs",
     )
     interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
-    forward_model = DifferentiableSimulationModelFD(
-        finite_difference_method="2-point", step_size=1e-05, interface=interface
-    )
+    forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1,
