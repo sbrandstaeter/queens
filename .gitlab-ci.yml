@@ -230,10 +230,12 @@ code_analysis:
     - .codechecks_settings
   stage: codechecks
   script:
-    - isort --check-only queens tests > track_isort.txt
-    - black --check queens tests > track_black.txt
-    - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt
-    - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt
+    - isort --check-only queens tests > track_isort.txt 2>&1
+    - black --check queens tests > track_black.txt 2>&1
+    - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt 2>&1
+    - pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
+    - python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
+    - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt 2>&1
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
@@ -241,7 +243,10 @@ code_analysis:
       - track_isort.txt
       - track_black.txt
       - track_pydocstyle.txt
-    when: on_failure
+      - pylint_codeclimate.json
+    reports:
+      codequality: pylint_codeclimate.json
+    when: always
     expire_in: 4 weeks
 #----------------------------------------------------------------------------------------------
 documentation:
@@ -282,15 +287,19 @@ license_check:
   script:
     - "echo TEST_TIMING_OPTION: $TEST_TIMING_OPTION"
     - "echo PYTEST_OPTIONAL_PARAMETERS: $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: $CI_PIPELINE_ID-ubuntu_test_suite
     paths:
       - html_coverage_report
       - test_junit.xml
+      - xml_coverage_report.xml
     reports:
       junit: test_junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: xml_coverage_report.xml
     when: on_success
     expire_in: 3 days
 
