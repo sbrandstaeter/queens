@@ -42,13 +42,13 @@ def fixture_fix_tolerance(request):
 @pytest.fixture(name="output_csv")
 def fixture_output_csv(global_settings):
     """Absolute path to output csv file."""
-    return global_settings.output_dir / (global_settings.experiment_name + '.csv')
+    return global_settings.result_file(".csv")
 
 
 @pytest.fixture(name="output_html")
 def fixture_output_html(global_settings):
     """Absolute path to output html file."""
-    return global_settings.output_dir / (global_settings.experiment_name + '.html')
+    return global_settings.result_file(".html")
 
 
 @pytest.fixture(name="default_baci_lm_iterator")

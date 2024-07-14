@@ -1,4 +1,5 @@
 """TODO_doc."""
+
 import numpy as np
 import pandas as pd
 
@@ -10,7 +11,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 
 
-def test_baci_lm_rosenbrock_res(tmp_path, global_settings):
+def test_baci_lm_rosenbrock_res(global_settings):
     """Test case for Levenberg Marquardt iterator."""
     # Parameters
     x1 = FreeVariable(dimension=1)
@@ -51,4 +52,4 @@ def test_baci_lm_rosenbrock_res(tmp_path, global_settings):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert (tmp_path / f'{global_settings.experiment_name}.html').is_file()
+    assert global_settings.result_file(".html").is_file()
