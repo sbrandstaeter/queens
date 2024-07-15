@@ -1,4 +1,5 @@
 """Test BACI run."""
+
 import numpy as np
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight

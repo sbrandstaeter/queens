@@ -1,4 +1,5 @@
 """TODO_doc."""
+
 import pytest
 
 from queens.iterators.data_iterator import DataIterator

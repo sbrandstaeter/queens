@@ -1,4 +1,5 @@
 """Test PyMC MH Sampler."""
+
 import numpy as np
 import pytest
 from mock import patch

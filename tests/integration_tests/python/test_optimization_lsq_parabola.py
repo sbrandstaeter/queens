@@ -1,4 +1,5 @@
 """TODO_doc."""
+
 import numpy as np
 
 from queens.distributions.free import FreeVariable

@@ -1,4 +1,5 @@
 """Integration test for GPflow based GP model."""
+
 import numpy as np
 import pytest
 

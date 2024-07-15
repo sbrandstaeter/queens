@@ -1,4 +1,5 @@
 """TODO_doc."""
+
 import pytest
 from mock import patch
 
