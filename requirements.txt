@@ -329,7 +329,7 @@ pillow==10.3.0
     # via
     #   bokeh
     #   matplotlib
-platformdirs==4.2.0
+platformdirs==4.2.2
     # via black
 plotly==5.21.0
     # via -r requirements.in

@@ -62,7 +62,7 @@ tomli # TOML parser
 
 # Other Python stuff
 pathos # multiprocessing with more complex python objects
-black==24.4.2 # formatter, needed to format code created by QUEENS
+black>=24.4.2 # formatter for code created by QUEENS's create_script_from_input_file() method
 
 # needed for dev-requirements, check if still needed
 importlib-metadata<7
