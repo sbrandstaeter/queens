@@ -104,7 +104,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     _create_experimental_data_park91a_hifi_on_grid,
     global_settings,
 ):
-    """Test for the rpvi iterator based on the *park91a_hifi* function."""
+    """Test rpvi on *park91a_hifi* function with analytical gradients."""
     # Parameters
     x1 = NormalDistribution(mean=0.6, covariance=0.2)
     x2 = NormalDistribution(mean=0.3, covariance=0.1)
@@ -125,10 +125,11 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
-    forward_model = DifferentiableSimulationModelFD(
-        finite_difference_method="2-point", step_size=1e-07, interface=interface
+    interface = DirectPythonInterface(
+        function="park91a_hifi_on_grid_with_gradients",
+        parameters=parameters,
     )
+    forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
