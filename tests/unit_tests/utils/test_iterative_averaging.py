@@ -1,4 +1,5 @@
 """Test iterative averaging utils."""
+
 import numpy as np
 import pytest
 

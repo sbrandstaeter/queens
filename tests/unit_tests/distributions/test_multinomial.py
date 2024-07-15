@@ -1,4 +1,5 @@
 """Test multinomial distribution."""
+
 import numpy as np
 import pytest
 

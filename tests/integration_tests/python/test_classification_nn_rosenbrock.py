@@ -1,4 +1,5 @@
 """Integration test for the classification iterator."""
+
 import numpy as np
 
 from queens.main import run

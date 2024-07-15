@@ -1,4 +1,5 @@
 """Utils to build queens on remote resource."""
+
 import argparse
 import json
 import logging

@@ -22,6 +22,7 @@ References:
         Blackwell Publishing Ltd, 68(3), pp. 411–436.
         doi: 10.1111/j.1467-9868.2006.00553.x.
 """
+
 import logging
 
 import arviz as az

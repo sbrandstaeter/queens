@@ -1,4 +1,5 @@
 """Unit tests for the collection utils."""
+
 import logging
 
 import pytest

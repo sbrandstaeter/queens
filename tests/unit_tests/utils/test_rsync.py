@@ -1,4 +1,5 @@
 """Test copying with rsync."""
+
 import filecmp
 
 import pytest

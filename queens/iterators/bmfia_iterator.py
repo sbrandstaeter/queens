@@ -1,4 +1,5 @@
 """Iterator for Bayesian multi-fidelity inverse analysis."""
+
 # pylint: disable=invalid-name
 import logging
 

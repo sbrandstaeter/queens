@@ -1,4 +1,5 @@
 """Test Bernoulli distributions."""
+
 import numpy as np
 import pytest
 

@@ -1,4 +1,5 @@
 """Pool utils."""
+
 import logging
 
 from pathos.multiprocessing import ProcessingPool as Pool

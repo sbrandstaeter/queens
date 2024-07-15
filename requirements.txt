@@ -21,7 +21,7 @@ autograd==1.6.2
     # via -r requirements.in
 bcrypt==4.1.2
     # via paramiko
-black==22.3.0
+black==24.4.2
     # via -r requirements.in
 bokeh==2.4.3
     # via -r requirements.in
@@ -296,6 +296,7 @@ optax==0.2.1
 packaging==24.0
     # via
     #   arviz
+    #   black
     #   bokeh
     #   dask
     #   distributed
@@ -328,7 +329,7 @@ pillow==10.3.0
     # via
     #   bokeh
     #   matplotlib
-platformdirs==4.2.0
+platformdirs==4.2.2
     # via black
 plotly==5.21.0
     # via -r requirements.in
@@ -494,6 +495,7 @@ tqdm==4.66.2
 typing-extensions==4.11.0
     # via
     #   arviz
+    #   black
     #   bokeh
     #   chex
     #   gpflow

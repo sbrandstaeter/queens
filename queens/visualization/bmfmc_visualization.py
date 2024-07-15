@@ -10,6 +10,7 @@ In this context "this" is a pointer to the module object instance itself and can
 Attributes:
     bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
 """
+
 # pylint: disable=invalid-name
 import sys
 from pathlib import Path

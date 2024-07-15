@@ -1,4 +1,5 @@
 """Simulation model class."""
+
 import numpy as np
 
 from queens.models.model import Model

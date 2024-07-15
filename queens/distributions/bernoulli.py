@@ -1,4 +1,5 @@
 """Bernoulli distribution."""
+
 import numpy as np
 
 from queens.distributions.particles import ParticleDiscreteDistribution

@@ -1,4 +1,5 @@
 """Reparameterization trick based variational inference."""
+
 import logging
 
 import numpy as np

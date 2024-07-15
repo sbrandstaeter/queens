@@ -1,4 +1,5 @@
 """QUEENS driver module base class."""
+
 import abc
 import logging
 from pathlib import Path

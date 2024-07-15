@@ -1,4 +1,5 @@
 """Park91a function."""
+
 import numpy as np
 
 # x3 and x4 grid

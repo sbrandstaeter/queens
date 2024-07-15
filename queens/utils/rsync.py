@@ -1,4 +1,5 @@
 """Rsync utils."""
+
 from pathlib import Path
 
 from queens.utils.run_subprocess import run_subprocess

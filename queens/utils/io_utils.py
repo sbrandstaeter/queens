@@ -1,4 +1,5 @@
 """Utils for input/output handling."""
+
 import csv
 from pathlib import Path
 

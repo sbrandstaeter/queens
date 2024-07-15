@@ -1,6 +1,5 @@
 """Test external geometry module."""
 
-
 import numpy as np
 import pytest
 

@@ -1,4 +1,5 @@
 """Surrogate model class."""
+
 import abc
 import logging
 

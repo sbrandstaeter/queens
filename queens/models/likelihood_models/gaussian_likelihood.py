@@ -1,4 +1,5 @@
 """Gaussian likelihood."""
+
 import warnings
 
 import numpy as np

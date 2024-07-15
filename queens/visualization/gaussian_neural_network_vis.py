@@ -1,4 +1,5 @@
 """Plotting functions for the Gaussian Neural Network."""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt

@@ -1,4 +1,5 @@
 """Test-module for numpy utils functions."""
+
 import numpy as np
 import pytest
 

@@ -1,4 +1,5 @@
 """Interface for grouping outputs with inputs."""
+
 from queens.interfaces.interface import Interface
 from queens.utils.logger_settings import log_init_args
 

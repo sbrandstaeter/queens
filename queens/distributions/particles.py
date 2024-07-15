@@ -1,4 +1,5 @@
 """Discrete particle distribution."""
+
 import itertools
 import logging
 

@@ -1,4 +1,5 @@
 """Black box variational inference iterator."""
+
 import logging
 
 import numpy as np

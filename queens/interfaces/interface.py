@@ -1,4 +1,5 @@
 """Interface class to map input variables to simulation outputs."""
+
 import abc
 
 

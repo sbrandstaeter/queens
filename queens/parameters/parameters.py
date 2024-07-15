@@ -172,16 +172,16 @@ class Parameters:
             index_field = 0
             for parameter in self.to_list():
                 if isinstance(parameter, RandomField):
-                    gradient[
-                        :, index_latent : index_latent + parameter.dimension
-                    ] = parameter.latent_gradient(
-                        upstream_gradient[:, index_field : index_field + parameter.dim_coords]
+                    gradient[:, index_latent : index_latent + parameter.dimension] = (
+                        parameter.latent_gradient(
+                            upstream_gradient[:, index_field : index_field + parameter.dim_coords]
+                        )
                     )
                     index_field += parameter.dim_coords
                 else:
-                    gradient[
-                        :, index_latent : index_latent + parameter.dimension
-                    ] = upstream_gradient[:, index_field : index_field + parameter.dimension]
+                    gradient[:, index_latent : index_latent + parameter.dimension] = (
+                        upstream_gradient[:, index_field : index_field + parameter.dimension]
+                    )
                     index_field += parameter.dimension
                 index_latent += parameter.dimension
             return gradient
@@ -236,17 +236,17 @@ class Parameters:
         index_expanded = 0
         for parameter in self.to_list():
             if isinstance(parameter, RandomField):
-                sample_expanded[
-                    index_expanded : index_expanded + parameter.dim_coords
-                ] = parameter.expanded_representation(
-                    truncated_sample[index_truncated : index_truncated + parameter.dimension]
+                sample_expanded[index_expanded : index_expanded + parameter.dim_coords] = (
+                    parameter.expanded_representation(
+                        truncated_sample[index_truncated : index_truncated + parameter.dimension]
+                    )
                 )
                 index_expanded += parameter.dim_coords
                 index_truncated += parameter.dimension
             else:
-                sample_expanded[
-                    index_expanded : index_expanded + parameter.dimension
-                ] = truncated_sample[index_truncated : index_truncated + parameter.dimension]
+                sample_expanded[index_expanded : index_expanded + parameter.dimension] = (
+                    truncated_sample[index_truncated : index_truncated + parameter.dimension]
+                )
                 index_expanded += parameter.dimension
                 index_truncated += parameter.dimension
         return sample_expanded

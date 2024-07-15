@@ -3,6 +3,7 @@
 Taken from
 https://gist.github.com/slinderman/24552af1bdbb6cb033bfea9b2dc4ecfd
 """
+
 import numpy as onp
 import scipy.optimize
 from jax import grad, jit

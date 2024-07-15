@@ -1,4 +1,5 @@
 """Mixture distribution."""
+
 import logging
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
+
 # pylint: disable=invalid-name
 import copy
 import logging
@@ -237,7 +238,12 @@ class BmfiaInterface(Interface):
         )
         z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
 
-        (mean, variance, _, _,) = BmfiaInterface.iterate_over_time_steps(
+        (
+            mean,
+            variance,
+            _,
+            _,
+        ) = BmfiaInterface.iterate_over_time_steps(
             z_lf_array, support, num_coords, probabilistic_mapping_obj_lst, gradient_bool=False
         )
 
@@ -391,7 +397,12 @@ class BmfiaInterface(Interface):
 
         z_lf_array = BmfiaInterface.prepare_z_lf_for_time_steps(z_lf, t_size, coords_mat)
 
-        (mean, variance, grad_mean, grad_variance,) = BmfiaInterface.iterate_over_time_steps(
+        (
+            mean,
+            variance,
+            grad_mean,
+            grad_variance,
+        ) = BmfiaInterface.iterate_over_time_steps(
             z_lf_array, support, num_coords, probabilistic_mapping_obj_lst, gradient_bool=True
         )
 

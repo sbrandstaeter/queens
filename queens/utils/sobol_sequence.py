@@ -1,4 +1,5 @@
 """Collection of utility functions and classes for Sobol sequences."""
+
 from scipy.stats.qmc import Sobol
 
 

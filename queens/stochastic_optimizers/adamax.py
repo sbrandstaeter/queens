@@ -1,4 +1,5 @@
 """Adamax optimizer."""
+
 import logging
 
 import numpy as np

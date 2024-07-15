@@ -1,4 +1,5 @@
 """Bayesian multi-fidelity Monte-Carlo model."""
+
 # pylint: disable=invalid-name
 import logging
 

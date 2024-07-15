@@ -1,4 +1,5 @@
 """Unit tests for the simulation model."""
+
 import numpy as np
 import pytest
 from mock import Mock

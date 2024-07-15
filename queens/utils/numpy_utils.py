@@ -1,4 +1,5 @@
 """Numpy array utils."""
+
 import logging
 
 import numpy as np

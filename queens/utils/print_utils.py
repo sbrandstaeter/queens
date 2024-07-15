@@ -1,6 +1,5 @@
 """Print utils."""
 
-
 DEFAULT_OUTPUT_WIDTH = 81
 
 

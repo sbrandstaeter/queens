@@ -1,4 +1,5 @@
 """Helper functions for valid options and switch analogy."""
+
 from queens.utils.exceptions import InvalidOptionError
 
 

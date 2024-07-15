@@ -1,4 +1,5 @@
 """Path utilities for QUEENS."""
+
 from pathlib import Path
 
 PATH_TO_SOURCE = Path(__file__).parents[1]

@@ -2,6 +2,7 @@
 
 Is a wrapper on the *chaospy* library.
 """
+
 import logging
 
 import chaospy as cp

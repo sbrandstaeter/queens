@@ -10,6 +10,7 @@ from numpy.linalg.linalg import cholesky
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
+
 # --- squared exponential covariance function -------------------
 @njit(parallel=True)
 def squared_exponential(x_train_mat, hyper_param_lst):

@@ -1,4 +1,5 @@
 """Test custom errors."""
+
 import pytest
 
 from queens.utils.exceptions import SubprocessError

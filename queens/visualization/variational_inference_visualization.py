@@ -7,6 +7,7 @@ project.
 In this context "this" is a pointer to the module object instance itself
 and can be compared to the "self" keyword in classes.
 """
+
 import sys
 from pathlib import Path
 

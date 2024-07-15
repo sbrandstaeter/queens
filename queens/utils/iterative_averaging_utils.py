@@ -1,4 +1,5 @@
 """Iterative averaging utils."""
+
 import abc
 
 import numpy as np

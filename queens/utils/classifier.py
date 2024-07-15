@@ -1,4 +1,5 @@
 """Classifiers for use in convergence classification."""
+
 import pickle
 from pathlib import Path
 

@@ -1,4 +1,5 @@
 """SGD optimizer."""
+
 import logging
 
 from queens.stochastic_optimizers.stochastic_optimizer import StochasticOptimizer

@@ -1,4 +1,5 @@
 """Configuration of folder structure of QUEENS experiments."""
+
 import logging
 from pathlib import Path
 

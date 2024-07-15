@@ -1,4 +1,5 @@
 """Local scheduler for QUEENS runs."""
+
 import logging
 
 from dask.distributed import Client, LocalCluster

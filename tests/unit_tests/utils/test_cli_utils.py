@@ -1,4 +1,5 @@
 """Tests for cli utils."""
+
 from pathlib import Path
 
 import pytest
