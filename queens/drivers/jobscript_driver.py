@@ -113,10 +113,8 @@ class JobscriptDriver(Driver):
             execute_cmd = 'bash ' + str(jobscript_file)
             self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
 
-        results = None
-        if self.data_processor:
-            with metadata.time_code("data_processing"):
-                results = self._get_results(output_dir)
-                metadata.outputs = results
+        with metadata.time_code("data_processing"):
+            results = self._get_results(output_dir)
+            metadata.outputs = results
 
         return results
