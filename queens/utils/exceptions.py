@@ -59,7 +59,7 @@ class SubprocessError(QueensException):
         message += str(command_output)
         message += "\n\n\nwhile executing the command:\n" + command
         if additional_message:
-            message += '\n\n' + additional_message
+            message += "\n\n" + additional_message
         return cls(message)
 
 

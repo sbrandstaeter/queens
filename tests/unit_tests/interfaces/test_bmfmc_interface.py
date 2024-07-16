@@ -60,14 +60,14 @@ def fixture_probabilistic_mapping_obj(map_output_dict):
 @pytest.fixture(name="map_output_dict")
 def fixture_map_output_dict():
     """Map output dictionary."""
-    output = {'result': np.linspace(1.0, 5.0, 5), 'variance': np.linspace(5.0, 10.0, 5)}
+    output = {"result": np.linspace(1.0, 5.0, 5), "variance": np.linspace(5.0, 10.0, 5)}
     return output
 
 
 @pytest.fixture(name="approx_name")
 def fixture_approx_name():
     """Create approximation name."""
-    name = 'some_name'
+    name = "some_name"
     return name
 
 
@@ -84,8 +84,8 @@ def test_init():
 def test_map(default_interface, map_output_dict):
     """Test mapping."""
     Z_LF = 1.0
-    expected_Y_HF_mean = map_output_dict['result']
-    expected_Y_HF_var = map_output_dict['variance']
+    expected_Y_HF_mean = map_output_dict["result"]
+    expected_Y_HF_var = map_output_dict["variance"]
 
     mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.evaluate(Z_LF)
 
@@ -101,8 +101,8 @@ def test_build_approximation(mocker, default_interface):
     """Test training of surrogate model."""
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
-    mp1 = mocker.patch.object(FakeRegression, 'setup')
-    mp2 = mocker.patch.object(FakeRegression, 'train')
+    mp1 = mocker.patch.object(FakeRegression, "setup")
+    mp2 = mocker.patch.object(FakeRegression, "train")
 
     default_interface.build_approximation(Z, Y)
     mp1.assert_called_once()

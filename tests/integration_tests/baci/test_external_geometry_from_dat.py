@@ -22,10 +22,10 @@ def test_external_geometry_from_dat(
 
     # Check if we got the expected results
     assert preprocessor_obj.surface_topology == expected_surface_topology
-    assert preprocessor_obj.node_coordinates['node_mesh'] == expected_node_coordinates['node_mesh']
+    assert preprocessor_obj.node_coordinates["node_mesh"] == expected_node_coordinates["node_mesh"]
     np.testing.assert_allclose(
-        preprocessor_obj.node_coordinates['coordinates'],
-        expected_node_coordinates['coordinates'],
+        preprocessor_obj.node_coordinates["coordinates"],
+        expected_node_coordinates["coordinates"],
         rtol=1.0e-3,
     )
 
@@ -35,7 +35,7 @@ def fixture_expected_surface_topology():
     """Reference surface topology."""
     expected_topology = [
         {
-            'node_mesh': [
+            "node_mesh": [
                 145,
                 148,
                 149,
@@ -53,8 +53,8 @@ def fixture_expected_surface_topology():
                 202,
                 206,
             ],
-            'surface_topology': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'topology_name': 'DSURFACE 1',
+            "surface_topology": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "topology_name": "DSURFACE 1",
         }
     ]
     return expected_topology
@@ -64,7 +64,7 @@ def fixture_expected_surface_topology():
 def fixture_expected_node_coordinates():
     """Reference node coordinates and nodes."""
     node_coordinates = {
-        'node_mesh': [
+        "node_mesh": [
             145,
             148,
             149,
@@ -82,7 +82,7 @@ def fixture_expected_node_coordinates():
             202,
             206,
         ],
-        'coordinates': [
+        "coordinates": [
             [-2.5, -2.5, 6.0],
             [-2.5, -0.8333333333333335, 6.0],
             [-0.8333333333333333, -2.5, 6.0],

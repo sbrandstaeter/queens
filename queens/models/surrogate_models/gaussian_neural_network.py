@@ -14,17 +14,17 @@ from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.valid_options_utils import get_option
 from queens.visualization.gaussian_neural_network_vis import plot_loss
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tfd = tfp.distributions
 Dense = keras.layers.Dense
-keras.backend.set_floatx('float64')
+keras.backend.set_floatx("float64")
 _logger = logging.getLogger(__name__)
 
 # Use GPU acceleration if possible
-if tf.test.gpu_device_name() != '/device:GPU:0':
-    _logger.debug('WARNING: GPU device not found.')
+if tf.test.gpu_device_name() != "/device:GPU:0":
+    _logger.debug("WARNING: GPU device not found.")
 else:
-    _logger.debug('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
+    _logger.debug("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
 
 
 class GaussianNeuralNetworkModel(SurrogateModel):
@@ -167,7 +167,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         output_layer = [
             Dense(
                 2 * output_dim,
-                activation='linear',
+                activation="linear",
             ),
             tfp.layers.DistributionLambda(
                 lambda d: tfd.Normal(
@@ -271,7 +271,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         """
         raise NotImplementedError
 
-    def predict(self, x_test, support='y', gradient_bool=False):
+    def predict(self, x_test, support="y", gradient_bool=False):
         """Predict the output distribution at x_test.
 
         Args:
@@ -286,7 +286,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         Returns:
             output (dict): Dictionary with posterior output statistics
         """
-        if support == 'f':
+        if support == "f":
             raise NotImplementedError('Support "f" is not implemented yet.')
 
         if gradient_bool:
@@ -318,7 +318,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var_pred)) ** 2).reshape(
             -1, 1
         )
-        output['result'] = self.scaler_y.inverse_transform_mean(mean_pred).reshape(
+        output["result"] = self.scaler_y.inverse_transform_mean(mean_pred).reshape(
             -1, 1
         ) + self.mean_function(x_test)
 
@@ -351,7 +351,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
 
         # write mean and variance to output dictionary
         output = {
-            'result': self.scaler_y.inverse_transform_mean(mean_pred).reshape(-1, 1)
+            "result": self.scaler_y.inverse_transform_mean(mean_pred).reshape(-1, 1)
             + self.mean_function(x_test)
         }
         output["variance"] = (

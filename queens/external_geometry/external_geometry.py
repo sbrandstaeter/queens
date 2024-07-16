@@ -21,11 +21,11 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
 
     def main_run(self):
         """Main routine of *external_geometry_obj* object."""
-        _logger.info('Start reading external geometry from file...')
+        _logger.info("Start reading external geometry from file...")
         self.organize_sections()
         self.read_external_data()
         self.finish_and_clean()
-        _logger.info('Finished reading external geometry from file!')
+        _logger.info("Finished reading external geometry from file!")
 
     @abc.abstractmethod
     def read_external_data(self):

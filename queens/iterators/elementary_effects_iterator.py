@@ -91,8 +91,8 @@ class ElementaryEffectsIterator(Iterator):
         self.output = None
         self.salib_problem = {}
         self.si = {}
-        if result_description.get('plotting_options'):
-            qvis.from_config_create(result_description.get('plotting_options'))
+        if result_description.get("plotting_options"):
+            qvis.from_config_create(result_description.get("plotting_options"))
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
@@ -103,10 +103,10 @@ class ElementaryEffectsIterator(Iterator):
             bounds.append([parameter.lower_bound.squeeze(), parameter.upper_bound.squeeze()])
 
         self.salib_problem = {
-            'num_vars': self.parameters.num_parameters,
-            'names': self.parameters.names,
-            'bounds': bounds,
-            'groups': None,
+            "num_vars": self.parameters.num_parameters,
+            "names": self.parameters.names,
+            "bounds": bounds,
+            "groups": None,
         }
 
         self.samples = morris.sample(
@@ -125,7 +125,7 @@ class ElementaryEffectsIterator(Iterator):
         self.si = morris_analyzer.analyze(
             self.salib_problem,
             self.samples,
-            np.reshape(self.output['result'], (-1)),
+            np.reshape(self.output["result"], (-1)),
             num_resamples=self.num_bootstrap_samples,
             conf_level=self.confidence_level,
             print_to_console=False,
@@ -163,9 +163,9 @@ class ElementaryEffectsIterator(Iterator):
         for j in range(self.parameters.num_parameters):
             _logger.info(
                 "%-20s %10.2e %10.2e %15.2e %10.2e",
-                results['sensitivity_indices']['names'][j],
-                results['sensitivity_indices']['mu_star'][j],
-                results['sensitivity_indices']['mu'][j],
-                results['sensitivity_indices']['mu_star_conf'][j],
-                results['sensitivity_indices']['sigma'][j],
+                results["sensitivity_indices"]["names"][j],
+                results["sensitivity_indices"]["mu_star"][j],
+                results["sensitivity_indices"]["mu"][j],
+                results["sensitivity_indices"]["mu_star_conf"][j],
+                results["sensitivity_indices"]["sigma"][j],
             )

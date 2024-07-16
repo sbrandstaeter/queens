@@ -50,7 +50,7 @@ def inject_in_template(params, template, output_file, strict=True):
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
     injected_template = render_template(params, template, strict)
-    Path(output_file).write_text(injected_template, encoding='utf-8')
+    Path(output_file).write_text(injected_template, encoding="utf-8")
 
 
 def inject(params, template_path, output_file, strict=True):

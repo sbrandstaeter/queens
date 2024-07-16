@@ -22,8 +22,8 @@ import numpy as np
 from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
-matplotlib.use('agg')
-style.use('seaborn')
+matplotlib.use("agg")
+style.use("seaborn")
 this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 
@@ -78,9 +78,9 @@ class SurrogateVisualization:
 
     # some overall class states
     plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams['font.sans-serif'] = "Arial"
-    plt.rcParams['font.family'] = "sans-serif"
-    plt.rcParams.update({'font.size': 28})
+    plt.rcParams["font.sans-serif"] = "Arial"
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
         """Initialize the SurrogateVisualization object.
@@ -137,10 +137,10 @@ class SurrogateVisualization:
         """
         self.parameter_names = parameter_names
 
-        if self.should_be_saved['1d'] or self.should_be_displayed['1d']:
+        if self.should_be_saved["1d"] or self.should_be_displayed["1d"]:
             self.plot_1d(surrogate_model)
 
-        if self.should_be_saved['2d'] or self.should_be_displayed['2d']:
+        if self.should_be_saved["2d"] or self.should_be_displayed["2d"]:
             self.plot_2d(surrogate_model)
 
         # show all result plots in the end
@@ -168,7 +168,7 @@ class SurrogateVisualization:
         """
         for free_idx, parameter_name in enumerate(self.parameter_names):
             fig = self.plot_gp_from_gpflow(gp_approximation, free_idx)
-            if self.should_be_saved['1d']:
+            if self.should_be_saved["1d"]:
                 fig.savefig(self.saving_paths["1d"] + "_" + parameter_name + ".png", dpi=200)
 
     def plot_gp_from_gpflow(self, gp_approximation, free_idx):
@@ -201,7 +201,7 @@ class SurrogateVisualization:
         # plot
         fig, ax = plt.subplots()
         ax.fill_between(x_grid, mean + uncertainty, mean - uncertainty, alpha=0.1)
-        ax.plot(x_grid, mean, label='Mean')
+        ax.plot(x_grid, mean, label="Mean")
         ax.set_xlim((x_grid.min(), x_grid.max()))
         ax.set_xlabel(self.parameter_names[free_idx])
 
@@ -248,22 +248,22 @@ class SurrogateVisualization:
             v_min (float): minimum of colorbar
             v_max (float): maximum of colorbar
         """
-        fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
         ax.plot_surface(
-            xx, yy, mean.reshape(*xx.shape), cmap='RdBu_r', linewidth=0, antialiased=False
+            xx, yy, mean.reshape(*xx.shape), cmap="RdBu_r", linewidth=0, antialiased=False
         )
         ax.scatter(
             x_train[:, 0],
             x_train[:, 1],
             y_train,
             c=y_train,
-            cmap='RdBu_r',
+            cmap="RdBu_r",
             vmin=v_min,
             vmax=v_max,
         )
         ax.set_xlabel(self.parameter_names[0])
         ax.set_ylabel(self.parameter_names[1])
-        fig.savefig(self.saving_paths["2d"] + '_3d_view.png', dpi=200)
+        fig.savefig(self.saving_paths["2d"] + "_3d_view.png", dpi=200)
 
     def _plot_2d_view(self, mean, x_train, y_train, xx, yy, v_min, v_max):
         """Plot 2D view of Gaussian process.
@@ -282,10 +282,10 @@ class SurrogateVisualization:
             x_train[:, 0],
             x_train[:, 1],
             c=y_train,
-            cmap='RdBu_r',
+            cmap="RdBu_r",
             vmin=v_min,
             vmax=v_max,
-            edgecolors='k',
+            edgecolors="k",
         )
         ax.contour(
             xx,
@@ -293,7 +293,7 @@ class SurrogateVisualization:
             mean.reshape(*xx.shape),
             levels=14,
             linewidths=0.5,
-            colors='k',
+            colors="k",
             zorder=-100,
             vmin=v_min,
             vmax=v_max,
@@ -316,4 +316,4 @@ class SurrogateVisualization:
         ax.set_xlabel(self.parameter_names[0])
         ax.set_ylabel(self.parameter_names[1])
 
-        fig.savefig(self.saving_paths["2d"] + '_2d_view.png', dpi=200)
+        fig.savefig(self.saving_paths["2d"] + "_2d_view.png", dpi=200)

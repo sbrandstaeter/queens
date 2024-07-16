@@ -106,7 +106,7 @@ def test_write_random_material_to_dat(
 
     # Actual analysis
     def expanded_representation(self, sample):
-        return self.mean + self.std**2 * np.linalg.norm(self.coords['coords'], axis=1) * sample[0]
+        return self.mean + self.std**2 * np.linalg.norm(self.coords["coords"], axis=1) * sample[0]
 
     with patch.object(KarhunenLoeveRandomField, "expanded_representation", expanded_representation):
         run_iterator(iterator, global_settings=global_settings)
@@ -115,8 +115,8 @@ def test_write_random_material_to_dat(
     results = load_result(global_settings.result_file(".pickle"))
 
     # Check if we got the expected results
-    np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=8)
-    np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=8)
+    np.testing.assert_array_almost_equal(results["mean"], expected_mean, decimal=8)
+    np.testing.assert_array_almost_equal(results["var"], expected_var, decimal=8)
 
 
 @pytest.fixture(name="expected_mean")

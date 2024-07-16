@@ -18,7 +18,7 @@ def fixture_input_file(tmp_path):
     """Fixture to create input file."""
     input_file_dict = {"experiment_name": "test_experiment_name", "Iterator": "A"}
     input_file_path = tmp_path / "input_file.yml"
-    with open(input_file_path, "w", encoding='utf-8') as stream:
+    with open(input_file_path, "w", encoding="utf-8") as stream:
         json.dump(input_file_dict, stream)
     return input_file_path
 
@@ -56,7 +56,7 @@ def test_get_config_dict_input(input_file):
 def test_main_greeting_message(caplog):
     """Test if greeting message is provided for in case of no inputs."""
     argv = ["python_file.py"]
-    with patch.object(sys, 'argv', argv):
+    with patch.object(sys, "argv", argv):
         with caplog.at_level(logging.INFO):
             main()
         assert "To use QUEENS run" in caplog.text
@@ -65,9 +65,9 @@ def test_main_greeting_message(caplog):
 def test_main_call(mocker):
     """Test if main calls run properly."""
     run_inputs = ["input", "output", False]
-    mock_run = mocker.patch('queens.main.run')
-    mocker.patch('queens.main.get_cli_options', return_value=run_inputs)
+    mock_run = mocker.patch("queens.main.run")
+    mocker.patch("queens.main.get_cli_options", return_value=run_inputs)
     argv = ["python_file.py", "input", "output"]
-    with patch.object(sys, 'argv', argv):
+    with patch.object(sys, "argv", argv):
         main()
         mock_run.assert_called_once_with(*run_inputs)

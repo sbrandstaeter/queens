@@ -45,19 +45,19 @@ class PieceWiseRandomField(RandomField):
         Returns:
             distribution (obj): QUEENS distribution object of latent space
         """
-        if latent_dict['type'] == 'normal':
+        if latent_dict["type"] == "normal":
             # use the MeanFieldNormalDistribution to prevent shape issues
             distribution = MeanFieldNormalDistribution(
-                mean=latent_dict['mean'],
-                variance=latent_dict['covariance'],
+                mean=latent_dict["mean"],
+                variance=latent_dict["covariance"],
                 dimension=self.dimension,
             )
             latent_1d_distribution = MeanFieldNormalDistribution(
-                mean=latent_dict['mean'],
-                variance=latent_dict['covariance'],
+                mean=latent_dict["mean"],
+                variance=latent_dict["covariance"],
                 dimension=1,
             )
-        elif latent_dict['type'] in distribution_types:
+        elif latent_dict["type"] in distribution_types:
             distribution_class = get_module_class(latent_dict, distribution_types)
             distribution = distribution_class(**latent_dict)
             distribution.dimension = self.dimension

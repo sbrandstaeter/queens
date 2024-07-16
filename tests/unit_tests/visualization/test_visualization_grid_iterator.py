@@ -18,7 +18,7 @@ class TestVisualizationGridIterator:
 
         It will be used by all test in the test class
         """
-        paths = [tmp_path / 'myplot.png']
+        paths = [tmp_path / "myplot.png"]
         save_bools = [True]
         plot_booleans = [False]
         scale_types_list = ["lin", "lin"]
@@ -32,7 +32,7 @@ class TestVisualizationGridIterator:
     def test_init(self, tmp_path):
         """TODO_doc."""
         # expected attributes
-        paths = [tmp_path / 'myplot.png']
+        paths = [tmp_path / "myplot.png"]
         save_bools = [True]
         plot_booleans = [False]
         scale_types_list = ["lin", "lin"]
@@ -60,7 +60,7 @@ class TestVisualizationGridIterator:
         qvis.grid_iterator_visualization_instance.plot_qoi_grid(
             output, samples, num_params, n_grid_p
         )
-        filepath = tmp_path / 'myplot.png'
+        filepath = tmp_path / "myplot.png"
         assert filepath.is_file()
 
     def test_get_plotter_one(self):
@@ -82,11 +82,11 @@ class TestVisualizationGridIterator:
         num_params = 3
         with pytest.raises(NotImplementedError) as not_implemented_error:
             qvis.grid_iterator_visualization_instance.get_plotter(num_params)
-        assert str(not_implemented_error.value) == 'Grid plot only possible up to 2 parameters'
+        assert str(not_implemented_error.value) == "Grid plot only possible up to 2 parameters"
 
     def test_plot_one_d(self):
         """TODO_doc."""
-        output = {'result': np.array([0.0, 1.0])}
+        output = {"result": np.array([0.0, 1.0])}
         samples = np.array([0.0, 1.0])
         dummy = 1.0
         qvis.grid_iterator_visualization_instance.plot_one_d(output, samples, dummy)
@@ -94,6 +94,6 @@ class TestVisualizationGridIterator:
     def test_plot_two_d(self):
         """TODO_doc."""
         samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
-        output = {'result': np.array([0.0, 1.0, 0.0, 1.0])}
+        output = {"result": np.array([0.0, 1.0, 0.0, 1.0])}
         n_grid_p = [2, 2]
         qvis.grid_iterator_visualization_instance.plot_two_d(output, samples, n_grid_p)

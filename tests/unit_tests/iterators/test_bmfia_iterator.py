@@ -26,7 +26,7 @@ def fixture_default_bmfia_iterator(
 @pytest.fixture(name="approximation_name")
 def fixture_approximation_name():
     """Dummy approximation name for testing."""
-    name = 'joint_density_approx'
+    name = "joint_density_approx"
     return name
 
 
@@ -43,7 +43,7 @@ def test_init(
     default_parameters_uniform_2d,
 ):
     """Test the init of the Bayesian multi-fidelity iterator."""
-    features_config = 'no_features'
+    features_config = "no_features"
     hf_model = dummy_simulation_model
     lf_model = dummy_simulation_model
     x_train = np.array([[1, 1, 1], [2, 2, 2]])
@@ -51,7 +51,7 @@ def test_init(
     num_features = 2
     coord_cols = [1, 2, 3]
 
-    with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
+    with patch.object(BMFIAIterator, "calculate_initial_x_train", lambda *args: x_train):
         # pylint: disable=duplicate-code
         iterator = BMFIAIterator(
             parameters=default_parameters_uniform_2d,
@@ -88,9 +88,9 @@ def test_calculate_optimal_x_train(mocker, default_parameters_uniform_2d):
     later be able to test if the arguments were correct.
     """
     expected_x_train = np.array([[1, 1]])  # return of mock_design
-    initial_design_dict = {'test': 'test'}
+    initial_design_dict = {"test": "test"}
     mo_1 = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator.get_design_method',
+        "queens.iterators.bmfia_iterator.BMFIAIterator.get_design_method",
         return_value=my_mock_design,
     )
 
@@ -111,7 +111,7 @@ def test_get_design_method(mocker):
     # test the random design
     initial_design_dict = {"type": "random"}
     mo_1 = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator.random_design',
+        "queens.iterators.bmfia_iterator.BMFIAIterator.random_design",
         return_value=my_mock_design,
     )
 
@@ -120,12 +120,12 @@ def test_get_design_method(mocker):
 
     # test invalid design
     with pytest.raises(NotImplementedError):
-        initial_design_dict = {'type': 'randommm'}
+        initial_design_dict = {"type": "randommm"}
         BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid key in dictionary
     with pytest.raises(AssertionError):
-        initial_design_dict = {'typeeee': 'random'}
+        initial_design_dict = {"typeeee": "random"}
         BMFIAIterator.get_design_method(initial_design_dict)
 
     # test invalid data type of input
@@ -148,9 +148,9 @@ def test_core_run(default_bmfia_iterator, mocker):
     z_train_in = np.array([[4], [5]])
     y_hf_train_in = np.array([[2.2], [3.3]])
 
-    mo_1 = mocker.patch('queens.iterators.bmfia_iterator.BMFIAIterator.eval_model')
+    mo_1 = mocker.patch("queens.iterators.bmfia_iterator.BMFIAIterator.eval_model")
     mo_2 = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy',
+        "queens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy",
         return_value=z_train_in,
     )
 
@@ -171,7 +171,7 @@ def test_core_run(default_bmfia_iterator, mocker):
 def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of LF model with test data."""
     with patch.object(
-        default_bmfia_iterator.lf_model, 'evaluate', return_value={'result': np.array([1, 1])}
+        default_bmfia_iterator.lf_model, "evaluate", return_value={"result": np.array([1, 1])}
     ) as mo_1:
         default_bmfia_iterator.evaluate_LF_model_for_X_train()
 
@@ -182,7 +182,7 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
 def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of HF model with test data."""
     with patch.object(
-        default_bmfia_iterator.hf_model, 'evaluate', return_value={'result': np.array([1, 1])}
+        default_bmfia_iterator.hf_model, "evaluate", return_value={"result": np.array([1, 1])}
     ) as mo_2:
         default_bmfia_iterator.evaluate_HF_model_for_X_train()
 
@@ -229,19 +229,19 @@ def test_set_feature_strategy(default_bmfia_iterator, mocker):
     x_mat = np.array([[4, 5, 6]])
     coords_mat = np.array([[7, 8, 9]])
     mo_man = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator._get_man_features', return_value=(1, 1)
+        "queens.iterators.bmfia_iterator.BMFIAIterator._get_man_features", return_value=(1, 1)
     )
     mo_opt = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator._get_opt_features', return_value=(1, 1)
+        "queens.iterators.bmfia_iterator.BMFIAIterator._get_opt_features", return_value=(1, 1)
     )
     mo_coord = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator._get_coord_features', return_value=(1, 1)
+        "queens.iterators.bmfia_iterator.BMFIAIterator._get_coord_features", return_value=(1, 1)
     )
     mo_no = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator._get_no_features', return_value=(1, 1)
+        "queens.iterators.bmfia_iterator.BMFIAIterator._get_no_features", return_value=(1, 1)
     )
     mo_time = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator._get_time_features', return_value=(1, 1)
+        "queens.iterators.bmfia_iterator.BMFIAIterator._get_time_features", return_value=(1, 1)
     )
 
     default_bmfia_iterator.features_config = "man_features"
@@ -396,10 +396,10 @@ def test_update_probabilistic_mapping_with_features(default_bmfia_iterator):
 def test_eval_model(default_bmfia_iterator, mocker):
     """Test for evaluating the underlying model."""
     mo_1 = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator.evaluate_LF_model_for_X_train'
+        "queens.iterators.bmfia_iterator.BMFIAIterator.evaluate_LF_model_for_X_train"
     )
     mo_2 = mocker.patch(
-        'queens.iterators.bmfia_iterator.BMFIAIterator.evaluate_HF_model_for_X_train'
+        "queens.iterators.bmfia_iterator.BMFIAIterator.evaluate_HF_model_for_X_train"
     )
     default_bmfia_iterator.eval_model()
 

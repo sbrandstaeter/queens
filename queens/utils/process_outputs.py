@@ -49,7 +49,7 @@ def do_processing(output_data, output_description):
         dict: Dictionary with processed results
     """
     # do we want confidence intervals
-    bayesian = output_description.get('bayesian', False)
+    bayesian = output_description.get("bayesian", False)
     # check if we have the data to support this
     if "post_samples" not in output_data and bayesian is True:
         warnings.warn(
@@ -59,10 +59,10 @@ def do_processing(output_data, output_description):
         bayesian = False
 
     # do we want plotting
-    plot_results = output_description.get('plot_results', False)
+    plot_results = output_description.get("plot_results", False)
 
     # result interval
-    result_interval = output_description.get('result_interval', None)
+    result_interval = output_description.get("result_interval", None)
     # TODO: we get an error below! # pylint: disable=fixme
 
     if result_interval is None:
@@ -70,7 +70,7 @@ def do_processing(output_data, output_description):
         result_interval = estimate_result_interval(output_data)
 
     # get number of support points
-    num_support_points = output_description.get('num_support_points', 100)
+    num_support_points = output_description.get("num_support_points", 100)
     support_points = np.linspace(result_interval[0], result_interval[1], num_support_points)
 
     mean_mean = estimate_mean(output_data)
@@ -80,15 +80,15 @@ def do_processing(output_data, output_description):
     processed_results["mean"] = mean_mean
     processed_results["var"] = var_mean
 
-    if output_description.get('cov', False):
+    if output_description.get("cov", False):
         cov_mean = estimate_cov(output_data)
         processed_results["cov"] = cov_mean
 
     # do we want to estimate all the below (i.e. pdf, cdf, icdf)
-    est_all = output_description.get('estimate_all', False)
+    est_all = output_description.get("estimate_all", False)
 
     # do we want pdf estimation
-    est_pdf = output_description.get('estimate_pdf', False)
+    est_pdf = output_description.get("estimate_pdf", False)
     if (est_pdf or est_all) is True:
         pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
         if plot_results is True:
@@ -97,7 +97,7 @@ def do_processing(output_data, output_description):
         processed_results["pdf_estimate"] = pdf_estimate
 
     # do we want cdf estimation
-    est_cdf = output_description.get('estimate_cdf', False)
+    est_cdf = output_description.get("estimate_cdf", False)
     if (est_cdf or est_all) is True:
         cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
         if plot_results is True:
@@ -106,7 +106,7 @@ def do_processing(output_data, output_description):
         processed_results["cdf_estimate"] = cdf_estimate
 
     # do we want icdf estimation
-    est_icdf = output_description.get('estimate_icdf', False)
+    est_icdf = output_description.get("estimate_icdf", False)
     if (est_icdf or est_all) is True:
         icdf_estimate = estimate_icdf(output_data, bayesian)
 
@@ -125,7 +125,7 @@ def write_results(processed_results, file_path):
         processed_results (dict):  Dictionary with results
         file_path (str, Path):     Path to pickle file to write results to
     """
-    with open(file_path, 'wb') as handle:
+    with open(file_path, "wb") as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -344,12 +344,12 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     # cross-validation
     grid = GridSearchCV(
         KernelDensity(),
-        {'bandwidth': np.linspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
+        {"bandwidth": np.linspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
         cv=num_cv,
     )
 
     grid.fit(samples.reshape(-1, 1))
-    kernel_bandwidth = grid.best_params_['bandwidth']
+    kernel_bandwidth = grid.best_params_["bandwidth"]
 
     return kernel_bandwidth
 
@@ -364,7 +364,7 @@ def perform_kde(samples, kernel_bandwidth, support_points):
     Returns:
         np.array: *pdf_estimate* at support points
     """
-    kde = KernelDensity(kernel='gaussian', bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
+    kde = KernelDensity(kernel="gaussian", bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
 
     y_density = np.exp(kde.score_samples(support_points.reshape(-1, 1)))
     return y_density

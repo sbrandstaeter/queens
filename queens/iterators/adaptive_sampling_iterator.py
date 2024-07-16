@@ -93,10 +93,10 @@ class AdaptiveSamplingIterator(Iterator):
 
         if self.restart_file:
             results = load_result(self.restart_file)
-            self.x_train = results['x_train'][-1]
-            self.model_outputs = results['model_outputs'][-1]
-            self.y_train = results['y_train'][-1]
-            self.x_train_new = results['x_train_new'][-1]
+            self.x_train = results["x_train"][-1]
+            self.model_outputs = results["model_outputs"][-1]
+            self.y_train = results["y_train"][-1]
+            self.x_train_new = results["x_train_new"][-1]
 
         else:
             self.initial_train_iterator.pre_run()
@@ -108,10 +108,10 @@ class AdaptiveSamplingIterator(Iterator):
     def core_run(self):
         """Core run."""
         for i in range(self.num_steps):
-            _logger.info('Step: %i / %i', i + 1, self.num_steps)
+            _logger.info("Step: %i / %i", i + 1, self.num_steps)
             self.x_train = np.concatenate([self.x_train, self.x_train_new], axis=0)
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
-            _logger.info('Number of solver evaluations: %i', self.x_train.shape[0])
+            _logger.info("Number of solver evaluations: %i", self.x_train.shape[0])
             self.model.initialize(
                 self.x_train, self.y_train, self.likelihood_model.normal_distribution.mean.size
             )
@@ -119,7 +119,7 @@ class AdaptiveSamplingIterator(Iterator):
 
             def _m(self_, _, xp):
                 x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
-                epn = xp.shared['exponents'][-1]
+                epn = xp.shared["exponents"][-1]
                 target = self_.current_target(epn)
                 for j, par in enumerate(xp.theta.dtype.names):
                     xp.theta[par][0] = x_train_ml[j]
@@ -147,9 +147,9 @@ class AdaptiveSamplingIterator(Iterator):
         Returns:
             log_likelihood (np.ndarray): Log likelihood
         """
-        model_output = self.likelihood_model.forward_model.evaluate(self.x_train_new)['result']
+        model_output = self.likelihood_model.forward_model.evaluate(self.x_train_new)["result"]
         self.model_outputs = np.concatenate([self.model_outputs, model_output], axis=0)
-        if self.likelihood_model.noise_type.startswith('MAP'):
+        if self.likelihood_model.noise_type.startswith("MAP"):
             self.likelihood_model.update_covariance(model_output)
         log_likelihood = self.likelihood_model.normal_distribution.logpdf(self.model_outputs)
         log_likelihood -= self.likelihood_model.normal_distribution.logpdf_const
@@ -188,37 +188,37 @@ class AdaptiveSamplingIterator(Iterator):
 
         if iteration == 0 and not self.restart_file:
             results = {
-                'x_train': [],
-                'model_outputs': [],
-                'y_train': [],
-                'x_train_new': [],
-                'particles': [],
-                'weights': [],
-                'log_posterior': [],
-                'cs_div': [],
+                "x_train": [],
+                "model_outputs": [],
+                "y_train": [],
+                "x_train_new": [],
+                "particles": [],
+                "weights": [],
+                "log_posterior": [],
+                "cs_div": [],
             }
             cs_div = np.nan
         else:
             results = load_result(result_file)
-            particles_prev = results['particles'][-1]
-            weights_prev = results['weights'][-1]
+            particles_prev = results["particles"][-1]
+            weights_prev = results["weights"][-1]
             samples_prev = particles_prev[
                 np.random.choice(np.arange(weights_prev.size), 5_000, p=weights_prev)
             ]
             samples_curr = particles[np.random.choice(np.arange(weights.size), 5_000, p=weights)]
             cs_div = float(cauchy_schwarz_divergence(samples_prev, samples_curr))
-            _logger.info('Cauchy Schwarz divergence: %.2e', cs_div)
+            _logger.info("Cauchy Schwarz divergence: %.2e", cs_div)
 
-        results['x_train'].append(self.x_train)
-        results['model_outputs'].append(self.model_outputs)
-        results['y_train'].append(self.y_train)
-        results['x_train_new'].append(self.x_train_new)
-        results['particles'].append(particles)
-        results['weights'].append(weights)
-        results['log_posterior'].append(log_posterior)
-        results['cs_div'].append(cs_div)
+        results["x_train"].append(self.x_train)
+        results["model_outputs"].append(self.model_outputs)
+        results["y_train"].append(self.y_train)
+        results["x_train_new"].append(self.x_train_new)
+        results["particles"].append(particles)
+        results["weights"].append(weights)
+        results["log_posterior"].append(log_posterior)
+        results["cs_div"].append(cs_div)
 
-        with open(result_file, 'wb') as handle:
+        with open(result_file, "wb") as handle:
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return cs_div

@@ -97,7 +97,7 @@ class GridIteratorVisualization:
 
     # some overall class states
     plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({'font.size': 22})
+    plt.rcParams.update({"font.size": 22})
 
     def __init__(self, paths, save_bools, plot_booleans, scale_types_list, var_names_list):
         """TODO_doc.
@@ -139,7 +139,7 @@ class GridIteratorVisualization:
         if grid_design is not None:
             for variable_name, grid_opt in grid_design.items():
                 var_names_list.append(variable_name)
-                scale_types_list.append(grid_opt.get('axis_type'))
+                scale_types_list.append(grid_opt.get("axis_type"))
 
         return cls(paths, save_bools, plot_booleans, scale_types_list, var_names_list)
 
@@ -177,7 +177,7 @@ class GridIteratorVisualization:
             return self.plot_one_d
         if num_params == 2:
             return self.plot_two_d
-        raise NotImplementedError('Grid plot only possible up to 2 parameters')
+        raise NotImplementedError("Grid plot only possible up to 2 parameters")
 
     def plot_one_d(self, output, samples, n_grid_p):  # pylint: disable=unused-argument
         """Plotting method for one dimensional grid.
@@ -191,22 +191,22 @@ class GridIteratorVisualization:
 
         # get axes
         x = samples
-        y = output['result']
-        min_y = min(output['result'])
-        max_y = max(output['result'])
+        y = output["result"]
+        min_y = min(output["result"])
+        max_y = max(output["result"])
         min_x = min(samples)
         max_x = max(samples)
 
         # --------------------- plot QoI over samples ---------------------
-        ax.set_xscale('log')
-        ax.set_yscale('linear')
+        ax.set_xscale("log")
+        ax.set_yscale("linear")
         ax.plot(x, y)
 
         # set major/minor ticks for log scale
         ax.minorticks_on()
         ax.grid()
-        ax.set_xlabel(f'{self.var_names_list[0]} [{self.scale_types_list[0]}]')
-        ax.set_ylabel('QoI')
+        ax.set_xlabel(f"{self.var_names_list[0]} [{self.scale_types_list[0]}]")
+        ax.set_ylabel("QoI")
 
         # adjust limits of axes
         ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
@@ -220,18 +220,18 @@ class GridIteratorVisualization:
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
         fig = plt.figure()
-        ax = plt.axes(projection='3d')
+        ax = plt.axes(projection="3d")
         # get axes
         x = samples[:, 0].reshape(n_grid_p[0], n_grid_p[1])
         y = samples[:, 1].reshape(n_grid_p[0], n_grid_p[1])
-        z = output['result'].reshape(n_grid_p[0], n_grid_p[1])
-        min_z = min(output['result'])
-        max_z = max(output['result'])
+        z = output["result"].reshape(n_grid_p[0], n_grid_p[1])
+        min_z = min(output["result"])
+        max_z = max(output["result"])
 
         # --------------------- plot QoI over samples ---------------------
         surf = ax.plot_surface(np.log10(x), y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-        self._get_tick_formatter('x')
-        self._get_tick_formatter('y')
+        self._get_tick_formatter("x")
+        self._get_tick_formatter("y")
 
         # scale axes with user defined tick formatter
         # TODO the formatter contains currently a bug # pylint: disable=fixme
@@ -241,15 +241,15 @@ class GridIteratorVisualization:
         # Customize the z axis.
         ax.set_zlim(min_z, max_z)
         ax.zaxis.set_major_locator(LinearLocator(5))
-        ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+        ax.zaxis.set_major_formatter(FormatStrFormatter("%.02f"))
 
         # font, axes label and tick size
-        ax.tick_params(labelsize='xx-small')
+        ax.tick_params(labelsize="xx-small")
 
         # axes labels
-        ax.set_xlabel(f'{self.var_names_list[0]} [{self.scale_types_list[0]}]')
-        ax.set_ylabel(f'{self.var_names_list[1]} [{self.scale_types_list[1]}]')
-        ax.set_zlabel('QoI')
+        ax.set_xlabel(f"{self.var_names_list[0]} [{self.scale_types_list[0]}]")
+        ax.set_ylabel(f"{self.var_names_list[1]} [{self.scale_types_list[1]}]")
+        ax.set_zlabel("QoI")
 
         # Add a color bar (optional)
         fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -266,22 +266,22 @@ class GridIteratorVisualization:
         Returns:
             tick_formatter (obj): Tick-formatter object
         """
-        if axis_str == 'x':
+        if axis_str == "x":
             idx = 0
-        elif axis_str == 'y':
+        elif axis_str == "y":
             idx = 1
         else:
-            raise ValueError('Axis string is not defined!')
+            raise ValueError("Axis string is not defined!")
 
-        if self.scale_types_list[idx] == 'log10':
+        if self.scale_types_list[idx] == "log10":
             return _log_tick_formatter
-        if self.scale_types_list[idx] == 'logn':
+        if self.scale_types_list[idx] == "logn":
             return _ln_tick_formatter
-        if self.scale_types_list[idx] == 'lin':
+        if self.scale_types_list[idx] == "lin":
             return _linear_tick_formatter
         raise ValueError(
-            f'Your axis scaling type {self.scale_types_list[idx]} is not a valid '
-            f'option! Abort...'
+            f"Your axis scaling type {self.scale_types_list[idx]} is not a valid "
+            f"option! Abort..."
         )
 
 

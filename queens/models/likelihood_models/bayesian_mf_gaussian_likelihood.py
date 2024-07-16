@@ -147,17 +147,17 @@ class BMFGaussianModel(LikelihoodModel):
 
         # we explicitly cut the array at the variable size as within one batch several chains
         # e.g., in MCMC might be calculated; we only want the last chain here
-        forward_model_output = self.forward_model.evaluate(samples)['result'].reshape(
+        forward_model_output = self.forward_model.evaluate(samples)["result"].reshape(
             -1, num_coordinates
         )[:num_samples, :]
 
         mf_log_likelihood = self.evaluate_from_output(samples, forward_model_output)
         self.response = {
-            'forward_model_output': forward_model_output,
-            'mf_log_likelihood': mf_log_likelihood,
+            "forward_model_output": forward_model_output,
+            "mf_log_likelihood": mf_log_likelihood,
         }
 
-        return {'result': mf_log_likelihood}
+        return {"result": mf_log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.
@@ -175,7 +175,7 @@ class BMFGaussianModel(LikelihoodModel):
             gradient (np.array): Gradient w.r.t. current set of input samples
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        partial_grad = self.partial_grad_evaluate(samples, self.response['forward_model_output'])
+        partial_grad = self.partial_grad_evaluate(samples, self.response["forward_model_output"])
         upstream_gradient = upstream_gradient * partial_grad
         gradient = self.forward_model.grad(samples, upstream_gradient)
         return gradient
@@ -278,10 +278,10 @@ class BMFGaussianModel(LikelihoodModel):
         z_train, y_hf_train = self.mf_subiterator.expand_training_data(
             additional_x_train, additional_y_lf_train=additional_y_lf_train
         )
-        _logger.info('Start updating the probabilistic model...')
+        _logger.info("Start updating the probabilistic model...")
         self.mf_interface.build_approximation(z_train, y_hf_train)
         _logger.info("---------------------------------------------------------------------")
-        _logger.info('Probabilistic model was updated successfully!')
+        _logger.info("Probabilistic model was updated successfully!")
         _logger.info("---------------------------------------------------------------------")
 
     def evaluate_mf_likelihood(self, x_batch, y_lf_mat):
@@ -406,5 +406,5 @@ class BMFGaussianModel(LikelihoodModel):
             z_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
         )
         _logger.info("---------------------------------------------------------------------")
-        _logger.info('Probabilistic model was built successfully!')
+        _logger.info("Probabilistic model was built successfully!")
         _logger.info("---------------------------------------------------------------------")

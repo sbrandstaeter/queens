@@ -61,6 +61,6 @@ def test_elementary_effects_sobol(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    np.testing.assert_allclose(results["sensitivity_indices"]['mu'], expected_result_mu)
-    np.testing.assert_allclose(results["sensitivity_indices"]['mu_star'], expected_result_mu_star)
-    np.testing.assert_allclose(results["sensitivity_indices"]['sigma'], expected_result_sigma)
+    np.testing.assert_allclose(results["sensitivity_indices"]["mu"], expected_result_mu)
+    np.testing.assert_allclose(results["sensitivity_indices"]["mu_star"], expected_result_mu_star)
+    np.testing.assert_allclose(results["sensitivity_indices"]["sigma"], expected_result_sigma)

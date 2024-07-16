@@ -75,7 +75,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
     # however, we only have a very inaccurate approximation here:
 
     np.testing.assert_allclose(
-        results['mean'],
+        results["mean"],
         np.array(
             [
                 [1.9538477050387937, -1.980155948698723],
@@ -85,7 +85,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         ),
     )
     np.testing.assert_allclose(
-        results['cov'],
+        results["cov"],
         np.array(
             [
                 [

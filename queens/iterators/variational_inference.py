@@ -130,7 +130,7 @@ class VariationalInferenceIterator(Iterator):
         self.verbose_every_n_iter = verbose_every_n_iter
 
         if result_description.get("plotting_options"):
-            qvis.from_config_create(result_description['plotting_options'])
+            qvis.from_config_create(result_description["plotting_options"])
 
     def core_run(self):
         """Core run for stochastic variational inference."""
@@ -180,7 +180,7 @@ class VariationalInferenceIterator(Iterator):
         _logger.info("Initialize Optimization run.")
         if self.parameters.random_field_flag:
             raise NotImplementedError(
-                'Variational inference for random fields is not yet implemented! Abort...'
+                "Variational inference for random fields is not yet implemented! Abort..."
             )
         self._initialize_variational_params()
 
@@ -270,7 +270,7 @@ class VariationalInferenceIterator(Iterator):
 
         # Set the mean and std-deviation params of the variational distr such that the
         # transformed distribution would match the moments of the prior
-        if self.variational_transformation == 'exp':
+        if self.variational_transformation == "exp":
             mean_list_variational = [
                 np.log(E**2 / np.sqrt(E**2 + S**2)) for E, S in zip(mean_list_prior, std_list_prior)
             ]
@@ -300,7 +300,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             x_mat_trans (np.array): Transformed samples of variational distribution
         """
-        if self.variational_transformation == 'exp':
+        if self.variational_transformation == "exp":
             x_mat_trans = np.exp(x_mat)
         elif self.variational_transformation is None:
             x_mat_trans = x_mat

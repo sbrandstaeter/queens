@@ -357,7 +357,7 @@ def _estimate_first_order_index(sample_matrix_a, sample_matrix_b, sample_matrix_
     Returns:
         first_order (ndarray): first-order Sobol index estimates
     """
-    if estimator == 'Janon2014':
+    if estimator == "Janon2014":
         # [Janon2014] Equation (2.5)
         first_order = (
             np.mean(sample_matrix_b * sample_matrix_ab)
@@ -367,7 +367,7 @@ def _estimate_first_order_index(sample_matrix_a, sample_matrix_b, sample_matrix_
             - (0.5 * np.mean(sample_matrix_b + sample_matrix_ab)) ** 2
         )
 
-    elif estimator == 'Janon2014alt':
+    elif estimator == "Janon2014alt":
         # [Janon2014] Equation (2.8)
         first_order = np.sum(
             (sample_matrix_b - 0.5 * (sample_matrix_b.mean() + sample_matrix_ab.mean()))
@@ -377,14 +377,14 @@ def _estimate_first_order_index(sample_matrix_a, sample_matrix_b, sample_matrix_
             - (0.5 * (sample_matrix_b.mean() + sample_matrix_ab.mean())) ** 2
         )
 
-    elif estimator == 'Gratiet2014':
+    elif estimator == "Gratiet2014":
         # [Gratiet2014] Equation (4.1)
         first_order = (
             np.mean(sample_matrix_b * sample_matrix_ab)
             - sample_matrix_b.mean() * sample_matrix_ab.mean()
         ) / (np.mean(sample_matrix_b * sample_matrix_b) - sample_matrix_b.mean() ** 2)
 
-    elif estimator == 'Saltelli2010':
+    elif estimator == "Saltelli2010":
         # [Saltelli2010] also used in SALib library
         first_order = np.mean(
             sample_matrix_b * (sample_matrix_ab - sample_matrix_a), axis=0

@@ -72,7 +72,7 @@ class Model(metaclass=abc.ABCMeta):
                                        :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         Model.evaluate_and_gradient_bool = True
-        model_output = self.evaluate(samples)['result']
+        model_output = self.evaluate(samples)["result"]
         if upstream_gradient is None:
             upstream_gradient = np.ones((samples.shape[0], 1))
         model_gradient = self.grad(

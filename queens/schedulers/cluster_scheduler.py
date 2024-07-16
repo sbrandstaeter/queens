@@ -19,9 +19,9 @@ VALID_WORKLOAD_MANAGERS = {
         "dask_cluster_cls": SLURMCluster,
         "job_extra_directives": lambda nodes, cores: f"--ntasks={nodes * cores}",
         "job_directives_skip": [
-            '#SBATCH -n 1',
-            '#SBATCH --mem=',
-            '#SBATCH --cpus-per-task=',
+            "#SBATCH -n 1",
+            "#SBATCH --mem=",
+            "#SBATCH --cpus-per-task=",
         ],
     },
     "pbs": {
@@ -109,12 +109,12 @@ class ClusterScheduler(Scheduler):
         # collect all settings for the dask cluster
         num_cores = max(num_procs, num_procs_post)
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
-        job_extra_directives = dask_cluster_options['job_extra_directives'](num_nodes, num_cores)
-        job_directives_skip = dask_cluster_options['job_directives_skip']
+        job_extra_directives = dask_cluster_options["job_extra_directives"](num_nodes, num_cores)
+        job_directives_skip = dask_cluster_options["job_directives_skip"]
         if queue is None:
-            job_directives_skip.append('#SBATCH -p')
+            job_directives_skip.append("#SBATCH -p")
 
-        hours, minutes, seconds = map(int, walltime.split(':'))
+        hours, minutes, seconds = map(int, walltime.split(":"))
         walltime_delta = timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
         # Increase jobqueue walltime by 5 minutes to kill dask workers in time
@@ -136,7 +136,7 @@ class ClusterScheduler(Scheduler):
         dask_cluster_kwargs = {
             "job_name": experiment_name,
             "queue": queue,
-            "memory": '10TB',
+            "memory": "10TB",
             "scheduler_options": scheduler_options,
             "walltime": walltime,
             "log_directory": str(experiment_dir),
@@ -173,7 +173,7 @@ class ClusterScheduler(Scheduler):
             except OSError as exc:
                 if i == 1:
                     raise OSError(
-                        stdout.read().decode('ascii') + stderr.read().decode('ascii')
+                        stdout.read().decode("ascii") + stderr.read().decode("ascii")
                     ) from exc
                 time.sleep(1)
 
@@ -181,8 +181,8 @@ class ClusterScheduler(Scheduler):
         client.submit(lambda: "Dummy job").result(timeout=180)
         _logger.debug("Dummy job was successful.")
         _logger.info(
-            'To view the Dask dashboard open this link in your browser: '
-            'http://localhost:%i/status',
+            "To view the Dask dashboard open this link in your browser: "
+            "http://localhost:%i/status",
             local_port_dashboard,
         )
 

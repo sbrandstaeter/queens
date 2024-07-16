@@ -54,11 +54,11 @@ def test_evaluate(default_adjoint_model):
 
 def test_grad(default_adjoint_model):
     """Test grad method."""
-    experiment_dir = Path('path_to_experiment_dir')
+    experiment_dir = Path("path_to_experiment_dir")
     differentiable_simulation_model_adjoint.write_to_csv = Mock()
     default_adjoint_model.interface.latest_job_id = 6
     default_adjoint_model.gradient_interface.scheduler.experiment_dir = experiment_dir
-    default_adjoint_model.gradient_interface.evaluate = lambda x: {'result': x**2}
+    default_adjoint_model.gradient_interface.evaluate = lambda x: {"result": x**2}
 
     np.random.seed(42)
     samples = np.random.random((2, 3))
@@ -73,11 +73,11 @@ def test_grad(default_adjoint_model):
     assert differentiable_simulation_model_adjoint.write_to_csv.call_count == 2
     assert (
         differentiable_simulation_model_adjoint.write_to_csv.call_args_list[0].args[0]
-        == experiment_dir / '5' / default_adjoint_model.adjoint_file
+        == experiment_dir / "5" / default_adjoint_model.adjoint_file
     )
     assert (
         differentiable_simulation_model_adjoint.write_to_csv.call_args_list[1].args[0]
-        == experiment_dir / '6' / default_adjoint_model.adjoint_file
+        == experiment_dir / "6" / default_adjoint_model.adjoint_file
     )
     np.testing.assert_equal(
         differentiable_simulation_model_adjoint.write_to_csv.call_args_list[0].args[1],

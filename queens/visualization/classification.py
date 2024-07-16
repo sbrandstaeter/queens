@@ -103,7 +103,7 @@ class ClassificationVisualization:
                     s=20,
                     edgecolors="k",
                 )
-                title = f'Classification with model calls {len(samples)}'
+                title = f"Classification with model calls {len(samples)}"
                 # Plot the samples of the last batch
                 if classifier.is_active:
                     axes.scatter(

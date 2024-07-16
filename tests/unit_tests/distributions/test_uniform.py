@@ -14,19 +14,19 @@ def fixture_sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="lower_bound_1d", scope='module')
+@pytest.fixture(name="lower_bound_1d", scope="module")
 def fixture_lower_bound_1d():
     """A possible left bound of interval."""
     return -1.0
 
 
-@pytest.fixture(name="upper_bound_1d", scope='module')
+@pytest.fixture(name="upper_bound_1d", scope="module")
 def fixture_upper_bound_1d():
     """A possible right bound of interval."""
     return 1.0
 
 
-@pytest.fixture(name="uniform_1d", scope='module')
+@pytest.fixture(name="uniform_1d", scope="module")
 def fixture_uniform_1d(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
@@ -45,19 +45,19 @@ def fixture_sample_pos_2d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="lower_bound_2d", scope='module')
+@pytest.fixture(name="lower_bound_2d", scope="module")
 def fixture_lower_bound_2d():
     """A possible left bound of interval."""
     return np.array([-1.0, -3.0])
 
 
-@pytest.fixture(name="upper_bound_2d", scope='module')
+@pytest.fixture(name="upper_bound_2d", scope="module")
 def fixture_upper_bound_2d():
     """A possible right bound of interval."""
     return np.array([1.0, 2.0])
 
 
-@pytest.fixture(name="uniform_2d", scope='module')
+@pytest.fixture(name="uniform_2d", scope="module")
 def fixture_uniform_2d(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
     return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
@@ -87,7 +87,7 @@ def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
 
 def test_init_uniform_1d_wrong_interval(lower_bound_1d):
     """Test init method of Uniform Distribution class."""
-    with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
+    with pytest.raises(ValueError, match=r"Lower bound must be smaller than upper bound*"):
         upper_bound = lower_bound_1d - np.abs(lower_bound_1d)
         return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound)
 
@@ -102,7 +102,7 @@ def test_cdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1
 def test_draw_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, mocker):
     """Test the draw method of uniform distribution."""
     sample = np.asarray(0.5 * (lower_bound_1d + upper_bound_1d)).reshape(1, 1)
-    mocker.patch('numpy.random.uniform', return_value=sample)
+    mocker.patch("numpy.random.uniform", return_value=sample)
     draw = uniform_1d.draw()
     np.testing.assert_equal(draw, sample)
 
@@ -163,7 +163,7 @@ def test_init_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
 
 def test_init_uniform_2d_wrong_interval(lower_bound_2d):
     """Test init method of Uniform Distribution class."""
-    with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
+    with pytest.raises(ValueError, match=r"Lower bound must be smaller than upper bound*"):
         upper_bound = lower_bound_2d + np.array([0.1, -0.1])
         return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound)
 
@@ -181,7 +181,7 @@ def test_cdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
 def test_draw_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, mocker):
     """Test the draw method of uniform distribution."""
     sample = np.asarray(0.5 * (lower_bound_2d + upper_bound_2d)).reshape(1, 2)
-    mocker.patch('numpy.random.uniform', return_value=sample)
+    mocker.patch("numpy.random.uniform", return_value=sample)
     draw = uniform_2d.draw()
     np.testing.assert_equal(draw, sample)
 
@@ -215,5 +215,5 @@ def test_pdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
 
 def test_ppf_uniform_2d(uniform_2d):
     """Test ppf method of Uniform distribution class."""
-    with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
+    with pytest.raises(ValueError, match="Method does not support multivariate distributions!"):
         uniform_2d.ppf(np.zeros(2))

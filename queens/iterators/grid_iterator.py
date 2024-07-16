@@ -53,8 +53,8 @@ class GridIterator(Iterator):
         self.scale_type = []
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        if result_description.get('plotting_options'):
-            qvis.from_config_create(result_description.get('plotting_options'), grid_design)
+        if result_description.get("plotting_options"):
+            qvis.from_config_create(result_description.get("plotting_options"), grid_design)
 
     def pre_run(self):
         """Generate samples based on description in *grid_dict*."""
@@ -89,7 +89,7 @@ class GridIterator(Iterator):
                     " Number of grid points ('num_grid_points') not given properly by user "
                 )
 
-            if axis_type == 'lin':
+            if axis_type == "lin":
                 grid_point_list.append(
                     np.linspace(
                         start_value,
@@ -99,7 +99,7 @@ class GridIterator(Iterator):
                         retstep=False,
                     )
                 )
-            elif axis_type == 'log10':
+            elif axis_type == "log10":
                 grid_point_list.append(
                     np.logspace(
                         np.log10(start_value),
@@ -121,15 +121,15 @@ class GridIterator(Iterator):
                 )
             else:
                 raise NotImplementedError(
-                    "Invalid option for \'axis_type\'. Valid options are: "
-                    f"\'lin\', \'log10\', \'ln\'. You chose {axis_type}."
+                    "Invalid option for 'axis_type'. Valid options are: "
+                    f"'lin', 'log10', 'ln'. You chose {axis_type}."
                 )
 
             # handle data types different from float (default)
-            if data_type == 'INT':
+            if data_type == "INT":
                 grid_point_list[index] = grid_point_list[index].astype(int)
 
-            elif data_type == 'FLOAT':
+            elif data_type == "FLOAT":
                 pass
 
             else:

@@ -84,15 +84,15 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
     # posterior var: [0.1, 0.1, 0.1, 0.1]
     # however, we only have a very inaccurate approximation here:
     np.testing.assert_almost_equal(
-        results['mean'], np.array([[0.23384, 0.21806, 0.24079, 0.24528]]), decimal=5
+        results["mean"], np.array([[0.23384, 0.21806, 0.24079, 0.24528]]), decimal=5
     )
 
     np.testing.assert_almost_equal(
-        results['var'], np.array([[0.30894, 0.15192, 0.19782, 0.18781]]), decimal=5
+        results["var"], np.array([[0.30894, 0.15192, 0.19782, 0.18781]]), decimal=5
     )
 
     np.testing.assert_almost_equal(
-        results['cov'],
+        results["cov"],
         np.array(
             [
                 [
@@ -125,7 +125,7 @@ def fixture_create_experimental_data(tmp_path):
     pdf = np.array(pdf)
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': pdf}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": pdf}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)

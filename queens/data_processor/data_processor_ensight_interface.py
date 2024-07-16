@@ -55,7 +55,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
-        path_ref_data_str = file_options_dict.get('path_to_ref_data')
+        path_ref_data_str = file_options_dict.get("path_to_ref_data")
         if not path_ref_data_str:
             raise ValueError(
                 "You must provide the option 'path_to_ref_data' within the 'file_options_dict' "
@@ -64,28 +64,28 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         path_ref_data = Path(path_ref_data_str)
         experimental_reference_data = self.read_monitorfile(path_ref_data)
 
-        time_tol = file_options_dict.get('time_tol')
+        time_tol = file_options_dict.get("time_tol")
         if not time_tol:
             raise ValueError(
                 "You must provide the option 'time_tol' within the 'file_options_dict' "
                 f"in '{self.__class__.__name__}'. Abort ..."
             )
 
-        visualization_bool = file_options_dict.get('visualization', False)
+        visualization_bool = file_options_dict.get("visualization", False)
         if not isinstance(visualization_bool, bool):
             raise TypeError(
                 "The option 'visualization' must be of type 'bool' "
                 f"but you provided type {type(visualization_bool)}. Abort..."
             )
 
-        displacement_fields = file_options_dict.get('displacement_fields', ['displacement'])
+        displacement_fields = file_options_dict.get("displacement_fields", ["displacement"])
         if not isinstance(displacement_fields, list):
             raise TypeError(
                 "The option 'displacement_fields' must be of type 'list' "
                 f"but you provided type {type(displacement_fields)}. Abort..."
             )
 
-        problem_dimension = file_options_dict.get('problem_dimension', '2d')
+        problem_dimension = file_options_dict.get("problem_dimension", "2d")
         if not isinstance(problem_dimension, str):
             raise TypeError(
                 "The option 'problem_dimension' must be of type 'str' "
@@ -112,7 +112,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         Returns:
             monfile_data (list): Data from monitor file in numbers
         """
-        with open(path_to_experimental_reference_data, encoding='utf-8') as my_file:
+        with open(path_to_experimental_reference_data, encoding="utf-8") as my_file:
             lines = my_file.readlines()
             i = 0
             npoints = 0
@@ -123,14 +123,14 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             steps_lines = []
             # sort lines into npoint_lines and steps_lines
             for line in lines:
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
                 line = line.strip()
-                if line.startswith('steps'):
+                if line.startswith("steps"):
                     firstline = line
-                    steps = re.findall('^(?:steps )(.+)(?= npoints)', firstline, re.M)
+                    steps = re.findall("^(?:steps )(.+)(?= npoints)", firstline, re.M)
                     steps = int(steps[0])
-                    npoints = re.findall('^(?:steps )(?:.+)?(?: npoints )(.+)', firstline, re.M)
+                    npoints = re.findall("^(?:steps )(?:.+)?(?: npoints )(.+)", firstline, re.M)
                     npoints = int(npoints[0])
                     continue
                 if i < npoints:
@@ -142,7 +142,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
             if npoints == 0 or steps == 0:
                 raise ValueError(
-                    'read_monitorfile did not find useful content. Monitor format is probably wrong'
+                    "read_monitorfile did not find useful content. Monitor format is probably wrong"
                 )
 
         # read numeric content from file data
@@ -286,12 +286,12 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         elif len(locations) == 4:
             local_element = vtk.vtkQuad()
         else:
-            raise ValueError('Unknown local_element type for structure surface discretization.')
+            raise ValueError("Unknown local_element type for structure surface discretization.")
         return local_element
 
     def _get_dim_dependent_vtk_output(self, geoout):
         """Return the vtk output dependent of problem dimension."""
-        if self.problem_dimension == '2d':
+        if self.problem_dimension == "2d":
             outline = vtk.vtkFeatureEdges()
             outline.SetInputData(geoout)
             outline.Update()
@@ -300,7 +300,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             outlines = outlineout.GetLines()
             outline_data_vtk = outlines.GetData()
 
-        elif self.problem_dimension == '3d':
+        elif self.problem_dimension == "3d":
             outlineout = geoout
             outlines = outlineout.GetPolys()
             outline_data_vtk = outlines.GetData()
@@ -451,11 +451,11 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         if len(ensight_time) > 1:
             raise ValueError(
-                'point in time from *.monitor file used with time_tol is not unique in results'
+                "point in time from *.monitor file used with time_tol is not unique in results"
             )
         if len(ensight_time) == 0:
             raise ValueError(
-                'point in time from *.monitor file used with time_tol not existing in results'
+                "point in time from *.monitor file used with time_tol not existing in results"
             )
 
         raw_data.SetTimeValue(ensight_time)
@@ -465,8 +465,8 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         number_of_blocks = output.GetNumberOfBlocks()
         if number_of_blocks != 1:
             raise ValueError(
-                'ensight reader output has more or less than one block. This is not expected.'
-                'Investigate your data!'
+                "ensight reader output has more or less than one block. This is not expected."
+                "Investigate your data!"
             )
         block = output.GetBlock(0)
 

@@ -58,7 +58,7 @@ class BMFIAVisualization:
     # some overall class states
     plt.rcParams.update(plt.rcParamsDefault)
     plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({'font.size': 15})
+    plt.rcParams.update({"font.size": 15})
 
     def __init__(self, paths, save_bools, plot_booleans):
         """TODO_doc.
@@ -134,14 +134,14 @@ class BMFIAVisualization:
                     f"Your posterior has {samples.shape[1]}-dimensions. Abort ...."
                 )
 
-            sns.set_theme(style='whitegrid')
+            sns.set_theme(style="whitegrid")
             _, ax = plt.subplots(figsize=(6, 6))
             sns.scatterplot(x=samples[:, 0], y=samples[:, 1], s=5)
             sns.kdeplot(x=samples[:, 0], y=samples[:, 1], weights=weights)
 
             ax.set_title(r"Posterior distribution $p(x,y|D)$")
-            ax.set_xlabel(fr'${dim_labels_lst[0]}$')
-            ax.set_ylabel(fr'${dim_labels_lst[1]}$')
+            ax.set_xlabel(rf"${dim_labels_lst[0]}$")
+            ax.set_ylabel(rf"${dim_labels_lst[1]}$")
             ax.set_xlim(-0.2, 1.2)
             ax.set_ylim(-0.2, 1.2)
 
@@ -190,7 +190,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
     num_test_points = 50
 
     num_rows = int(np.ceil(np.sqrt(z_train.shape[2])))
-    row_list = [{'type': 'surface'}] * num_rows
+    row_list = [{"type": "surface"}] * num_rows
 
     specs_list = [row_list for x in range(num_rows)]
     fig = make_subplots(rows=num_rows, cols=num_rows, specs=specs_list)
@@ -210,9 +210,9 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
             z_test = np.hstack((y_test.reshape(-1, 1), gamma_test.reshape(-1, 1)))
 
             reg_obj = regression_obj_lst[num_coord]
-            output = reg_obj.predict(z_test, support='y')
-            mu = output['mean']
-            var = output['variance']
+            output = reg_obj.predict(z_test, support="y")
+            mu = output["mean"]
+            var = output["variance"]
             row = j + 1
             col = i + 1
 
@@ -221,7 +221,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     x=z_train[0, :, num_coord].flatten(),
                     y=z_train[1, :, num_coord].flatten(),
                     z=y_hf_train[:, num_coord].flatten(),
-                    mode='markers',
+                    mode="markers",
                     marker={"size": 3},
                 ),
                 row=row,
@@ -233,7 +233,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     x=y_test,
                     y=gamma_test,
                     z=mu.reshape(y_test.shape),
-                    colorscale='Viridis',
+                    colorscale="Viridis",
                     showscale=False,
                 ),
                 row=row,
@@ -245,7 +245,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     x=y_test,
                     y=gamma_test,
                     z=(mu - np.sqrt(var)).reshape(y_test.shape),
-                    colorscale='Viridis',
+                    colorscale="Viridis",
                     showscale=False,
                     opacity=0.5,
                 ),
@@ -257,7 +257,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     x=y_test,
                     y=gamma_test,
                     z=(mu + np.sqrt(var)).reshape(y_test.shape),
-                    colorscale='Viridis',
+                    colorscale="Viridis",
                     showscale=False,
                     opacity=0.5,
                 ),
@@ -267,13 +267,13 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
 
             fig.update_layout(
                 scene={
-                    "xaxis": {"title": r'$y_{LF}$'},
-                    "yaxis": {"title": r'$\gamma$'},
-                    "zaxis": {"title": r'$y_{HF}$'},
+                    "xaxis": {"title": r"$y_{LF}$"},
+                    "yaxis": {"title": r"$\gamma$"},
+                    "zaxis": {"title": r"$y_{HF}$"},
                 },
                 xaxis_range=[np.min(z_train[0, :, num_coord]), np.max(z_train[0, :, num_coord])],
                 yaxis_range=[np.min(z_train[1, :, num_coord]), np.max(z_train[1, :, num_coord])],
-                scene_aspectmode='cube',
+                scene_aspectmode="cube",
             )
 
     fig.show()
@@ -302,65 +302,65 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
         y_lf_test = np.linspace(np.min(yhf), np.max(yhf), 100)
 
         ax = axx[0]
-        output_dict = regression_obj.predict(y_lf_test.T, 'y')
-        mean_vec = np.atleast_2d(output_dict['mean']).T
-        var_vec = output_dict['variance']
+        output_dict = regression_obj.predict(y_lf_test.T, "y")
+        mean_vec = np.atleast_2d(output_dict["mean"]).T
+        var_vec = output_dict["variance"]
         std_vec = np.atleast_2d(np.sqrt(var_vec)).T
 
         # identity
         ax.plot(
             Y_HF_train.reshape(-1, 1).squeeze(),
             Y_HF_train.reshape(-1, 1).squeeze(),
-            linestyle='-',
-            marker='',
-            color='g',
+            linestyle="-",
+            marker="",
+            color="g",
             alpha=1,
             linewidth=2,
-            label=r'$y_{\mathrm{HF}}=y_{\mathrm{LF}}$, (Identity)',
+            label=r"$y_{\mathrm{HF}}=y_{\mathrm{LF}}$, (Identity)",
         )
 
         ax.scatter(
             z,
             yhf,
-            marker='x',
+            marker="x",
             s=70,
-            color='r',
-            label=r'$\mathcal{D}_{y}=\{Y_{\mathrm{LF}},Y_{\mathrm{HF}}\}$, (Training)',
+            color="r",
+            label=r"$\mathcal{D}_{y}=\{Y_{\mathrm{LF}},Y_{\mathrm{HF}}\}$, (Training)",
         )
 
         ax.plot(
             y_lf_test,
             mean_vec,
-            color='darkblue',
+            color="darkblue",
             linewidth=1,
-            label=r'$\mathrm{m}_{\mathcal{D}_y}(y_{\mathrm{LF}})$, (Posterior mean)',
+            label=r"$\mathrm{m}_{\mathcal{D}_y}(y_{\mathrm{LF}})$, (Posterior mean)",
         )
 
         # posterior confidence
         ax.plot(
             y_lf_test,
             np.add(mean_vec, 2 * std_vec),
-            color='darkblue',
+            color="darkblue",
             linewidth=1,
-            linestyle='--',
+            linestyle="--",
             alpha=0.5,
-            label=r'$\mathrm{m}_{\mathcal{D}_y}(y_{\mathrm{LF}})\pm 2\cdot\sqrt{\mathrm{v}_'
-            r'{\mathcal{D}_y}(y_{\mathrm{LF}})}$, (Confidence)',
+            label=r"$\mathrm{m}_{\mathcal{D}_y}(y_{\mathrm{LF}})\pm 2\cdot\sqrt{\mathrm{v}_"
+            r"{\mathcal{D}_y}(y_{\mathrm{LF}})}$, (Confidence)",
         )
 
         ax.plot(
             y_lf_test,
             np.add(mean_vec, -2 * std_vec),
-            color='darkblue',
+            color="darkblue",
             alpha=0.5,
             linewidth=1,
-            linestyle='--',
+            linestyle="--",
         )
 
-        ax.set_xlabel(r'$y_{\mathrm{LF}}$')
-        ax.set_ylabel(r'$y_{\mathrm{HF}}$')
-        ax.grid(which='major', linestyle='-')
-        ax.grid(which='minor', linestyle='--', alpha=0.5)
+        ax.set_xlabel(r"$y_{\mathrm{LF}}$")
+        ax.set_ylabel(r"$y_{\mathrm{HF}}$")
+        ax.grid(which="major", linestyle="-")
+        ax.grid(which="minor", linestyle="--", alpha=0.5)
         ax.set_xlim([min(y_lf_test), max(y_lf_test)])
         ax.set_ylim([min(y_lf_test), max(y_lf_test)])
         ax.minorticks_on()

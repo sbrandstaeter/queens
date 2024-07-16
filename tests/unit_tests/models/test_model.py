@@ -36,7 +36,7 @@ def test_evaluate_and_gradient(model):
 
     def model_eval(self, x):
         assert self.evaluate_and_gradient_bool is True
-        return {'result': np.sum(x**2, axis=1, keepdims=True)}
+        return {"result": np.sum(x**2, axis=1, keepdims=True)}
 
     model.grad = Mock(
         side_effect=lambda x, upstream_gradient: np.sum(
@@ -50,7 +50,7 @@ def test_evaluate_and_gradient(model):
         assert model.grad.call_count == 1
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)
         np.testing.assert_array_equal(
-            model.grad.call_args.kwargs['upstream_gradient'], np.ones((samples.shape[0], 1))
+            model.grad.call_args.kwargs["upstream_gradient"], np.ones((samples.shape[0], 1))
         )
 
         expected_model_out = np.sum(samples**2, axis=1, keepdims=True)
@@ -64,7 +64,7 @@ def test_evaluate_and_gradient(model):
         assert model.grad.call_count == 2
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)
         np.testing.assert_array_equal(
-            model.grad.call_args.kwargs['upstream_gradient'], upstream_[:, np.newaxis]
+            model.grad.call_args.kwargs["upstream_gradient"], upstream_[:, np.newaxis]
         )
 
         assert model.evaluate_and_gradient_bool is False

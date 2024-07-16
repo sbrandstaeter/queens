@@ -94,9 +94,9 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         ]
     )
 
-    np.testing.assert_allclose(results['first_order'].values, expected_s1, atol=1e-05)
-    np.testing.assert_allclose(results['second_order'].values, expected_s2, atol=1e-05)
-    np.testing.assert_allclose(results['total_order'].values, expected_st, atol=1e-05)
+    np.testing.assert_allclose(results["first_order"].values, expected_s1, atol=1e-05)
+    np.testing.assert_allclose(results["second_order"].values, expected_s2, atol=1e-05)
+    np.testing.assert_allclose(results["total_order"].values, expected_st, atol=1e-05)
 
 
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
@@ -163,7 +163,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         [[0.23426643, 0.00801287, 0.00230968, 0.00729179, 0.17544544, 0.09419407, 0.16736517]]
     )
 
-    np.testing.assert_allclose(results['third_order'].values, expected_s3, atol=1e-05)
+    np.testing.assert_allclose(results["third_order"].values, expected_s3, atol=1e-05)
 
 
 def test_sobol_indices_ishigami_gp_mean(global_settings):
@@ -239,5 +239,5 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         ]
     )
 
-    np.testing.assert_allclose(results['first_order'].values, expected_s1, atol=1e-05)
-    np.testing.assert_allclose(results['total_order'].values, expected_st, atol=1e-05)
+    np.testing.assert_allclose(results["first_order"].values, expected_s1, atol=1e-05)
+    np.testing.assert_allclose(results["total_order"].values, expected_st, atol=1e-05)

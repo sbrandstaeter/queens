@@ -9,7 +9,7 @@ import pytest
 from queens.utils import smc_utils
 
 
-@pytest.fixture(name="num_particles", scope='module', params=[1, 10])
+@pytest.fixture(name="num_particles", scope="module", params=[1, 10])
 def fixture_num_particles(request):
     """Return possible number of weights."""
     return request.param

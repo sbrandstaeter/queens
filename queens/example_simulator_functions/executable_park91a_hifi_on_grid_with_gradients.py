@@ -94,10 +94,10 @@ def main(run_type, params):
     x3_vec = x3_vec.flatten()
     x4_vec = x4_vec.flatten()
 
-    run_type_dict = {'s': run_type_standard, 'p': run_type_provided_gradient, 'a': run_type_adjoint}
+    run_type_dict = {"s": run_type_standard, "p": run_type_provided_gradient, "a": run_type_adjoint}
     run_function = run_type_dict.get(run_type)
     if run_function is None:
-        raise ValueError(f'Invalid run_type, run_type must be in {run_type_dict.keys}!')
+        raise ValueError(f"Invalid run_type, run_type must be in {run_type_dict.keys}!")
 
     function_output, evaluated_gradient_expression = run_function(x3_vec, x4_vec, params)
 
@@ -119,7 +119,7 @@ def run_type_standard(x3_vec, x4_vec, params):
     y_vec = []
     y_grad = []
     for x3, x4 in zip(x3_vec, x4_vec):
-        y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
+        y_vec.append(park91a_hifi_coords(params["x1"], params["x2"], x3, x4)[0])
     y_vec = np.array(y_vec)
     y_grad = np.array(y_grad)
     return y_vec, y_grad
@@ -140,8 +140,8 @@ def run_type_provided_gradient(x3_vec, x4_vec, params):
     y_vec = []
     y_grad = []
     for x3, x4 in zip(x3_vec, x4_vec):
-        y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
-        y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
+        y_vec.append(park91a_hifi_coords(params["x1"], params["x2"], x3, x4)[0])
+        y_grad.append(park91a_hifi_coords(params["x1"], params["x2"], x3, x4)[1][:])
     y_vec = np.array(y_vec)
     y_grad = np.array(y_grad).T
     return y_vec, y_grad
@@ -162,7 +162,7 @@ def run_type_adjoint(x3_vec, x4_vec, params):
     y_vec = []
     y_grad = []
     for x3, x4 in zip(x3_vec, x4_vec):
-        y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
+        y_grad.append(park91a_hifi_coords(params["x1"], params["x2"], x3, x4)[1][:])
 
     # we define g(y,x1,x2) = y - term1 - term2 = 0
     # as y is explicit in g, dg_dy = 1:
@@ -171,7 +171,7 @@ def run_type_adjoint(x3_vec, x4_vec, params):
     # hence: lambda = -do_dy, which we will load in the next lines:
     adjoint_base_path = Path(sys.argv[2]).parent  # not parent but -
     adjoint_path = adjoint_base_path / "grad_objective.csv"
-    do_dy = genfromtxt(adjoint_path, delimiter=',')
+    do_dy = genfromtxt(adjoint_path, delimiter=",")
     lambda_var = np.negative(np.atleast_2d(np.array(do_dy)))
 
     # now we need to implement g_x, the jacobian of the residuum function w.r.t. the input
@@ -200,7 +200,7 @@ def write_results(output, output_path):
 
 def read_input_file(input_file_path):
     """Read-in input from csv file."""
-    inputs = genfromtxt(input_file_path, delimiter=r',|\s+')
+    inputs = genfromtxt(input_file_path, delimiter=r",|\s+")
     return inputs
 
 

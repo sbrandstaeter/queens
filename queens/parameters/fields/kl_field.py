@@ -145,7 +145,7 @@ class KarhunenLoeveRandomField(RandomField):
         covariance matrix using the external geometry and coordinates.
         """
         # assume squared exponential kernel
-        distance = squareform(pdist(self.coords['coords'], 'sqeuclidean'))
+        distance = squareform(pdist(self.coords["coords"], "sqeuclidean"))
         covariance = (self.std**2) * np.exp(-distance / (2 * self.corr_length**2))
         covariance[covariance < self.cut_off] = 0
         self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)

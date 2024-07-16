@@ -86,15 +86,15 @@ class SobolIndexEstimator:
         Returns:
             estimator: SobolIndexEstimator
         """
-        number_monte_carlo_samples = method_options['number_monte_carlo_samples']
+        number_monte_carlo_samples = method_options["number_monte_carlo_samples"]
         calculate_second_order = method_options.get("second_order", False)
-        number_gp_realizations = method_options['number_gp_realizations']
-        number_bootstrap_samples = method_options['number_bootstrap_samples']
-        seed_bootstrap_samples = method_options.get('seed_bootstrap_samples', 42)
-        _logger.info('Number of bootstrap samples = %i', number_bootstrap_samples)
+        number_gp_realizations = method_options["number_gp_realizations"]
+        number_bootstrap_samples = method_options["number_bootstrap_samples"]
+        seed_bootstrap_samples = method_options.get("seed_bootstrap_samples", 42)
+        _logger.info("Number of bootstrap samples = %i", number_bootstrap_samples)
 
-        first_order_estimator = method_options.get("first_order_estimator", 'Saltelli2010')
-        _logger.info('First-order estimator %s', first_order_estimator)
+        first_order_estimator = method_options.get("first_order_estimator", "Saltelli2010")
+        _logger.info("First-order estimator %s", first_order_estimator)
 
         estimates_first_order, estimates_second_order, estimates_total_order = cls._init_dataset(
             number_gp_realizations,
@@ -150,17 +150,17 @@ class SobolIndexEstimator:
             # sort raw output from parallel processes
             self._sort_output(raw_output, parameter_name, cross_parameter_names)
 
-            _logger.info('Time for parameter %s: %f', parameter_name, time.time() - start_time)
+            _logger.info("Time for parameter %s: %f", parameter_name, time.time() - start_time)
 
         pool.close()
 
-        _logger.debug('First-order estimates: %s', self.estimates_first_order.values)
-        _logger.debug('Total-order estimates: %s', self.estimates_total_order.values)
+        _logger.debug("First-order estimates: %s", self.estimates_first_order.values)
+        _logger.debug("Total-order estimates: %s", self.estimates_total_order.values)
 
         estimates = {
-            'first_order': self.estimates_first_order,
-            'total_order': self.estimates_total_order,
-            'second_order': self.estimates_second_order,
+            "first_order": self.estimates_first_order,
+            "total_order": self.estimates_total_order,
+            "second_order": self.estimates_second_order,
         }
         return estimates
 
@@ -421,12 +421,12 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
         Returns:
             estimator: SobolIndexEstimatorThirdOrder
         """
-        number_monte_carlo_samples = method_options['number_monte_carlo_samples']
+        number_monte_carlo_samples = method_options["number_monte_carlo_samples"]
         calculate_second_order = method_options.get("second_order", False)
-        number_gp_realizations = method_options['number_gp_realizations']
-        number_bootstrap_samples = method_options['number_bootstrap_samples']
-        seed_bootstrap_samples = method_options.get('seed_bootstrap_samples', 42)
-        first_order_estimator = method_options.get("first_order_estimator", 'Saltelli2010')
+        number_gp_realizations = method_options["number_gp_realizations"]
+        number_bootstrap_samples = method_options["number_bootstrap_samples"]
+        seed_bootstrap_samples = method_options.get("seed_bootstrap_samples", 42)
+        first_order_estimator = method_options.get("first_order_estimator", "Saltelli2010")
 
         calculate_third_order = method_options.get("third_order", False)
         third_order_parameters = method_options.get("third_order_parameters", None)
@@ -483,15 +483,15 @@ class SobolIndexEstimatorThirdOrder(SobolIndexEstimator):
         pool.close()
 
         # sort raw output from parallel processes
-        self._sort_output(raw_output, '', [])
+        self._sort_output(raw_output, "", [])
 
-        _logger.info('Time for third-order indices: %f', time.time() - start_time)
+        _logger.info("Time for third-order indices: %f", time.time() - start_time)
 
         estimates = {
-            'first_order': None,
-            'total_order': None,
-            'second_order': None,
-            'third_order': self.estimates_third_order,
+            "first_order": None,
+            "total_order": None,
+            "second_order": None,
+            "third_order": self.estimates_third_order,
         }
         return estimates
 

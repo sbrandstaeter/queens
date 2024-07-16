@@ -30,11 +30,11 @@ class JobscriptDriver(Driver):
         cluster_script_path,
         files_to_copy=None,
         post_file_prefix=None,
-        post_process_options='',
+        post_process_options="",
         path_to_postprocessor=None,
         data_processor=None,
         gradient_data_processor=None,
-        jobscript_file_name='jobscript.sh',
+        jobscript_file_name="jobscript.sh",
     ):
         """Initialize MpiDriver object.
 
@@ -86,7 +86,7 @@ class JobscriptDriver(Driver):
         Returns:
             Result and potentially the gradient
         """
-        job_id = sample_dict.pop('job_id')
+        job_id = sample_dict.pop("job_id")
         job_dir, output_dir, _, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
@@ -99,9 +99,9 @@ class JobscriptDriver(Driver):
 
         final_jobscript_options = {
             **self.jobscript_options,
-            'DESTDIR': output_dir,
-            'INPUT': input_file,
-            'JOB_ID': job_id,
+            "DESTDIR": output_dir,
+            "INPUT": input_file,
+            "JOB_ID": job_id,
         }
 
         # Strict is False as the options depend on the cluster jobscripts
@@ -110,7 +110,7 @@ class JobscriptDriver(Driver):
         )
 
         with metadata.time_code("run_executable_and_postprocessing"):
-            execute_cmd = 'bash ' + str(jobscript_file)
+            execute_cmd = "bash " + str(jobscript_file)
             self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
 
         with metadata.time_code("data_processing"):

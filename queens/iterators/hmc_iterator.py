@@ -56,7 +56,7 @@ class HMCIterator(PyMCIterator):
         step_size=0.25,
         scaling=None,
         is_cov=False,
-        init_strategy='auto',
+        init_strategy="auto",
         advi_iterations=50_000,
     ):
         """Initialize HMC iterator.

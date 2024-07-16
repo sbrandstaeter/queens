@@ -57,7 +57,7 @@ def get_module_attribute(path_to_module, function_or_class_name):
     return function
 
 
-def get_module_class(module_options, valid_types, module_type_specifier='type'):
+def get_module_class(module_options, valid_types, module_type_specifier="type"):
     """Return module class defined in config file.
 
     Args:

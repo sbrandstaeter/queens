@@ -68,5 +68,5 @@ def test_gaussian_smc_chopin_adaptive_tempering(
     # posterior var: [0.5]
     # posterior std: [0.70710678]
     # however, we only have a very inaccurate approximation here:
-    assert np.abs(results['raw_output_data']['mean'] - 1) < 0.2
-    assert np.abs(results['raw_output_data']['var'] - 0.5) < 0.2
+    assert np.abs(results["raw_output_data"]["mean"] - 1) < 0.2
+    assert np.abs(results["raw_output_data"]["var"] - 0.5) < 0.2

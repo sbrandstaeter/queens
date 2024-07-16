@@ -12,8 +12,8 @@ def fixture_dummy_vis(tmp_path):
         tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
-    save_booleans = {'bar': True, 'scatter': True}
-    plot_booleans = {'bar': True, 'scatter': True}
+    save_booleans = {"bar": True, "scatter": True}
+    plot_booleans = {"bar": True, "scatter": True}
     sa_vis = SAVisualization(saving_paths, save_booleans, plot_booleans)
 
     return sa_vis
@@ -30,8 +30,8 @@ def test_init(tmp_path, dummy_vis):
         tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
-    save_booleans = {'bar': True, 'scatter': True}
-    plot_booleans = {'bar': True, 'scatter': True}
+    save_booleans = {"bar": True, "scatter": True}
+    plot_booleans = {"bar": True, "scatter": True}
 
     assert dummy_vis.saving_paths == saving_paths
     assert dummy_vis.should_be_saved == save_booleans
@@ -47,7 +47,7 @@ def fixture_dummy_sensitivity_indices():
         *sigma*, *mu_star_conf*)
     """
     results = {"sensitivity_indices": {}}
-    results["sensitivity_indices"]["names"] = ['youngs1', 'youngs2', 'nue', 'beta', 'pressure']
+    results["sensitivity_indices"]["names"] = ["youngs1", "youngs2", "nue", "beta", "pressure"]
     results["sensitivity_indices"]["mu"] = [-0.24, -0.25, -1.42, -0.32, 0.78]
     results["sensitivity_indices"]["mu_star"] = [0.24, 0.25, 1.42, 0.32, 0.78]
     results["sensitivity_indices"]["sigma"] = [0.03, 0.10, 0.24, 0.01, 0.18]

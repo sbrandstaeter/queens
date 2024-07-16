@@ -16,11 +16,11 @@ def fixture_paths_dictionary(tmp_path, third_party_inputs, baci_link_paths):
     plot_dir = tmp_path
 
     paths_dictionary = {
-        'experimental_data_path': experimental_data_path,
-        'baci_hf_input': third_party_input_file_hf,
-        'baci_lf_input': third_party_input_file_lf,
-        'baci-release': baci_release,
-        'post_ensight': post_ensight,
-        'plot_dir': plot_dir,
+        "experimental_data_path": experimental_data_path,
+        "baci_hf_input": third_party_input_file_hf,
+        "baci_lf_input": third_party_input_file_lf,
+        "baci-release": baci_release,
+        "post_ensight": post_ensight,
+        "plot_dir": plot_dir,
     }
     return paths_dictionary

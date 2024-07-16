@@ -23,16 +23,16 @@ from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
 from queens.models.surrogate_models.gp_heteroskedastic_gpflow import HeteroskedasticGPModel
 
 VALID_TYPES = {
-    'simulation_model': SimulationModel,
-    'bmfmc_model': BMFMCModel,
-    'gaussian': GaussianLikelihood,
-    'bmf_gaussian': BMFGaussianModel,
-    'differentiable_simulation_model_fd': DifferentiableSimulationModelFD,
-    'differentiable_simulation_model_adjoint': DifferentiableSimulationModelAdjoint,
-    'heteroskedastic_gp': HeteroskedasticGPModel,
-    'gp_approximation_gpflow': GPFlowRegressionModel,
-    'gaussian_bayesian_neural_network': GaussianBayesianNeuralNetworkModel,
-    'gp_jitted': GPJittedModel,
-    'gp_approximation_gpflow_svgp': GPflowSVGPModel,
-    'gaussian_nn': GaussianNeuralNetworkModel,
+    "simulation_model": SimulationModel,
+    "bmfmc_model": BMFMCModel,
+    "gaussian": GaussianLikelihood,
+    "bmf_gaussian": BMFGaussianModel,
+    "differentiable_simulation_model_fd": DifferentiableSimulationModelFD,
+    "differentiable_simulation_model_adjoint": DifferentiableSimulationModelAdjoint,
+    "heteroskedastic_gp": HeteroskedasticGPModel,
+    "gp_approximation_gpflow": GPFlowRegressionModel,
+    "gaussian_bayesian_neural_network": GaussianBayesianNeuralNetworkModel,
+    "gp_jitted": GPJittedModel,
+    "gp_approximation_gpflow_svgp": GPflowSVGPModel,
+    "gaussian_nn": GaussianNeuralNetworkModel,
 }

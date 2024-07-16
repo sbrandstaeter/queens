@@ -55,7 +55,7 @@ def fixture_distribution_fcc(reference_data):
     return distribution
 
 
-@pytest.fixture(name="distributions", params=['init', 'fcc'])
+@pytest.fixture(name="distributions", params=["init", "fcc"])
 def fixture_distributions(request, distribution, distribution_fcc):
     """Distributions fixture once from init once from fcc."""
     if request.param == "init":

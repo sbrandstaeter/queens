@@ -64,7 +64,7 @@ class NUTSIterator(PyMCIterator):
         target_accept=0.8,
         scaling=None,
         is_cov=False,
-        init_strategy='auto',
+        init_strategy="auto",
         advi_iterations=500_000,
     ):
         """Initialize NUTS iterator.

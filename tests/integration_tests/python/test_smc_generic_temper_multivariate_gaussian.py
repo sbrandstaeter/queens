@@ -77,15 +77,15 @@ def test_smc_generic_temper_multivariate_gaussian(
     # note that the analytical solution can be found in multivariate_gaussian_4D_logpdf
     # we only have a very inaccurate approximation here:
     np.testing.assert_array_almost_equal(
-        results['mean'], np.array([[0.884713, 2.903405, -3.112647, 1.56134]]), decimal=5
+        results["mean"], np.array([[0.884713, 2.903405, -3.112647, 1.56134]]), decimal=5
     )
 
     np.testing.assert_almost_equal(
-        results['var'], np.array([[3.255066, 4.143380, 1.838545, 2.834356]]), decimal=5
+        results["var"], np.array([[3.255066, 4.143380, 1.838545, 2.834356]]), decimal=5
     )
 
     np.testing.assert_almost_equal(
-        results['cov'],
+        results["cov"],
         np.array(
             [
                 [
@@ -116,7 +116,7 @@ def fixture_create_experimental_data(tmp_path):
     pdf = gaussian_4d_logpdf(samples)
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': pdf}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": pdf}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

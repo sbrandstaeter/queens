@@ -7,8 +7,8 @@ from numba import jit, njit, prange
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 from numpy.linalg.linalg import cholesky
 
-warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
+warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 
 # --- squared exponential covariance function -------------------
@@ -198,7 +198,7 @@ def posterior_var_squared_exponential(
         posterior_variance_vec[j] = k_test - np.dot(
             np.dot(k_vec_test_train.T, k_mat_inv), k_vec_test_train
         )
-    if support == 'y':
+    if support == "y":
         posterior_variance_vec = posterior_variance_vec + sigma_n_sq
 
     return posterior_variance_vec
@@ -470,7 +470,7 @@ def posterior_var_matern_3_2(
         k_mat_test - np.dot(np.dot(k_mat_test_train.T, k_mat_inv), k_mat_test_train)
     )
 
-    if support == 'y':
+    if support == "y":
         posterior_variance_vec = posterior_variance_vec + sigma_n_sq
 
     return posterior_variance_vec

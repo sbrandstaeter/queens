@@ -11,8 +11,8 @@ from queens.data_processor.data_processor_ensight_interface import (
 from queens.data_processor.data_processor_numpy import DataProcessorNumpy
 
 VALID_TYPES = {
-    'csv': DataProcessorCsv,
-    'ensight': DataProcessorEnsight,
-    'ensight_interface_discrepancy': DataProcessorEnsightInterfaceDiscrepancy,
-    'numpy': DataProcessorNumpy,
+    "csv": DataProcessorCsv,
+    "ensight": DataProcessorEnsight,
+    "ensight_interface_discrepancy": DataProcessorEnsightInterfaceDiscrepancy,
+    "numpy": DataProcessorNumpy,
 }

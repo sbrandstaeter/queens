@@ -55,18 +55,18 @@ def assert_surrogate_model_output(
         grad_var_ref (np.ndarray): reference gradient of the variance
         decimals (lst): list of desired decimal precisions
     """
-    mean = output['result']
-    variance = output['variance']
+    mean = output["result"]
+    variance = output["variance"]
 
     np.testing.assert_array_almost_equal(mean, mean_ref, decimal=decimals[0])
     np.testing.assert_array_almost_equal(variance, var_ref, decimal=decimals[1])
 
     if grad_mean_ref is not None:
-        gradient_mean = output['grad_mean']
+        gradient_mean = output["grad_mean"]
         np.testing.assert_array_almost_equal(gradient_mean, grad_mean_ref, decimal=decimals[2])
 
     if grad_var_ref is not None:
-        gradient_variance = output['grad_var']
+        gradient_variance = output["grad_var"]
         np.testing.assert_array_almost_equal(gradient_variance, grad_var_ref, decimal=decimals[3])
 
 

@@ -84,8 +84,8 @@ class LogpdfGPModel(Model):
             quantile (float, opt): Confidence quantile
             jitter (float, opt): Nugget term for numerical stability of Cholesky decomposition
         """
-        if approx_type not in ['GPMAP-I', 'CGPMAP-II', 'CFBGP']:
-            raise ValueError(f'Invalid approximation type: {approx_type}')
+        if approx_type not in ["GPMAP-I", "CGPMAP-II", "CFBGP"]:
+            raise ValueError(f"Invalid approximation type: {approx_type}")
         self.approx_type = approx_type
         self.num_hyper = num_hyper
         self.num_optimizations = num_optimizations
@@ -131,7 +131,7 @@ class LogpdfGPModel(Model):
             self.upper_bound = -0.5 * stats.chi2(num_observations).ppf(0.05)
         self.upper_bound = np.array(max(y_train.max(), self.upper_bound))
         _logger.info(
-            'Upper bound: %f,  y_min: %f, y_max: %f, num_train: %i',
+            "Upper bound: %f,  y_min: %f, y_max: %f, num_train: %i",
             self.upper_bound,
             y_train.min(),
             y_train.max(),
@@ -149,12 +149,12 @@ class LogpdfGPModel(Model):
                 prior_rate=self.prior_rate,
             )
         )
-        if self.approx_type == 'CFBGP':
+        if self.approx_type == "CFBGP":
             self.batch_size = int(4e8 / (y_train.size * self.num_dim * self.num_hyper))
-            with jax.default_device(jax.devices('cpu')[0]):
+            with jax.default_device(jax.devices("cpu")[0]):
                 hyperparameters = self.sample_hyperparameters()
             _logger.info(
-                'Hyperparameters mean: %s, Hyperparameters std: %s',
+                "Hyperparameters mean: %s, Hyperparameters std: %s",
                 np.mean(hyperparameters, axis=0),
                 np.std(hyperparameters, axis=0),
             )
@@ -171,7 +171,7 @@ class LogpdfGPModel(Model):
                 self.chol_k_train_train[i], self.v_train[i] = self.calc_train_factor(hyperparameter)
         else:
             self.batch_size = int(4e8 / (y_train.size * self.num_dim))
-            with jax.default_device(jax.devices('cpu')[0]):
+            with jax.default_device(jax.devices("cpu")[0]):
                 self.hyperparameters = self.optimize_hyperparameters()
             self.chol_k_train_train, self.v_train = self.calc_train_factor(self.hyperparameters)
 
@@ -181,13 +181,13 @@ class LogpdfGPModel(Model):
             scaler_y=self.scaler_y,
         )
 
-        if self.approx_type == 'CFBGP':
+        if self.approx_type == "CFBGP":
             eval_mean_and_std = vmap(eval_mean_and_std, in_axes=(None, 0, 0, 0))
             generate_output_func = self.generate_output_cfbgp
-        elif self.approx_type == 'CGPMAP-II':
+        elif self.approx_type == "CGPMAP-II":
             generate_output_func = self.generate_output_cgpmap_2
 
-        if self.approx_type in ['CFBGP', 'CGPMAP-II']:
+        if self.approx_type in ["CFBGP", "CGPMAP-II"]:
             self.jit_func_generate_output = jit(
                 partial(
                     generate_output_func,
@@ -201,7 +201,7 @@ class LogpdfGPModel(Model):
                 )
             )
 
-        if self.approx_type == 'GPMAP-I':
+        if self.approx_type == "GPMAP-I":
             self.jit_func_generate_output = jit(
                 partial(
                     self.generate_output_gpmap_1,
@@ -254,7 +254,7 @@ class LogpdfGPModel(Model):
             lower_index = upper_index
             upper_index = min(upper_index + self.batch_size, x_test.shape[0])
         log_likelihood = np.array(log_likelihood)
-        return {'result': log_likelihood}
+        return {"result": log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         """Evaluate gradient of model w.r.t.
@@ -287,19 +287,19 @@ class LogpdfGPModel(Model):
         objectives = np.zeros(self.num_optimizations)
         for i in range(self.num_optimizations):
             result = jax_minimize_wrapper.minimize(
-                loss, initial_samples_unconstrained[i], 'L-BFGS-B'
+                loss, initial_samples_unconstrained[i], "L-BFGS-B"
             )
-            positions[i] = result['x']
-            objectives[i] = result['fun']
-        _logger.info('Optimization Time: %f s', time.time() - start)
-        _logger.info('Optimized Loss Value: %f', np.nanmin(np.array(objectives)))
+            positions[i] = result["x"]
+            objectives[i] = result["fun"]
+        _logger.info("Optimization Time: %f s", time.time() - start)
+        _logger.info("Optimized Loss Value: %f", np.nanmin(np.array(objectives)))
         _logger.info(
-            'Number of failed optimizations: %i / %i',
+            "Number of failed optimizations: %i / %i",
             np.sum(np.isnan(np.array(objectives))),
             self.num_optimizations,
         )
         hyperparameters = np.exp(positions[np.nanargmin(objectives)])
-        _logger.info('Optimized hyperparameters: %s', hyperparameters)
+        _logger.info("Optimized hyperparameters: %s", hyperparameters)
         return hyperparameters
 
     def sample_hyperparameters(self):
@@ -338,7 +338,7 @@ class LogpdfGPModel(Model):
 
         start = time.time()
         hyperparameter_samples = run_chain_fn(np.log(initial_hyperparameters))
-        _logger.info('Sampling Time: %f s', time.time() - start)
+        _logger.info("Sampling Time: %f s", time.time() - start)
         hyperparameter_samples = np.exp(hyperparameter_samples)
         return hyperparameter_samples
 
@@ -508,7 +508,7 @@ class LogpdfGPModel(Model):
         k_train_train = rbf(x_train, x_train, hyperparameters[:-1])
         k_train_train = k_train_train + jnp.eye(k_train_train.shape[0]) * hyperparameters[-1]
         k_train_train = k_train_train + jnp.eye(k_train_train.shape[0]) * jitter
-        v_train = jsp.linalg.solve(k_train_train, y_train, assume_a='pos')
+        v_train = jsp.linalg.solve(k_train_train, y_train, assume_a="pos")
         logdet = jnp.linalg.slogdet(k_train_train)[1]
         log_likelihood = -0.5 * (jnp.sum(y_train * v_train) + logdet)
         log_likelihood = log_likelihood - v_train.size / 2 * jnp.log(2 * jnp.pi)

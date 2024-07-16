@@ -92,8 +92,8 @@ class OptimizationIterator(Iterator):
         bounds=Bounds(lb=-np.inf, ub=np.inf),
         constraints=None,
         max_feval=None,
-        algorithm='L-BFGS-B',
-        jac_method='2-point',
+        algorithm="L-BFGS-B",
+        jac_method="2-point",
         jac_rel_step=None,
     ):
         """Initialize an OptimizationIterator.
@@ -192,7 +192,7 @@ class OptimizationIterator(Iterator):
         if constraints:
             for value in constraints.values():
                 # evaluate string of lambda function into real lambda function
-                value['fun'] = eval(value['fun'])  # pylint: disable=eval-used
+                value["fun"] = eval(value["fun"])  # pylint: disable=eval-used
                 constraints_list.append(value)
 
         algorithm = algorithm.upper()
@@ -206,7 +206,7 @@ class OptimizationIterator(Iterator):
         self.max_feval = max_feval
         self.result_description = result_description
         self.verbose_output = verbose_output
-        self.precalculated_positions = {'position': [], 'output': []}
+        self.precalculated_positions = {"position": [], "output": []}
         self.solution = None
 
     def objective_function(self, x_vec):
@@ -255,7 +255,7 @@ class OptimizationIterator(Iterator):
         # sanity checks:
         # in the case of LSQ, the number of residuals needs to be
         # greater or equal to the number of parameters to be fitted
-        if self.algorithm == 'LSQ' and jacobian_matrix.ndim == 2:
+        if self.algorithm == "LSQ" and jacobian_matrix.ndim == 2:
             num_res, num_par = jacobian_matrix.shape
             if num_res < num_par:
                 raise ValueError(
@@ -271,10 +271,10 @@ class OptimizationIterator(Iterator):
 
     def core_run(self):
         """Core run of Optimization iterator."""
-        _logger.info('Welcome to Optimization core run.')
+        _logger.info("Welcome to Optimization core run.")
         start = time.time()
         # nonlinear least squares with bounds using Jacobian
-        if self.algorithm == 'LSQ':
+        if self.algorithm == "LSQ":
             self.solution = least_squares(
                 self.objective_function,
                 self.initial_guess,
@@ -284,28 +284,28 @@ class OptimizationIterator(Iterator):
                 verbose=int(self.verbose_output),
             )
         # minimization with bounds using Jacobian
-        elif self.algorithm in {'L-BFGS-B', 'TNC'}:
+        elif self.algorithm in {"L-BFGS-B", "TNC"}:
             self.solution = minimize(
                 self.objective_function,
                 self.initial_guess,
                 method=self.algorithm,
                 jac=self.jacobian,
                 bounds=self.bounds,
-                options={'maxiter': int(1e4), 'disp': self.verbose_output},
+                options={"maxiter": int(1e4), "disp": self.verbose_output},
             )
         # Constrained Optimization BY Linear Approximation:
         # minimization with constraints without Jacobian
-        elif self.algorithm in {'COBYLA'}:
+        elif self.algorithm in {"COBYLA"}:
             self.solution = minimize(
                 self.objective_function,
                 self.initial_guess,
                 method=self.algorithm,
                 constraints=self.cons,
-                options={'disp': self.verbose_output},
+                options={"disp": self.verbose_output},
             )
         # Sequential Least SQuares Programming:
         # minimization with bounds and constraints using Jacobian
-        elif self.algorithm in {'SLSQP'}:
+        elif self.algorithm in {"SLSQP"}:
             self.solution = minimize(
                 self.objective_function,
                 self.initial_guess,
@@ -313,24 +313,24 @@ class OptimizationIterator(Iterator):
                 jac=self.jacobian,
                 bounds=self.bounds,
                 constraints=self.cons,
-                options={'disp': self.verbose_output},
+                options={"disp": self.verbose_output},
             )
         # minimization (unconstrained, unbounded) without Jacobian
-        elif self.algorithm in {'NELDER-MEAD', 'POWELL'}:
+        elif self.algorithm in {"NELDER-MEAD", "POWELL"}:
             self.solution = minimize(
                 self.objective_function,
                 self.initial_guess,
                 method=self.algorithm,
-                options={'disp': self.verbose_output},
+                options={"disp": self.verbose_output},
             )
         # minimization (unconstrained, unbounded) using Jacobian
-        elif self.algorithm in {'CG', 'BFGS'}:
+        elif self.algorithm in {"CG", "BFGS"}:
             self.solution = minimize(
                 self.objective_function,
                 self.initial_guess,
                 method=self.algorithm,
                 jac=self.jacobian,
-                options={'disp': self.verbose_output},
+                options={"disp": self.verbose_output},
             )
         end = time.time()
         _logger.info("Optimization took %E seconds.", end - start)
@@ -338,7 +338,7 @@ class OptimizationIterator(Iterator):
     def post_run(self):
         """Analyze the resulting optimum."""
         _logger.info("The optimum:\n\t%s", self.solution.x)
-        if self.algorithm == 'LSQ':
+        if self.algorithm == "LSQ":
             _logger.info("Optimality:\n\t%s", self.solution.optimality)
             _logger.info("Cost:\n\t%s", self.solution.cost)
 
@@ -365,9 +365,9 @@ class OptimizationIterator(Iterator):
             if precalculated_output is not None:
                 f_batch.append(precalculated_output)
             else:
-                f_batch.append(self.model.evaluate(position.reshape(1, -1))['result'].reshape(-1))
-                self.precalculated_positions['position'].append(position)
-                self.precalculated_positions['output'].append(f_batch[-1])
+                f_batch.append(self.model.evaluate(position.reshape(1, -1))["result"].reshape(-1))
+                self.precalculated_positions["position"].append(position)
+                self.precalculated_positions["output"].append(f_batch[-1])
         f_batch = np.array(f_batch).squeeze()
         return f_batch
 
@@ -380,7 +380,7 @@ class OptimizationIterator(Iterator):
         Returns:
             np.ndarray: Precalculated model response or *None*
         """
-        for i, precalculated_position in enumerate(self.precalculated_positions['position']):
+        for i, precalculated_position in enumerate(self.precalculated_positions["position"]):
             if np.equal(position, precalculated_position).all():
-                return self.precalculated_positions['output'][i]
+                return self.precalculated_positions["output"][i]
         return None

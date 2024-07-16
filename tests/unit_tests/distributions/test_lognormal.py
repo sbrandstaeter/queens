@@ -16,25 +16,25 @@ def fixture_sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="mean_1d", scope='module')
+@pytest.fixture(name="mean_1d", scope="module")
 def fixture_mean_1d():
     """A possible scalar mean value."""
     return 1.0
 
 
-@pytest.fixture(name="covariance_1d", scope='module')
+@pytest.fixture(name="covariance_1d", scope="module")
 def fixture_covariance_1d():
     """A possible scalar variance value."""
     return 2.0
 
 
-@pytest.fixture(name="lognormal_1d", scope='module')
+@pytest.fixture(name="lognormal_1d", scope="module")
 def fixture_lognormal_1d(mean_1d, covariance_1d):
     """A 1d lognormal distribution."""
     return LogNormalDistribution(normal_mean=mean_1d, normal_covariance=covariance_1d)
 
 
-@pytest.fixture(name="uncorrelated_vector_1d", scope='module')
+@pytest.fixture(name="uncorrelated_vector_1d", scope="module")
 def fixture_uncorrelated_vector_1d(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0]]
@@ -51,31 +51,31 @@ def fixture_sample_pos_2d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="mean_2d", scope='module')
+@pytest.fixture(name="mean_2d", scope="module")
 def fixture_mean_2d():
     """A possible mean vector."""
     return np.array([1.0, -2.0])
 
 
-@pytest.fixture(name="covariance_2d", scope='module')
+@pytest.fixture(name="covariance_2d", scope="module")
 def fixture_covariance_2d():
     """Recompose matrix based on given Cholesky decomposition."""
     return np.array([[1.0, 0.0], [0.0, 2.0]])
 
 
-@pytest.fixture(name="lognormal_2d", scope='module')
+@pytest.fixture(name="lognormal_2d", scope="module")
 def fixture_lognormal_2d(mean_2d, covariance_2d):
     """A multivariate lognormal distribution."""
     return LogNormalDistribution(normal_mean=mean_2d, normal_covariance=covariance_2d)
 
 
-@pytest.fixture(name="num_draws", scope='module', params=[1, 4])
+@pytest.fixture(name="num_draws", scope="module", params=[1, 4])
 def fixture_num_draws(request):
     """Number of samples to draw from distribution."""
     return request.param
 
 
-@pytest.fixture(name="uncorrelated_vector_2d", scope='module')
+@pytest.fixture(name="uncorrelated_vector_2d", scope="module")
 def fixture_uncorrelated_vector_2d(num_draws):
     """A vector of uncorrelated samples from standard normal distribution."""
     vec = [[1.0], [-2.0]]
@@ -105,7 +105,7 @@ def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
 
 def test_init_lognormal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of LogNormal Distribution class."""
-    with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
+    with pytest.raises(np.linalg.LinAlgError, match=r"Cholesky decomposition failed *"):
         LogNormalDistribution(normal_mean=mean_1d, normal_covariance=-covariance_1d)
 
 
@@ -118,7 +118,7 @@ def test_cdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
 
 def test_draw_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, uncorrelated_vector_1d, mocker):
     """Test the draw method of lognormal distribution."""
-    mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_1d)
+    mocker.patch("numpy.random.randn", return_value=uncorrelated_vector_1d)
     draw = lognormal_1d.draw()
     ref_sol = np.exp(mean_1d + covariance_1d ** (1 / 2) * uncorrelated_vector_1d.T).reshape(-1, 1)
     np.testing.assert_equal(draw, ref_sol)
@@ -204,7 +204,7 @@ def test_cdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
 
 def test_draw_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, uncorrelated_vector_2d, mocker):
     """Test the draw method of lognormal distribution."""
-    mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_2d)
+    mocker.patch("numpy.random.randn", return_value=uncorrelated_vector_2d)
     draw = lognormal_2d.draw()
     ref_sol = np.exp(mean_2d + np.dot(np.sqrt(covariance_2d), uncorrelated_vector_2d).T)
     np.testing.assert_equal(draw, ref_sol)
@@ -251,28 +251,28 @@ def test_pdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
 
 def test_ppf_lognormal_2d(lognormal_2d):
     """Test ppf method of LogNormal distribution class."""
-    with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
+    with pytest.raises(ValueError, match="Method does not support multivariate distributions!"):
         lognormal_2d.ppf(np.zeros(2))
 
 
 def test_init_lognormal_wrong_dimension():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
-    with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
+    with pytest.raises(ValueError, match=r"Provided covariance is not a matrix.*"):
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def test_init_lognormal_not_quadratic():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
-    with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
+    with pytest.raises(ValueError, match=r"Provided covariance matrix is not quadratic.*"):
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
-    with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
+    with pytest.raises(ValueError, match=r"Provided covariance matrix is not symmetric.*"):
         LogNormalDistribution(normal_mean=np.zeros(2), normal_covariance=covariance)
 
 
@@ -282,7 +282,7 @@ def test_init_lognormal_nonmatching_dimension():
     init of LogNormalDistribution.
     """
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
-    with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
+    with pytest.raises(ValueError, match=r"Dimension of mean vector and covariance matrix do not*"):
         LogNormalDistribution(normal_mean=np.zeros(3), normal_covariance=covariance)
 
 

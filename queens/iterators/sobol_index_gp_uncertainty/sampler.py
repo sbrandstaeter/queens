@@ -75,13 +75,13 @@ class Sampler:
         Returns:
             sampler: Sampler object
         """
-        number_monte_carlo_samples = method_options['number_monte_carlo_samples']
-        _logger.info('Number of Monte-Carlo samples = %i', number_monte_carlo_samples)
+        number_monte_carlo_samples = method_options["number_monte_carlo_samples"]
+        _logger.info("Number of Monte-Carlo samples = %i", number_monte_carlo_samples)
 
-        seed_monte_carlo = method_options.get('seed_monte_carlo', 42)
+        seed_monte_carlo = method_options.get("seed_monte_carlo", 42)
 
         calculate_second_order = method_options.get("second_order", False)
-        sampling_approach = method_options.get('sampling_approach', 'quasi_random')
+        sampling_approach = method_options.get("sampling_approach", "quasi_random")
 
         return cls(
             parameter_names=parameter_names,
@@ -117,17 +117,17 @@ class Sampler:
         samples = self._init_samples()
 
         sample_matrix_a, sample_matrix_b = self._draw_base_samples()
-        samples.loc[{"sample_matrix": 'A'}] = sample_matrix_a
-        samples.loc[{"sample_matrix": 'B'}] = sample_matrix_b
+        samples.loc[{"sample_matrix": "A"}] = sample_matrix_a
+        samples.loc[{"sample_matrix": "B"}] = sample_matrix_b
 
         for i, parameter_name in enumerate(self.parameter_names):
             sample_matrix_ab = sample_matrix_a.copy()
             sample_matrix_ab[:, i] = sample_matrix_b[:, i].flatten()
-            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = sample_matrix_ab
+            samples.loc[{"sample_matrix": "AB_" + parameter_name}] = sample_matrix_ab
             if self.calculate_second_order:
                 sample_matrix_ba = sample_matrix_b.copy()
                 sample_matrix_ba[:, i] = sample_matrix_a[:, i].flatten()
-                samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = sample_matrix_ba
+                samples.loc[{"sample_matrix": "BA_" + parameter_name}] = sample_matrix_ba
 
         return samples
 
@@ -181,14 +181,14 @@ class Sampler:
             labels_sample_matrices (list): labels of sample matrices
         """
         labels_sample_matrices = [
-            'AB_' + self.parameter_names[i] for i in range(self.number_parameters)
+            "AB_" + self.parameter_names[i] for i in range(self.number_parameters)
         ]
         if self.calculate_second_order:
             sample_matrices_second_order = [
-                'BA_' + self.parameter_names[i] for i in range(self.number_parameters)
+                "BA_" + self.parameter_names[i] for i in range(self.number_parameters)
             ]
             labels_sample_matrices = labels_sample_matrices + sample_matrices_second_order
-        labels_sample_matrices.extend(['A', 'B'])
+        labels_sample_matrices.extend(["A", "B"])
 
         # check size
         if self.calculate_second_order:
@@ -339,13 +339,13 @@ class ThirdOrderSampler(Sampler):
         Returns:
             sampler: Sampler object
         """
-        number_monte_carlo_samples = method_options['number_monte_carlo_samples']
-        _logger.info('Number of Monte-Carlo samples = %i', number_monte_carlo_samples)
+        number_monte_carlo_samples = method_options["number_monte_carlo_samples"]
+        _logger.info("Number of Monte-Carlo samples = %i", number_monte_carlo_samples)
 
-        seed_monte_carlo = method_options.get('seed_monte_carlo', 42)
+        seed_monte_carlo = method_options.get("seed_monte_carlo", 42)
 
         calculate_second_order = method_options.get("second_order", False)
-        sampling_approach = method_options.get('sampling_approach', 'quasi_random')
+        sampling_approach = method_options.get("sampling_approach", "quasi_random")
 
         calculate_third_order = method_options.get("third_order", False)
         third_order_parameters = method_options.get("third_order_parameters", None)
@@ -389,21 +389,21 @@ class ThirdOrderSampler(Sampler):
         ]
 
         sample_matrix_a, sample_matrix_b = self._draw_base_samples()
-        samples.loc[{"sample_matrix": 'A'}] = sample_matrix_a
-        samples.loc[{"sample_matrix": 'B'}] = sample_matrix_b
+        samples.loc[{"sample_matrix": "A"}] = sample_matrix_a
+        samples.loc[{"sample_matrix": "B"}] = sample_matrix_b
 
         for i, parameter_name in enumerate(self.third_order_parameters):
             sample_matrix_ab = sample_matrix_a.copy()
             sample_matrix_ab[:, third_order_parameter_indices[i]] = sample_matrix_b[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[{"sample_matrix": 'AB_' + parameter_name}] = sample_matrix_ab
+            samples.loc[{"sample_matrix": "AB_" + parameter_name}] = sample_matrix_ab
 
             sample_matrix_ba = sample_matrix_b.copy()
             sample_matrix_ba[:, third_order_parameter_indices[i]] = sample_matrix_a[
                 :, third_order_parameter_indices[i]
             ].flatten()
-            samples.loc[{"sample_matrix": 'BA_' + parameter_name}] = sample_matrix_ba
+            samples.loc[{"sample_matrix": "BA_" + parameter_name}] = sample_matrix_ba
 
         # all columns from A except columns (i,j,k) for the third-order index interaction from B
         sample_matrix_ab_ijk = sample_matrix_a.copy()
@@ -411,7 +411,7 @@ class ThirdOrderSampler(Sampler):
             :, third_order_parameter_indices
         ]
 
-        samples.loc[{"sample_matrix": ['AB_' + '_'.join(self.third_order_parameters)]}] = (
+        samples.loc[{"sample_matrix": ["AB_" + "_".join(self.third_order_parameters)]}] = (
             np.expand_dims(sample_matrix_ab_ijk, axis=1)
         )
 
@@ -438,11 +438,11 @@ class ThirdOrderSampler(Sampler):
             labels_sample_matrices (list): labels of sample matrices
         """
         labels_sample_matrices = [
-            'AB_' + parameter_name for parameter_name in self.third_order_parameters
+            "AB_" + parameter_name for parameter_name in self.third_order_parameters
         ]
         labels_sample_matrices.extend(
-            ['BA_' + parameter_name for parameter_name in self.third_order_parameters]
+            ["BA_" + parameter_name for parameter_name in self.third_order_parameters]
         )
-        labels_sample_matrices.extend(['AB_' + '_'.join(self.third_order_parameters)])
-        labels_sample_matrices.extend(['A', 'B'])
+        labels_sample_matrices.extend(["AB_" + "_".join(self.third_order_parameters)])
+        labels_sample_matrices.extend(["A", "B"])
         return labels_sample_matrices

@@ -74,9 +74,9 @@ def test_indexing():
     data_dict = dict(zip(field_names, data))
     collobj = CollectionObject.create_collection_object_from_dict(data_dict)
 
-    assert collobj[1].to_dict() == {"a": 1.1, 'b': 2.1, "c": 3.1}
-    assert collobj[-1].to_dict() == {"a": 1.2, 'b': 2.2, "c": 3.2}
-    assert collobj[1:].to_dict() == {"a": [1.1, 1.2], 'b': [2.1, 2.2], "c": [3.1, 3.2]}
+    assert collobj[1].to_dict() == {"a": 1.1, "b": 2.1, "c": 3.1}
+    assert collobj[-1].to_dict() == {"a": 1.2, "b": 2.2, "c": 3.2}
+    assert collobj[1:].to_dict() == {"a": [1.1, 1.2], "b": [2.1, 2.2], "c": [3.1, 3.2]}
 
 
 def test_indexing_failure():

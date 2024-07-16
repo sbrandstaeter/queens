@@ -60,9 +60,9 @@ class SobolSequenceIterator(Iterator):
 
     def pre_run(self):
         """Generate samples for subsequent Sobol sequence analysis."""
-        _logger.info('Number of inputs: %s', self.parameters.num_parameters)
-        _logger.info('Number of samples: %s', self.number_of_samples)
-        _logger.info('Randomize: %s', self.randomize)
+        _logger.info("Number of inputs: %s", self.parameters.num_parameters)
+        _logger.info("Number of samples: %s", self.number_of_samples)
+        _logger.info("Randomize: %s", self.randomize)
 
         self.samples = sample_sobol_sequence(
             dimension=self.parameters.num_parameters,

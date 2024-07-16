@@ -71,14 +71,14 @@ def from_config_create_iterator(config, global_settings):
     """
     # do pre-processing
     random_field_preprocessor = None
-    random_field_preprocessor_options = config.pop('random_field_preprocessor', None)
+    random_field_preprocessor_options = config.pop("random_field_preprocessor", None)
     if random_field_preprocessor_options:
         random_field_preprocessor = from_config_create_object(random_field_preprocessor_options)
         random_field_preprocessor.main_run()
         random_field_preprocessor.write_random_fields_to_dat()
 
     parameters = from_config_create_parameters(
-        config.pop('parameters', {}), random_field_preprocessor
+        config.pop("parameters", {}), random_field_preprocessor
     )
     obj_key = None
     for _ in range(1000):  # Instead of 'while True' we only allow 1000 iterations for safety
@@ -102,9 +102,9 @@ def from_config_create_iterator(config, global_settings):
         except (TypeError, InvalidOptionError) as err:
             raise InvalidOptionError(f"Object '{obj_key}' can not be initialized.") from err
 
-        if obj_key == 'method':
+        if obj_key == "method":
             if config:
-                _logger.warning('Unused settings:')
+                _logger.warning("Unused settings:")
                 _logger.warning(config)
             return new_obj  # returns initialized iterator
 
@@ -132,11 +132,11 @@ def from_config_create_object(obj_description, global_settings=None, parameters=
     if isinstance(object_class, types.FunctionType):
         return object_class
     if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
-        obj_description['parameters'] = parameters
+        obj_description["parameters"] = parameters
     if issubclass(object_class, (Iterator, BMFMCModel)):
-        obj_description['global_settings'] = global_settings
+        obj_description["global_settings"] = global_settings
     if issubclass(object_class, Scheduler):
-        obj_description['experiment_name'] = global_settings.experiment_name
+        obj_description["experiment_name"] = global_settings.experiment_name
     return object_class(**obj_description)
 
 
@@ -153,7 +153,7 @@ def check_for_reference(obj_description):
     """
     for key, value in obj_description.items():
         if (
-            key.endswith('_name') and key != 'plot_name'
+            key.endswith("_name") and key != "plot_name"
         ):  # TODO: rename plot_name keyword # pylint: disable=fixme
             return True
         if isinstance(value, dict):
@@ -178,7 +178,7 @@ def insert_new_obj(config, new_obj_key, new_obj):
     for key, value in config.items():
         if isinstance(value, dict):
             config[key] = insert_new_obj(value, new_obj_key, new_obj)
-        elif key.endswith('_name') and value == new_obj_key:
+        elif key.endswith("_name") and value == new_obj_key:
             referenced_keys.append(key)
 
     for key in referenced_keys:

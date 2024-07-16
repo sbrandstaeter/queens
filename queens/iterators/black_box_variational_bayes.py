@@ -181,7 +181,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
     def core_run(self):
         """Core run for black-box variational inference."""
-        _logger.info('Starting black box Bayesian variational inference...')
+        _logger.info("Starting black box Bayesian variational inference...")
         super().core_run()
 
     def eval_log_likelihood(self, samples):
@@ -199,7 +199,7 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)
-        log_likelihood = self.model.evaluate(samples)['result']
+        log_likelihood = self.model.evaluate(samples)["result"]
 
         return log_likelihood.flatten()
 

@@ -107,7 +107,7 @@ def test_evaluate(mocker, my_lik_model):
     """Test for the evaluate method."""
     samples = np.array([[1.0]])
     # test working evaluation
-    response = my_lik_model.evaluate(samples)['result']
+    response = my_lik_model.evaluate(samples)["result"]
     assert response == 4
 
     # test update of covariance for MAP
@@ -116,7 +116,7 @@ def test_evaluate(mocker, my_lik_model):
         "queens.models.likelihood_models.gaussian_likelihood."
         "GaussianLikelihood.update_covariance"
     )
-    response = my_lik_model.evaluate(samples)['result']
+    response = my_lik_model.evaluate(samples)["result"]
     assert m1.called_once_with(3.0)
 
 

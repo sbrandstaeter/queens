@@ -11,7 +11,7 @@ from queens.utils.mcmc_utils import tune_scale_covariance
 
 @pytest.fixture(
     name="accept_rate_and_scale_covariance",
-    scope='module',
+    scope="module",
     params=[
         (1e-4, 0.1),
         (1e-2, 0.5),

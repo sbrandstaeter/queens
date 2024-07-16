@@ -60,7 +60,7 @@ class FourierRandomField(RandomField):
 
         self.covariance = None
         self.basis = None
-        self.coordinates = self.coords['coords']
+        self.coordinates = self.coords["coords"]
 
         self.field_dimension = self.coordinates.shape[1]
         if self.field_dimension == 1:

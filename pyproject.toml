@@ -49,7 +49,6 @@ Changelog = "https://gitlab.lrz.de/queens_community/queens/-/blob/main/CHANGELOG
 # Tools section
 [tool.black]
 line-length = 100
-skip-string-normalization = true
 
 [tool.isort]
 profile = "black"

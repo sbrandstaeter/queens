@@ -133,8 +133,8 @@ def test_bmfia_smc_park(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    samples = results['raw_output_data']['particles'].squeeze()
-    weights = results['raw_output_data']['weights'].squeeze()
+    samples = results["raw_output_data"]["particles"].squeeze()
+    weights = results["raw_output_data"]["weights"].squeeze()
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
@@ -253,8 +253,8 @@ def test_bmfia_rpvi_gp_park(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    variational_mean = results['variational_distribution']['mean']
-    variational_cov = results['variational_distribution']['covariance']
+    variational_mean = results["variational_distribution"]["mean"]
+    variational_cov = results["variational_distribution"]["covariance"]
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(variational_mean, expected_variational_mean, decimal=2)
@@ -376,8 +376,8 @@ def test_bmfia_rpvi_nn_park(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    variational_mean = results['variational_distribution']['mean']
-    variational_cov = results['variational_distribution']['covariance']
+    variational_mean = results["variational_distribution"]["mean"]
+    variational_cov = results["variational_distribution"]["covariance"]
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(variational_mean, expected_variational_mean_nn, decimal=1)

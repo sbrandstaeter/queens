@@ -105,7 +105,7 @@ class DirectPythonInterface(Interface):
         else:
             results_array = np.array(results)
 
-        output['result'] = results_array
+        output["result"] = results_array
         return output
 
     @staticmethod

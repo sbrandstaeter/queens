@@ -226,7 +226,7 @@ class PyMCIterator(Iterator):
                     return self.parameters.draw_samples(self.num_chains)
                 raise ValueError("Wrong shape of rng values")
 
-            name = 'parameters'
+            name = "parameters"
             prior = pm.DensityDist(
                 name,
                 logp=self.log_prior,
@@ -300,21 +300,21 @@ class PyMCIterator(Iterator):
             sample_stats = {}
             for sampler_stats in self.results.stat_names:
                 sample_stats[sampler_stats] = self.results.get_sampler_stats(sampler_stats)
-            sample_stats['sampling_time'] = self.results.report.t_sampling
-            sample_stats['chain_ok'] = self.results.report.ok
+            sample_stats["sampling_time"] = self.results.report.t_sampling
+            sample_stats["chain_ok"] = self.results.report.ok
             # pylint: disable-next=protected-access
-            sample_stats['chain_warnings'] = self.results.report._chain_warnings
-            sample_stats['number_of_draws'] = self.results.report.n_draws
-            sample_stats['number_of_tuning_steps'] = self.results.report.n_tune
+            sample_stats["chain_warnings"] = self.results.report._chain_warnings
+            sample_stats["number_of_draws"] = self.results.report.n_draws
+            sample_stats["number_of_tuning_steps"] = self.results.report.n_tune
             # pylint: disable-next=protected-access
-            sample_stats['global_warnings'] = self.results.report._global_warnings
-            sample_stats['model_forward_evals'] = self.model_fwd_evals
-            sample_stats['model_gradient_evals'] = self.model_grad_evals
+            sample_stats["global_warnings"] = self.results.report._global_warnings
+            sample_stats["model_forward_evals"] = self.model_fwd_evals
+            sample_stats["model_gradient_evals"] = self.model_grad_evals
 
         # process output takes a dict as input with key 'mean'
         results_dict = az.convert_to_inference_data(inference_data_dict)
         results = process_outputs(
-            {'sample_stats': sample_stats, 'result': self.chains, 'inference_data': results_dict},
+            {"sample_stats": sample_stats, "result": self.chains, "inference_data": results_dict},
             self.result_description,
         )
         if self.result_description["write_results"]:
@@ -342,7 +342,7 @@ class PyMCIterator(Iterator):
                 hdi_prob=0.95,
                 r_hat=True,
                 ess=True,
-                kind='ridgeplot',
+                kind="ridgeplot",
                 ridgeplot_overlap=4,
                 ridgeplot_alpha=0.5,
                 ridgeplot_truncate=False,

@@ -105,14 +105,14 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Returns:
             log_likelihood (np.array): Value of log-likelihood for samples.
         """
-        log_likelihood = self.model.evaluate(samples)['result']
+        log_likelihood = self.model.evaluate(samples)["result"]
         return log_likelihood
 
     def _initialize_prior_model(self):
         """Initialize the prior model form the problem description."""
         if self.parameters.random_field_flag:
             raise NotImplementedError(
-                'Particles SMC for random fields is not yet implemented! Abort...'
+                "Particles SMC for random fields is not yet implemented! Abort..."
             )
 
         # Important that has to be a OrderedDict otherwise there is a mismatch between particles
@@ -201,7 +201,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         function is called during the for loop, we only need to add some
         logging and check if the number of model runs is exceeded.
         """
-        _logger.info('Welcome to SMC (particles) core run.')
+        _logger.info("Welcome to SMC (particles) core run.")
 
         for _ in self.smc_obj:
             _logger.info(re.sub(r"t=.*?,", f"t={self.smc_obj.t -1},", str(self.smc_obj)))
@@ -229,9 +229,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
         if self.result_description:
             results = process_outputs(
                 {
-                    'particles': particles_smc,
-                    'weights': weights,
-                    'log_posterior': self.smc_obj.X.lpost,
+                    "particles": particles_smc,
+                    "weights": weights,
+                    "log_posterior": self.smc_obj.X.lpost,
                     "mean": mean,
                     "var": variance,
                     "n_sims": self.n_sims,

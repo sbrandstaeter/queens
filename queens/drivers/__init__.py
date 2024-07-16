@@ -9,6 +9,6 @@ from queens.drivers.jobscript_driver import JobscriptDriver
 from queens.drivers.mpi_driver import MpiDriver
 
 VALID_TYPES = {
-    'mpi': MpiDriver,
-    'jobscript': JobscriptDriver,
+    "mpi": MpiDriver,
+    "jobscript": JobscriptDriver,
 }

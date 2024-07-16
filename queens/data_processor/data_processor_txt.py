@@ -83,7 +83,7 @@ class DataProcessorTxt(DataProcessor):
         raw_data = []
         try:
             self._check_file_size(file_path)
-            with open(file_path, 'r', encoding='utf-8') as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 if self.remove_logger_prefix_from_raw_data:
                     for line in file:
                         match = re.search(self.logger_prefix, line)

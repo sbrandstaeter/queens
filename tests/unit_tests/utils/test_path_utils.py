@@ -23,7 +23,7 @@ def fixture_path_to_queens():
 @pytest.fixture(name="path_to_pqueens")
 def fixture_path_to_pqueens():
     """Path to queens."""
-    return str(Path(__file__).parents[3] / 'queens')
+    return str(Path(__file__).parents[3] / "queens")
 
 
 def extract_last_dirs(path, num_dirs):

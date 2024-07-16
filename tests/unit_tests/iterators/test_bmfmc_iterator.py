@@ -11,7 +11,7 @@ from queens.iterators.bmfmc_iterator import BMFMCIterator
 @pytest.fixture(name="approx_name")
 def fixture_approx_name():
     """TODO_doc."""
-    name = 'gp_approximation_gpflow'
+    name = "gp_approximation_gpflow"
     return name
 
 
@@ -47,7 +47,7 @@ def fixture_result_description():
 @pytest.fixture(name="experiment_dir")
 def fixture_experiment_dir():
     """TODO_doc."""
-    return 'my_dummy_dir'
+    return "my_dummy_dir"
 
 
 @pytest.fixture(name="initial_design")
@@ -101,7 +101,7 @@ def test_init(
 
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     """TODO_doc."""
-    mp1 = mocker.patch('queens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
+    mp1 = mocker.patch("queens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train")
 
     default_bmfmc_iterator.core_run()
 
@@ -117,12 +117,12 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mp1 = mocker.patch('queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design')
-    mocker.patch('queens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
+    mp1 = mocker.patch("queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design")
+    mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
 
     mocker.patch(
-        'queens.visualization.bmfmc_visualization.bmfmc_visualization_instance'
-        '.plot_feature_ranking'
+        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance"
+        ".plot_feature_ranking"
     )
     default_bmfmc_iterator.X_train = np.array([1.0, 1.0, 1.0])
     default_bmfmc_iterator.Y_LFs_train = np.array([2.0, 2.0, 2.0])
@@ -138,27 +138,27 @@ def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
 def test_get_design_method(mocker, default_bmfmc_iterator):
     """TODO_doc."""
     mocker.patch(
-        'queens.iterators.bmfmc_iterator.BMFMCIterator.random_design', return_value='random'
+        "queens.iterators.bmfmc_iterator.BMFMCIterator.random_design", return_value="random"
     )
     mocker.patch(
-        'queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design',
-        return_value='diverse',
+        "queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design",
+        return_value="diverse",
     )
-    mocker.patch('queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
+    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
 
-    method = default_bmfmc_iterator.get_design_method('random')
-    assert method() == 'random'
+    method = default_bmfmc_iterator.get_design_method("random")
+    assert method() == "random"
 
-    method = default_bmfmc_iterator.get_design_method('diverse_subset')
-    assert method() == 'diverse'
+    method = default_bmfmc_iterator.get_design_method("diverse_subset")
+    assert method() == "diverse"
 
     with pytest.raises(NotImplementedError):
-        default_bmfmc_iterator.get_design_method('blabla')
+        default_bmfmc_iterator.get_design_method("blabla")
 
 
 def test_diverse_subset_design(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch('queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
+    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
     default_bmfmc_iterator.model.gammas_ext_mc = np.random.random((10, 2))
@@ -178,7 +178,7 @@ def test_diverse_subset_design(mocker, default_bmfmc_iterator):
 
 def test_random_design(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch('queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
+    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
     default_bmfmc_iterator.model.gammas_ext_mc = np.random.random((10, 2))
@@ -211,16 +211,16 @@ def test_model_evaluate(default_bmfmc_iterator):
 
 def test_post_run(mocker, default_bmfmc_iterator):
     """TODO_doc."""
-    mocker.patch('queens.visualization.bmfmc_visualization.bmfmc_visualization_instance')
+    mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
 
     mp1 = mocker.patch(
-        'queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs'
+        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs"
     )
 
     mp2 = mocker.patch(
-        'queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_manifold'
+        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_manifold"
     )
-    mp3 = mocker.patch('queens.iterators.bmfmc_iterator.write_results')
+    mp3 = mocker.patch("queens.iterators.bmfmc_iterator.write_results")
 
     default_bmfmc_iterator.post_run()
 

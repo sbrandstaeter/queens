@@ -66,26 +66,26 @@ class BaciDatExternalGeometry(ExternalGeometry):
     """
 
     dat_sections = [
-        'DESIGN DESCRIPTION',
-        'DESIGN POINT DIRICH CONDITIONS',
-        'DESIGN POINT TRANSPORT DIRICH CONDITIONS',
-        'DNODE-NODE TOPOLOGY',
-        'DLINE-NODE TOPOLOGY',
-        'DSURF-NODE TOPOLOGY',
-        'DVOL-NODE TOPOLOGY',
-        'NODE COORDS',
-        'STRUCTURE ELEMENTS',
-        'ALE ELEMENTS',
-        'FLUID ELEMENTS',
-        'LUBRIFICATION ELEMENTS',
-        'TRANSPORT ELEMENTS',
-        'TRANSPORT2 ELEMENTS',
-        'THERMO ELEMENTS',
-        'CELL ELEMENTS',
-        'CELLSCATRA ELEMENTS',
-        'ELECTROMAGNETIC ELEMENTS',
-        'ARTERY ELEMENTS',
-        'MATERIALS',
+        "DESIGN DESCRIPTION",
+        "DESIGN POINT DIRICH CONDITIONS",
+        "DESIGN POINT TRANSPORT DIRICH CONDITIONS",
+        "DNODE-NODE TOPOLOGY",
+        "DLINE-NODE TOPOLOGY",
+        "DSURF-NODE TOPOLOGY",
+        "DVOL-NODE TOPOLOGY",
+        "NODE COORDS",
+        "STRUCTURE ELEMENTS",
+        "ALE ELEMENTS",
+        "FLUID ELEMENTS",
+        "LUBRIFICATION ELEMENTS",
+        "TRANSPORT ELEMENTS",
+        "TRANSPORT2 ELEMENTS",
+        "THERMO ELEMENTS",
+        "CELL ELEMENTS",
+        "CELLSCATRA ELEMENTS",
+        "ELECTROMAGNETIC ELEMENTS",
+        "ARTERY ELEMENTS",
+        "MATERIALS",
     ]
     section_match_dict = {
         "DNODE": "DNODE-NODE TOPOLOGY",
@@ -165,7 +165,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     # -------------- helper methods ---------------------------------------------------------------
     def read_geometry_from_dat_file(self):
         """Read the dat-file line by line to be memory efficient."""
-        with open(self.path_to_dat_file, encoding='utf-8') as my_dat:
+        with open(self.path_to_dat_file, encoding="utf-8") as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 line = line.strip()
@@ -173,7 +173,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 match_bool = self.get_current_dat_section(line)
                 # skip comments outside of section definition
                 if (
-                    line[0:2] == '//'
+                    line[0:2] == "//"
                     or match_bool
                     or line == ""
                     or line.isspace()
@@ -214,18 +214,18 @@ class BaciDatExternalGeometry(ExternalGeometry):
             bool (boolean): True or False depending if current line is the section match
         """
         # regex for the sections
-        section_name_re = re.compile('^-+([^-].+)$')
+        section_name_re = re.compile("^-+([^-].+)$")
         match = section_name_re.match(line)
         # get the current section of the dat file
         if match:
             # remove whitespaces and horizontal line
-            section_string = line.strip('-')
+            section_string = line.strip("-")
             section_string = section_string.strip()
             # check for comments
-            if line[:2] == '//':
+            if line[:2] == "//":
                 return True
             # ignore comment pattern after actual string
-            if section_string.strip('//') in self.dat_sections:
+            if section_string.strip("//") in self.dat_sections:
                 self.current_dat_section = section_string
                 return True
             self.current_dat_section = None
@@ -280,18 +280,18 @@ class BaciDatExternalGeometry(ExternalGeometry):
             #  original_materials_in_dat
             if material_number == self.list_associated_material_numbers[0][0]:
                 # get the element number
-                self.element_topology[0]['element_number'].append(int(line.split()[0]))
+                self.element_topology[0]["element_number"].append(int(line.split()[0]))
 
                 # get the nodes per element
-                helper_list = line.split('MAT')
+                helper_list = line.split("MAT")
                 nodes_list_str = helper_list[0].split()[3:]
                 nodes = [int(node) for node in nodes_list_str]
 
                 # below appends a list in a list of lists such that we keep the nodes per element
-                self.element_topology[0]['nodes'].append(nodes)
+                self.element_topology[0]["nodes"].append(nodes)
                 # the first number in the list is the main material the subsequent number the
                 # nested material
-                self.element_topology[0]['material'].append(material_number)
+                self.element_topology[0]["material"].append(material_number)
 
     def get_materials(self, line):
         """Get the different material definitions from the dat file.
@@ -312,79 +312,79 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Args:
             line (str): Current line of the dat-file
         """
-        topology_name = ' '.join(line.split()[2:4])
+        topology_name = " ".join(line.split()[2:4])
         node_list = line.split()
         # get edges
 
-        if self.current_dat_section == 'DNODE-NODE TOPOLOGY':
+        if self.current_dat_section == "DNODE-NODE TOPOLOGY":
             self.nodeset_names.add(int(line.split("DNODE ")[-1]))
-            if topology_name in self.desired_dat_sections['DNODE-NODE TOPOLOGY']:
-                if (self.node_topology[-1]['topology_name'] == "") or (
-                    self.node_topology[-1]['topology_name'] == topology_name
+            if topology_name in self.desired_dat_sections["DNODE-NODE TOPOLOGY"]:
+                if (self.node_topology[-1]["topology_name"] == "") or (
+                    self.node_topology[-1]["topology_name"] == topology_name
                 ):
-                    self.node_topology[-1]['node_mesh'].append(int(node_list[1]))
-                    self.node_topology[-1]['node_topology'].append(int(node_list[3]))
-                    self.node_topology[-1]['topology_name'] = topology_name
+                    self.node_topology[-1]["node_mesh"].append(int(node_list[1]))
+                    self.node_topology[-1]["node_topology"].append(int(node_list[3]))
+                    self.node_topology[-1]["topology_name"] = topology_name
                 else:
                     new_node_topology_dict = {
-                        'node_mesh': int(node_list[1]),
-                        'node_topology': int(node_list[3]),
-                        'topology_name': topology_name,
+                        "node_mesh": int(node_list[1]),
+                        "node_topology": int(node_list[3]),
+                        "topology_name": topology_name,
                     }
                     self.node_topology.extend(new_node_topology_dict)
 
         # get lines
-        elif self.current_dat_section == 'DLINE-NODE TOPOLOGY':
-            if topology_name in self.desired_dat_sections['DLINE-NODE TOPOLOGY']:
-                if (self.line_topology[-1]['topology_name'] == "") or (
-                    self.line_topology[-1]['topology_name'] == topology_name
+        elif self.current_dat_section == "DLINE-NODE TOPOLOGY":
+            if topology_name in self.desired_dat_sections["DLINE-NODE TOPOLOGY"]:
+                if (self.line_topology[-1]["topology_name"] == "") or (
+                    self.line_topology[-1]["topology_name"] == topology_name
                 ):
-                    self.line_topology[-1]['node_mesh'].append(int(node_list[1]))
-                    self.line_topology[-1]['line_topology'].append(int(node_list[3]))
-                    self.line_topology[-1]['topology_name'] = topology_name
+                    self.line_topology[-1]["node_mesh"].append(int(node_list[1]))
+                    self.line_topology[-1]["line_topology"].append(int(node_list[3]))
+                    self.line_topology[-1]["topology_name"] = topology_name
                 else:
                     new_line_topology_dict = {
-                        'node_mesh': int(node_list[1]),
-                        'line_topology': int(node_list[3]),
-                        'topology_name': topology_name,
+                        "node_mesh": int(node_list[1]),
+                        "line_topology": int(node_list[3]),
+                        "topology_name": topology_name,
                     }
                     self.line_topology.extend(new_line_topology_dict)
 
         # get surfaces
-        elif self.current_dat_section == 'DSURF-NODE TOPOLOGY':
-            if topology_name in self.desired_dat_sections['DSURF-NODE TOPOLOGY']:
+        elif self.current_dat_section == "DSURF-NODE TOPOLOGY":
+            if topology_name in self.desired_dat_sections["DSURF-NODE TOPOLOGY"]:
                 # append points to last list entry if geometric set is the name
-                if (self.surface_topology[-1]['topology_name'] == "") or (
-                    self.surface_topology[-1]['topology_name'] == topology_name
+                if (self.surface_topology[-1]["topology_name"] == "") or (
+                    self.surface_topology[-1]["topology_name"] == topology_name
                 ):
-                    self.surface_topology[-1]['node_mesh'].append(int(node_list[1]))
-                    self.surface_topology[-1]['surface_topology'].append(int(node_list[3]))
-                    self.surface_topology[-1]['topology_name'] = topology_name
+                    self.surface_topology[-1]["node_mesh"].append(int(node_list[1]))
+                    self.surface_topology[-1]["surface_topology"].append(int(node_list[3]))
+                    self.surface_topology[-1]["topology_name"] = topology_name
 
                 # extend list with new geometric set
                 else:
                     new_surf_topology_dict = {
-                        'node_mesh': int(node_list[1]),
-                        'surface_topology': int(node_list[3]),
-                        'topology_name': topology_name,
+                        "node_mesh": int(node_list[1]),
+                        "surface_topology": int(node_list[3]),
+                        "topology_name": topology_name,
                     }
                     self.surface_topology.extend(new_surf_topology_dict)
 
         # get volumes
-        elif self.current_dat_section == 'DVOL-NODE TOPOLOGY':
-            if topology_name in self.desired_dat_sections['DVOL-NODE TOPOLOGY']:
+        elif self.current_dat_section == "DVOL-NODE TOPOLOGY":
+            if topology_name in self.desired_dat_sections["DVOL-NODE TOPOLOGY"]:
                 # append points to last list entry if geometric set is the name
-                if (self.volume_topology[-1]['topology_name'] == "") or (
-                    self.volume_topology[-1]['topology_name'] == topology_name
+                if (self.volume_topology[-1]["topology_name"] == "") or (
+                    self.volume_topology[-1]["topology_name"] == topology_name
                 ):
-                    self.volume_topology[-1]['node_mesh'].append(int(node_list[1]))
-                    self.volume_topology[-1]['volume_topology'].append(int(node_list[3]))
-                    self.volume_topology[-1]['topology_name'] = topology_name
+                    self.volume_topology[-1]["node_mesh"].append(int(node_list[1]))
+                    self.volume_topology[-1]["volume_topology"].append(int(node_list[3]))
+                    self.volume_topology[-1]["topology_name"] = topology_name
                 else:
                     new_volume_topology_dict = {
-                        'node_mesh': int(node_list[1]),
-                        'surface_topology': int(node_list[3]),
-                        'topology_name': topology_name,
+                        "node_mesh": int(node_list[1]),
+                        "surface_topology": int(node_list[3]),
+                        "topology_name": topology_name,
                     }
                     self.volume_topology.extend(new_volume_topology_dict)
 
@@ -412,7 +412,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Args:
             line (str): Current line of the dat-file
         """
-        if self.current_dat_section == 'NODE COORDS':
+        if self.current_dat_section == "NODE COORDS":
             node_list = line.split()
             if self.nodes_of_interest is None:
                 self.get_nodes_of_interest()
@@ -427,31 +427,31 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Args:
             node_list (list): Current line of the dat-file
         """
-        self.node_coordinates['node_mesh'].append(int(node_list[1]))
+        self.node_coordinates["node_mesh"].append(int(node_list[1]))
         nodes_as_float_list = [float(value) for value in node_list[3:6]]
-        self.node_coordinates['coordinates'].append(nodes_as_float_list)
+        self.node_coordinates["coordinates"].append(nodes_as_float_list)
 
     def get_nodes_of_interest(self):
         """From the extracted topology, get a unique list of all nodes."""
         node_mesh_nodes = []
         for node_topo in self.node_topology:
-            node_mesh_nodes.extend(node_topo['node_mesh'])
+            node_mesh_nodes.extend(node_topo["node_mesh"])
 
         line_mesh_nodes = []
         for line_topo in self.line_topology:
-            line_mesh_nodes.extend(line_topo['node_mesh'])
+            line_mesh_nodes.extend(line_topo["node_mesh"])
 
         surf_mesh_nodes = []
         for surf_topo in self.surface_topology:
-            surf_mesh_nodes.extend(surf_topo['node_mesh'])
+            surf_mesh_nodes.extend(surf_topo["node_mesh"])
 
         vol_mesh_nodes = []
         for vol_topo in self.volume_topology:
-            vol_mesh_nodes.extend(vol_topo['node_mesh'])
+            vol_mesh_nodes.extend(vol_topo["node_mesh"])
 
         element_material_nodes = []
         for element_topo in self.element_topology:
-            element_material_nodes.extend(element_topo['nodes'])
+            element_material_nodes.extend(element_topo["nodes"])
 
         nodes_of_interest = (
             node_mesh_nodes
@@ -465,14 +465,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.nodes_of_interest = list(set(nodes_of_interest))
 
     def _sort_node_coordinates(self):
-        self.node_coordinates['coordinates'] = [
+        self.node_coordinates["coordinates"] = [
             coord
             for _, coord in sorted(
-                zip(self.node_coordinates['node_mesh'], self.node_coordinates['coordinates']),
+                zip(self.node_coordinates["node_mesh"], self.node_coordinates["coordinates"]),
                 key=lambda pair: pair[0],
             )
         ]
-        self.node_coordinates['node_mesh'] = sorted(self.node_coordinates['node_mesh'])
+        self.node_coordinates["node_mesh"] = sorted(self.node_coordinates["node_mesh"])
 
     # -------------- write random fields to dat file ----------------------------------------------
     # pylint: disable=too-many-branches
@@ -493,7 +493,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         # random_fields_lst is here a list containing a dict description per random field
         with fileinput.input(
-            self.path_to_preprocessed_dat_file, inplace=True, backup='.bak'
+            self.path_to_preprocessed_dat_file, inplace=True, backup=".bak"
         ) as my_dat:
             # read dat file line-wise
             for line in my_dat:
@@ -502,90 +502,90 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
                 match_bool = self.get_current_dat_section(line)
                 # skip comments outside of section definition
-                if line[0:2] == '//' or match_bool or line.isspace() or line == "":
-                    print(old_line, end='')
+                if line[0:2] == "//" or match_bool or line.isspace() or line == "":
+                    print(old_line, end="")
                 else:
                     # check if in sec. DNODE-NODE topology and if so adjust this section in case
                     # of random BCs; write this only once
-                    if self.current_dat_section == 'DNODE-NODE TOPOLOGY' and not self.nodes_written:
+                    if self.current_dat_section == "DNODE-NODE TOPOLOGY" and not self.nodes_written:
                         self._write_new_node_sets()
                         self.nodes_written = True
                         # print the current line that was overwritten
-                        print(old_line, end='')
+                        print(old_line, end="")
 
                     # check if in sec. for random dirichlet cond. and if point dirich exists extend
                     elif (
-                        self.current_dat_section == 'DESIGN POINT DIRICH CONDITIONS'
+                        self.current_dat_section == "DESIGN POINT DIRICH CONDITIONS"
                         and not self.random_dirich_flag
                     ):
                         self._write_design_point_dirichlet_conditions(self.random_fields, line)
                         self.random_dirich_flag = True
 
                     elif (
-                        self.current_dat_section == 'DESIGN POINT TRANSPORT DIRICH CONDITIONS'
+                        self.current_dat_section == "DESIGN POINT TRANSPORT DIRICH CONDITIONS"
                         and not self.random_transport_dirich_flag
                     ):
                         self._write_design_point_dirichlet_transport_conditions()
                         self.random_transport_dirich_flag = True
 
                     elif (
-                        self.current_dat_section == 'DESIGN POINT NEUM'
+                        self.current_dat_section == "DESIGN POINT NEUM"
                         and not self.random_neumann_flag
                     ):
                         self._write_design_point_neumann_conditions()
                         self.random_neumann_flag = True
 
                     # materials and elements / constitutive random fields -----------------------
-                    elif self.current_dat_section == 'STRUCTURE ELEMENTS':
+                    elif self.current_dat_section == "STRUCTURE ELEMENTS":
                         self._assign_elementwise_material_to_structure_ele(line)
 
-                    elif self.current_dat_section == 'FLUID ELEMENTS':
+                    elif self.current_dat_section == "FLUID ELEMENTS":
                         raise NotImplementedError()
 
-                    elif self.current_dat_section == 'ALE ELEMENTS':
+                    elif self.current_dat_section == "ALE ELEMENTS":
                         raise NotImplementedError()
 
-                    elif self.current_dat_section == 'TRANSPORT ELEMENTS':
+                    elif self.current_dat_section == "TRANSPORT ELEMENTS":
                         raise NotImplementedError()
 
                     elif (
-                        self.current_dat_section == 'MATERIALS'
+                        self.current_dat_section == "MATERIALS"
                         and self.list_associated_material_numbers
                     ):
                         self._write_elementwise_materials(line, self.random_fields)
 
                     # If end of dat file is reached but certain sections did not exist so far,
                     # write them now
-                    elif self.current_dat_section == 'END':
+                    elif self.current_dat_section == "END":
                         bcs_list = [random_field["type"] for random_field in self.random_fields]
-                        if ('dirichlet' in bcs_list) and (self.random_dirich_flag is False):
+                        if ("dirichlet" in bcs_list) and (self.random_dirich_flag is False):
                             print(
-                                '----------------------------------------------DESIGN POINT '
-                                'DIRICH CONDITIONS\n'
+                                "----------------------------------------------DESIGN POINT "
+                                "DIRICH CONDITIONS\n"
                             )
                             self._write_design_point_dirichlet_conditions(self.random_fields, line)
 
-                        elif ('transport_dirichlet' in bcs_list) and (
+                        elif ("transport_dirichlet" in bcs_list) and (
                             self.random_transport_dirich_flag is False
                         ):
                             print(
-                                '----------------------------------------------DESIGN POINT '
-                                'TRANSPORT DIRICH CONDITIONS\n'
+                                "----------------------------------------------DESIGN POINT "
+                                "TRANSPORT DIRICH CONDITIONS\n"
                             )
                             self._write_design_point_dirichlet_transport_conditions()
 
-                        elif ('neumann' in bcs_list) and (self.random_neumann_flag is False):
+                        elif ("neumann" in bcs_list) and (self.random_neumann_flag is False):
                             print(
-                                '---------------------------------------------DESIGN POINT '
-                                'NEUMANN CONDITIONS\n'
+                                "---------------------------------------------DESIGN POINT "
+                                "NEUMANN CONDITIONS\n"
                             )
                             self._write_design_point_neumann_conditions()
                         print(
-                            '---------------------------------------------------------------------'
-                            '----END\n'
+                            "---------------------------------------------------------------------"
+                            "----END\n"
                         )
                     else:
-                        print(old_line, end='')
+                        print(old_line, end="")
 
         os.chown(self.path_to_preprocessed_dat_file, uid, gid)
         # pylint: enable=too-many-branches
@@ -610,7 +610,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             # set number of new materials equal to length of element_topology of interest
             # TODO atm we just take the first list entry here and dont loop over several fields # pylint: disable=fixme
-            n_mats = len(self.element_topology[0]['element_number'])
+            n_mats = len(self.element_topology[0]["element_number"])
 
             # Check the largest material definition to avoid overwriting existing original_materials
             material_numbers_flat = [item for sublist in materials_copy for item in sublist]
@@ -664,7 +664,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
                 # TODO atm we just take first list entry below and dont loop over all element # pylint: disable=fixme
                 # topologies get index of current element within element_topology
-                element_idx = self.element_topology[0]['element_number'].index(
+                element_idx = self.element_topology[0]["element_number"].index(
                     current_element_number
                 )
 
@@ -701,10 +701,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
         material_fields = [field for field in random_field_lst if field["type"] == "material"]
 
         material_field_placeholders = [
-            material_fields[0]['name'] + '_' + str(i) for i in range(len(self.element_centers))
+            material_fields[0]["name"] + "_" + str(i) for i in range(len(self.element_centers))
         ]
         self._write_coords_to_dict(
-            material_fields[0]['name'], material_field_placeholders, np.array(self.element_centers)
+            material_fields[0]["name"], material_field_placeholders, np.array(self.element_centers)
         )
 
         # check if the current material number is equal to base material and rewrite the base
@@ -820,7 +820,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         if mat_param_name in line:
             string_to_replace = "{ " + mat_param_name + " }"
             line_new = line.replace(
-                string_to_replace, f'{{ {mat_param_name}_{realization_index} }}'
+                string_to_replace, f"{{ {mat_param_name}_{realization_index} }}"
             )
             # TODO key field realization prob wrong # pylint: disable=fixme
 
@@ -891,7 +891,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
                 # write the new fields to the dat file --------------------------------------------
                 for topo_node, random_field_1, random_field_2, random_field_3, f1, f2, f3 in zip(
-                    node_set['topo_dnodes'],
+                    node_set["topo_dnodes"],
                     realized_random_field_1,
                     realized_random_field_2,
                     realized_random_field_3,
@@ -937,8 +937,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
             field_values.extend(
                 [
                     [
-                        field['name'] + '_' + str(i)
-                        for i in range(len(self.node_coordinates['node_mesh']))
+                        field["name"] + "_" + str(i)
+                        for i in range(len(self.node_coordinates["node_mesh"]))
                     ]
                     for field in random_field_lst
                     if (field["type"] == "dirichlet")
@@ -950,7 +950,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             num_new_dpoints = len(field_values[0])
             num_existing_dpoints = old_num
             total_num_dpoints = num_new_dpoints + num_existing_dpoints
-            print(f'DPOINT                          {total_num_dpoints}')
+            print(f"DPOINT                          {total_num_dpoints}")
 
     def _assign_random_dirichlet_fields_per_geo_set(self, fields_dirich_on_geo_set):
         """Assign random Dirichlet fields.
@@ -986,28 +986,28 @@ class BaciDatExternalGeometry(ExternalGeometry):
         realized_random_field_1 = realized_random_field_2 = realized_random_field_3 = None
         fun_1 = fun_2 = fun_3 = None
         for dirich_field in fields_dirich_on_geo_set:
-            set_shape = len(self.node_coordinates['node_mesh'])
-            placeholders = [dirich_field['name'] + '_' + str(i) for i in range(set_shape)]
+            set_shape = len(self.node_coordinates["node_mesh"])
+            placeholders = [dirich_field["name"] + "_" + str(i) for i in range(set_shape)]
             if dirich_field["dof_for_field"] == 1:
                 realized_random_field_1 = [
-                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
+                    "{{ " + placeholder + " }}" for placeholder in placeholders
                 ]
                 fun_1 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 2:
                 realized_random_field_2 = [
-                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
+                    "{{ " + placeholder + " }}" for placeholder in placeholders
                 ]
                 fun_2 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 3:
                 realized_random_field_3 = [
-                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
+                    "{{ " + placeholder + " }}" for placeholder in placeholders
                 ]
                 fun_3 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             self._write_coords_to_dict(
-                dirich_field['name'], placeholders, np.array(self.node_coordinates['coordinates'])
+                dirich_field["name"], placeholders, np.array(self.node_coordinates["coordinates"])
             )
 
         return (
@@ -1083,7 +1083,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                               function that might, e.g., vary in time.
         """
         # TODO see how this behaves for several fields # pylint: disable=fixme
-        set_shape = len(self.node_coordinates['node_mesh'])
+        set_shape = len(self.node_coordinates["node_mesh"])
         for deter_dof, value_deter_dof, funct_deter in zip(
             fields_dirich_on_geo_set[0]["dofs_deterministic"],
             fields_dirich_on_geo_set[0]["value_dofs_deterministic"],
@@ -1150,16 +1150,16 @@ class BaciDatExternalGeometry(ExternalGeometry):
             my_topology (lst): List with desired geometric topology
         """
         # TODO this is problematic as topology has not been read it for the new object # pylint: disable=fixme
-        if geo_set_name_type == 'DNODE':
+        if geo_set_name_type == "DNODE":
             my_topology = self.node_topology
 
-        elif geo_set_name_type == 'DLINE':
+        elif geo_set_name_type == "DLINE":
             my_topology = self.line_topology
 
-        elif geo_set_name_type == 'DSURFACE':
+        elif geo_set_name_type == "DSURFACE":
             my_topology = self.surface_topology
 
-        elif geo_set_name_type == 'DVOL':
+        elif geo_set_name_type == "DVOL":
             my_topology = self.volume_topology
         else:
             my_topology = None
@@ -1194,9 +1194,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
             my_topology_lst = self._get_my_topology(topology_type)
             nodes_mesh_lst.extend(
                 [
-                    {"node_mesh": topo['node_mesh'], "topo_dnodes": [], "name": topology_name}
+                    {"node_mesh": topo["node_mesh"], "topo_dnodes": [], "name": topology_name}
                     for topo in my_topology_lst
-                    if topo['topology_name'] == topology_name
+                    if topo["topology_name"] == topology_name
                 ]
             )
 
@@ -1218,7 +1218,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
     def _write_new_node_sets(self):
         """Write the new node sets to the dat-file as individual dnodes."""
         for node_set in self.new_nodes_lst:
-            for mesh_node, topo_node in zip(node_set['node_mesh'], node_set['topo_dnodes']):
+            for mesh_node, topo_node in zip(node_set["node_mesh"], node_set["topo_dnodes"]):
                 print(f"NODE {mesh_node} DNODE {topo_node}")
 
     def _write_coords_to_dict(self, field_name, field_keys, field_coords):
@@ -1229,4 +1229,4 @@ class BaciDatExternalGeometry(ExternalGeometry):
             field_keys (str): Placeholders for the discretized random field
             field_coords (np.ndarray): Coordinates of the discretized random field
         """
-        self.coords_dict[field_name] = {'keys': field_keys, 'coords': field_coords}
+        self.coords_dict[field_name] = {"keys": field_keys, "coords": field_coords}

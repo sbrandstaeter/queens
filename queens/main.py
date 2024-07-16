@@ -25,7 +25,7 @@ def run(input_file, output_dir, debug=False):
     # read input and create config
     config = load_input_file(input_file)
 
-    experiment_name = config.pop('experiment_name')
+    experiment_name = config.pop("experiment_name")
 
     with GlobalSettings(
         experiment_name=experiment_name,
@@ -92,5 +92,5 @@ def main():
         print_greeting_message()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

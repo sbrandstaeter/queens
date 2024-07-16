@@ -222,4 +222,4 @@ class IdentityScaler(Scaler):
         return transformed_grad
 
 
-VALID_SCALER = {'standard_scaler': StandardScaler, 'identity_scaler': IdentityScaler}
+VALID_SCALER = {"standard_scaler": StandardScaler, "identity_scaler": IdentityScaler}

@@ -70,17 +70,17 @@ class Driver(metaclass=abc.ABCMeta):
             error_file (Path): Path to error file
         """
         job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / 'output'
+        output_dir = job_dir / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        output_prefix = experiment_name + '_' + str(job_id)
+        output_prefix = experiment_name + "_" + str(job_id)
         output_file = output_dir.joinpath(output_prefix)
 
         input_file_str = output_prefix + self.simulation_input_template.suffix
         input_file = job_dir.joinpath(input_file_str)
 
-        log_file = output_dir.joinpath(output_prefix + '.log')
-        error_file = output_dir.joinpath(output_prefix + '.err')
+        log_file = output_dir.joinpath(output_prefix + ".log")
+        error_file = output_dir.joinpath(output_prefix + ".err")
 
         return job_dir, output_dir, output_file, input_file, log_file, error_file
 
@@ -97,8 +97,8 @@ class Driver(metaclass=abc.ABCMeta):
         """
         run_subprocess_with_logging(
             execute_cmd,
-            terminate_expression='PROC.*ERROR',
-            logger_name=__name__ + f'_{job_id}',
+            terminate_expression="PROC.*ERROR",
+            logger_name=__name__ + f"_{job_id}",
             log_file=str(log_file),
             error_file=str(error_file),
             streaming=verbose,

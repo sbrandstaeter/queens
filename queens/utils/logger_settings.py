@@ -61,7 +61,7 @@ class NewLineFormatter(logging.Formatter):
 
         if record.message != "":
             parts = formatted_message.split(record.message)
-            formatted_message = formatted_message.replace('\n', '\n' + parts[0])
+            formatted_message = formatted_message.replace("\n", "\n" + parts[0])
 
         return formatted_message
 
@@ -88,10 +88,10 @@ def setup_logger(logger=None, debug=False):
         logger.setLevel(logging.DEBUG)
     else:
         # deactivate logging for specific modules
-        logging.getLogger('arviz').setLevel(logging.CRITICAL)
-        logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
-        logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
-        logging.getLogger('numba').setLevel(logging.CRITICAL)
+        logging.getLogger("arviz").setLevel(logging.CRITICAL)
+        logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
+        logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
+        logging.getLogger("numba").setLevel(logging.CRITICAL)
 
     return logger
 
@@ -103,7 +103,7 @@ def setup_stream_handler(logger):
         logger (logging.logger): Logger object to add the stream handler to
     """
     # a plain, minimal formatter for streamhandlers
-    stream_formatter = NewLineFormatter('%(message)s')
+    stream_formatter = NewLineFormatter("%(message)s")
 
     # set up logging to stdout
     console_stdout = logging.StreamHandler(stream=sys.stdout)
@@ -132,7 +132,7 @@ def setup_file_handler(logger, log_file_path):
     """
     file_handler = logging.FileHandler(log_file_path, mode="w")
     file_formatter = NewLineFormatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logger.level)
@@ -168,8 +168,8 @@ def setup_cluster_logging():
 
     logging.basicConfig(
         level=level_min,
-        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        datefmt='%m-%d %H:%M',
+        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+        datefmt="%m-%d %H:%M",
     )
 
     console_stdout = logging.StreamHandler(stream=sys.stdout)
@@ -184,7 +184,7 @@ def setup_cluster_logging():
     console_stderr.setLevel(max(level_min, logging.ERROR))
 
     # set a format which is simpler for console use
-    formatter = NewLineFormatter('%(name)-12s: %(levelname)-8s %(message)s')
+    formatter = NewLineFormatter("%(name)-12s: %(levelname)-8s %(message)s")
     console_stdout.setFormatter(formatter)
     console_stderr.setFormatter(formatter)
 
@@ -217,9 +217,9 @@ def get_job_logger(
 
     if full_log_formatting:
         # define formatter
-        formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = NewLineFormatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     else:
-        formatter = NewLineFormatter('%(message)s')
+        formatter = NewLineFormatter("%(message)s")
 
     # set level
     job_logger.setLevel(logging.INFO)
@@ -229,11 +229,11 @@ def get_job_logger(
 
     # add handlers for log and error file (remark: python code is run in parallel
     # for cluster runs; thus, each processor logs his own file.)
-    lfh = logging.FileHandler(log_file, mode='w', delay=False)
+    lfh = logging.FileHandler(log_file, mode="w", delay=False)
     lfh.setLevel(logging.INFO)
     lfh.setFormatter(formatter)
     job_logger.addHandler(lfh)
-    efh = logging.FileHandler(error_file, mode='w', delay=False)
+    efh = logging.FileHandler(error_file, mode="w", delay=False)
     efh.setLevel(logging.ERROR)
     efh.setFormatter(formatter)
     job_logger.addHandler(efh)
@@ -242,7 +242,7 @@ def get_job_logger(
     if streaming:
         stream_handler = logging.StreamHandler(stream=sys.stdout)
         stream_handler.setLevel(logging.INFO)
-        stream_handler.terminator = ''
+        stream_handler.terminator = ""
         stream_handler.setFormatter(fmt=None)
         job_logger.addHandler(stream_handler)
     else:
@@ -268,12 +268,12 @@ def job_logging(command_string, process, job_logger, terminate_expression):
     stderr = None
 
     # start logging
-    job_logger.info('run_subprocess started with:')
+    job_logger.info("run_subprocess started with:")
     job_logger.info(command_string)
-    for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
+    for line in iter(process.stdout.readline, b""):  # b'\n'-separated lines
         line = line.rstrip()  # remove any trailing whitespaces
         exit_code = process.poll()
-        if line == '' and exit_code is not None:
+        if line == "" and exit_code is not None:
             job_logger.info("subprocess exited with code %s.", exit_code)
             # This line waits for termination and puts together stdout not yet consumed from the
             # stream by the logger and finally the stderr.
@@ -282,21 +282,21 @@ def job_logging(command_string, process, job_logger, terminate_expression):
             # written to stdout even after program was terminated.
             job_logger.info(stdout)
             if stderr:
-                job_logger.error('error message (if provided) follows:')
+                job_logger.error("error message (if provided) follows:")
                 for errline in io.StringIO(stderr):
                     job_logger.error(errline)
             break
         if terminate_expression:
             # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
             if re.search(terminate_expression, line):
-                job_logger.warning('run_subprocess detected terminate expression:')
+                job_logger.warning("run_subprocess detected terminate expression:")
                 job_logger.error(line)
                 # give program the chance to terminate by itself, because terminate expression
                 # will be found also if program terminates itself properly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
-                    job_logger.warning('running job will be terminated by QUEENS.')
+                    job_logger.warning("running job will be terminated by QUEENS.")
                     process.terminate()
                     # wait before communicate call which gathers all the output
                     time.sleep(2)

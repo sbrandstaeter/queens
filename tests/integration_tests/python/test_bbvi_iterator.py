@@ -37,7 +37,7 @@ def test_bbvi_density_match(
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', target_density):
+    with patch.object(BBVIIterator, "get_log_posterior_unnormalized", target_density):
         variational_distr_obj = dummy_bbvi_instance.variational_distribution
         mean = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
@@ -174,7 +174,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
     loo_cv_bool = False
     # ------ params we want to keep fixed -----------------------------------------
     variational_transformation = None
-    experiment_name = 'density_match'
+    experiment_name = "density_match"
     result_description = {
         "iterative_field_names": ["elbo"],
         "write_results": False,

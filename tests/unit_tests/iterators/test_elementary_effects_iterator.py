@@ -68,7 +68,7 @@ def test_correct_sensitivity_indices(default_elementary_effects_iterator):
     ref_mu_star_conf = np.array([5.49677290, 0.0, 5.26474752])
     ref_sigma = np.array([6.24879610, 9.09326673, 6.24879610])
 
-    np.testing.assert_allclose(si['mu'], ref_mu, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['mu_star'], ref_mu_star, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['mu_star_conf'], ref_mu_star_conf, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['sigma'], ref_sigma, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["mu"], ref_mu, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["mu_star"], ref_mu_star, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["mu_star_conf"], ref_mu_star_conf, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["sigma"], ref_sigma, 1e-07, 1e-07)

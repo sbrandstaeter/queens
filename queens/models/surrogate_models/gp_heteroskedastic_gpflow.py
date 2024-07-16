@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 _logger = logging.getLogger(__name__)
 tf.get_logger().setLevel(logging.ERROR)
 
@@ -138,7 +138,7 @@ class HeteroskedasticGPModel(SurrogateModel):
                 data = (self.x_train, self.y_train)
                 loss_fun = self.model.training_loss_closure(data)
                 _logger.info(
-                    'Progress: %.2f %%, Epoch %s, Loss: %.2f',
+                    "Progress: %.2f %%, Epoch %s, Loss: %.2f",
                     epoch / self.num_epochs * 100,
                     epoch,
                     loss_fun().numpy(),
@@ -216,7 +216,7 @@ class HeteroskedasticGPModel(SurrogateModel):
             self.posterior_cov_mat_y = np.cov(posterior_samples_y.T)
             variance = self.posterior_cov_mat_y
 
-        output['result'] = mean
+        output["result"] = mean
         output["variance"] = variance
 
         if self.num_posterior_samples:
@@ -281,7 +281,7 @@ class HeteroskedasticGPModel(SurrogateModel):
             num_latent_gps=likelihood.latent_dim,
         )
 
-        _logger.info('The GPFlow model used in this analysis is constructed as follows:')
+        _logger.info("The GPFlow model used in this analysis is constructed as follows:")
         print_summary(self.model)
         _logger.info("\n")
 

@@ -35,7 +35,7 @@ def load_input_file(input_file_path):
         raise FileTypeError(
             f"Only json or yaml/yml files allowed, not of type '{file_type}' ({input_file_path})"
         )
-    with open(input_file_path, "r", encoding='utf-8') as stream:
+    with open(input_file_path, "r", encoding="utf-8") as stream:
         try:
             options = loader(stream)
         except Exception as exception:
@@ -71,7 +71,7 @@ def write_to_csv(output_file_path, data, delimiter=","):
                                    Defaults to comma delimiter.
     """
     # Write data to new file
-    with open(output_file_path, 'w', newline='', encoding='utf-8') as out_file:
+    with open(output_file_path, "w", newline="", encoding="utf-8") as out_file:
         writer = csv.writer(out_file, delimiter=delimiter)
         # write only new data
         for row in data:
@@ -86,7 +86,7 @@ def read_file(file_path):
     Returns:
         file (str): read in file as string
     """
-    file = Path(file_path).read_text(encoding='utf-8')
+    file = Path(file_path).read_text(encoding="utf-8")
     return file
 
 

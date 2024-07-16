@@ -31,7 +31,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     *currin88* function.
     """
     plot_dir = tmp_path
-    lf_mc_data_name = 'LF_MC_data.pickle'
+    lf_mc_data_name = "LF_MC_data.pickle"
     path_lf_mc_pickle_file = tmp_path / lf_mc_data_name
     # Parameters
     x1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
@@ -91,7 +91,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     results = load_result(global_settings.result_file(".pickle"))
 
     # get the y_support and calculate HF MC reference
-    y_pdf_support = results['raw_output_data']['y_pdf_support']
+    y_pdf_support = results["raw_output_data"]["y_pdf_support"]
     Y_LFs_mc = generate_LF_MC_data
     Y_HF_mc = generate_HF_MC_data
     bandwidth_lfmc = est.estimate_bandwidth_for_kde(
@@ -102,5 +102,5 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         np.atleast_2d(Y_HF_mc).T, bandwidth_lfmc, support_points=np.atleast_2d(y_pdf_support)
     )
 
-    kl_divergence = entropy(p_yhf_mc, results['raw_output_data']['p_yhf_mean'])
+    kl_divergence = entropy(p_yhf_mc, results["raw_output_data"]["p_yhf_mean"])
     assert kl_divergence < 0.3

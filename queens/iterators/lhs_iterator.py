@@ -40,7 +40,7 @@ class LHSIterator(Iterator):
         num_samples,
         result_description=None,
         num_iterations=10,
-        criterion='maximin',
+        criterion="maximin",
     ):
         """Initialise LHSiterator.
 
@@ -71,10 +71,10 @@ class LHSIterator(Iterator):
 
         num_inputs = self.parameters.num_parameters
 
-        _logger.info('Number of inputs: %s', num_inputs)
-        _logger.info('Number of samples: %s', self.num_samples)
-        _logger.info('Criterion: %s', self.criterion)
-        _logger.info('Number of iterations: %s', self.num_iterations)
+        _logger.info("Number of inputs: %s", num_inputs)
+        _logger.info("Number of samples: %s", self.num_samples)
+        _logger.info("Criterion: %s", self.criterion)
+        _logger.info("Number of iterations: %s", self.num_iterations)
 
         # create latin hyper cube samples in unit hyper cube
         hypercube_samples = lhs(
@@ -96,5 +96,5 @@ class LHSIterator(Iterator):
 
         _logger.info("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)
-        _logger.info("Size of outputs %s", self.output['result'].shape)
-        _logger.debug("Outputs %s", self.output['result'])
+        _logger.info("Size of outputs %s", self.output["result"].shape)
+        _logger.debug("Outputs %s", self.output["result"])

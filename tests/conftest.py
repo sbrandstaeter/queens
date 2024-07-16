@@ -41,7 +41,7 @@ def pytest_addoption(parser):
         default=None,
         help=(
             "gateway connection (proxyjump) for remote connection in json format,"
-            " e.g. '{\"host\": \"user@host\"}'"
+            ' e.g. \'{"host": "user@host"}\''
         ),
     )
 
@@ -197,21 +197,21 @@ def fixture_global_mock_experiments_base_folder_name(
     )
 
 
-@pytest.fixture(name="inputdir", scope='session')
+@pytest.fixture(name="inputdir", scope="session")
 def fixture_inputdir():
     """Return the path to the json input-files of the function test."""
     input_files_path = relative_path_from_queens("tests/input_files/queens")
     return input_files_path
 
 
-@pytest.fixture(name="third_party_inputs", scope='session')
+@pytest.fixture(name="third_party_inputs", scope="session")
 def fixture_third_party_inputs():
     """Return the path to the json input-files of the function test."""
     input_files_path = relative_path_from_queens("tests/input_files/third_party")
     return input_files_path
 
 
-@pytest.fixture(name="config_dir", scope='session')
+@pytest.fixture(name="config_dir", scope="session")
 def fixture_config_dir():
     """Return the path to the json input-files of the function test."""
     config_dir_path = relative_path_from_queens("config")
@@ -221,9 +221,9 @@ def fixture_config_dir():
 @pytest.fixture(name="baci_link_paths", scope="session")
 def fixture_baci_link_paths(config_dir):
     """Set symbolic links for baci on testing machine."""
-    baci = config_dir / 'baci-release'
-    post_ensight = config_dir / 'post_ensight'
-    post_processor = config_dir / 'post_processor'
+    baci = config_dir / "baci-release"
+    post_ensight = config_dir / "post_ensight"
+    post_processor = config_dir / "post_processor"
     return baci, post_ensight, post_processor
 
 
@@ -231,13 +231,13 @@ def fixture_baci_link_paths(config_dir):
 def fixture_baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
     home = Path.home()
-    src_baci = home / 'workspace/build/baci-release'
-    src_post_ensight = home / 'workspace/build/post_ensight'
-    src_post_processor = home / 'workspace/build/post_processor'
+    src_baci = home / "workspace/build/baci-release"
+    src_post_ensight = home / "workspace/build/post_ensight"
+    src_post_processor = home / "workspace/build/post_processor"
     return src_baci, src_post_ensight, src_post_processor
 
 
-@pytest.fixture(name="example_simulator_fun_dir", scope='session')
+@pytest.fixture(name="example_simulator_fun_dir", scope="session")
 def fixture_example_simulator_fun_dir():
     """Return the path to the example simulator functions."""
     input_files_path = relative_path_from_source("example_simulator_functions")

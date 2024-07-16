@@ -9,7 +9,7 @@ from queens.data_processor.data_processor_ensight_interface import (
 
 
 ############## fixtures
-@pytest.fixture(name="all_dimensions", scope='module', params=['2d', '3d'])
+@pytest.fixture(name="all_dimensions", scope="module", params=["2d", "3d"])
 def fixture_all_dimensions(request):
     """Parameterized fixture to select problem dimension."""
     return request.param
@@ -18,20 +18,20 @@ def fixture_all_dimensions(request):
 @pytest.fixture(name="default_data_processor")
 def fixture_default_data_processor(mocker):
     """Default ensight class for upcoming tests."""
-    file_name_identifier = 'dummy_prefix*dummyfix'
+    file_name_identifier = "dummy_prefix*dummyfix"
     file_options_dict = {
-        "path_to_ref_data": 'dummy_path',
+        "path_to_ref_data": "dummy_path",
         "time_tol": 1e-03,
         "visualization": False,
-        "displacement_fields": ['first_disp', 'second_disp'],
-        "problem_dimension": '5d',
+        "displacement_fields": ["first_disp", "second_disp"],
+        "problem_dimension": "5d",
     }
     file_to_be_deleted_regex_lst = []
 
     mocker.patch(
-        'queens.data_processor.data_processor_ensight_interface.'
-        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
-        return_value='None',
+        "queens.data_processor.data_processor_ensight_interface."
+        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
+        return_value="None",
     )
     pp = DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
@@ -46,16 +46,16 @@ def fixture_default_data_processor(mocker):
 
 def test_init(mocker):
     """Test the init method."""
-    experimental_ref_data = 'dummy_data'
-    displacement_fields = ['first_disp', 'second_disp']
+    experimental_ref_data = "dummy_data"
+    displacement_fields = ["first_disp", "second_disp"]
     time_tol = 1e-03
     visualization_bool = False
     files_to_be_deleted_regex_lst = []
-    problem_dim = '5d'
+    problem_dim = "5d"
 
-    file_name_identifier = 'dummy_prefix*dummyfix'
+    file_name_identifier = "dummy_prefix*dummyfix"
     file_options_dict = {
-        "path_to_ref_data": 'dummy_path',
+        "path_to_ref_data": "dummy_path",
         "time_tol": time_tol,
         "visualization": visualization_bool,
         "displacement_fields": displacement_fields,
@@ -63,9 +63,9 @@ def test_init(mocker):
     }
 
     mocker.patch(
-        'queens.data_processor.data_processor_ensight_interface.'
-        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
-        return_value='dummy_data',
+        "queens.data_processor.data_processor_ensight_interface."
+        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
+        return_value="dummy_data",
     )
     my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
@@ -88,32 +88,32 @@ def test_from_config_create_data_processor(mocker):
     """Test the config method."""
     experimental_ref_data = np.array([[1, 2], [3, 4]])
     mp = mocker.patch(
-        'queens.data_processor.data_processor_ensight_interface.'
-        'DataProcessorEnsightInterfaceDiscrepancy.__init__',
+        "queens.data_processor.data_processor_ensight_interface."
+        "DataProcessorEnsightInterfaceDiscrepancy.__init__",
         return_value=None,
     )
 
     mocker.patch(
-        'queens.data_processor.data_processor_ensight_interface.'
-        'DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile',
+        "queens.data_processor.data_processor_ensight_interface."
+        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
         return_value=experimental_ref_data,
     )
-    file_name_identifier = 'dummyprefix*dummy.case'
+    file_name_identifier = "dummyprefix*dummy.case"
     time_tol = 1e-03
     visualization_bool = False
-    displacement_fields = ['first_disp', 'second_disp']
+    displacement_fields = ["first_disp", "second_disp"]
     delete_field_data = False
-    problem_dimension = '5d'
-    path_to_ref_data = 'some_path'
+    problem_dimension = "5d"
+    path_to_ref_data = "some_path"
     files_to_be_deleted_regex_lst = []
 
     file_options_dict = {
-        'time_tol': time_tol,
-        'visualization_bool': visualization_bool,
-        'displacement_fields': displacement_fields,
-        'delete_field_data': delete_field_data,
-        'problem_dimension': problem_dimension,
-        'path_to_ref_data': path_to_ref_data,
+        "time_tol": time_tol,
+        "visualization_bool": visualization_bool,
+        "displacement_fields": displacement_fields,
+        "delete_field_data": delete_field_data,
+        "problem_dimension": problem_dimension,
+        "path_to_ref_data": path_to_ref_data,
     }
 
     DataProcessorEnsightInterfaceDiscrepancy(
@@ -148,8 +148,8 @@ steps 2 npoints 4
 4.0e+00 1.0 1.0 1.0 1.0  2.0 2.0 2.0 2.0  3.0 3.0 3.0 3.0  1.0 1.0 1.0 1.0 1.0 1.0
 8.0e+00 5.0 5.0 5.0 5.0  6.0 6.0 6.0 6.0  7.0 7.0 7.0 7.0  5.0 5.0 5.0 5.0 5.0 5.0"""
 
-    mp = mocker.patch('builtins.open', mocker.mock_open(read_data=monitor_string))
-    data = DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile('dummy_path')
+    mp = mocker.patch("builtins.open", mocker.mock_open(read_data=monitor_string))
+    data = DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile("dummy_path")
     mp.assert_called_once()
 
     assert data == [
@@ -173,10 +173,10 @@ steps 2 npoints 4
         ],
     ]
 
-    monitor_string = '''something wrong'''
-    mocker.patch('builtins.open', mocker.mock_open(read_data=monitor_string))
+    monitor_string = """something wrong"""
+    mocker.patch("builtins.open", mocker.mock_open(read_data=monitor_string))
     with pytest.raises(ValueError):
-        DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile('some_path')
+        DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile("some_path")
 
 
 def test_stretch_vector(default_data_processor):

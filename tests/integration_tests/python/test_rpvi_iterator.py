@@ -192,7 +192,7 @@ def target_density(
     return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(name="forward_model", scope="module", params=['simulation_model', 'fd_model'])
+@pytest.fixture(name="forward_model", scope="module", params=["simulation_model", "fd_model"])
 def fixture_forward_model(request):
     """Gradient method."""
     return request.param
@@ -279,8 +279,8 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
 @pytest.fixture(name="_create_experimental_data")
 def fixture_create_experimental_data(tmp_path):
     """Fixture for dummy data."""
-    data_dict = {'y_obs': np.zeros(1)}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": np.zeros(1)}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)
 
@@ -300,6 +300,6 @@ def fixture_write_custom_likelihood_model(module_path):
         "class MyLikelihood(GaussianLikelihood):\n",
         "   pass",
     ]
-    with open(module_path, 'w', encoding='utf-8') as f:
+    with open(module_path, "w", encoding="utf-8") as f:
         for my_string in custom_class_lst:
             f.writelines(my_string)

@@ -68,7 +68,7 @@ class Classifier:
             file_name (str): File name without suffix
         """
         pickle_file = Path(path) / (file_name + ".pickle")
-        with pickle_file.open('rb') as file:
+        with pickle_file.open("rb") as file:
             self.classifier_obj = pickle.load(file)
 
 
@@ -97,7 +97,7 @@ class ActiveLearningClassifier(Classifier):
         if active_sampler_obj is not None:
             self.active_sampler_obj = active_sampler_obj
         else:
-            self.active_sampler_obj = UncertaintySampling(method='entropy', random_state=0)
+            self.active_sampler_obj = UncertaintySampling(method="entropy", random_state=0)
         self.batch_size = batch_size
 
     def train(self, x_train, y_train):

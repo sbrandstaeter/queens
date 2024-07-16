@@ -49,28 +49,28 @@ def inject_template_cli():
         "arbitrary number of parameters (name-value pairs) can be added."
     )
     parser.add_argument(
-        '--template',
+        "--template",
         type=str,
         required=True,
         help="Jinja2 template to be injected.",
     )
     parser.add_argument(
-        '--output_path',
+        "--output_path",
         type=str,
         default=None,
-        help='Output path for the injected template.',
+        help="Output path for the injected template.",
     )
 
     # These two are dummy arguments to indicate how to use this CLI
     parser.add_argument(
-        '--name_1',
+        "--name_1",
         type=str,
         default=None,
         metavar="value_1",
         help="Example name-value pair: inject a parameter called <name_1> with the value <value_1>",
     )
     parser.add_argument(
-        '--name_2',
+        "--name_2",
         type=str,
         default=None,
         metavar="value_2",
@@ -82,7 +82,7 @@ def inject_template_cli():
     template_path = Path(path_arguments.template)
     if path_arguments.output_path is None:
         output_path = template_path.with_name(
-            template_path.stem + '_injected' + template_path.suffix
+            template_path.stem + "_injected" + template_path.suffix
         )
     else:
         output_path = Path(path_arguments.output_path)
@@ -118,19 +118,19 @@ def input_to_script_cli():
         " This does not work with jinja templates!"
     )
     parser.add_argument(
-        '--output_dir',
+        "--output_dir",
         type=str,
-        help='Output directory for the QUEENS run',
+        help="Output directory for the QUEENS run",
     )
     parser.add_argument(
-        '--input',
+        "--input",
         type=str,
-        help='Input file to convert',
+        help="Input file to convert",
     )
     parser.add_argument(
-        '--script_path',
+        "--script_path",
         type=str,
-        help='Path of the converted script',
+        help="Path of the converted script",
     )
 
     args = sys.argv[1:]
@@ -145,7 +145,7 @@ def print_pickle_data_cli():
     ascii_art.print_banner("QUEENS", 60)
     args = sys.argv[1:]
     if len(args) == 0:
-        _logger.info('No pickle file was provided!')
+        _logger.info("No pickle file was provided!")
     else:
         file_path = args[0]
         print_pickled_data(Path(file_path))
@@ -161,12 +161,12 @@ def gather_metadata_and_write_to_csv():
         description="QUEENS cli util to create csv file for experiment simulation metadata."
     )
     parser.add_argument(
-        '--experiment_dir',
+        "--experiment_dir",
         type=str,
-        help='Experiment dir to simulation folders',
+        help="Experiment dir to simulation folders",
     )
     parser.add_argument(
-        '--csv_path', type=str, help='Path to export metadata csv file', default=None
+        "--csv_path", type=str, help="Path to export metadata csv file", default=None
     )
 
     args = sys.argv[1:]
@@ -181,24 +181,24 @@ def gather_metadata_and_write_to_csv():
 
 def build_html_coverage_report():
     """Build html coverage report."""
-    _logger.info('Build html coverage report...')
+    _logger.info("Build html coverage report...")
 
     pytest_command_string = (
         'pytest -m "unit_tests or integration_tests or integration_tests_baci" '
-        '--cov --cov-report=html:html_coverage_report'
+        "--cov --cov-report=html:html_coverage_report"
     )
     command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
-    command_string = ' '.join(command_list)
+    command_string = " ".join(command_list)
     run_subprocess(command_string)
 
 
 def remove_html_coverage_report():
     """Remove html coverage report files."""
-    _logger.info('Remove html coverage report...')
+    _logger.info("Remove html coverage report...")
 
     pytest_command_string = "rm -r html_coverage_report/; rm .coverage*"
     command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
-    command_string = ' '.join(command_list)
+    command_string = " ".join(command_list)
     run_subprocess(command_string)
 
 
@@ -214,8 +214,8 @@ def str_to_bool(value):
     if isinstance(value, bool):
         return value
 
-    false_options = ('false', 'f', '0', 'no', 'n')
-    true_options = ('true', 't', '1', 'yes', 'y')
+    false_options = ("false", "f", "0", "no", "n")
+    true_options = ("true", "t", "1", "yes", "y")
     if value.lower() in false_options:
         return False
     if value.lower() in true_options:
@@ -239,15 +239,15 @@ def get_cli_options(args):
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(
-        '--input', type=str, default=None, help='Input file in .json or .yaml/yml format.'
+        "--input", type=str, default=None, help="Input file in .json or .yaml/yml format."
     )
     parser.add_argument(
-        '--output_dir',
+        "--output_dir",
         type=str,
         default=None,
-        help='Output directory to write results to. The directory has to be created by the user!',
+        help="Output directory to write results to. The directory has to be created by the user!",
     )
-    parser.add_argument('--debug', type=str_to_bool, default=False, help='Debug mode yes/no.')
+    parser.add_argument("--debug", type=str_to_bool, default=False, help="Debug mode yes/no.")
 
     args = parser.parse_args(args)
 
@@ -269,11 +269,11 @@ def print_greeting_message():
     """Print a greeting message and how to use QUEENS."""
     ascii_art.print_banner_and_description()
     ascii_art.print_centered_multiline("Welcome to the royal family!")
-    _logger.info('\nTo use QUEENS run:\n')
-    _logger.info('queens --input <inputfile> --output_dir <output_dir>\n')
-    _logger.info('or\n')
-    _logger.info('python -m queens.main --input <inputfile> --output_dir <output_dir>\n')
-    _logger.info('or\n')
+    _logger.info("\nTo use QUEENS run:\n")
+    _logger.info("queens --input <inputfile> --output_dir <output_dir>\n")
+    _logger.info("or\n")
+    _logger.info("python -m queens.main --input <inputfile> --output_dir <output_dir>\n")
+    _logger.info("or\n")
     _logger.info(
-        'python path_to_queens/queens/main.py --input <inputfile> --output_dir <output_dir>\n'
+        "python path_to_queens/queens/main.py --input <inputfile> --output_dir <output_dir>\n"
     )
