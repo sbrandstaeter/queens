@@ -22,7 +22,7 @@ import seaborn as sns
 from matplotlib import style
 
 cycle_colors = sns.color_palette()
-style.use('seaborn')
+style.use("seaborn")
 this = sys.modules[__name__]
 this.sa_visualization_instance = None
 
@@ -64,7 +64,7 @@ def convert_to_pandas(results):
         output (DataFrame): Data as pandas DataFrame with parameter names as index
     """
     output = pd.DataFrame.from_dict(results["sensitivity_indices"])
-    output = output.set_index('names')
+    output = output.set_index("names")
     return output
 
 
@@ -77,10 +77,10 @@ def annotate_points(data):
     for parameter in data.index.values:
         plt.annotate(
             parameter,
-            (data.loc[parameter, 'mu_star'], data.loc[parameter, 'sigma']),
+            (data.loc[parameter, "mu_star"], data.loc[parameter, "sigma"]),
             textcoords="offset points",
             xytext=(0, 5),
-            ha='center',
+            ha="center",
             fontsize=8,
         )
 
@@ -105,7 +105,7 @@ class SAVisualization:
 
     # some overall class states
     plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({'font.size': 28})
+    plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
         """TODO_doc.
@@ -169,21 +169,21 @@ class SAVisualization:
         Returns:
             Plot of sensitivity indices as bar plot
         """
-        if self.should_be_saved['bar'] or self.should_be_displayed['bar']:
+        if self.should_be_saved["bar"] or self.should_be_displayed["bar"]:
             sensitivity_indices = convert_to_pandas(results)
 
-            ax = sensitivity_indices.plot.bar(y='mu_star', yerr='sigma')
+            ax = sensitivity_indices.plot.bar(y="mu_star", yerr="sigma")
 
-            ax.set_xlabel('Factors')
-            ax.set_ylabel(r'$\mu^*_i$ and $\sigma_i$ (confidence intervals)')
-            ax.set_title('Elementary Effects Analysis')
+            ax.set_xlabel("Factors")
+            ax.set_ylabel(r"$\mu^*_i$ and $\sigma_i$ (confidence intervals)")
+            ax.set_title("Elementary Effects Analysis")
 
             ax.yaxis.grid(True)
             plt.xticks(rotation=45, ha="right")
             plt.tight_layout()
 
-            self._save_plot('bar')
-            self.figures['bar'] = plt.gcf()
+            self._save_plot("bar")
+            self.figures["bar"] = plt.gcf()
 
     def plot_si_scatter(self, results):
         """TODO_doc: add a one-line explanation.
@@ -197,21 +197,21 @@ class SAVisualization:
         Returns:
             Plot of sensitivity indices as scatter plot
         """
-        if self.should_be_saved['scatter'] or self.should_be_displayed['scatter']:
+        if self.should_be_saved["scatter"] or self.should_be_displayed["scatter"]:
             sensitivity_indices = convert_to_pandas(results)
 
-            ax = sensitivity_indices.plot.scatter(x='mu_star', y='sigma')
+            ax = sensitivity_indices.plot.scatter(x="mu_star", y="sigma")
             annotate_points(sensitivity_indices)
 
-            ax.set_xlabel(r'$\mu^*_i$')
-            ax.set_ylabel(r'$\sigma_i$')
-            ax.set_title('Elementary Effects Analysis')
+            ax.set_xlabel(r"$\mu^*_i$")
+            ax.set_ylabel(r"$\sigma_i$")
+            ax.set_title("Elementary Effects Analysis")
 
             ax.yaxis.grid(True)
             plt.tight_layout()
 
-            self._save_plot('scatter')
-            self.figures['scatter'] = plt.gcf()
+            self._save_plot("scatter")
+            self.figures["scatter"] = plt.gcf()
 
     def _display_plots(self):
         """Show plots according to input plot_booleans.

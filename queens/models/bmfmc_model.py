@@ -374,7 +374,7 @@ class BMFMCModel(Model):
         # we load the description of the uncertain parameters from the first lf iterator
         # (note: all lf iterators have the same description)
         self.uncertain_parameters = (
-            self.lf_data_iterators[0].read_pickle_file().get('input_description')
+            self.lf_data_iterators[0].read_pickle_file().get("input_description")
         )
 
         # --------------------- load LF sampling raw data with data iterators --------------
@@ -425,14 +425,14 @@ class BMFMCModel(Model):
         # Directly start simulations of HF model for optimal input batch X_train
         if (self.high_fidelity_model is not None) and (self.Y_HF_mc is None):
             _logger.info(
-                'High-fidelity model found! Starting now simulation on HF model for BMFMC '
-                'training data...'
+                "High-fidelity model found! Starting now simulation on HF model for BMFMC "
+                "training data..."
             )
             # Evaluate High Fidelity Model
             self.high_fidelity_model.evaluate(self.X_train)
 
             # Get the HF-model training data for BMFMC
-            self.Y_HF_train = self.high_fidelity_model.response['result']
+            self.Y_HF_train = self.high_fidelity_model.response["result"]
             _logger.info(
                 "High-fidelity simulations finished successfully!\n Starting now BMFMC "
                 "routine..."
@@ -449,9 +449,9 @@ class BMFMCModel(Model):
             ).T
         else:
             raise RuntimeError(
-                'Please make sure to provide either a pickle file with '
-                'high-fidelity Monte-Carlo data or an appropriate high-fidelity '
-                'model to compute the high-fidelity training data! Abort...'
+                "Please make sure to provide either a pickle file with "
+                "high-fidelity Monte-Carlo data or an appropriate high-fidelity "
+                "model to compute the high-fidelity training data! Abort..."
             )
 
     def build_approximation(self, approx_case=True):
@@ -513,11 +513,11 @@ class BMFMCModel(Model):
         # Define the outer loop (addition of all multivariate normal distributions
         yhf_pdf_grid = np.zeros((points.shape[0],))
         i = 1
-        _logger.info('\n')
+        _logger.info("\n")
 
         # TODO we should speed this up with multiprocessing # pylint: disable=fixme
         for num1, (mean1, var1) in enumerate(
-            zip(tqdm(f_mean_pred, desc=r'Calculating Var_f[p(y_HF|f,z,D)]'), yhf_var_pred)
+            zip(tqdm(f_mean_pred, desc=r"Calculating Var_f[p(y_HF|f,z,D)]"), yhf_var_pred)
         ):
             for num2, (mean2, var2) in enumerate(
                 zip(f_mean_pred[num1 + 1 :], yhf_var_pred[num1 + 1 :])
@@ -542,7 +542,7 @@ class BMFMCModel(Model):
                 )
 
                 a = np.dot(diff, inv_sigma)
-                b = np.einsum('ij,ij->i', a, diff)
+                b = np.einsum("ij,ij->i", a, diff)
                 c = np.sqrt(4 * np.pi**2 * det_sigma)
                 args = -0.5 * b + np.log(1 / c)
                 args[args > 40] = 40  # limit arguments for for better conditioning
@@ -595,9 +595,9 @@ class BMFMCModel(Model):
         elif self.features_config == "opt_features":
             if self.num_features < 1:
                 raise ValueError(
-                    f'You specified {self.num_features} features, '
-                    'which is an '
-                    f'invalid value! Please only specify integer values greater than zero! Abort...'
+                    f"You specified {self.num_features} features, "
+                    "which is an "
+                    f"invalid value! Please only specify integer values greater than zero! Abort..."
                 )
             self.update_probabilistic_mapping_with_features()
         elif self.features_config == "no_features":
@@ -673,7 +673,7 @@ class BMFMCModel(Model):
         if self.training_indices is not None:
             self.Z_train = self.Z_mc[self.training_indices, :]
         else:
-            raise ValueError('The training indices are still set to None! Abort...')
+            raise ValueError("The training indices are still set to None! Abort...")
 
         # update dataset for probabilistic mapping with new feature dimensions
         self.interface.build_approximation(self.Z_train, self.Y_HF_train)

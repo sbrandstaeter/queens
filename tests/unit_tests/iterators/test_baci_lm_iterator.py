@@ -15,25 +15,25 @@ from queens.parameters.parameters import Parameters
 _logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(name="iterator_name_cases", scope='module', params=['method'])
+@pytest.fixture(name="iterator_name_cases", scope="module", params=["method"])
 def fixture_iterator_name_cases(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(name="model_cases", scope='module', params=[None, 'dummy_model'])
+@pytest.fixture(name="model_cases", scope="module", params=[None, "dummy_model"])
 def fixture_model_cases(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(name="fix_update_reg", scope='module', params=['grad', 'res', 'not_valid'])
+@pytest.fixture(name="fix_update_reg", scope="module", params=["grad", "res", "not_valid"])
 def fixture_fix_update_reg(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(name="fix_tolerance", scope='module', params=[1e-6, 1e0])
+@pytest.fixture(name="fix_tolerance", scope="module", params=[1e-6, 1e0])
 def fixture_fix_tolerance(request):
     """TODO_doc."""
     return request.param
@@ -61,12 +61,12 @@ def fixture_default_baci_lm_iterator(global_settings):
         model=model,
         parameters=parameters,
         global_settings=global_settings,
-        result_description={'write_results': True, 'plot_results': True},
+        result_description={"write_results": True, "plot_results": True},
         initial_guess=[0.1, 0.2],
         jac_rel_step=1e-05,
         jac_abs_step=0.001,
         init_reg=1.0,
-        update_reg='grad',
+        update_reg="grad",
         convergence_tolerance=1e-06,
         max_feval=99,
     )
@@ -74,21 +74,21 @@ def fixture_default_baci_lm_iterator(global_settings):
     return my_baci_lm_iterator
 
 
-@pytest.fixture(name="fix_true_false_param", scope='module', params=[True, False])
+@pytest.fixture(name="fix_true_false_param", scope="module", params=[True, False])
 def fixture_fix_true_false_param(request):
     """TODO_doc."""
     return request.param
 
 
-@pytest.fixture(name="fix_plotly_fig", scope='module')
+@pytest.fixture(name="fix_plotly_fig", scope="module")
 def fixture_fix_plotly_fig():
     """TODO_doc."""
-    data = pd.DataFrame({'x': [1.0, 2.0], 'y': [1.1, 2.1], 'z': [1.2, 2.2]})
+    data = pd.DataFrame({"x": [1.0, 2.0], "y": [1.1, 2.1], "z": [1.2, 2.2]})
     fig = px.line_3d(
         data,
-        x='x',
-        y='y',
-        z='z',
+        x="x",
+        y="y",
+        z="z",
     )
     return fig
 
@@ -100,10 +100,10 @@ def test_init(global_settings):
     jac_rel_step = 1e-3
     jac_abs_step = 1e-2
     init_reg = 1.0
-    update_reg = 'grad'
+    update_reg = "grad"
     tolerance = 1e-8
     max_feval = 99
-    model = 'dummy_model'
+    model = "dummy_model"
     result_description = (True,)
     verbose_output = (True,)
 
@@ -137,7 +137,7 @@ def test_init(global_settings):
 
 def test_model_evaluate(default_baci_lm_iterator, mocker):
     """TODO_doc."""
-    mp = mocker.patch('queens.models.simulation_model.SimulationModel.evaluate', return_value=None)
+    mp = mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=None)
     default_baci_lm_iterator.model.evaluate(None)
     mp.assert_called_once()
 
@@ -145,16 +145,16 @@ def test_model_evaluate(default_baci_lm_iterator, mocker):
 def test_residual(default_baci_lm_iterator, mocker):
     """TODO_doc."""
     mocker.patch(
-        'queens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
+        "queens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb",
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
 
     m2 = mocker.patch(
-        'queens.models.simulation_model.SimulationModel.evaluate',
+        "queens.models.simulation_model.SimulationModel.evaluate",
         return_value=None,
     )
 
-    default_baci_lm_iterator.model.response = {'result': np.array([[3.0, 4.2], [99.9, 99.9]])}
+    default_baci_lm_iterator.model.response = {"result": np.array([[3.0, 4.2], [99.9, 99.9]])}
 
     _, result = default_baci_lm_iterator.jacobian_and_residual(np.array([1.0, 2.2]))
 
@@ -165,7 +165,7 @@ def test_residual(default_baci_lm_iterator, mocker):
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     """TODO_doc."""
     mocker.patch(
-        'queens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
+        "queens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb",
         return_value=[
             np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]),
             np.array([0.00101, 0.201022]),
@@ -173,14 +173,14 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     )
 
     m3 = mocker.patch(
-        'queens.models.simulation_model.SimulationModel.evaluate',
+        "queens.models.simulation_model.SimulationModel.evaluate",
         return_value=None,
     )
 
-    default_baci_lm_iterator.model.response = {'result': np.array([[3.0, 4.2], [99.9, 99.9]])}
+    default_baci_lm_iterator.model.response = {"result": np.array([[3.0, 4.2], [99.9, 99.9]])}
 
     m5 = mocker.patch(
-        'queens.iterators.baci_lm_iterator.fd_jacobian',
+        "queens.iterators.baci_lm_iterator.fd_jacobian",
         return_value=np.array([[1.0, 0.0], [0.0, 1.0]]),
     )
 
@@ -200,13 +200,13 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator, output_csv):
     """TODO_doc."""
-    default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
+    default_baci_lm_iterator.result_description["write_results"] = fix_true_false_param
 
-    mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
+    mock_pandas_dataframe_to_csv = mocker.patch("pandas.core.generic.NDFrame.to_csv")
     default_baci_lm_iterator.pre_run()
     if fix_true_false_param:
         mock_pandas_dataframe_to_csv.assert_called_once_with(
-            output_csv, mode='w', sep='\t', index=None
+            output_csv, mode="w", sep="\t", index=None
         )
     else:
         assert not mock_pandas_dataframe_to_csv.called
@@ -217,16 +217,16 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator, output_
 def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_tolerance):
     """TODO_doc."""
     m1 = mocker.patch(
-        'queens.iterators.baci_lm_iterator.BaciLMIterator.jacobian_and_residual',
+        "queens.iterators.baci_lm_iterator.BaciLMIterator.jacobian_and_residual",
         return_value=(np.array([[1.0, 2.0], [0.0, 1.0]]), np.array([0.1, 0.01])),
     )
 
-    m3 = mocker.patch('queens.iterators.baci_lm_iterator.BaciLMIterator.printstep')
+    m3 = mocker.patch("queens.iterators.baci_lm_iterator.BaciLMIterator.printstep")
     default_baci_lm_iterator.update_reg = fix_update_reg
     default_baci_lm_iterator.max_feval = 2
     default_baci_lm_iterator.tolerance = fix_tolerance
 
-    if fix_update_reg not in ['grad', 'res']:
+    if fix_update_reg not in ["grad", "res"]:
         with pytest.raises(ValueError):
             default_baci_lm_iterator.core_run()
     else:
@@ -252,32 +252,32 @@ def test_post_run_2param(
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
-    pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2]', '[1.1 2.1]'], 'resnorm': [1.2, 2.2]})
-    checkdata = pd.DataFrame({'resnorm': [1.2, 2.2], 'x1': [1000.0, 1.1], 'x2': [0.02, 2.1]})
+    pdata = pd.DataFrame({"params": ["[1.0e3 2.0e-2]", "[1.1 2.1]"], "resnorm": [1.2, 2.2]})
+    checkdata = pd.DataFrame({"resnorm": [1.2, 2.2], "x1": [1000.0, 1.1], "x2": [0.02, 2.1]})
 
-    default_baci_lm_iterator.result_description['plot_results'] = fix_true_false_param
-    m1 = mocker.patch('pandas.read_csv', return_value=pdata)
-    m2 = mocker.patch('plotly.express.line_3d', return_value=fix_plotly_fig)
-    m3 = mocker.patch('plotly.basedatatypes.BaseFigure.update_traces', return_value=None)
-    m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
+    default_baci_lm_iterator.result_description["plot_results"] = fix_true_false_param
+    m1 = mocker.patch("pandas.read_csv", return_value=pdata)
+    m2 = mocker.patch("plotly.express.line_3d", return_value=fix_plotly_fig)
+    m3 = mocker.patch("plotly.basedatatypes.BaseFigure.update_traces", return_value=None)
+    m4 = mocker.patch("plotly.basedatatypes.BaseFigure.write_html", return_value=None)
 
     default_baci_lm_iterator.post_run()
 
     if fix_true_false_param:
-        m1.assert_called_once_with(output_csv, sep='\t')
+        m1.assert_called_once_with(output_csv, sep="\t")
         callargs = m2.call_args
         pd.testing.assert_frame_equal(callargs[0][0], checkdata)
-        assert callargs[1]['x'] == 'x1'
-        assert callargs[1]['y'] == 'x2'
-        assert callargs[1]['z'] == 'resnorm'
-        assert callargs[1]['hover_data'] == [
-            'iter',
-            'resnorm',
-            'gradnorm',
-            'delta_params',
-            'mu',
-            'x1',
-            'x2',
+        assert callargs[1]["x"] == "x1"
+        assert callargs[1]["y"] == "x2"
+        assert callargs[1]["z"] == "resnorm"
+        assert callargs[1]["hover_data"] == [
+            "iter",
+            "resnorm",
+            "gradnorm",
+            "delta_params",
+            "mu",
+            "x1",
+            "x2",
         ]
         m4.assert_called_once_with(output_html)
         m2.assert_called_once()
@@ -296,26 +296,26 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig, outpu
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
-    pdata = pd.DataFrame({'params': ['[1.0e3]', '[1.1]'], 'resnorm': [1.2, 2.2]})
-    mocker.patch('pandas.read_csv', return_value=pdata)
-    mocker.patch('plotly.basedatatypes.BaseFigure.update_traces', return_value=None)
-    m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
-    m6 = mocker.patch('plotly.express.line', return_value=fix_plotly_fig)
+    pdata = pd.DataFrame({"params": ["[1.0e3]", "[1.1]"], "resnorm": [1.2, 2.2]})
+    mocker.patch("pandas.read_csv", return_value=pdata)
+    mocker.patch("plotly.basedatatypes.BaseFigure.update_traces", return_value=None)
+    m4 = mocker.patch("plotly.basedatatypes.BaseFigure.write_html", return_value=None)
+    m6 = mocker.patch("plotly.express.line", return_value=fix_plotly_fig)
 
-    checkdata = pd.DataFrame({'resnorm': [1.2, 2.2], 'x1': [1000.0, 1.1]})
+    checkdata = pd.DataFrame({"resnorm": [1.2, 2.2], "x1": [1000.0, 1.1]})
 
     default_baci_lm_iterator.post_run()
     callargs = m6.call_args
     pd.testing.assert_frame_equal(callargs[0][0], checkdata)
-    assert callargs[1]['x'] == 'x1'
-    assert callargs[1]['y'] == 'resnorm'
-    assert callargs[1]['hover_data'] == [
-        'iter',
-        'resnorm',
-        'gradnorm',
-        'delta_params',
-        'mu',
-        'x1',
+    assert callargs[1]["x"] == "x1"
+    assert callargs[1]["y"] == "resnorm"
+    assert callargs[1]["hover_data"] == [
+        "iter",
+        "resnorm",
+        "gradnorm",
+        "delta_params",
+        "mu",
+        "x1",
     ]
     m4.assert_called_once_with(output_html)
     m6.assert_called_once()
@@ -326,10 +326,10 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
-    mocker.patch('plotly.basedatatypes.BaseFigure.update_traces', return_value=None)
-    m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
-    pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]})
-    mocker.patch('pandas.read_csv', return_value=pdata)
+    mocker.patch("plotly.basedatatypes.BaseFigure.update_traces", return_value=None)
+    m4 = mocker.patch("plotly.basedatatypes.BaseFigure.write_html", return_value=None)
+    pdata = pd.DataFrame({"params": ["[1.0e3 2.0e-2 3.]", "[1.1 2.1 3.1]"], "resnorm": [1.2, 2.2]})
+    mocker.patch("pandas.read_csv", return_value=pdata)
 
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1), x3=FreeVariable(1))
     default_baci_lm_iterator.parameters = parameters
@@ -352,8 +352,8 @@ def test_post_run_0param(mocker, default_baci_lm_iterator):
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
-    pdata = pd.DataFrame({'params': ['', ''], 'resnorm': [1.2, 2.2]})
-    mocker.patch('pandas.read_csv', return_value=pdata)
+    pdata = pd.DataFrame({"params": ["", ""], "resnorm": [1.2, 2.2]})
+    mocker.patch("pandas.read_csv", return_value=pdata)
     with pytest.raises(ValueError):
         default_baci_lm_iterator.post_run()
 
@@ -376,17 +376,17 @@ def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
 
 def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param, output_csv):
     """TODO_doc."""
-    default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
+    default_baci_lm_iterator.result_description["write_results"] = fix_true_false_param
 
-    mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
+    mock_pandas_dataframe_to_csv = mocker.patch("pandas.core.generic.NDFrame.to_csv")
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
     if fix_true_false_param:
         mock_pandas_dataframe_to_csv.assert_called_once_with(
             output_csv,
             header=None,
             float_format="%.8f",
-            mode='a',
-            sep='\t',
+            mode="a",
+            sep="\t",
             index=None,
         )
 

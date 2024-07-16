@@ -39,7 +39,7 @@ def test_evaluate():
 
 def test_grad():
     """Test grad method."""
-    model = SimulationModel('dummy_interface')
+    model = SimulationModel("dummy_interface")
     np.random.seed(42)
     upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))

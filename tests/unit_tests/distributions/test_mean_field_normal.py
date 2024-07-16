@@ -159,7 +159,7 @@ def test_draw(mean_field_normal, mocker):
     # test one sample
     np.random.seed(0)
     uncorrelated_vector = np.array([[1.76405235, 0.40015721, 0.97873798, 2.2408932, 1.86755799]])
-    mocker.patch('numpy.random.randn', return_value=uncorrelated_vector)
+    mocker.patch("numpy.random.randn", return_value=uncorrelated_vector)
     one_sample = mean_field_normal.draw()
     expected_sample = (
         mean_field_normal.mean
@@ -178,7 +178,7 @@ def test_draw(mean_field_normal, mocker):
         mean_field_normal.mean.reshape(1, -1)
         + mean_field_normal.standard_deviation.reshape(1, -1) * uncorrelated_vectors.T
     )
-    mocker.patch('numpy.random.randn', return_value=uncorrelated_vectors.T)
+    mocker.patch("numpy.random.randn", return_value=uncorrelated_vectors.T)
     multiple_samples = mean_field_normal.draw(num_samples)
     np.testing.assert_array_almost_equal(multiple_samples, expected_samples, decimal=6)
 

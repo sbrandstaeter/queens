@@ -15,7 +15,7 @@ def fixture_default_fd_model():
     """A default finite difference model."""
     model_obj = DifferentiableSimulationModelFD(
         interface=Mock(),
-        finite_difference_method='2-point',
+        finite_difference_method="2-point",
     )
     return model_obj
 
@@ -24,7 +24,7 @@ def fixture_default_fd_model():
 def test_init():
     """Test the init method of the finite difference model."""
     interface = "my_interface"
-    finite_difference_method = '3-point'
+    finite_difference_method = "3-point"
     step_size = 1e-6
     bounds = [-10, np.inf]
 
@@ -42,7 +42,7 @@ def test_init():
     with pytest.raises(InvalidOptionError):
         DifferentiableSimulationModelFD(
             interface=interface,
-            finite_difference_method='invalid_method',
+            finite_difference_method="invalid_method",
             step_size=step_size,
         )
 
@@ -57,21 +57,21 @@ def test_evaluate(default_fd_model):
 
     response = default_fd_model.evaluate(samples)
     assert len(response) == 1
-    np.testing.assert_array_equal(response['result'], expected_mean)
+    np.testing.assert_array_equal(response["result"], expected_mean)
     assert len(default_fd_model.response) == 1
-    np.testing.assert_array_equal(default_fd_model.response['result'], expected_mean)
+    np.testing.assert_array_equal(default_fd_model.response["result"], expected_mean)
 
     Model.evaluate_and_gradient_bool = False
     response = default_fd_model.evaluate(samples)
     assert len(response) == 1
-    np.testing.assert_array_equal(response['result'], expected_mean)
+    np.testing.assert_array_equal(response["result"], expected_mean)
     assert len(default_fd_model.response) == 1
-    np.testing.assert_array_equal(default_fd_model.response['result'], expected_mean)
+    np.testing.assert_array_equal(default_fd_model.response["result"], expected_mean)
 
     Model.evaluate_and_gradient_bool = True
     response = default_fd_model.evaluate(samples)
-    np.testing.assert_array_almost_equal(expected_mean, response['result'], decimal=5)
-    np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=5)
+    np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
+    np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=5)
 
     default_fd_model.interface.evaluate = lambda x: {
         "result": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
@@ -81,8 +81,8 @@ def test_evaluate(default_fd_model):
     expected_grad = np.swapaxes(np.array([2 * samples, 4 * samples]), 0, 1)
     expected_mean = np.array([np.sum(samples**2, axis=1), np.sum(2 * samples**2, axis=1)]).T
     response = default_fd_model.evaluate(samples)
-    np.testing.assert_array_almost_equal(expected_mean, response['result'], decimal=5)
-    np.testing.assert_array_almost_equal(expected_grad, response['gradient'], decimal=4)
+    np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
+    np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=4)
     Model.evaluate_and_gradient_bool = False
 
 
@@ -91,12 +91,12 @@ def test_grad(default_fd_model):
     np.random.seed(42)
     samples = np.random.random((2, 4, 3))
     default_fd_model.response = {
-        'result': np.sum(samples**2, axis=2, keepdims=True),
-        'gradient': 2 * samples,
+        "result": np.sum(samples**2, axis=2, keepdims=True),
+        "gradient": 2 * samples,
     }
     upstream_gradient = np.random.random((2, 1))
     expected_grad = np.sum(
-        upstream_gradient[:, :, np.newaxis] * default_fd_model.response['gradient'], axis=1
+        upstream_gradient[:, :, np.newaxis] * default_fd_model.response["gradient"], axis=1
     )
     grad_out = default_fd_model.grad(samples, upstream_gradient)
     np.testing.assert_almost_equal(expected_grad, grad_out)

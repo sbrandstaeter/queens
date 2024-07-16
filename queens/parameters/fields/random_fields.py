@@ -24,10 +24,10 @@ class RandomField(metaclass=abc.ABCMeta):
         """
         self.coords = coords
         # check if coords are 1D vector
-        if np.array(coords['coords']).ndim == 1:
-            self.coords['coords'] = np.array(coords['coords']).reshape((len(coords['coords'])), 1)
+        if np.array(coords["coords"]).ndim == 1:
+            self.coords["coords"] = np.array(coords["coords"]).reshape((len(coords["coords"])), 1)
 
-        self.dim_coords = len(coords['keys'])
+        self.dim_coords = len(coords["keys"])
         self.dimension = None
         self.distribution = None
 

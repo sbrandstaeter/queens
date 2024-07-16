@@ -13,7 +13,7 @@ from queens.utils import smc_utils
 
 @pytest.fixture(
     name="temper_keyword_and_temper_type",
-    scope='module',
+    scope="module",
     params=[
         ("bayes", type(smc_utils.temper_logpdf_bayes)),
         ("generic", type(smc_utils.temper_logpdf_generic)),
@@ -24,19 +24,19 @@ def fixture_temper_keyword_and_temper_type(request):
     return request.param
 
 
-@pytest.fixture(name="temper_parameter", scope='module', params=[0.0, 1e-4, 0.9, 1.0])
+@pytest.fixture(name="temper_parameter", scope="module", params=[0.0, 1e-4, 0.9, 1.0])
 def fixture_temper_parameter(request):
     """Return a valid temper parameter."""
     return request.param
 
 
-@pytest.fixture(name="logpdf0", scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
+@pytest.fixture(name="logpdf0", scope="module", params=[-np.inf, -1e8, 0.0, 1e10])
 def fixture_logpdf0(request):
     """Return a valid logpdf."""
     return request.param
 
 
-@pytest.fixture(name="logpdf1", scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
+@pytest.fixture(name="logpdf1", scope="module", params=[-np.inf, -1e8, 0.0, 1e10])
 def fixture_logpdf1(request):
     """Return a valid logpdf."""
     return request.param
@@ -53,7 +53,7 @@ def test_temper_factory(temper_keyword_and_temper_type):
 def test_temper_factory_invalid():
     """Test the function factory for invalid keyword."""
     temper = "invalid"
-    with pytest.raises(ValueError, match=r'Unknown type.*'):
+    with pytest.raises(ValueError, match=r"Unknown type.*"):
         smc_utils.temper_factory(temper)
 
 

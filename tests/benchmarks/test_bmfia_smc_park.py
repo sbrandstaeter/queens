@@ -24,10 +24,10 @@ def test_bmfia_park_hf_smc(
     code.
     """
     # generate yaml input file from template
-    template = inputdir / 'bmfia_smc_park.yml'
+    template = inputdir / "bmfia_smc_park.yml"
     experimental_data_path = tmp_path
-    paths_dictionary = {'experimental_data_path': experimental_data_path, 'plot_dir': tmp_path}
-    input_file = tmp_path / 'smc_mf_park_realization.yml'
+    paths_dictionary = {"experimental_data_path": experimental_data_path, "plot_dir": tmp_path}
+    input_file = tmp_path / "smc_mf_park_realization.yml"
     injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS
@@ -70,11 +70,11 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
 
     # write fake data to csv
     data_dict = {
-        'x3': x3_vec,
-        'x4': x4_vec,
-        'y_obs': y_fake,
+        "x3": x3_vec,
+        "x4": x4_vec,
+        "y_obs": y_fake,
     }
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    experimental_data_path = tmp_path / "experimental_data.csv"
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
 

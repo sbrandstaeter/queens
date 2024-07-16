@@ -54,7 +54,7 @@ class BaciLMIterator(Iterator):
         jac_rel_step=1e-4,
         jac_abs_step=0.0,
         init_reg=1.0,
-        update_reg='grad',
+        update_reg="grad",
         convergence_tolerance=1e-6,
         max_feval=1,
         verbose_output=False,
@@ -119,12 +119,12 @@ class BaciLMIterator(Iterator):
 
         self.model.evaluate(positions)
 
-        f = self.model.response['result']
+        f = self.model.response["result"]
         f_batch = f[-(len(positions)) :]
 
         f0 = f_batch[0]  # first entry corresponds to f(x0)
         f_perturbed = np.delete(f_batch, 0, 0)  # delete the first entry
-        jacobian_matrix = fd_jacobian(f0, f_perturbed, delta_positions, True, '2-point')
+        jacobian_matrix = fd_jacobian(f0, f_perturbed, delta_positions, True, "2-point")
         # sanity checks:
         # in the case of LSQ, the number of residuals needs to be
         # greater or equal to the number of parameters to be fitted
@@ -150,10 +150,10 @@ class BaciLMIterator(Iterator):
         if self.result_description:
             if self.result_description["write_results"]:
                 df = pd.DataFrame(
-                    columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
+                    columns=["iter", "resnorm", "gradnorm", "params", "delta_params", "mu"],
                 )
                 csv_file = self.global_settings.result_file(".csv")
-                df.to_csv(csv_file, mode="w", sep='\t', index=None)
+                df.to_csv(csv_file, mode="w", sep="\t", index=None)
 
     def core_run(self):
         """Core run of Levenberg Marquardt iterator."""
@@ -168,7 +168,7 @@ class BaciLMIterator(Iterator):
         while not converged:
             if i > self.max_feval:
                 converged = True
-                _logger.info('Maximum number of steps max_feval= %d reached.', self.max_feval)
+                _logger.info("Maximum number of steps max_feval= %d reached.", self.max_feval)
                 break
 
             _logger.info(
@@ -215,8 +215,8 @@ class BaciLMIterator(Iterator):
             if self.havebounds and self.checkbounds(param_delta, i):
                 if self.reg_param > 1.0e6 * self.init_reg:
                     _logger.info(
-                        'WARNING: STEP #%d IS OUT OF BOUNDS and reg_param is unreasonably '
-                        'high. Ending iterations!',
+                        "WARNING: STEP #%d IS OUT OF BOUNDS and reg_param is unreasonably "
+                        "high. Ending iterations!",
                         i,
                     )
                     break
@@ -226,19 +226,19 @@ class BaciLMIterator(Iterator):
             self.param_current = self.param_current + param_delta
 
             # update reg_param and check for tolerance
-            if self.update_reg == 'res':
+            if self.update_reg == "res":
                 if resnorm < self.tolerance:
                     converged = True
                     break
                 self.reg_param = self.reg_param * resnorm / resnorm_o
-            elif self.update_reg == 'grad':
+            elif self.update_reg == "grad":
                 if gradnorm < self.tolerance:
                     converged = True
                     break
                 if resnorm < resnorm_o and gradnorm < gradnorm_o:
                     self.reg_param = self.reg_param * gradnorm / gradnorm_o
             else:
-                raise ValueError('update_reg unknown')
+                raise ValueError("update_reg unknown")
             i += 1
 
         # store set of parameters which leads to the lowest residual as solution
@@ -255,12 +255,12 @@ class BaciLMIterator(Iterator):
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
                     self.global_settings.result_file(".csv"),
-                    sep='\t',
+                    sep="\t",
                 )
-                xydata = data['params']
-                xydata = xydata.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
+                xydata = data["params"]
+                xydata = xydata.str.extractall(r"([+-]?\d+\.\d*e?[+-]?\d*)")
                 xydata = xydata.unstack()
-                data = data.drop(columns='params')
+                data = data.drop(columns="params")
                 i = 0
                 for column in xydata:
                     data[self.parameters.names[i]] = xydata[column].astype(float)
@@ -268,9 +268,9 @@ class BaciLMIterator(Iterator):
 
                 if i > 2:
                     _logger.warning(
-                        'write_results for more than 2 parameters not implemented, '
-                        'because we are limited to 3 dimensions. '
-                        'You have: %d. Plotting is skipped.',
+                        "write_results for more than 2 parameters not implemented, "
+                        "because we are limited to 3 dimensions. "
+                        "You have: %d. Plotting is skipped.",
                         i,
                     )
                     return
@@ -279,35 +279,35 @@ class BaciLMIterator(Iterator):
                         data,
                         x=self.parameters.names[0],
                         y=self.parameters.names[1],
-                        z='resnorm',
+                        z="resnorm",
                         hover_data=[
-                            'iter',
-                            'resnorm',
-                            'gradnorm',
-                            'delta_params',
-                            'mu',
+                            "iter",
+                            "resnorm",
+                            "gradnorm",
+                            "delta_params",
+                            "mu",
                             self.parameters.names[0],
                             self.parameters.names[1],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker={"size": 2}, line={"width": 4})
+                    fig.update_traces(mode="lines+markers", marker={"size": 2}, line={"width": 4})
                 elif i == 1:
                     fig = px.line(
                         data,
                         x=self.parameters.names[0],
-                        y='resnorm',
+                        y="resnorm",
                         hover_data=[
-                            'iter',
-                            'resnorm',
-                            'gradnorm',
-                            'delta_params',
-                            'mu',
+                            "iter",
+                            "resnorm",
+                            "gradnorm",
+                            "delta_params",
+                            "mu",
                             self.parameters.names[0],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker={"size": 7}, line={"width": 3})
+                    fig.update_traces(mode="lines+markers", marker={"size": 7}, line={"width": 3})
                 else:
-                    raise ValueError('You shouldn\'t be here without parameters.')
+                    raise ValueError("You shouldn't be here without parameters.")
 
                 fig.write_html(self.global_settings.result_file(".html"))
 
@@ -357,17 +357,17 @@ class BaciLMIterator(Iterator):
             if self.result_description["write_results"]:
                 df = pd.DataFrame(
                     {
-                        'iter': i,
-                        'resnorm': np.format_float_scientific(resnorm, precision=8),
-                        'gradnorm': np.format_float_scientific(gradnorm, precision=8),
-                        'params': [np.array2string(self.param_current, precision=8)],
-                        'delta_params': [np.array2string(param_delta, precision=8)],
-                        'mu': np.format_float_scientific(self.reg_param, precision=8),
+                        "iter": i,
+                        "resnorm": np.format_float_scientific(resnorm, precision=8),
+                        "gradnorm": np.format_float_scientific(gradnorm, precision=8),
+                        "params": [np.array2string(self.param_current, precision=8)],
+                        "delta_params": [np.array2string(param_delta, precision=8)],
+                        "mu": np.format_float_scientific(self.reg_param, precision=8),
                     }
                 )
                 csv_file = self.global_settings.result_file(".csv")
                 df.to_csv(
-                    csv_file, mode="a", sep='\t', header=None, index=None, float_format='%.8f'
+                    csv_file, mode="a", sep="\t", header=None, index=None, float_format="%.8f"
                 )
 
     def checkbounds(self, param_delta, i):
@@ -387,8 +387,8 @@ class BaciLMIterator(Iterator):
         if np.any(nextstep < self.bounds[0]) or np.any(nextstep > self.bounds[1]):
             stepisoutside = True
             _logger.warning(
-                'WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration.'
-                '\n declined step was: %s',
+                "WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration."
+                "\n declined step was: %s",
                 i,
                 nextstep,
             )

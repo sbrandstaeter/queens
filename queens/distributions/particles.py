@@ -113,6 +113,6 @@ class ParticleDiscreteDistribution(DiscreteDistribution):
             np.ndarray: Event samples corresponding to the quantiles
         """
         self.check_1d()
-        indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side='left')
+        indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side="left")
         indices = np.clip(indices, 0, len(self.probabilities))
         return self.sample_space[indices]

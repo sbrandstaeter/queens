@@ -127,7 +127,7 @@ class RPVIIterator(VariationalInferenceIterator):
 
     def core_run(self):
         """Core run for variational inference with reparameterization trick."""
-        _logger.info('Starting reparameterization based variational inference...')
+        _logger.info("Starting reparameterization based variational inference...")
         super().core_run()
 
     def _calculate_elbo_gradient(self, variational_parameters):

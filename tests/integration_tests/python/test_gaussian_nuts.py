@@ -63,10 +63,10 @@ def test_gaussian_nuts(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results['mean'].mean(axis=0) == pytest.approx(
+    assert results["mean"].mean(axis=0) == pytest.approx(
         np.array([-0.2868793496608573, 0.6474274597130008])
     )
-    assert results['var'].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
+    assert results["var"].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
 
 
 @pytest.fixture(name="_create_experimental_data")
@@ -75,7 +75,7 @@ def fixture_create_experimental_data(tmp_path):
     samples = np.array([0, 0]).flatten()
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': samples}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": samples}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

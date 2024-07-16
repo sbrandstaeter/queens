@@ -33,21 +33,21 @@ def test_bmfia_smc_park(
     (bmfia) using the park91 function.
     """
     # generate yml input file from template
-    template = inputdir / 'bmfia_smc_park.yml'
+    template = inputdir / "bmfia_smc_park.yml"
     experimental_data_path = tmp_path
     dir_dict = {"experimental_data_path": experimental_data_path, "plot_dir": tmp_path}
-    input_file = tmp_path / 'smc_mf_park_realization.yml'
+    input_file = tmp_path / "smc_mf_park_realization.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
     run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmp_path / 'smc_park_mf.pickle'
+    result_file = tmp_path / "smc_park_mf.pickle"
     results = load_result(result_file)
 
-    samples = results['raw_output_data']['particles'].squeeze()
-    weights = results['raw_output_data']['weights'].squeeze()
+    samples = results["raw_output_data"]["particles"].squeeze()
+    weights = results["raw_output_data"]["weights"].squeeze()
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
@@ -67,24 +67,24 @@ def test_bmfia_rpvi_gp_park(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    template = inputdir / 'bmfia_rpvi_park_gp_template.yml'
+    template = inputdir / "bmfia_rpvi_park_gp_template.yml"
     experimental_data_path = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": tmp_path,
     }
-    input_file = tmp_path / 'bmfia_rpvi_park.yml'
+    input_file = tmp_path / "bmfia_rpvi_park.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
     run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmp_path / 'bmfia_rpvi_park.pickle'
+    result_file = tmp_path / "bmfia_rpvi_park.pickle"
     results = load_result(result_file)
 
-    variational_mean = results['variational_distribution']['mean']
-    variational_cov = results['variational_distribution']['covariance']
+    variational_mean = results["variational_distribution"]["mean"]
+    variational_cov = results["variational_distribution"]["covariance"]
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(variational_mean, expected_variational_mean, decimal=2)
@@ -103,24 +103,24 @@ def test_bmfia_rpvi_NN_park(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    template = inputdir / 'bmfia_rpvi_park_NN_template.yml'
+    template = inputdir / "bmfia_rpvi_park_NN_template.yml"
     experimental_data_path = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": tmp_path,
     }
-    input_file = tmp_path / 'bmfia_rpvi_park.yml'
+    input_file = tmp_path / "bmfia_rpvi_park.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
     run(Path(input_file), Path(tmp_path))
 
     # get the results of the QUEENS run
-    result_file = tmp_path / 'bmfia_rpvi_park.pickle'
+    result_file = tmp_path / "bmfia_rpvi_park.pickle"
     results = load_result(result_file)
 
-    variational_mean = results['variational_distribution']['mean']
-    variational_cov = results['variational_distribution']['covariance']
+    variational_mean = results["variational_distribution"]["mean"]
+    variational_cov = results["variational_distribution"]["covariance"]
 
     # some tests / asserts here
     np.testing.assert_array_almost_equal(variational_mean, expected_variational_mean_nn, decimal=1)

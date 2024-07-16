@@ -53,8 +53,8 @@ class CollectionObject:
         for key, value in field_names_to_be_stored.items():
             # Check if current iteration is completed
             if len(self.__dict__[key]) > min(self._get_lens()):
-                fields_with_lens = ', '.join(
-                    [f'{key}: {length}' for key, length in zip(self.keys(), self._get_lens())]
+                fields_with_lens = ", ".join(
+                    [f"{key}: {length}" for key, length in zip(self.keys(), self._get_lens())]
                 )
                 raise ValueError(
                     f"Can not add value to {key} list as it has length {len(self.__dict__[key])} "

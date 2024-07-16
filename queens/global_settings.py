@@ -48,7 +48,7 @@ class GlobalSettings:
         setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return_code, _, stdout, stderr = run_subprocess(
-            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', 'HEAD']),
+            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "rev-parse", "HEAD"]),
             raise_error_on_subprocess_failure=False,
         )
         if not return_code:
@@ -60,7 +60,7 @@ class GlobalSettings:
             _logger.warning("Setting git hash to: %s!", git_hash)
 
         return_code, _, git_branch, stderr = run_subprocess(
-            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'rev-parse', '--abbrev-ref', 'HEAD']),
+            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "rev-parse", "--abbrev-ref", "HEAD"]),
             raise_error_on_subprocess_failure=False,
         )
         git_branch = git_branch.strip()
@@ -71,7 +71,7 @@ class GlobalSettings:
             _logger.warning("Setting git branch to: %s!", git_branch)
 
         return_code, _, git_status, stderr = run_subprocess(
-            " ".join(['cd', f'{PATH_TO_QUEENS}', ';', 'git', 'status', '--porcelain']),
+            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "status", "--porcelain"]),
             raise_error_on_subprocess_failure=False,
         )
         git_clean_working_tree = not git_status
@@ -120,7 +120,7 @@ class GlobalSettings:
             file_stem += suffix
 
         # Create a new file name with the updated stem and provided extension
-        file_name = file_stem + '.' + extension.lstrip(".")
+        file_name = file_stem + "." + extension.lstrip(".")
 
         # Create a new Path object with the updated file name
         file_path = self.output_dir / file_name

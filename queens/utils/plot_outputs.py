@@ -13,24 +13,24 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
         bayes (bool):               Do we want to plot confidence intervals
     """
     mean_pdf = go.Scatter(
-        x=support_points, y=pdf_estimate["mean"], mode='markers+lines', name='Mean'
+        x=support_points, y=pdf_estimate["mean"], mode="markers+lines", name="Mean"
     )
 
     data = [mean_pdf]
 
     if bayes is True:
         q5_pdf = go.Scatter(
-            x=support_points, y=pdf_estimate["q5"], mode='markers+lines', name='5% quantile'
+            x=support_points, y=pdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )
         data.append(q5_pdf)
 
         q95_pdf = go.Scatter(
-            x=support_points, y=pdf_estimate["q95"], mode='markers+lines', name='95% quantile'
+            x=support_points, y=pdf_estimate["q95"], mode="markers+lines", name="95% quantile"
         )
         data.append(q95_pdf)
 
         median_pdf = go.Scatter(
-            x=support_points, y=pdf_estimate["median"], mode='markers+lines', name='median'
+            x=support_points, y=pdf_estimate["median"], mode="markers+lines", name="median"
         )
         data.append(median_pdf)
 
@@ -41,7 +41,7 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
     }
 
     fig = go.Figure(data=data, layout=layout)
-    plotly.offline.plot(fig, filename='PDF.html', auto_open=True)
+    plotly.offline.plot(fig, filename="PDF.html", auto_open=True)
 
 
 def plot_cdf(cdf_estimate, support_points, bayes=False):
@@ -54,23 +54,23 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
     """
     # Create a trace
     mean_cdf = go.Scatter(
-        x=support_points, y=cdf_estimate["mean"], mode='markers+lines', name='Mean'
+        x=support_points, y=cdf_estimate["mean"], mode="markers+lines", name="Mean"
     )
     data = [mean_cdf]
 
     if bayes is True:
         q5_cdf = go.Scatter(
-            x=support_points, y=cdf_estimate["q5"], mode='markers+lines', name='5% quantile'
+            x=support_points, y=cdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )
         data.append(q5_cdf)
 
         q95_cdf = go.Scatter(
-            x=support_points, y=cdf_estimate["q95"], mode='markers+lines', name='95% quantile'
+            x=support_points, y=cdf_estimate["q95"], mode="markers+lines", name="95% quantile"
         )
         data.append(q95_cdf)
 
         median_cdf = go.Scatter(
-            x=support_points, y=cdf_estimate["median"], mode='markers+lines', name='median'
+            x=support_points, y=cdf_estimate["median"], mode="markers+lines", name="median"
         )
         data.append(median_cdf)
 
@@ -92,7 +92,7 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
     }
 
     fig = go.Figure(data=data, layout=layout)
-    plotly.offline.plot(fig, filename='CDF.html', auto_open=True)
+    plotly.offline.plot(fig, filename="CDF.html", auto_open=True)
 
 
 def plot_icdf(icdf_estimate, bayes=False):
@@ -105,23 +105,23 @@ def plot_icdf(icdf_estimate, bayes=False):
     # Create a trace
     my_percentiles = icdf_estimate["x"]
     mean_icdf = go.Scatter(
-        x=my_percentiles, y=icdf_estimate["mean"], mode='markers+lines', name='Mean'
+        x=my_percentiles, y=icdf_estimate["mean"], mode="markers+lines", name="Mean"
     )
     data = [mean_icdf]
 
     if bayes is True:
         q5_icdf = go.Scatter(
-            x=my_percentiles, y=icdf_estimate["q5"], mode='markers+lines', name='5% quantile'
+            x=my_percentiles, y=icdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )
         data.append(q5_icdf)
 
         q95_icdf = go.Scatter(
-            x=my_percentiles, y=icdf_estimate["q95"], mode='markers+lines', name='95% quantile'
+            x=my_percentiles, y=icdf_estimate["q95"], mode="markers+lines", name="95% quantile"
         )
         data.append(q95_icdf)
 
         median_icdf = go.Scatter(
-            x=my_percentiles, y=icdf_estimate["median"], mode='markers+lines', name='median'
+            x=my_percentiles, y=icdf_estimate["median"], mode="markers+lines", name="median"
         )
         data.append(median_icdf)
 
@@ -132,4 +132,4 @@ def plot_icdf(icdf_estimate, bayes=False):
     }
 
     fig = go.Figure(data=data, layout=layout)
-    plotly.offline.plot(fig, filename='ICDF.html', auto_open=True)
+    plotly.offline.plot(fig, filename="ICDF.html", auto_open=True)

@@ -26,7 +26,7 @@ def fixture_input_file(request, input_dict, tmp_path):
         dumper = json.dump
     elif file_type in ("yml", "yaml"):
         dumper = yaml.dump
-    with open(input_file_path, "w", encoding='utf-8') as stream:
+    with open(input_file_path, "w", encoding="utf-8") as stream:
         dumper(input_dict, stream)
     return input_file_path
 
@@ -63,7 +63,7 @@ def test_write_to_csv(tmp_path):
     # read data from written out file with basic readline routine
     read_in_data_lst = []
     file = output_file_path.read_text(encoding="utf-8")
-    read_in_data_lst = [line.strip().split(',') for line in file.splitlines()]
+    read_in_data_lst = [line.strip().split(",") for line in file.splitlines()]
 
     read_in_data = np.array(read_in_data_lst, dtype=np.float64)
 

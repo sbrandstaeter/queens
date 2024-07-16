@@ -128,13 +128,13 @@ class BMFIAIterator(Iterator):
         ), "Input argument 'initial_design_dict' must be of type 'dict'! Abort..."
 
         assert (
-            'type' in initial_design_dict.keys()
+            "type" in initial_design_dict.keys()
         ), "No key 'type' found in 'initial_design_dict'. Abort..."
 
         # choose design method
-        if initial_design_dict['type'] == 'random':
+        if initial_design_dict["type"] == "random":
             run_design_method = cls.random_design
-        elif initial_design_dict['type'] == 'sobol':
+        elif initial_design_dict["type"] == "sobol":
             run_design_method = cls._sobol_design
         else:
             raise NotImplementedError(
@@ -160,8 +160,8 @@ class BMFIAIterator(Iterator):
         Returns:
             x_train (np.array): Optimal training input samples
         """
-        seed = initial_design_dict['seed']
-        num_samples = initial_design_dict['num_HF_eval']
+        seed = initial_design_dict["seed"]
+        num_samples = initial_design_dict["num_HF_eval"]
         np.random.seed(seed)
         x_train = parameters.draw_samples(num_samples)
         return x_train
@@ -181,10 +181,10 @@ class BMFIAIterator(Iterator):
         """
         x_train = sample_sobol_sequence(
             dimension=parameters.num_parameters,
-            number_of_samples=initial_design_dict['num_HF_eval'],
+            number_of_samples=initial_design_dict["num_HF_eval"],
             parameters=parameters,
             randomize=False,
-            seed=initial_design_dict['seed'],
+            seed=initial_design_dict["seed"],
         )
         return x_train
 
@@ -226,13 +226,13 @@ class BMFIAIterator(Iterator):
         if additional_y_lf_train is None:
             _logger.info("Starting to compute additional Y_LF_train...")
             num_coords = self.coords_experimental_data.shape[0]
-            additional_y_lf_train = self.lf_model.evaluate(additional_x_train)['result'].reshape(
+            additional_y_lf_train = self.lf_model.evaluate(additional_x_train)["result"].reshape(
                 -1, num_coords
             )
             _logger.info("Additional Y_LF_train were successfully computed!")
 
         _logger.info("Starting to compute additional Y_LF_train...")
-        additional_y_hf_train = self.hf_model.evaluate(additional_x_train)['result'].reshape(
+        additional_y_hf_train = self.hf_model.evaluate(additional_x_train)["result"].reshape(
             -1, num_coords
         )
         _logger.info("Additional Y_HF_train were successfully computed!")
@@ -252,13 +252,13 @@ class BMFIAIterator(Iterator):
         """Evaluate the low-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_LF_train = self.lf_model.evaluate(self.X_train)['result'].reshape(-1, num_coords)
+        self.Y_LF_train = self.lf_model.evaluate(self.X_train)["result"].reshape(-1, num_coords)
 
     def evaluate_HF_model_for_X_train(self):
         """Evaluate the high-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_HF_train = self.hf_model.evaluate(self.X_train)['result'].reshape(-1, num_coords)
+        self.Y_HF_train = self.hf_model.evaluate(self.X_train)["result"].reshape(-1, num_coords)
 
     def set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
         """Get the low-fidelity feature matrix.
@@ -290,11 +290,11 @@ class BMFIAIterator(Iterator):
         ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. Abort..."
 
         feature_dict = {
-            'man_features': self._get_man_features,
-            'opt_features': self._get_opt_features,
-            'coord_features': self._get_coord_features,
-            'no_features': self._get_no_features,
-            'time_features': self._get_time_features,
+            "man_features": self._get_man_features,
+            "opt_features": self._get_opt_features,
+            "coord_features": self._get_coord_features,
+            "no_features": self._get_no_features,
+            "time_features": self._get_time_features,
         }
         try:
             feature_fun = feature_dict.get(self.features_config, None)
@@ -468,23 +468,23 @@ class BMFIAIterator(Iterator):
         """
         # ---- run LF model on X_train (potentially we need to iterate over this and the previous
         # step to determine optimal X_train; for now just one sequence)
-        _logger.info('-------------------------------------------------------------------')
-        _logger.info('Starting to evaluate the low-fidelity model for training points....')
-        _logger.info('-------------------------------------------------------------------')
+        _logger.info("-------------------------------------------------------------------")
+        _logger.info("Starting to evaluate the low-fidelity model for training points....")
+        _logger.info("-------------------------------------------------------------------")
 
         self.evaluate_LF_model_for_X_train()
 
-        _logger.info('-------------------------------------------------------------------')
-        _logger.info('Successfully calculated the low-fidelity training points!')
-        _logger.info('-------------------------------------------------------------------')
+        _logger.info("-------------------------------------------------------------------")
+        _logger.info("Successfully calculated the low-fidelity training points!")
+        _logger.info("-------------------------------------------------------------------")
 
         # ---- run HF model on X_train
-        _logger.info('-------------------------------------------------------------------')
-        _logger.info('Starting to evaluate the high-fidelity model for training points...')
-        _logger.info('-------------------------------------------------------------------')
+        _logger.info("-------------------------------------------------------------------")
+        _logger.info("Starting to evaluate the high-fidelity model for training points...")
+        _logger.info("-------------------------------------------------------------------")
 
         self.evaluate_HF_model_for_X_train()
 
-        _logger.info('-------------------------------------------------------------------')
-        _logger.info('Successfully calculated the high-fidelity training points!')
-        _logger.info('-------------------------------------------------------------------')
+        _logger.info("-------------------------------------------------------------------")
+        _logger.info("Successfully calculated the high-fidelity training points!")
+        _logger.info("-------------------------------------------------------------------")

@@ -112,11 +112,11 @@ class RemoteConnection(Connection):
         output_file_name = f"output_{str(uuid.uuid4())}.pickle"
         python_cmd = (
             f"{self.remote_python} -c 'import pickle; from pathlib import Path;"
-            f"file = open(\"{func_file_name}\", \"rb\");"
+            f'file = open("{func_file_name}", "rb");'
             f"func = pickle.load(file); file.close();"
-            f"Path(\"{func_file_name}\").unlink(); "
+            f'Path("{func_file_name}").unlink(); '
             f"result = func();"
-            f"file = open(\"{output_file_name}\", \"wb\");"
+            f'file = open("{output_file_name}", "wb");'
             f"pickle.dump(result, file); file.close();'"
         )
         partial_func = partial(func, *func_args, **func_kwargs)  # insert function arguments
@@ -140,9 +140,9 @@ class RemoteConnection(Connection):
         _logger.debug(result.stderr)
         self.get(output_file_name)  # download result
 
-        self.run(f'rm {output_file_name}', in_stream=False)  # delete remote files
+        self.run(f"rm {output_file_name}", in_stream=False)  # delete remote files
 
-        with open(output_file_name, 'rb') as file:  # read return value from output file
+        with open(output_file_name, "rb") as file:  # read return value from output file
             return_value = pickle.load(file)
 
         Path(output_file_name).unlink()  # delete local output file
@@ -196,7 +196,7 @@ class RemoteConnection(Connection):
             remote_directory (Path, str): path of the directory that will be created
         """
         _logger.debug("Creating folder %s on %s@%s.", remote_directory, self.user, self.host)
-        result = self.run(f'mkdir -v -p {remote_directory}', in_stream=False)
+        result = self.run(f"mkdir -v -p {remote_directory}", in_stream=False)
         stdout = result.stdout
         if stdout:
             _logger.debug(stdout)
@@ -263,7 +263,7 @@ class RemoteConnection(Connection):
                 f"The package manager '{package_manager}' is not supported.\n"
                 f"Supported package managers are: {SUPPORTED_PACKAGE_MANAGERS}"
             )
-        remote_connect = f'{self.user}@{self.host}'
+        remote_connect = f"{self.user}@{self.host}"
 
         # check if requested package_manager is installed on remote machine:
         def package_manager_exists_remote(package_manager_name):
@@ -272,7 +272,7 @@ class RemoteConnection(Connection):
             Args:
                 package_manager_name (string): name of package manager
             """
-            result_which = self.run(f'which {package_manager_name}')
+            result_which = self.run(f"which {package_manager_name}")
             if result_which.stderr:
                 message = (
                     f"Could not find requested package manager '{package_manager_name}' "
@@ -296,10 +296,10 @@ class RemoteConnection(Connection):
         start_time = time.time()
         environment_name = Path(self.remote_python).parents[1].name
         command_string = (
-            f'cd {self.remote_queens_repository}; '
-            f'{package_manager} env create -f environment.yml --name {environment_name} --force; '
-            f'{package_manager} activate {environment_name};'
-            f'pip install -e .'
+            f"cd {self.remote_queens_repository}; "
+            f"{package_manager} env create -f environment.yml --name {environment_name} --force; "
+            f"{package_manager} activate {environment_name};"
+            f"pip install -e ."
         )
         result = self.run(command_string, in_stream=False)
 
@@ -315,7 +315,7 @@ def get_port():
         int: free port
     """
     sock = socket.socket()
-    sock.bind(('', 0))
+    sock.bind(("", 0))
     return int(sock.getsockname()[1])
 
 

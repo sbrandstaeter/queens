@@ -12,7 +12,7 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-@pytest.fixture(name="algorithm", params=['COBYLA', 'SLSQP'])
+@pytest.fixture(name="algorithm", params=["COBYLA", "SLSQP"])
 def fixture_algorithm(request):
     """TODO_doc."""
     return request.param

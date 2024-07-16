@@ -28,8 +28,8 @@ def fixture_dummy_csv_file(tmp_path_factory):
          9    1.800000e-01    8.367777e-02    2.938276e+00    0.000000e+00
         10    2.000000e-01    8.600778e-02    3.102564e+00    0.000000e+00"""
     tmp_dir = tmp_path_factory.mktemp("data")
-    dummy_data_processor_path = tmp_dir / 'dummy_csvfile.csv'
-    with open(dummy_data_processor_path, 'w', encoding='utf-8') as csv_file:
+    dummy_data_processor_path = tmp_dir / "dummy_csvfile.csv"
+    with open(dummy_data_processor_path, "w", encoding="utf-8") as csv_file:
         csv_file.write(dummy_data)
 
     return dummy_data_processor_path
@@ -62,16 +62,16 @@ def fixture_default_raw_data():
         2.93828,
         3.10256,
     ]
-    raw_data = pd.DataFrame(data, index=index, columns=['d_x'])
-    raw_data.index.name = 'step'
+    raw_data = pd.DataFrame(data, index=index, columns=["d_x"])
+    raw_data.index.name = "step"
     return raw_data
 
 
 @pytest.fixture(name="default_data_processor")
 def fixture_default_data_processor(mocker):
     """Default data processor csv class for unit tests."""
-    file_name_identifier = 'dummy_prefix*dummyfix'
-    filter_type = 'entire_file'
+    file_name_identifier = "dummy_prefix*dummyfix"
+    filter_type = "entire_file"
     files_to_be_deleted_regex_lst = []
     header_row = 0
     use_cols_lst = [0, 2, 3]
@@ -99,7 +99,7 @@ def fixture_default_data_processor(mocker):
     }
 
     mocker.patch(
-        ('queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options'),
+        ("queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options"),
         return_value=None,
     )
     data_processor_csv_instance = DataProcessorCsv(
@@ -112,8 +112,8 @@ def fixture_default_data_processor(mocker):
 
 def test_init(mocker):
     """Test the init method."""
-    file_name_identifier = 'dummy_prefix*dummyfix'
-    filter_type = 'entire_file'
+    file_name_identifier = "dummy_prefix*dummyfix"
+    filter_type = "entire_file"
     files_to_be_deleted_regex_lst = []
     header_row = 0
     use_cols_lst = [0, 2, 3]
@@ -141,7 +141,7 @@ def test_init(mocker):
     }
 
     mp = mocker.patch(
-        ('queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options'),
+        ("queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options"),
         return_value=None,
     )
 
@@ -151,7 +151,7 @@ def test_init(mocker):
         files_to_be_deleted_regex_lst,
     )
 
-    mp.assert_called_once_with(file_options_dict['filter'])
+    mp.assert_called_once_with(file_options_dict["filter"])
     assert my_data_processor.file_options_dict == file_options_dict
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.filter_range == filter_range
@@ -169,20 +169,20 @@ def test_init(mocker):
 
 def test_check_valid_filter_options_entire_file():
     """Test checking of valid filter options."""
-    DataProcessorCsv.check_valid_filter_options({'type': 'entire_file'})
+    DataProcessorCsv.check_valid_filter_options({"type": "entire_file"})
 
     with pytest.raises(
         TypeError,
         match="For the filter type `entire_file`, you have to provide a dictionary of type "
         f"{DataProcessorCsv.expected_filter_entire_file}.",
     ):
-        DataProcessorCsv.check_valid_filter_options({'type': 'entire_file', 'tolerance': 0})
+        DataProcessorCsv.check_valid_filter_options({"type": "entire_file", "tolerance": 0})
 
 
 def test_check_valid_filter_options_by_range():
     """Test checking of valid filter by range options."""
     DataProcessorCsv.check_valid_filter_options(
-        {'type': 'by_range', 'range': [1.0, 2.0], 'tolerance': 1.0}
+        {"type": "by_range", "range": [1.0, 2.0], "tolerance": 1.0}
     )
     with pytest.raises(
         TypeError,
@@ -191,12 +191,12 @@ def test_check_valid_filter_options_by_range():
             f"a dictionary of type {DataProcessorCsv.expected_filter_by_range}."
         ),
     ):
-        DataProcessorCsv.check_valid_filter_options({'type': 'by_range', 'range': [1.0, 2.0]})
+        DataProcessorCsv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0]})
 
 
 def test_check_valid_filter_options_by_row_index():
     """Test checking of valid filter by row index options."""
-    DataProcessorCsv.check_valid_filter_options({'type': 'by_row_index', 'rows': [1, 2]})
+    DataProcessorCsv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2]})
     with pytest.raises(
         TypeError,
         match=re.escape(
@@ -205,14 +205,14 @@ def test_check_valid_filter_options_by_row_index():
         ),
     ):
         DataProcessorCsv.check_valid_filter_options(
-            {'type': 'by_row_index', 'rows': [1, 2], 'tolerance': 1.0}
+            {"type": "by_row_index", "rows": [1, 2], "tolerance": 1.0}
         )
 
 
 def test_check_valid_filter_options_by_target_values():
     """Test checking of valid filter by target values."""
     DataProcessorCsv.check_valid_filter_options(
-        {'type': 'by_target_values', 'target_values': [1.0, 2.0, 3.0], 'tolerance': 1.0}
+        {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0], "tolerance": 1.0}
     )
     with pytest.raises(
         TypeError,
@@ -222,7 +222,7 @@ def test_check_valid_filter_options_by_target_values():
         ),
     ):
         DataProcessorCsv.check_valid_filter_options(
-            {'type': 'by_target_values', 'target_values': [1.0, 2.0, 3.0]}
+            {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0]}
         )
 
 
@@ -262,7 +262,7 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
         [0.20000, 3.10256],
     ]
     expected_raw_data = pd.DataFrame(
-        expected_values, index=np.arange(0, 10), columns=['step', 'd_x']
+        expected_values, index=np.arange(0, 10), columns=["step", "d_x"]
     )
 
     pd.testing.assert_frame_equal(raw_data, expected_raw_data)
@@ -270,7 +270,7 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
 
 def test_filter_entire_file(default_data_processor, default_raw_data):
     """Test filter entire file."""
-    default_data_processor.filter_type = 'entire_file'
+    default_data_processor.filter_type = "entire_file"
     default_data_processor.raw_file_data = default_raw_data
 
     processed_data = default_data_processor.filter_and_manipulate_raw_data(default_raw_data)
@@ -284,7 +284,7 @@ def test_filter_entire_file(default_data_processor, default_raw_data):
 
 def test_filter_by_range(default_data_processor, default_raw_data):
     """Test filter by range."""
-    default_data_processor.filter_type = 'by_range'
+    default_data_processor.filter_type = "by_range"
     default_data_processor.filter_range = [0.06, 0.12]
     default_data_processor.filter_tol = 1e-2
     default_data_processor.raw_file_data = default_raw_data
@@ -298,7 +298,7 @@ def test_filter_by_range(default_data_processor, default_raw_data):
 
 def test_filter_by_target_values(default_data_processor, default_raw_data):
     """Test filter by target values."""
-    default_data_processor.filter_type = 'by_target_values'
+    default_data_processor.filter_type = "by_target_values"
     default_data_processor.filter_target_values = [0.06, 0.10, 0.18]
     default_data_processor.filter_tol = 1e-2
     default_data_processor.raw_file_data = default_raw_data
@@ -312,7 +312,7 @@ def test_filter_by_target_values(default_data_processor, default_raw_data):
 
 def test_filter_by_row_index(default_data_processor, default_raw_data):
     """Test filter by row index."""
-    default_data_processor.filter_type = 'by_row_index'
+    default_data_processor.filter_type = "by_row_index"
     default_data_processor.use_rows_lst = [0, 5, 8]
     default_data_processor.raw_file_data = default_raw_data
 
@@ -324,7 +324,7 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
 
 def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
     """Test output format in numpy."""
-    default_data_processor.returned_filter_format = 'numpy'
+    default_data_processor.returned_filter_format = "numpy"
     default_data_processor.raw_file_data = default_raw_data
     processed_data = default_data_processor.filter_and_manipulate_raw_data(default_raw_data)
     expected_data = default_raw_data.to_numpy()
@@ -333,15 +333,15 @@ def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_ra
 
 def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
     """Test output format as dict."""
-    default_data_processor.returned_filter_format = 'dict'
+    default_data_processor.returned_filter_format = "dict"
     default_data_processor.raw_file_data = default_raw_data
     processed_data = default_data_processor.filter_and_manipulate_raw_data(default_raw_data)
-    expected_data = default_raw_data.to_dict('list')
-    np.testing.assert_allclose(expected_data['d_x'], processed_data['d_x'])
+    expected_data = default_raw_data.to_dict("list")
+    np.testing.assert_allclose(expected_data["d_x"], processed_data["d_x"])
 
 
 def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
     """Test wrong output format."""
-    default_data_processor.returned_filter_format = 'stuff'
+    default_data_processor.returned_filter_format = "stuff"
     with pytest.raises(queens.utils.valid_options_utils.InvalidOptionError):
         default_data_processor.filter_and_manipulate_raw_data(default_raw_data)

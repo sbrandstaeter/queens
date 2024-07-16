@@ -29,11 +29,11 @@ class MpiDriver(Driver):
         path_to_executable,
         files_to_copy=None,
         post_file_prefix=None,
-        post_process_options='',
+        post_process_options="",
         path_to_postprocessor=None,
         data_processor=None,
         gradient_data_processor=None,
-        mpi_cmd='/usr/bin/mpirun --bind-to none -np',
+        mpi_cmd="/usr/bin/mpirun --bind-to none -np",
         verbose=False,
     ):
         """Initialize MpiDriver object.
@@ -76,7 +76,7 @@ class MpiDriver(Driver):
         Returns:
             Result and potentially the gradient
         """
-        job_id = sample_dict.pop('job_id')
+        job_id = sample_dict.pop("job_id")
         job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
@@ -111,8 +111,8 @@ class MpiDriver(Driver):
             output_file (Path): Path to output file(s)
             output_dir (Path): Path to output directory
         """
-        output_file = '--file=' + str(output_file)
-        target_file = '--output=' + str(output_dir.joinpath(self.post_file_prefix))
+        output_file = "--file=" + str(output_file)
+        target_file = "--output=" + str(output_dir.joinpath(self.post_file_prefix))
         post_processor_cmd = self._assemble_post_processor_cmd(
             num_procs_post, output_file, target_file
         )
@@ -145,7 +145,7 @@ class MpiDriver(Driver):
             str(output_file),
         ]
 
-        return ' '.join(command_list)
+        return " ".join(command_list)
 
     def _assemble_post_processor_cmd(self, num_procs_post, output_file, target_file):
         """Assemble command for post-processing.
@@ -168,4 +168,4 @@ class MpiDriver(Driver):
             target_file,
         ]
 
-        return ' '.join(command_list)
+        return " ".join(command_list)

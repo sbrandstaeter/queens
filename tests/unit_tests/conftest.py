@@ -12,7 +12,7 @@ from queens.models.simulation_model import SimulationModel
 @pytest.fixture(name="dummy_simulation_model")
 def fixture_dummy_simulation_model():
     """Fixture for dummy model."""
-    interface = 'my_dummy_interface'
+    interface = "my_dummy_interface"
     model = SimulationModel(interface)
     return model
 
@@ -23,12 +23,12 @@ def fixture_get_patched_bmfia_iterator(global_settings):
 
     def get_patched_bmfia_iterator(parameters, hf_model, lf_model):
         x_train = np.array([[1, 2], [3, 4]])
-        features_config = 'no_features'
+        features_config = "no_features"
         x_cols = None
         num_features = None
         coord_cols = None
 
-        with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
+        with patch.object(BMFIAIterator, "calculate_initial_x_train", lambda *args: x_train):
             iterator = BMFIAIterator(
                 parameters=parameters,
                 global_settings=global_settings,

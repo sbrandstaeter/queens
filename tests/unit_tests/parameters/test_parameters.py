@@ -8,7 +8,7 @@ from queens.distributions.uniform import UniformDistribution
 from queens.parameters.parameters import Parameters, from_config_create_parameters
 
 
-@pytest.fixture(name="parameters_set_1", scope='module')
+@pytest.fixture(name="parameters_set_1", scope="module")
 def fixture_parameters_set_1():
     """Parameters dict without random field."""
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -16,7 +16,7 @@ def fixture_parameters_set_1():
     return Parameters(x1=x1, x2=x2)
 
 
-@pytest.fixture(name="parameters_set_2", scope='module')
+@pytest.fixture(name="parameters_set_2", scope="module")
 def fixture_parameters_set_2():
     """Parameters dict without random field."""
     x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
@@ -26,13 +26,13 @@ def fixture_parameters_set_2():
 
 def test_from_config_create_parameters_set_1(parameters_set_1):
     """Test *from_config_create_parameters* method."""
-    random_variable_x1 = parameters_set_1.dict['x1']
-    random_variable_x2 = parameters_set_1.dict['x2']
+    random_variable_x1 = parameters_set_1.dict["x1"]
+    random_variable_x2 = parameters_set_1.dict["x2"]
     expected_covariance = np.array([[1, 0], [0, 2]])
     expected_low_chol = np.array([[1.0, 0.0], [0.0, 1.41421356]])
     expected_precision = np.array([[1.0, 0.0], [0.0, 0.5]])
 
-    assert parameters_set_1.names == ['x1', 'x2']
+    assert parameters_set_1.names == ["x1", "x2"]
     assert random_variable_x1.lower_bound == -5
     assert random_variable_x1.upper_bound == 10
     assert random_variable_x1.mean == [2.5]
@@ -96,7 +96,7 @@ def test_sample_as_dict(parameters_set_1):
     """Test *sample_as_dict* method."""
     sample = np.array([0.5, 0.1, 0.6])
     sample_dict = parameters_set_1.sample_as_dict(sample)
-    assert sample_dict == {'x1': 0.5, 'x2_0': 0.1, 'x2_1': 0.6}
+    assert sample_dict == {"x1": 0.5, "x2_0": 0.1, "x2_1": 0.6}
 
 
 def test_to_list(parameters_set_1):
@@ -109,7 +109,7 @@ def test_to_list(parameters_set_1):
 # -------------------------------------------------------------------------------
 # -------------------------   With random field   -------------------------------
 # -------------------------------------------------------------------------------
-@pytest.fixture(name="parameters_options_3", scope='module')
+@pytest.fixture(name="parameters_options_3", scope="module")
 def fixture_parameters_options_3():
     """Parameters dict with random field."""
     parameters_dict = {
@@ -134,7 +134,7 @@ def fixture_parameters_options_3():
     return parameters_dict
 
 
-@pytest.fixture(name="pre_processor", scope='module')
+@pytest.fixture(name="pre_processor", scope="module")
 def fixture_pre_processor():
     """Create basic preprocessor class instance."""
 
@@ -144,9 +144,9 @@ def fixture_pre_processor():
         def __init__(self):
             """Initialize."""
             self.coords_dict = {
-                'random_inflow': {
-                    'keys': ['random_inflow_0', 'random_inflow_1', 'random_inflow_2'],
-                    'coords': [[0.0], [0.5], [1.0]],
+                "random_inflow": {
+                    "keys": ["random_inflow_0", "random_inflow_1", "random_inflow_2"],
+                    "coords": [[0.0], [0.5], [1.0]],
                 }
             }
 
@@ -159,12 +159,12 @@ def test_from_config_create_parameters_options_3(parameters_options_3, pre_proce
 
     assert parameters.num_parameters == 5
     assert parameters.parameters_keys == [
-        'x1',
-        'x2_0',
-        'x2_1',
-        'random_inflow_0',
-        'random_inflow_1',
-        'random_inflow_2',
+        "x1",
+        "x2_0",
+        "x2_1",
+        "random_inflow_0",
+        "random_inflow_1",
+        "random_inflow_2",
     ]
     assert parameters.random_field_flag is True
-    assert parameters.names == ['x1', 'x2', 'random_inflow']
+    assert parameters.names == ["x1", "x2", "random_inflow"]

@@ -80,5 +80,5 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
-        gradient = self.gradient_interface.evaluate(samples)['result']
+        gradient = self.gradient_interface.evaluate(samples)["result"]
         return gradient

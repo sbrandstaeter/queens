@@ -14,13 +14,13 @@ from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transfor
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress warnings
 
 # Use GPU acceleration
-if tf.test.gpu_device_name() != '/device:GPU:0':
-    _logger.info('WARNING: GPU device not found.')
+if tf.test.gpu_device_name() != "/device:GPU:0":
+    _logger.info("WARNING: GPU device not found.")
 else:
-    _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
+    _logger.info("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
 
 
 class GPFlowRegressionModel(SurrogateModel):
@@ -169,8 +169,8 @@ class GPFlowRegressionModel(SurrogateModel):
                 train_logs.append(opt_logs)
             except tf.errors.InvalidArgumentError:
                 loss[i] = np.nan
-                train_logs.append('Optimization Failed')
-            _logger.info('restart %s/%s    loss = %s', i, self.number_restarts, loss[i])
+                train_logs.append("Optimization Failed")
+            _logger.info("restart %s/%s    loss = %s", i, self.number_restarts, loss[i])
 
         hyperparameters = train_logs[int(np.nanargmin(loss))].x
 
@@ -196,7 +196,7 @@ class GPFlowRegressionModel(SurrogateModel):
         """
         raise NotImplementedError
 
-    def predict(self, x_test, support='y', full_cov=False):
+    def predict(self, x_test, support="y", full_cov=False):
         """Predict the posterior distribution at *x_new*.
 
         Options:
@@ -218,9 +218,9 @@ class GPFlowRegressionModel(SurrogateModel):
         number_test_samples = x_test.shape[0]
         x_test = self.scaler_x.transform(x_test)
 
-        if support == 'y':
+        if support == "y":
             mean, var = self.model.predict_y(x_test, full_cov=False)
-        elif support == 'f':
+        elif support == "f":
             mean, var = self.model.predict_f(x_test, full_cov=full_cov)
         else:
             mean = None
@@ -229,14 +229,14 @@ class GPFlowRegressionModel(SurrogateModel):
         mean = self.scaler_y.inverse_transform(mean.numpy())
         var = var.numpy() * self.scaler_y.var_
 
-        output = {'result': mean.reshape(number_test_samples, -1), 'x_test': x_test}
-        if support == 'f' and full_cov is True:
-            output['variance'] = np.squeeze(var, axis=0)
-            output['variance_diagonal'] = extract_block_diag(
-                np.squeeze(var, axis=0), output['result'].shape[1]
+        output = {"result": mean.reshape(number_test_samples, -1), "x_test": x_test}
+        if support == "f" and full_cov is True:
+            output["variance"] = np.squeeze(var, axis=0)
+            output["variance_diagonal"] = extract_block_diag(
+                np.squeeze(var, axis=0), output["result"].shape[1]
             )
         else:
-            output['variance'] = var
+            output["variance"] = var
 
         if self.number_posterior_samples:
             # set seed for reproducibility of posterior samples
@@ -244,7 +244,7 @@ class GPFlowRegressionModel(SurrogateModel):
                 tf.random.set_seed(self.seed_posterior_samples)
                 _logger.warning("Beware, the seed for drawing posterior samples is fixed.")
 
-            output['post_samples'] = (
+            output["post_samples"] = (
                 self.model.predict_f_samples(x_test, self.number_posterior_samples)
                 .numpy()
                 .reshape((x_test.shape[0], self.number_posterior_samples))

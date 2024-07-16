@@ -81,13 +81,13 @@ class DataProcessorEnsight(DataProcessor):
 
         self._check_field_specification_dict(file_options_dict)
         # load the necessary options from the file options dictionary
-        target_time_lst = file_options_dict.get('target_time_lst')
+        target_time_lst = file_options_dict.get("target_time_lst")
         if not isinstance(target_time_lst, list):
             raise TypeError(
                 "The option 'target_time_lst' in the data_processor settings must be of type 'list'"
                 f" but you provided type {type(target_time_lst)}. Abort..."
             )
-        time_tol = file_options_dict.get('time_tol')
+        time_tol = file_options_dict.get("time_tol")
         if time_tol:
             if not isinstance(time_tol, float):
                 raise TypeError(
@@ -95,20 +95,20 @@ class DataProcessorEnsight(DataProcessor):
                     f"but you provided type {type(time_tol)}. Abort..."
                 )
 
-        vtk_field_label = file_options_dict['physical_field_dict']['vtk_field_label']
+        vtk_field_label = file_options_dict["physical_field_dict"]["vtk_field_label"]
         if not isinstance(vtk_field_label, str):
             raise TypeError(
                 "The option 'vtk_field_label' in the data_processor settings must be of type 'str' "
                 f"but you provided type {type(vtk_field_label)}. Abort..."
             )
-        vtk_field_components = file_options_dict['physical_field_dict']['field_components']
+        vtk_field_components = file_options_dict["physical_field_dict"]["field_components"]
         if not isinstance(vtk_field_components, list):
             raise TypeError(
                 "The option 'field_components' in the data_processor settings must be of type "
                 f"'list' but you provided type {type(vtk_field_components)}. Abort..."
             )
 
-        vtk_array_type = file_options_dict['physical_field_dict']['vtk_array_type']
+        vtk_array_type = file_options_dict["physical_field_dict"]["vtk_array_type"]
         if not isinstance(vtk_array_type, str):
             raise TypeError(
                 "The option 'vtk_array_type' in the data_processor settings must be of type 'str' "
@@ -162,7 +162,7 @@ class DataProcessorEnsight(DataProcessor):
             file_options_dict (dict): Dictionary containing the field description for the
                                       physical fields of interest that should be read-in.
         """
-        required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
+        required_keys_lst = ["target_time_lst", "physical_field_dict", "geometric_target"]
         if not set(required_keys_lst).issubset(set(file_options_dict.keys())):
             raise KeyError(
                 "The option 'file_options_dict' within the data_processor section must at least "
@@ -171,14 +171,14 @@ class DataProcessorEnsight(DataProcessor):
             )
 
         required_field_keys = [
-            'vtk_array_type',
-            'vtk_field_label',
-            'vtk_array_type',
-            'field_components',
+            "vtk_array_type",
+            "vtk_field_label",
+            "vtk_array_type",
+            "field_components",
         ]
 
         if not set(required_field_keys).issubset(
-            set(file_options_dict['physical_field_dict'].keys())
+            set(file_options_dict["physical_field_dict"].keys())
         ):
             raise KeyError(
                 "The option 'physical_field_dict' within the data_processor section must at least "
@@ -324,28 +324,28 @@ class DataProcessorEnsight(DataProcessor):
         geometric_set = self.geometric_target[1]
 
         # get node coordinates by geometric set, loop over all topologies
-        for nodes in self.geometric_set_data['node_topology']:
-            if nodes['topology_name'] == geometric_set:
-                nodes_of_interest = nodes['node_mesh']
+        for nodes in self.geometric_set_data["node_topology"]:
+            if nodes["topology_name"] == geometric_set:
+                nodes_of_interest = nodes["node_mesh"]
 
-        for lines in self.geometric_set_data['line_topology']:
-            if lines['topology_name'] == geometric_set:
-                nodes_of_interest = lines['node_mesh']
+        for lines in self.geometric_set_data["line_topology"]:
+            if lines["topology_name"] == geometric_set:
+                nodes_of_interest = lines["node_mesh"]
 
-        for surfs in self.geometric_set_data['surface_topology']:
-            if surfs['topology_name'] == geometric_set:
-                nodes_of_interest = surfs['node_mesh']
+        for surfs in self.geometric_set_data["surface_topology"]:
+            if surfs["topology_name"] == geometric_set:
+                nodes_of_interest = surfs["node_mesh"]
 
-        for vols in self.geometric_set_data['volume_topology']:
-            if vols['topology_name'] == geometric_set:
-                nodes_of_interest = vols['node_mesh']
+        for vols in self.geometric_set_data["volume_topology"]:
+            if vols["topology_name"] == geometric_set:
+                nodes_of_interest = vols["node_mesh"]
 
         both = set(nodes_of_interest).intersection(
-            self.geometric_set_data['node_coordinates']['node_mesh']
+            self.geometric_set_data["node_coordinates"]["node_mesh"]
         )
-        indices = [self.geometric_set_data['node_coordinates']['node_mesh'].index(x) for x in both]
+        indices = [self.geometric_set_data["node_coordinates"]["node_mesh"].index(x) for x in both]
         geometric_set_coordinates = [
-            self.geometric_set_data['node_coordinates']['coordinates'][index] for index in indices
+            self.geometric_set_data["node_coordinates"]["coordinates"][index] for index in indices
         ]
 
         # interpolate vtk solution to experimental coordinates
@@ -395,12 +395,12 @@ class DataProcessorEnsight(DataProcessor):
         probe_filter_obj.Update()
 
         # Return the fields as numpy array
-        if vtk_array_type == 'point_array':
+        if vtk_array_type == "point_array":
             field = vtk_to_numpy(
                 probe_filter_obj.GetOutput().GetPointData().GetArray(vtk_field_label)
             )
 
-        elif vtk_array_type == 'cell_array':
+        elif vtk_array_type == "cell_array":
             field = vtk_to_numpy(
                 probe_filter_obj.GetOutput().GetCellData().GetArray(vtk_field_label)
             )
@@ -421,7 +421,7 @@ class DataProcessorEnsight(DataProcessor):
         data = np.concatenate(data, axis=1)
 
         # QUEENS expects a float64 numpy object as result
-        interpolated_data = data.astype('float64')
+        interpolated_data = data.astype("float64")
 
         return interpolated_data
 
@@ -443,7 +443,7 @@ class DataProcessorEnsight(DataProcessor):
             # timeset in the ensight file (seems to be an artifact)
             if time_set.size > 1:
                 # if the keyword `last` was provided, get the last timestep
-                if target_time == 'last':
+                if target_time == "last":
                     raw_data.SetTimeValue(time_set[-1])
                 else:
                     timestep = time_set.flat[np.abs(time_set - target_time).argmin()]

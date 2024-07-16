@@ -92,7 +92,7 @@ class Parameters:
                 )
                 joint_parameters_dim += parameter_obj.dimension
             elif isinstance(parameter_obj, RandomField):
-                joint_parameters_keys += parameter_obj.coords['keys']
+                joint_parameters_keys += parameter_obj.coords["keys"]
                 joint_parameters_dim += parameter_obj.dimension
                 random_field_flag = True
             else:

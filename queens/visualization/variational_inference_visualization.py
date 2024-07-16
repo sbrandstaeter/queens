@@ -40,7 +40,7 @@ class VIVisualization:
 
     # some overall class states
     plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({'font.size': 10})
+    plt.rcParams.update({"font.size": 10})
 
     def __init__(self, path, save_bool, plot_boolean, axs_convergence_plots, fig_convergence_plots):
         """Initialize visualization object.
@@ -100,30 +100,30 @@ class VIVisualization:
                 self.fig_convergence_plots.set_size_inches(25, 8)
             self.axs_convergence_plots[0].clear()
             self.axs_convergence_plots[1].clear()
-            self.axs_convergence_plots[0].plot(iterations, elbo, 'k-')
-            self.axs_convergence_plots[1].plot(iterations, variational_params_array, '-')
-            self.axs_convergence_plots[2].plot(iterations[1:], relative_change, 'k-')
-            self.axs_convergence_plots[2].hlines(0.1, 0, iterations[-1], color='g')
-            self.axs_convergence_plots[2].hlines(0.01, 0, iterations[-1], color='r')
+            self.axs_convergence_plots[0].plot(iterations, elbo, "k-")
+            self.axs_convergence_plots[1].plot(iterations, variational_params_array, "-")
+            self.axs_convergence_plots[2].plot(iterations[1:], relative_change, "k-")
+            self.axs_convergence_plots[2].hlines(0.1, 0, iterations[-1], color="g")
+            self.axs_convergence_plots[2].hlines(0.01, 0, iterations[-1], color="r")
 
             # ---- some further settings for the axes ---------------------------------------
-            self.axs_convergence_plots[0].set_xlabel('iter.')
-            self.axs_convergence_plots[0].set_ylabel('ELBO')
-            self.axs_convergence_plots[0].grid(which='major', linestyle='-')
-            self.axs_convergence_plots[0].grid(which='minor', linestyle='--', alpha=0.5)
+            self.axs_convergence_plots[0].set_xlabel("iter.")
+            self.axs_convergence_plots[0].set_ylabel("ELBO")
+            self.axs_convergence_plots[0].grid(which="major", linestyle="-")
+            self.axs_convergence_plots[0].grid(which="minor", linestyle="--", alpha=0.5)
             self.axs_convergence_plots[0].minorticks_on()
 
-            self.axs_convergence_plots[1].set_xlabel('iter.')
-            self.axs_convergence_plots[1].set_ylabel('Var. params.')
-            self.axs_convergence_plots[1].grid(which='major', linestyle='-')
-            self.axs_convergence_plots[1].grid(which='minor', linestyle='--', alpha=0.5)
+            self.axs_convergence_plots[1].set_xlabel("iter.")
+            self.axs_convergence_plots[1].set_ylabel("Var. params.")
+            self.axs_convergence_plots[1].grid(which="major", linestyle="-")
+            self.axs_convergence_plots[1].grid(which="minor", linestyle="--", alpha=0.5)
             self.axs_convergence_plots[1].minorticks_on()
 
-            self.axs_convergence_plots[2].set_xlabel('iter.')
-            self.axs_convergence_plots[2].set_ylabel('Rel. change var. params.')
+            self.axs_convergence_plots[2].set_xlabel("iter.")
+            self.axs_convergence_plots[2].set_ylabel("Rel. change var. params.")
             self.axs_convergence_plots[2].set_yscale("log")
-            self.axs_convergence_plots[2].grid(which='major', linestyle='-')
-            self.axs_convergence_plots[2].grid(which='minor', linestyle='--', alpha=0.5)
+            self.axs_convergence_plots[2].grid(which="major", linestyle="-")
+            self.axs_convergence_plots[2].grid(which="minor", linestyle="--", alpha=0.5)
             self.axs_convergence_plots[2].minorticks_on()
             plt.pause(0.0005)
 

@@ -17,7 +17,7 @@ from queens.utils.io_utils import load_result
 
 @pytest.fixture(
     name="algorithm",
-    params=['NELDER-MEAD', 'POWELL', 'CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP'],
+    params=["NELDER-MEAD", "POWELL", "CG", "BFGS", "L-BFGS-B", "TNC", "SLSQP"],
 )
 def fixture_algorithm(request):
     """TODO_doc."""

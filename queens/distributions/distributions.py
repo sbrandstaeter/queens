@@ -47,7 +47,7 @@ class Distribution(abc.ABC):
             export_dict (dict): Dict containing distribution information
         """
         export_dict = vars(self)
-        export_dict = {'type': self.__class__.__name__, **export_dict}
+        export_dict = {"type": self.__class__.__name__, **export_dict}
         return export_dict
 
     def __str__(self):
@@ -68,8 +68,7 @@ class Distribution(abc.ABC):
         for name, value in parameters.items():
             if (np.array(value) <= 0).any():
                 raise ValueError(
-                    f"The parameter \'{name}\' has to be positive. "
-                    f"You specified {name}={value}."
+                    f"The parameter '{name}' has to be positive. " f"You specified {name}={value}."
                 )
 
 

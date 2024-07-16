@@ -130,12 +130,12 @@ class PolynomialChaosIterator(Iterator):
         mean = cp.E(polynomial_expansion, self.distribution)
         covariance = cp.Cov(polynomial_expansion, self.distribution)
         self.result_dict = {}
-        self.result_dict['polynomial_expansion'] = polynomial_expansion
-        self.result_dict['distribution'] = self.distribution
-        self.result_dict['mean'] = mean
-        self.result_dict['covariance'] = covariance
-        self.result_dict['collocation_points'] = collocation_points
-        self.result_dict['polynomial_chaos_approach'] = self.polynomial_chaos_approach
+        self.result_dict["polynomial_expansion"] = polynomial_expansion
+        self.result_dict["distribution"] = self.distribution
+        self.result_dict["mean"] = mean
+        self.result_dict["covariance"] = covariance
+        self.result_dict["collocation_points"] = collocation_points
+        self.result_dict["polynomial_chaos_approach"] = self.polynomial_chaos_approach
 
     def _projection_based_pc(self):
         """Projection based polynomial chaos.
@@ -158,7 +158,7 @@ class PolynomialChaosIterator(Iterator):
                 f" lead to {num_collocation_points} collocation points"
             )
         _logger.info("Number of collocation points: %s", num_collocation_points)
-        evaluations = self.model.evaluate(nodes.T)['result']
+        evaluations = self.model.evaluate(nodes.T)["result"]
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)
@@ -181,7 +181,7 @@ class PolynomialChaosIterator(Iterator):
             self.num_collocation_points, rule=self.sampling_rule
         )
 
-        evaluations = self.model.evaluate(collocation_points.T)['result']
+        evaluations = self.model.evaluate(collocation_points.T)["result"]
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)

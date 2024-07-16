@@ -49,12 +49,12 @@ class Predictor:
         Returns:
             estimator: SobolIndexEstimator
         """
-        number_gp_realizations = method_options['number_gp_realizations']
+        number_gp_realizations = method_options["number_gp_realizations"]
         seed_posterior_samples = method_options.get("seed_posterior_samples", None)
         if number_gp_realizations == 1:
-            _logger.info('Number of realizations = 1. Prediction is based on GP mean.')
+            _logger.info("Number of realizations = 1. Prediction is based on GP mean.")
         else:
-            _logger.info('Number of realizations = %i', number_gp_realizations)
+            _logger.info("Number of realizations = %i", number_gp_realizations)
         return cls(
             gp_model=gp_model,
             number_gp_realizations=number_gp_realizations,
@@ -77,23 +77,23 @@ class Predictor:
         prediction = self._init_prediction(samples)
 
         inputs = np.array(samples).reshape(-1, samples.shape[-1])
-        gp_output = self.gp_model.predict(inputs, support='f')
+        gp_output = self.gp_model.predict(inputs, support="f")
 
         if self.number_gp_realizations == 1:
-            raw_prediction = gp_output['result'].reshape(*samples.shape[:2], 1)
+            raw_prediction = gp_output["result"].reshape(*samples.shape[:2], 1)
         else:
             if self.seed_posterior_samples:
                 np.random.seed(self.seed_posterior_samples)
             raw_prediction = (
-                gp_output['result']
+                gp_output["result"]
                 + np.random.randn(inputs.shape[0], self.number_gp_realizations)
-                * np.sqrt(gp_output['variance'])
+                * np.sqrt(gp_output["variance"])
             ).reshape(*samples.shape[:2], self.number_gp_realizations)
 
         prediction.data = np.array(raw_prediction)
 
-        _logger.info('Time for prediction: %f', time.time() - start_prediction)
-        _logger.debug('Prediction %s', prediction.values)
+        _logger.info("Time for prediction: %f", time.time() - start_prediction)
+        _logger.debug("Prediction %s", prediction.values)
         return prediction
 
     def _init_prediction(self, samples):

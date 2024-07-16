@@ -54,8 +54,8 @@ class StatisticsSobolIndexEstimates:
         Returns:
             statistics: Statistics object
         """
-        number_gp_realizations = method_options['number_gp_realizations']
-        number_bootstrap_samples = method_options['number_bootstrap_samples']
+        number_gp_realizations = method_options["number_gp_realizations"]
+        number_bootstrap_samples = method_options["number_bootstrap_samples"]
         return cls(
             parameter_names=parameter_names,
             number_gp_realizations=number_gp_realizations,
@@ -92,7 +92,7 @@ class StatisticsSobolIndexEstimates:
             current_data (xr.DataArray): Sobol index estimates for current_parameter
             current_parameter (str): name of current parameter
         """
-        result.loc[current_parameter, 'Sobol_index'] = current_data.mean()
+        result.loc[current_parameter, "Sobol_index"] = current_data.mean()
 
     def _total_variance(self, result, current_data, current_parameter):
         """Calculate the total variance of the Sobol index estimates.
@@ -105,8 +105,8 @@ class StatisticsSobolIndexEstimates:
             current_data (xr.DataArray): Sobol index estimates for current_parameter
             current_parameter (str): name of current parameter
         """
-        result.loc[current_parameter, 'var_total'] = np.sum(
-            (current_data - result.loc[current_parameter, 'Sobol_index']) ** 2
+        result.loc[current_parameter, "var_total"] = np.sum(
+            (current_data - result.loc[current_parameter, "Sobol_index"]) ** 2
         ) / (self.number_gp_realizations * self.number_bootstrap_samples - 1)
 
     def _gp_variance(self, result, current_data, current_parameter):
@@ -118,7 +118,7 @@ class StatisticsSobolIndexEstimates:
             current_parameter (str): name of current parameter
         """
         si_mean_gp = current_data.mean(dim="gp_realization")
-        result.loc[current_parameter, 'var_gp'] = np.sum((current_data - si_mean_gp) ** 2) / (
+        result.loc[current_parameter, "var_gp"] = np.sum((current_data - si_mean_gp) ** 2) / (
             (self.number_gp_realizations - 1) * self.number_bootstrap_samples
         )
 
@@ -131,7 +131,7 @@ class StatisticsSobolIndexEstimates:
             current_parameter (str): name of current parameter
         """
         mean_monte_carlo = current_data.mean(dim="bootstrap")
-        result.loc[current_parameter, 'var_monte_carlo'] = np.sum(
+        result.loc[current_parameter, "var_monte_carlo"] = np.sum(
             (current_data - mean_monte_carlo) ** 2
         ) / ((self.number_bootstrap_samples - 1) * self.number_gp_realizations)
 
@@ -143,8 +143,8 @@ class StatisticsSobolIndexEstimates:
             result (DataFrame): Sobol index result
             conf_level (float): confidence level (default: 0.95)
         """
-        result.loc[:, ['conf_total', 'conf_gp', 'conf_monte_carlo']] = np.sqrt(
-            result[['var_total', 'var_gp', 'var_monte_carlo']].values
+        result.loc[:, ["conf_total", "conf_gp", "conf_monte_carlo"]] = np.sqrt(
+            result[["var_total", "var_gp", "var_monte_carlo"]].values
         ) * norm.ppf(0.5 + conf_level / 2)
 
     def _init_result(self):
@@ -154,13 +154,13 @@ class StatisticsSobolIndexEstimates:
             result (DataFrame): Sobol index result
         """
         columns = [
-            'Sobol_index',
-            'var_total',
-            'var_gp',
-            'var_monte_carlo',
-            'conf_total',
-            'conf_gp',
-            'conf_monte_carlo',
+            "Sobol_index",
+            "var_total",
+            "var_gp",
+            "var_monte_carlo",
+            "conf_total",
+            "conf_gp",
+            "conf_monte_carlo",
         ]
         result = pd.DataFrame(
             data=np.empty((self.number_parameters, len(columns))),
@@ -192,7 +192,7 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
                     {"parameter": current_parameter, "crossparameter": current_cross_parameter}
                 ]
                 if not np.any(np.isnan(current_data.values)):
-                    parameter_pair = current_parameter + '#' + current_cross_parameter
+                    parameter_pair = current_parameter + "#" + current_cross_parameter
                     self._overall_mean(result, current_data, parameter_pair)
                     self._total_variance(result, current_data, parameter_pair)
                     self._gp_variance(result, current_data, parameter_pair)
@@ -214,17 +214,17 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
         for parameter in self.parameter_names:
             for crossparameter in self.parameter_names:
                 if parameter != crossparameter:
-                    if not crossparameter + '#' + parameter in parameter_pairs:
-                        parameter_pairs.append(parameter + '#' + crossparameter)
+                    if not crossparameter + "#" + parameter in parameter_pairs:
+                        parameter_pairs.append(parameter + "#" + crossparameter)
 
         columns = [
-            'Sobol_index',
-            'var_total',
-            'var_gp',
-            'var_monte_carlo',
-            'conf_total',
-            'conf_gp',
-            'conf_monte_carlo',
+            "Sobol_index",
+            "var_total",
+            "var_gp",
+            "var_monte_carlo",
+            "conf_total",
+            "conf_gp",
+            "conf_monte_carlo",
         ]
         result = pd.DataFrame(
             data=np.empty((len(parameter_pairs), len(columns))),
@@ -278,8 +278,8 @@ class StatisticsThirdOrderSobolIndexEstimates(StatisticsSobolIndexEstimates):
         Returns:
             statistics: StatisticsThirdOrder object
         """
-        number_gp_realizations = method_options['number_gp_realizations']
-        number_bootstrap_samples = method_options['number_bootstrap_samples']
+        number_gp_realizations = method_options["number_gp_realizations"]
+        number_bootstrap_samples = method_options["number_bootstrap_samples"]
         third_order_parameters = method_options.get("third_order_parameters", None)
 
         return cls(
@@ -310,13 +310,13 @@ class StatisticsThirdOrderSobolIndexEstimates(StatisticsSobolIndexEstimates):
     def _init_result(self):
         """Initialize the dataset."""
         columns = [
-            'Sobol_index',
-            'var_total',
-            'var_gp',
-            'var_monte_carlo',
-            'conf_total',
-            'conf_gp',
-            'conf_monte_carlo',
+            "Sobol_index",
+            "var_total",
+            "var_gp",
+            "var_monte_carlo",
+            "conf_total",
+            "conf_gp",
+            "conf_monte_carlo",
         ]
         result = pd.DataFrame(
             data=np.empty((1, len(columns))),

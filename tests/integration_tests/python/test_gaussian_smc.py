@@ -71,5 +71,5 @@ def test_gaussian_smc(
     # posterior var: [0.5]
     # posterior std: [0.70710678]
     # however, we only have a very inaccurate approximation here:
-    np.testing.assert_almost_equal(results['mean'], np.array([[0.93548976]]), decimal=7)
-    np.testing.assert_almost_equal(results['var'], np.array([[0.72168334]]), decimal=7)
+    np.testing.assert_almost_equal(results["mean"], np.array([[0.93548976]]), decimal=7)
+    np.testing.assert_almost_equal(results["var"], np.array([[0.72168334]]), decimal=7)

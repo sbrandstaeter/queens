@@ -52,7 +52,7 @@ class Interface(metaclass=abc.ABCMeta):
             self.latest_job_id += 1
             sample_dict = self.parameters.sample_as_dict(sample)
             if add_job_id:
-                sample_dict['job_id'] = self.latest_job_id
+                sample_dict["job_id"] = self.latest_job_id
             samples_list.append(sample_dict)
 
         return samples_list

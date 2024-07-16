@@ -98,12 +98,12 @@ def temper_factory(temper_type):
     Returns:
         TODO_doc
     """
-    if temper_type == 'bayes':
+    if temper_type == "bayes":
         return temper_logpdf_bayes
-    if temper_type == 'generic':
+    if temper_type == "generic":
         return temper_logpdf_generic
 
-    valid_types = {'bayes', 'generic'}
+    valid_types = {"bayes", "generic"}
     raise ValueError(
         f"Unknown type of tempering function: {temper_type}.\nValid choices are {valid_types}."
     )

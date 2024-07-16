@@ -76,7 +76,7 @@ class MetropolisHastingsIterator(Iterator):
         num_burn_in=0,
         num_chains=1,
         as_smc_rejuvenation_step=False,
-        temper_type='bayes',
+        temper_type="bayes",
     ):
         """Initialize Metropolis-Hastings iterator.
 
@@ -164,7 +164,7 @@ class MetropolisHastingsIterator(Iterator):
         Returns:
             TODO_doc
         """
-        log_likelihood = self.model.evaluate(samples)['result']
+        log_likelihood = self.model.evaluate(samples)["result"]
         return log_likelihood
 
     def do_mh_step(self, step_id):
@@ -258,7 +258,7 @@ class MetropolisHastingsIterator(Iterator):
         2. Sampling phase
         """
         if not self.as_smc_rejuvenation_step:
-            _logger.info('Metropolis-Hastings core run.')
+            _logger.info("Metropolis-Hastings core run.")
 
         # Burn-in phase
         for i in tqdm(range(1, self.num_burn_in + 1)):
@@ -299,13 +299,13 @@ class MetropolisHastingsIterator(Iterator):
             # process output takes a dict as input with key 'result'
             results = process_outputs(
                 {
-                    'result': chain_core,
-                    'accept_rate': accept_rate,
-                    'chain_burn_in': chain_burn_in,
-                    'initial_sample': initial_samples,
-                    'log_likelihood': self.log_likelihood,
-                    'log_prior': self.log_prior,
-                    'log_posterior': self.log_posterior,
+                    "result": chain_core,
+                    "accept_rate": accept_rate,
+                    "chain_burn_in": chain_burn_in,
+                    "initial_sample": initial_samples,
+                    "log_likelihood": self.log_likelihood,
+                    "log_prior": self.log_prior,
+                    "log_posterior": self.log_posterior,
                 },
                 self.result_description,
             )
@@ -323,15 +323,15 @@ class MetropolisHastingsIterator(Iterator):
                 )
                 _logger.info(
                     "\tmean±std: %s±%s",
-                    results.get('result', np.array([np.nan] * self.num_chains))[i],
-                    np.sqrt(results.get('var', np.array([np.nan] * self.num_chains))[i]),
+                    results.get("result", np.array([np.nan] * self.num_chains))[i],
+                    np.sqrt(results.get("var", np.array([np.nan] * self.num_chains))[i]),
                 )
                 _logger.info(
-                    "\tvar: %s", results.get('var', np.array([np.nan] * self.num_chains))[i]
+                    "\tvar: %s", results.get("var", np.array([np.nan] * self.num_chains))[i]
                 )
                 _logger.info(
                     "\tcov: %s",
-                    results.get('cov', np.array([np.nan] * self.num_chains))[i].tolist(),
+                    results.get("cov", np.array([np.nan] * self.num_chains))[i].tolist(),
                 )
             _logger.info("#############################################")
 

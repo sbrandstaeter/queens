@@ -20,9 +20,9 @@ from queens.utils.io_utils import load_result
 @pytest.fixture(
     name="approx_type",
     params=[
-        'GPMAP-I',
-        'CGPMAP-II',
-        'CFBGP',
+        "GPMAP-I",
+        "CGPMAP-II",
+        "CFBGP",
     ],
 )
 def fixture_approx_type(request):
@@ -52,7 +52,7 @@ def fixture_likelihood_model(parameters):
 
     likelihood_model = GaussianLikelihood(
         forward_model=forward_model,
-        noise_type='fixed_variance',
+        noise_type="fixed_variance",
         noise_value=noise_var,
         y_obs=y_obs,
     )
@@ -63,9 +63,9 @@ def fixture_likelihood_model(parameters):
 def fixture_expected_mean():
     """Expected mean fixture."""
     expected_mean = {
-        'GPMAP-I': [0.30465568, 0.52168328],
-        'CGPMAP-II': [0.29862195, 0.74123874],
-        'CFBGP': [0.29330584, 0.96121542],
+        "GPMAP-I": [0.30465568, 0.52168328],
+        "CGPMAP-II": [0.29862195, 0.74123874],
+        "CFBGP": [0.29330584, 0.96121542],
     }
     return expected_mean
 
@@ -74,9 +74,9 @@ def fixture_expected_mean():
 def fixture_expected_std():
     """Expected standard deviation fixture."""
     expected_std = {
-        'GPMAP-I': [0.00105374, 0.03230814],
-        'CGPMAP-II': [0.00197814, 0.04068283],
-        'CFBGP': [0.00156066, 0.02839873],
+        "GPMAP-I": [0.00105374, 0.03230814],
+        "CGPMAP-II": [0.00197814, 0.04068283],
+        "CFBGP": [0.00156066, 0.02839873],
     }
     return expected_std
 
@@ -129,7 +129,7 @@ def test_constrained_gp_ip_park(
         max_feval=1_000_000_000,
         num_particles=3000,
         num_rejuvenation_steps=30,
-        resampling_method='residual',
+        resampling_method="residual",
         resampling_threshold=0.5,
         result_description={},
     )
@@ -150,8 +150,8 @@ def test_constrained_gp_ip_park(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    particles = results['particles'][-1]
-    weights = results['weights'][-1]
+    particles = results["particles"][-1]
+    weights = results["weights"][-1]
 
     mean = np.average(particles, weights=weights, axis=0)
     std = np.average((particles - mean) ** 2, weights=weights, axis=0) ** (1 / 2)

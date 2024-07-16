@@ -14,16 +14,16 @@ from queens.distributions.uniform import UniformDistribution
 from queens.distributions.uniform_discrete import UniformDiscreteDistribution
 
 VALID_TYPES = {
-    'normal': NormalDistribution,
-    'mean_field_normal': MeanFieldNormalDistribution,
-    'uniform': UniformDistribution,
-    'lognormal': LogNormalDistribution,
-    'beta': BetaDistribution,
-    'exponential': ExponentialDistribution,
-    'free': FreeVariable,
-    'categorical': CategoricalDistribution,
-    'bernoulli': BernoulliDistribution,
-    'multinomial': MultinomialDistribution,
-    'particles': ParticleDiscreteDistribution,
-    'uniform_discrete': UniformDiscreteDistribution,
+    "normal": NormalDistribution,
+    "mean_field_normal": MeanFieldNormalDistribution,
+    "uniform": UniformDistribution,
+    "lognormal": LogNormalDistribution,
+    "beta": BetaDistribution,
+    "exponential": ExponentialDistribution,
+    "free": FreeVariable,
+    "categorical": CategoricalDistribution,
+    "bernoulli": BernoulliDistribution,
+    "multinomial": MultinomialDistribution,
+    "particles": ParticleDiscreteDistribution,
+    "uniform_discrete": UniformDiscreteDistribution,
 }

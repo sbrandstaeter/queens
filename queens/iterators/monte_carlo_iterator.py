@@ -68,27 +68,27 @@ class MonteCarloIterator(Iterator):
                 write_results(results, self.global_settings.result_file(".pickle"))
 
                 # ----------------------------- WIP PLOT OPTIONS ----------------------------
-                if self.result_description['plot_results'] is True:
+                if self.result_description["plot_results"] is True:
                     # Check for dimensionality of the results
                     plt.rcParams["mathtext.fontset"] = "cm"
-                    plt.rcParams.update({'font.size': 23})
+                    plt.rcParams.update({"font.size": 23})
                     _, ax = plt.subplots()
 
-                    if results['raw_output_data']['result'][0].shape[0] > 1:
-                        for ele in results['raw_output_data']['result']:
+                    if results["raw_output_data"]["result"][0].shape[0] > 1:
+                        for ele in results["raw_output_data"]["result"]:
                             ax.plot(ele[:, 0], ele[:, 1])
 
-                        ax.set_xlabel(r't [s]')
-                        ax.set_ylabel(r'$C_L(t)$')
+                        ax.set_xlabel(r"t [s]")
+                        ax.set_ylabel(r"$C_L(t)$")
                         plt.show()
                     else:
-                        data = results['raw_output_data']['result']
+                        data = results["raw_output_data"]["result"]
                         ax.hist(data, bins=200)
-                        ax.set_xlabel(r'Count [-]')
-                        ax.set_xlabel(r'$C_L(t)$')
+                        ax.set_xlabel(r"Count [-]")
+                        ax.set_xlabel(r"$C_L(t)$")
                         plt.show()
         # else:
         _logger.debug("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)
-        _logger.debug("Size of outputs %s", self.output['result'].shape)
-        _logger.debug("Outputs %s", self.output['result'])
+        _logger.debug("Size of outputs %s", self.output["result"].shape)
+        _logger.debug("Outputs %s", self.output["result"])

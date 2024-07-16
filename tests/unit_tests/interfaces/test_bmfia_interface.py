@@ -46,7 +46,7 @@ class DummyRegression:
 
     def get_state(self, *_, **__):
         """A dummy *get_state* method."""
-        return {'test': 'test'}
+        return {"test": "test"}
 
 
 @pytest.fixture(name="dummy_reg_obj")
@@ -225,16 +225,16 @@ def test_build_approximation(
     approx = "dummy_approx"
 
     mock_train_parallel = mocker.patch(
-        'queens.interfaces.bmfia_interface.BmfiaInterface.'
-        'train_probabilistic_mappings_in_parallel',
+        "queens.interfaces.bmfia_interface.BmfiaInterface."
+        "train_probabilistic_mappings_in_parallel",
         return_value=dummy_lst,
     )
     mock_optimize_state = mocker.patch(
-        'queens.interfaces.bmfia_interface.BmfiaInterface.'
-        'set_optimized_state_of_probabilistic_mappings'
+        "queens.interfaces.bmfia_interface.BmfiaInterface."
+        "set_optimized_state_of_probabilistic_mappings"
     )
     mocker.patch(
-        'queens.visualization.bmfia_visualization.bmfia_visualization_instance',
+        "queens.visualization.bmfia_visualization.bmfia_visualization_instance",
         return_value=dummy_plot_instance,
     )
 
@@ -360,7 +360,7 @@ def test_train_probabilistic_mappings_in_parallel(
     """Test the parallel training of the mappings."""
     Z_LF_train = np.zeros((1, 2, 3))
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
-    mocker.patch('queens.interfaces.bmfia_interface.get_context', MyContext)
+    mocker.patch("queens.interfaces.bmfia_interface.get_context", MyContext)
 
     # test with valid configuration
     num_coords = Z_LF_train.T.shape[0]
@@ -393,7 +393,7 @@ def test_train_probabilistic_mappings_in_parallel(
         )
 
     # test with str as a specification for processors
-    default_bmfia_interface.num_processors_multi_processing = 'blabla'
+    default_bmfia_interface.num_processors_multi_processing = "blabla"
     with pytest.raises(RuntimeError):
         BmfiaInterface.train_probabilistic_mappings_in_parallel(
             num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
@@ -419,12 +419,12 @@ def test_set_optimized_state_of_probabilistic_mappings(
 
 def test_optimize_hyper_params(mocker, dummy_reg_obj):
     """Test the training of a single mapping."""
-    mo_1 = mocker.patch.object(DummyRegression, 'train')
+    mo_1 = mocker.patch.object(DummyRegression, "train")
     state_dict = BmfiaInterface.optimize_hyper_params(dummy_reg_obj)
 
     # asserts / tests
     mo_1.assert_called_once()
-    assert state_dict == {'test': 'test'}
+    assert state_dict == {"test": "test"}
 
 
 def test_evaluate(default_bmfia_interface, mocker):
@@ -445,7 +445,7 @@ def test_evaluate(default_bmfia_interface, mocker):
     mp1.assert_called_with(
         Z_LF,
         support,
-        ['dummy', 'dummy'],
+        ["dummy", "dummy"],
         default_bmfia_interface.time_vec,
         default_bmfia_interface.coords_mat,
     )
@@ -477,7 +477,7 @@ def test_evaluate_and_gradient(default_bmfia_interface, mocker):
     mp1.assert_called_with(
         Z_LF,
         support,
-        ['dummy', 'dummy'],
+        ["dummy", "dummy"],
         default_bmfia_interface.time_vec,
         default_bmfia_interface.coords_mat,
     )
@@ -585,7 +585,7 @@ def test_prepare_z_lf_for_time_steps():
 def test_iterate_over_time_steps(mocker):
     """Test iterating over time steps."""
     # general inputs
-    support = 'y'
+    support = "y"
     num_coords = 1
     gradient_bool = False
 

@@ -62,8 +62,8 @@ def safe_cholesky(matrix, jitter_start_value=1e-10):
             jitter = jitter_start_value * 10**i
             matrix_ = matrix + np.eye(matrix.shape[0]) * jitter
             _logger.warning(
-                'Added %.2e to diagonal of matrix for numerical stability '
-                'of cholesky decompostition',
+                "Added %.2e to diagonal of matrix for numerical stability "
+                "of cholesky decompostition",
                 jitter,
             )
             try:
@@ -72,7 +72,7 @@ def safe_cholesky(matrix, jitter_start_value=1e-10):
             except np.linalg.LinAlgError:
                 continue
         raise np.linalg.LinAlgError(
-            'Cholesky decomposition failed due to ill-conditioning!'
+            "Cholesky decomposition failed due to ill-conditioning!"
         ) from linalg_error
 
 

@@ -13,16 +13,16 @@ from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
-keras.backend.set_floatx('float64')
+keras.backend.set_floatx("float64")
 
 # Use GPU acceleration if possible
-if tf.test.gpu_device_name() != '/device:GPU:0':
-    _logger.info('WARNING: GPU device not found.')
+if tf.test.gpu_device_name() != "/device:GPU:0":
+    _logger.info("WARNING: GPU device not found.")
 else:
-    _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
+    _logger.info("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
 
 
 class GaussianBayesianNeuralNetworkModel(SurrogateModel):
@@ -295,7 +295,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         """
         raise NotImplementedError
 
-    def predict(self, x_test, support='y', full_cov=False):
+    def predict(self, x_test, support="y", full_cov=False):
         """Make a prediction with the Bayesian neural network.
 
         Args:
@@ -313,12 +313,12 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
                 self.bnn_model for _ in range(self.num_samples_statistics)
             ]
 
-        if support == 'y':
+        if support == "y":
             predict_method = self.predict_y
-        elif support == 'f':
+        elif support == "f":
             predict_method = self.predict_f
         else:
-            raise RuntimeError('No suitable prediction method could be selected. Abort...')
+            raise RuntimeError("No suitable prediction method could be selected. Abort...")
 
         output = predict_method(x_test, full_cov=full_cov)
 
@@ -350,7 +350,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
             [y_random_variable.mean() for y_random_variable in y_random_variable_models]
         ).squeeze()
         # combine both sources of uncertainty averaging them
-        output['result'] = np.atleast_2d(y_random_variable_model_means.mean(axis=0)).T
+        output["result"] = np.atleast_2d(y_random_variable_model_means.mean(axis=0)).T
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:
@@ -404,7 +404,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         y_random_variable_model_means = np.array(
             [y_random_variable.mean() for y_random_variable in y_random_variable_models]
         )
-        output['result'] = y_random_variable_model_means.mean(axis=0)
+        output["result"] = y_random_variable_model_means.mean(axis=0)
 
         # repeat the former process for variance/covariance estimates
         if full_cov is False:

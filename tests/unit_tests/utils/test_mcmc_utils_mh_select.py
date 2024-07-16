@@ -9,19 +9,19 @@ import pytest
 from queens.utils.mcmc_utils import mh_select
 
 
-@pytest.fixture(name="acceptance_probability", scope='module')
+@pytest.fixture(name="acceptance_probability", scope="module")
 def fixture_acceptance_probability():
     """Possible acceptance probability."""
     return 0.3
 
 
-@pytest.fixture(name="num_chains", scope='module')
+@pytest.fixture(name="num_chains", scope="module")
 def fixture_num_chains():
     """Number of parallel chains."""
     return 2
 
 
-@pytest.fixture(name="log_acceptance_probability", scope='module')
+@pytest.fixture(name="log_acceptance_probability", scope="module")
 def fixture_log_acceptance_probability(acceptance_probability, num_chains):
     """Possible natural logarithm of acceptance probability."""
     acceptance_probability = np.array([[acceptance_probability]] * num_chains)
@@ -29,13 +29,13 @@ def fixture_log_acceptance_probability(acceptance_probability, num_chains):
     return log_acceptance_probability
 
 
-@pytest.fixture(name="current_sample", scope='module')
+@pytest.fixture(name="current_sample", scope="module")
 def fixture_current_sample(num_chains):
     """A potential current sample of an MCMC chain."""
     return np.array([[3.0, 4.0]] * num_chains)
 
 
-@pytest.fixture(name="proposed_sample", scope='module')
+@pytest.fixture(name="proposed_sample", scope="module")
 def fixture_proposed_sample(current_sample):
     """A potentially proposed sample of an MCMC algorithm."""
     return 2.0 * current_sample
@@ -51,7 +51,7 @@ def test_mh_select(
 
     """
     mocker.patch(
-        'numpy.random.uniform',
+        "numpy.random.uniform",
         return_value=np.array([[acceptance_probability * 2], [acceptance_probability * 0.5]]),
     )
 

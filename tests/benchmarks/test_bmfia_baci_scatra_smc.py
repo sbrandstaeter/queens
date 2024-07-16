@@ -17,8 +17,8 @@ def test_bmfia_baci_scatra_smc(
     BACI.
     """
     # generate yaml input file from template
-    template = inputdir / 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml'
-    input_file = tmp_path / 'hf_scatra_baci.yml'
+    template = inputdir / "bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml"
+    input_file = tmp_path / "hf_scatra_baci.yml"
     injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS

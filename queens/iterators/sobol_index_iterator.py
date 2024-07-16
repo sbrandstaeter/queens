@@ -94,10 +94,10 @@ class SobolIndexIterator(Iterator):
         )
 
         self.salib_problem = {
-            'num_vars': self.parameters.num_parameters,
-            'names': self.parameters.names,
-            'bounds': distribution_parameters,
-            'dists': distribution_types,
+            "num_vars": self.parameters.num_parameters,
+            "names": self.parameters.names,
+            "bounds": distribution_parameters,
+            "dists": distribution_types,
         }
 
         _logger.info("Draw %s samples...", self.num_samples)
@@ -121,7 +121,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Calculate Sensitivity Indices...")
         self.sensitivity_indices = sobol.analyze(
             self.salib_problem,
-            np.reshape(self.output['result'], (-1)),
+            np.reshape(self.output["result"], (-1)),
             calc_second_order=self.calc_second_order,
             num_resamples=self.num_bootstrap_samples,
             conf_level=self.confidence_level,
@@ -161,7 +161,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Main and Total Effects:")
         _logger.info(sensitivity_indices_df)
         _logger.info("Additivity, sum of main effects (for independent variables):")
-        _logger.info('S_i = %s', additivity)
+        _logger.info("S_i = %s", additivity)
 
         if self.calc_second_order:
             second_order_indices = sensitivity_indices["S2"]
@@ -189,14 +189,14 @@ class SobolIndexIterator(Iterator):
             # therefore we have to subtract the trace
             second_order_interactions = np.sum(np.triu(second_order_indices, k=1))
             higher_interactions = higher_interactions - second_order_interactions
-            str_second_order_interactions = f'S_ij = {second_order_interactions}'
+            str_second_order_interactions = f"S_ij = {second_order_interactions}"
 
             _logger.info("Sum of second order interactions:")
             _logger.info(str_second_order_interactions)
 
-            str_higher_order_interactions = f'1 - S_i - S_ij = {higher_interactions}'
+            str_higher_order_interactions = f"1 - S_i - S_ij = {higher_interactions}"
         else:
-            str_higher_order_interactions = f'1 - S_i = {higher_interactions}'
+            str_higher_order_interactions = f"1 - S_i = {higher_interactions}"
 
         _logger.info("Higher order interactions:")
         _logger.info(str_higher_order_interactions)
@@ -229,17 +229,17 @@ class SobolIndexIterator(Iterator):
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
             error_y={
-                "type": 'data',
-                "array": results['sensitivity_indices']['S1_conf'],
+                "type": "data",
+                "array": results["sensitivity_indices"]["S1_conf"],
                 "visible": True,
             },
         )
         data = [bars]
 
         layout = {
-            "title": 'First-Order Sensitivity Indices',
-            "xaxis": {"title": 'Parameter'},
-            "yaxis": {"title": 'Main Effect'},
+            "title": "First-Order Sensitivity Indices",
+            "xaxis": {"title": "Parameter"},
+            "yaxis": {"title": "Main Effect"},
         }
 
         fig = go.Figure(data=data, layout=layout)
@@ -251,17 +251,17 @@ class SobolIndexIterator(Iterator):
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
             error_y={
-                "type": 'data',
-                "array": results['sensitivity_indices']['ST_conf'],
+                "type": "data",
+                "array": results["sensitivity_indices"]["ST_conf"],
                 "visible": True,
             },
         )
         data = [bars]
 
         layout = {
-            "title": 'Total Sensitivity Indices',
-            "xaxis": {"title": 'Parameter'},
-            "yaxis": {"title": 'Total Effect'},
+            "title": "Total Sensitivity Indices",
+            "xaxis": {"title": "Parameter"},
+            "yaxis": {"title": "Total Effect"},
         }
 
         fig = go.Figure(data=data, layout=layout)
@@ -287,14 +287,14 @@ class SobolIndexIterator(Iterator):
             bars = go.Bar(
                 x=names,
                 y=second_order_indices,
-                error_y={"type": 'data', "array": second_order_indices_conf, "visible": True},
+                error_y={"type": "data", "array": second_order_indices_conf, "visible": True},
             )
             data = [bars]
 
             layout = {
-                "title": 'Second Order Sensitivity Indices',
-                "xaxis": {"title": 'Parameter'},
-                "yaxis": {"title": 'Second Order Effects'},
+                "title": "Second Order Sensitivity Indices",
+                "xaxis": {"title": "Parameter"},
+                "yaxis": {"title": "Second Order Effects"},
             }
 
             fig = go.Figure(data=data, layout=layout)
@@ -316,18 +316,18 @@ def extract_parameters_of_parameter_distributions(parameters):
         if isinstance(parameter, uniform.UniformDistribution):
             upper_bound = parameter.upper_bound
             lower_bound = parameter.lower_bound
-            distribution_name = 'unif'
+            distribution_name = "unif"
         # in queens normal distributions are parameterized with mean and var
         # in salib normal distributions are parameterized via mean and std
         # -> we need to reparameterize normal distributions
         elif isinstance(parameter, normal.NormalDistribution):
             lower_bound = parameter.mean.squeeze()
             upper_bound = np.sqrt(parameter.covariance.squeeze())
-            distribution_name = 'norm'
+            distribution_name = "norm"
         elif isinstance(parameter, lognormal.LogNormalDistribution):
             lower_bound = parameter.mu.squeeze()
             upper_bound = parameter.sigma.squeeze()
-            distribution_name = 'lognorm'
+            distribution_name = "lognorm"
         else:
             raise ValueError("Valid distributions are normal, lognormal and uniform!")
 

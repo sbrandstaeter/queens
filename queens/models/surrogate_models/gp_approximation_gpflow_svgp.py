@@ -15,7 +15,7 @@ from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transfor
 from queens.utils.logger_settings import log_init_args
 
 # suppress tensorflow warnings
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 _logger = logging.getLogger(__name__)
 tf.get_logger().setLevel(logging.ERROR)
 
@@ -130,7 +130,7 @@ class GPflowSVGPModel(SurrogateModel):
                 optimization_step()
                 if (step + 1) % 100 == 0:
                     _logger.info(
-                        'Iter: %d/%d, Loss: %.2e',
+                        "Iter: %d/%d, Loss: %.2e",
                         step + 1,
                         self.number_training_iterations,
                         training_loss().numpy(),
@@ -156,7 +156,7 @@ class GPflowSVGPModel(SurrogateModel):
         """
         raise NotImplementedError
 
-    def predict(self, x_test, support='f', full_cov=False):
+    def predict(self, x_test, support="f", full_cov=False):
         """Predict the posterior distribution at *x_test*.
 
         Options:
@@ -173,21 +173,21 @@ class GPflowSVGPModel(SurrogateModel):
             output (dict): Dictionary with mean, variance, and possibly
             posterior samples at *x_test*
         """
-        assert support in ['f', 'y'], "Unknown input for support."
+        assert support in ["f", "y"], "Unknown input for support."
         x_test = np.atleast_2d(x_test).reshape((-1, self.number_input_dimensions))
         number_test_samples = x_test.shape[0]
         x_test = self.scaler_x.transform(x_test)
 
         output = {
-            'result': [],
-            'variance': [],
-            'variance_diagonal': [],
-            'x_test': x_test,
-            'post_samples': [],
+            "result": [],
+            "variance": [],
+            "variance_diagonal": [],
+            "x_test": x_test,
+            "post_samples": [],
         }
 
         for i in range(self.dimension_output):
-            if support == 'y':
+            if support == "y":
                 mean, var = self.model[i].predict_y(x_test, full_cov=False)
             else:
                 mean, var = self.model[i].predict_f(x_test, full_cov=full_cov)
@@ -195,17 +195,17 @@ class GPflowSVGPModel(SurrogateModel):
             mean = self.scaler_y.inverse_transform(mean.numpy()).reshape((number_test_samples, -1))
             var = var.numpy() * self.scaler_y.var_[i]
 
-            output['result'].append(mean)
-            if support == 'f' and full_cov is True:
-                output['variance'].append(np.squeeze(var, axis=0))
-                output['variance_diagonal'].append(
-                    extract_block_diag(np.squeeze(var, axis=0), output['result'][-1].shape[1])
+            output["result"].append(mean)
+            if support == "f" and full_cov is True:
+                output["variance"].append(np.squeeze(var, axis=0))
+                output["variance_diagonal"].append(
+                    extract_block_diag(np.squeeze(var, axis=0), output["result"][-1].shape[1])
                 )
             else:
-                output['variance'].append(var)
+                output["variance"].append(var)
 
             if self.number_posterior_samples:
-                output['post_samples'].append(
+                output["post_samples"].append(
                     self.model[i]
                     .predict_f_samples(x_test, self.number_posterior_samples)
                     .numpy()
@@ -311,7 +311,7 @@ class GPflowSVGPModel(SurrogateModel):
             if output[key]:
                 output[key] = np.squeeze(np.moveaxis(np.array(output[key]), 0, 1), axis=1)
 
-        for current_key in ['result', 'variance', 'variance_diagonal', 'post_samples']:
+        for current_key in ["result", "variance", "variance_diagonal", "post_samples"]:
             _squeeze_array(current_key)
 
         return output

@@ -35,7 +35,7 @@ class BmfmcInterface(Interface):
         super().__init__(parameters=None)
         self.probabilistic_mapping = probabilistic_mapping
 
-    def evaluate(self, samples, support='y', full_cov=False, gradient_bool=False):
+    def evaluate(self, samples, support="y", full_cov=False, gradient_bool=False):
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance
@@ -71,7 +71,7 @@ class BmfmcInterface(Interface):
             )
 
         output = self.probabilistic_mapping.predict(samples, support=support, full_cov=full_cov)
-        mean_Y_HF_given_Z_LF = output['result']
+        mean_Y_HF_given_Z_LF = output["result"]
         var_Y_HF_given_Z_LF = output["variance"]
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 

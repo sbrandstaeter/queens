@@ -13,7 +13,7 @@ from sklearn.neighbors import KernelDensity
 _logger = logging.getLogger(__name__)
 
 
-def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussian'):
+def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel="gaussian"):
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
@@ -32,19 +32,19 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussi
     # we use a log grid to emphasize the smaller bandwidth values
     grid = GridSearchCV(
         KernelDensity(kernel=kernel),
-        {'bandwidth': np.logspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
+        {"bandwidth": np.logspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
         cv=30,
         n_jobs=-1,
     )
 
     grid.fit(samples.reshape(-1, 1))
-    kernel_bandwidth = grid.best_params_['bandwidth']
-    _logger.info('bandwidth = %s', kernel_bandwidth)
+    kernel_bandwidth = grid.best_params_["bandwidth"]
+    _logger.info("bandwidth = %s", kernel_bandwidth)
 
     return kernel_bandwidth
 
 
-def estimate_pdf(samples, kernel_bandwidth, support_points=None, kernel='gaussian'):
+def estimate_pdf(samples, kernel_bandwidth, support_points=None, kernel="gaussian"):
     """Estimate pdf using kernel density estimation.
 
     Args:

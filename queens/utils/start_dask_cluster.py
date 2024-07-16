@@ -16,21 +16,21 @@ _logger = logging.getLogger(__name__)
 
 def parse_arguments(unparsed_args):
     """Parse arguments passed via command line call."""
-    parser = argparse.ArgumentParser(description='Arguments for the dask cluster starting routine')
+    parser = argparse.ArgumentParser(description="Arguments for the dask cluster starting routine")
 
-    parser.add_argument('--workload-manager', help='type of workload manager (e.g., slurm or pbs)')
+    parser.add_argument("--workload-manager", help="type of workload manager (e.g., slurm or pbs)")
 
     parser.add_argument(
-        '--dask-cluster-kwargs', help='keyword arguments for dask cluster in JSON format'
+        "--dask-cluster-kwargs", help="keyword arguments for dask cluster in JSON format"
     )
     parser.add_argument(
-        '--dask-cluster-adapt-kwargs',
-        help='keyword arguments for dask cluster adapt method in JSON format',
+        "--dask-cluster-adapt-kwargs",
+        help="keyword arguments for dask cluster adapt method in JSON format",
     )
 
-    parser.add_argument('--experiment-dir', help='Directory of QUEENS experiment on remote')
+    parser.add_argument("--experiment-dir", help="Directory of QUEENS experiment on remote")
 
-    parser.add_argument('--debug', default=False, help='flag to control on debug mode')
+    parser.add_argument("--debug", default=False, help="flag to control on debug mode")
 
     return parser.parse_args(unparsed_args)
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, args.workload_manager)
-    dask_cluster_cls = dask_cluster_options['dask_cluster_cls']
+    dask_cluster_cls = dask_cluster_options["dask_cluster_cls"]
 
     _logger.info("Starting event loop")
     loop = asyncio.new_event_loop()
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         _logger.info("Dask cluster info:")
         _logger.info(cluster)
 
-        dask_jobscript = experiment_dir / 'dask_jobscript.sh'
+        dask_jobscript = experiment_dir / "dask_jobscript.sh"
         _logger.info("Writing dask jobscript to:")
         _logger.info(dask_jobscript)
         dask_jobscript.write_text(str(cluster.job_script()))

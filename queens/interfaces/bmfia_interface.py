@@ -180,7 +180,7 @@ class BmfiaInterface(Interface):
                 gradient_bool=False,
             )
 
-            mean_y_hf_given_z_lf.append(output['result'].squeeze())
+            mean_y_hf_given_z_lf.append(output["result"].squeeze())
             var_y_hf_given_z_lf.append(output["variance"].squeeze())
 
         mean = np.atleast_2d(np.array(mean_y_hf_given_z_lf)).T
@@ -322,7 +322,7 @@ class BmfiaInterface(Interface):
                 z_test_per_coordinate, support=support, gradient_bool=True
             )
 
-            mean_Y_HF_given_Z_LF.append(output['result'].squeeze())
+            mean_Y_HF_given_Z_LF.append(output["result"].squeeze())
             var_Y_HF_given_Z_LF.append(output["variance"].squeeze())
 
             grad_mean.append(output["grad_mean"].squeeze().T)
@@ -538,7 +538,7 @@ class BmfiaInterface(Interface):
         self.time_vec = None
         self.coords_mat = None
 
-    def evaluate(self, samples, support='y'):
+    def evaluate(self, samples, support="y"):
         r"""Map the lf-features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
@@ -581,7 +581,7 @@ class BmfiaInterface(Interface):
         )
         return mean, variance
 
-    def evaluate_and_gradient(self, z_lf, support='y'):
+    def evaluate_and_gradient(self, z_lf, support="y"):
         r"""Evaluate probabilistic mapping and its gradient.
 
         Calls the probabilistic mapping and predicts the mean and variance,
@@ -891,7 +891,7 @@ class BmfiaInterface(Interface):
             output = probabilistic_mapping_obj.predict(
                 z_test_per_time_step, support=support, gradient_bool=gradient_bool
             )
-            mean_y_hf_given_z_lf.append(output['result'].flatten())
+            mean_y_hf_given_z_lf.append(output["result"].flatten())
             var_y_hf_given_z_lf.append(output["variance"].flatten())
 
             if gradient_bool:

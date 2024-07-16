@@ -20,7 +20,7 @@ from queens.utils.process_outputs import write_results
 
 from .iterator import Iterator
 
-logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 _logger = logging.getLogger(__name__)
 
 
@@ -89,8 +89,8 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """
         super().__init__(model, parameters, global_settings)
 
-        additional_options['second_order'] = second_order
-        additional_options['third_order'] = third_order
+        additional_options["second_order"] = second_order
+        additional_options["third_order"] = third_order
 
         sampler_method, estimator_method = self._choose_helpers(third_order)
         sampler = sampler_method.from_config_create(
@@ -121,7 +121,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
                     )
                 )
 
-        _logger.info('Calculate second-order indices is %s', second_order)
+        _logger.info("Calculate second-order indices is %s", second_order)
 
         self.result_description = result_description
         self.num_procs = num_procs
@@ -170,7 +170,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         # 4. Evaluate statistics
         self.evaluate_statistics(estimates)
 
-        _logger.info('Time for full calculation: %s', time.time() - start_run)
+        _logger.info("Time for full calculation: %s", time.time() - start_run)
 
     def evaluate_statistics(self, estimates):
         """Evaluate statistics of Sobol index estimates.
@@ -179,18 +179,18 @@ class SobolIndexGPUncertaintyIterator(Iterator):
             estimates (dict): Dictionary of Sobol index estimates of different order
         """
         if self.calculate_third_order:
-            self.results['third_order'] = self.statistics[0].evaluate(estimates['third_order'])
-            _logger.info(str(self.results['third_order']))
+            self.results["third_order"] = self.statistics[0].evaluate(estimates["third_order"])
+            _logger.info(str(self.results["third_order"]))
         else:
-            _logger.info('First-order Sobol indices:')
-            self.results['first_order'] = self.statistics[0].evaluate(estimates['first_order'])
-            _logger.info('Total-order Sobol indices:')
-            self.results['total_order'] = self.statistics[0].evaluate(estimates['total_order'])
+            _logger.info("First-order Sobol indices:")
+            self.results["first_order"] = self.statistics[0].evaluate(estimates["first_order"])
+            _logger.info("Total-order Sobol indices:")
+            self.results["total_order"] = self.statistics[0].evaluate(estimates["total_order"])
 
             if self.calculate_second_order:
-                _logger.info('Second-order Sobol indices:')
-                self.results['second_order'] = self.statistics[1].evaluate(
-                    estimates['second_order']
+                _logger.info("Second-order Sobol indices:")
+                self.results["second_order"] = self.statistics[1].evaluate(
+                    estimates["second_order"]
                 )
 
     @classmethod

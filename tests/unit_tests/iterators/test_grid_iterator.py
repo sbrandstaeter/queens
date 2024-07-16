@@ -98,7 +98,7 @@ def fixture_expected_samples_three():
 @pytest.fixture(name="default_model")
 def fixture_default_model():
     """TODO_doc."""
-    interface = 'dummy_interface'
+    interface = "dummy_interface"
     model = SimulationModel(interface)
     return model
 
@@ -131,7 +131,7 @@ def test_init(
     """TODO_doc."""
     # some default input for testing
     num_parameters = 2
-    mp = mocker.patch('queens.iterators.iterator.Iterator.__init__')
+    mp = mocker.patch("queens.iterators.iterator.Iterator.__init__")
     GridIterator.parameters = Mock()
     GridIterator.parameters.num_parameters = num_parameters
 
@@ -156,7 +156,7 @@ def test_init(
 
 def test_model_evaluate(default_grid_iterator, mocker):
     """TODO_doc."""
-    mp = mocker.patch('queens.models.simulation_model.SimulationModel.evaluate', return_value=None)
+    mp = mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=None)
     default_grid_iterator.model.evaluate(None)
     mp.assert_called_once()
 
@@ -222,7 +222,7 @@ def test_pre_run_three(
 
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     """TODO_doc."""
-    mocker.patch('queens.models.simulation_model.SimulationModel.evaluate', return_value=2)
+    mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=2)
     default_grid_iterator.samples = expected_samples_two
     default_grid_iterator.core_run()
     np.testing.assert_array_equal(default_grid_iterator.samples, expected_samples_two)
@@ -232,13 +232,13 @@ def test_core_run(mocker, default_grid_iterator, expected_samples_two):
 def test_post_run(mocker, default_grid_iterator):
     """TODO_doc."""
     # test if save results is called
-    mp1 = mocker.patch('queens.iterators.grid_iterator.write_results', return_value=None)
+    mp1 = mocker.patch("queens.iterators.grid_iterator.write_results", return_value=None)
     mocker.patch(
-        'queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance',
+        "queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance",
     )
     mp3 = mocker.patch(
-        'queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance'
-        '.plot_qoi_grid',
+        "queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance"
+        ".plot_qoi_grid",
         return_value=1,
     )
     default_grid_iterator.post_run()

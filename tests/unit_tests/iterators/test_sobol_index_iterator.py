@@ -82,11 +82,11 @@ def test_correct_sensitivity_indices(default_sobol_index_iterator):
         ]
     )
 
-    np.testing.assert_allclose(si['S1'], ref_s1, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['S1_conf'], ref_s1_conf, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["S1"], ref_s1, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["S1_conf"], ref_s1_conf, 1e-07, 1e-07)
 
-    np.testing.assert_allclose(si['ST'], ref_st, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['ST_conf'], ref_st_conf, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["ST"], ref_st, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["ST_conf"], ref_st_conf, 1e-07, 1e-07)
 
-    np.testing.assert_allclose(si['S2'], ref_s2, 1e-07, 1e-07)
-    np.testing.assert_allclose(si['S2_conf'], ref_s2_conf, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["S2"], ref_s2, 1e-07, 1e-07)
+    np.testing.assert_allclose(si["S2_conf"], ref_s2_conf, 1e-07, 1e-07)

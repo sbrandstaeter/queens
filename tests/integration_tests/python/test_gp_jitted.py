@@ -64,7 +64,7 @@ def test_jitted_gp_one_dim(gp_model):
 
     # -- matern-3-2 kernel --
     # --- get the mean and variance of the model (no gradient call here) ---
-    gp_model.kernel_type = 'matern_3_2'
+    gp_model.kernel_type = "matern_3_2"
     gp_model.setup(x_train, y_train)
     gp_model.train()
 

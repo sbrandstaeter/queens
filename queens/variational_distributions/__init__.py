@@ -7,6 +7,6 @@ from queens.variational_distributions.mixture_model import MixtureModelVariation
 from queens.variational_distributions.particle import ParticleVariational
 
 VALID_TYPES = {
-    'mean_field_variational': MeanFieldNormalVariational,
-    'full_rank_variational': FullRankNormalVariational,
+    "mean_field_variational": MeanFieldNormalVariational,
+    "full_rank_variational": FullRankNormalVariational,
 }

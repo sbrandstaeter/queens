@@ -73,7 +73,7 @@ def test_check_for_reference_false(config_1):
 
 def test_check_for_reference_true_1(config_1):
     """Test case for check_for_reference function."""
-    config_1['c']["dummy_name"] = "dummy"
+    config_1["c"]["dummy_name"] = "dummy"
     assert check_for_reference(config_1)
 
 
@@ -138,7 +138,7 @@ def test_from_config_create_iterator_runtime_error_case_1(global_settings):
     Configuration fails due to missing 'method' description.
     """
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
-        from_config_create_iterator({'c': 'd'}, global_settings)
+        from_config_create_iterator({"c": "d"}, global_settings)
 
 
 def test_from_config_create_iterator_runtime_error_case_2(global_settings):
@@ -146,7 +146,7 @@ def test_from_config_create_iterator_runtime_error_case_2(global_settings):
 
     Configuration fails due to circular dependencies.
     """
-    config = {'a': {'b_name': 'd'}, 'd': {'e_name': 'a'}}
+    config = {"a": {"b_name": "d"}, "d": {"e_name": "a"}}
     with pytest.raises(RuntimeError, match=r"Queens run can not be configured*"):
         from_config_create_iterator(config, global_settings)
 
@@ -156,7 +156,7 @@ def test_from_config_create_iterator_invalid_option_error_case_1(global_settings
 
     Configuration fails due to invalid class type 'bla'.
     """
-    config = {'a': {'type': 'bla'}}
+    config = {"a": {"type": "bla"}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
         from_config_create_iterator(config, global_settings)
 
@@ -166,6 +166,6 @@ def test_from_config_create_iterator_invalid_option_error_case_2(global_settings
 
     Configuration fails due to missing options for 'monte_carlo'.
     """
-    config = {'a': {'type': 'monte_carlo'}}
+    config = {"a": {"type": "monte_carlo"}}
     with pytest.raises(InvalidOptionError, match="Object 'a' can not be initialized."):
         from_config_create_iterator(config, global_settings)

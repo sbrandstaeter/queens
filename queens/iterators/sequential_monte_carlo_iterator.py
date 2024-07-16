@@ -181,7 +181,7 @@ class SequentialMonteCarloIterator(Iterator):
         Returns:
             log_likelihood: TODO_doc
         """
-        log_likelihood = self.model.evaluate(sample_batch)['result']
+        log_likelihood = self.model.evaluate(sample_batch)["result"]
         return log_likelihood
 
     def pre_run(self):
@@ -274,7 +274,7 @@ class SequentialMonteCarloIterator(Iterator):
         # TODO: new ESS is already calculated in this step # pylint: disable=fixme
         search_interval = [gamma_cur, 1.0]
         try:
-            root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method='toms748')
+            root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method="toms748")
             gamma_new = root_result.root
         except ValueError as value_error:
             if "a, b must bracket a root" in str(value_error):
@@ -351,7 +351,7 @@ class SequentialMonteCarloIterator(Iterator):
 
     def core_run(self):
         """Core run of Sequential Monte Carlo iterator."""
-        _logger.info('Welcome to SMC core run.')
+        _logger.info("Welcome to SMC core run.")
         # counter
         step = 0
         # average accept rate of MCMC kernel
@@ -425,12 +425,12 @@ class SequentialMonteCarloIterator(Iterator):
             # this enables the calculation of the covariance matrix
             results = process_outputs(
                 {
-                    'result': particles_resampled[:, np.newaxis, :],
-                    'particles': self.particles,
-                    'weights': normalized_weights,
-                    'log_likelihood': self.log_likelihood,
-                    'log_prior': self.log_prior,
-                    'log_posterior': self.log_posterior,
+                    "result": particles_resampled[:, np.newaxis, :],
+                    "particles": self.particles,
+                    "weights": normalized_weights,
+                    "log_likelihood": self.log_likelihood,
+                    "log_prior": self.log_prior,
+                    "log_posterior": self.log_posterior,
                 },
                 self.result_description,
             )
@@ -438,7 +438,7 @@ class SequentialMonteCarloIterator(Iterator):
                 write_results(results, self.global_settings.result_file(".pickle"))
 
             if self.result_description["plot_results"]:
-                self.draw_trace('final')
+                self.draw_trace("final")
 
             mean = np.sum(np.multiply(np.squeeze(normalized_weights), self.particles.T).T, axis=0)
             var = np.sum(
@@ -452,11 +452,11 @@ class SequentialMonteCarloIterator(Iterator):
 
             _logger.info(
                 "\tmean±std: %s±%s",
-                results.get('mean', np.nan),
-                np.sqrt(results.get('var', np.nan)),
+                results.get("mean", np.nan),
+                np.sqrt(results.get("var", np.nan)),
             )
-            _logger.info("\tvar: %s", (results.get('var', np.nan)))
-            _logger.info("\tcov: %s", results.get('cov', np.nan))
+            _logger.info("\tvar: %s", (results.get("var", np.nan)))
+            _logger.info("\tcov: %s", results.get("cov", np.nan))
 
     def draw_trace(self, step):
         """Plot the trace of the current particle approximation.

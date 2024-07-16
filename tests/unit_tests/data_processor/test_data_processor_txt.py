@@ -18,7 +18,7 @@ def fixture_dummy_txt_file():
 @pytest.fixture(name="default_data_processor")
 def fixture_default_data_processor():
     """Default data processor txt class for unit tests."""
-    file_name_identifier = 'queens_example_log.txt'
+    file_name_identifier = "queens_example_log.txt"
     files_to_be_deleted_regex_lst = []
 
     file_options_dict = {}
@@ -56,7 +56,7 @@ def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
     file_path_baci_log = relative_path_from_queens(
         "tests/unit_tests/data_processor/baci_example_log.txt"
     )
-    with open(file_path_baci_log, 'r', encoding='utf-8') as file:
+    with open(file_path_baci_log, "r", encoding="utf-8") as file:
         raw_data_baci = file.readlines()
     # Remove leading and trailing whitespaces from each string in the list
     raw_data_baci = [s.strip() for s in raw_data_baci]
@@ -89,7 +89,7 @@ def test_extract_lines_with_regex(default_data_processor, default_raw_data):
 def test_extract_quantities_from_line(default_data_processor, default_raw_data):
     """This test checks the extraction quantities from a line."""
     regex_global = r"CORE::LINALG::Solver:  1\)   Setup"
-    regex_numeric_vals = r'\b\d+\.\d+[eE][+-]?\d+\b'
+    regex_numeric_vals = r"\b\d+\.\d+[eE][+-]?\d+\b"
     matches_global = default_data_processor._extract_lines_with_regex(  # pylint: disable=W0212
         default_raw_data, regex_global
     )
@@ -98,10 +98,10 @@ def test_extract_quantities_from_line(default_data_processor, default_raw_data):
     )
 
     assert len(numeric_vals) == 4
-    assert numeric_vals[0] == '2.2577e+00'
-    assert numeric_vals[1] == '2.2580e+00'
-    assert numeric_vals[2] == '2.2583e+00'
-    assert numeric_vals[3] == '1.1884e-01'
+    assert numeric_vals[0] == "2.2577e+00"
+    assert numeric_vals[1] == "2.2580e+00"
+    assert numeric_vals[2] == "2.2583e+00"
+    assert numeric_vals[3] == "1.1884e-01"
 
 
 def test_extract_section_from_raw_data_start_and_end_marker(

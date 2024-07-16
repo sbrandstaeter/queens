@@ -23,7 +23,7 @@ def fixture_default_lhs_iterator(
         num_samples=100,
         num_iterations=1,
         result_description=None,
-        criterion='maximin',
+        criterion="maximin",
     )
     return my_iterator
 

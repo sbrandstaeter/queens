@@ -63,9 +63,9 @@ def fixture_default_data_processor_npy():
 # ------ actual tests ------
 def test_init():
     """Test initialization of npy data processor."""
-    file_name_identifier = 'dummy'
+    file_name_identifier = "dummy"
     file_options_dict = {"dummy": "dummy"}
-    files_to_be_deleted_regex_lst = ['abc']
+    files_to_be_deleted_regex_lst = ["abc"]
 
     data_processor = DataProcessorNumpy(
         file_name_identifier,

@@ -13,7 +13,7 @@ def plot_loss(history, loss_plot_path):
         loss_plot_path (str): Path to save the loss plot
     """
     _, ax = plt.subplots()
-    ax.plot(history.history['loss'])
+    ax.plot(history.history["loss"])
     ax.set_ylabel("-log lik.")
     ax.set_xlabel("# epochs")
-    plt.savefig(Path(loss_plot_path, 'loss_plot.jpg'), dpi=300)
+    plt.savefig(Path(loss_plot_path, "loss_plot.jpg"), dpi=300)

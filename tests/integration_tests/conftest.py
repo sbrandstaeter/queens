@@ -203,7 +203,7 @@ def fixture_baci_cluster_paths(remote_connection):
 
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
-        find_result = remote_connection.run(f'find {file_path}', in_stream=False)
+        find_result = remote_connection.run(f"find {file_path}", in_stream=False)
         return Path(find_result.stdout.rstrip())
 
     exists_on_remote(path_to_executable)
@@ -211,9 +211,9 @@ def fixture_baci_cluster_paths(remote_connection):
     exists_on_remote(path_to_post_ensight)
 
     baci_cluster_paths = {
-        'path_to_executable': path_to_executable,
-        'path_to_post_ensight': path_to_post_ensight,
-        'path_to_post_processor': path_to_post_processor,
+        "path_to_executable": path_to_executable,
+        "path_to_post_ensight": path_to_post_ensight,
+        "path_to_post_processor": path_to_post_processor,
     }
     return baci_cluster_paths
 
@@ -337,11 +337,11 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
 
     # write fake data to csv
     data_dict = {
-        'x3': X3,
-        'x4': X4,
-        'y_obs': y_fake,
+        "x3": X3,
+        "x4": X4,
+        "y_obs": y_fake,
     }
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    experimental_data_path = tmp_path / "experimental_data.csv"
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)
 
@@ -424,7 +424,7 @@ def fixture_generate_LF_MC_data(generate_X_mc):
     """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
-        params = {'x1': x_vec[0], 'x2': x_vec[1]}
+        params = {"x1": x_vec[0], "x2": x_vec[1]}
         y.append(currin88_lofi(**params))
 
     Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
@@ -437,7 +437,7 @@ def fixture_generate_HF_MC_data(generate_X_mc):
     """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
-        params = {'x1': x_vec[0], 'x2': x_vec[1]}
+        params = {"x1": x_vec[0], "x2": x_vec[1]}
         y.append(currin88_hifi(**params))
 
     Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
@@ -448,7 +448,7 @@ def fixture_generate_HF_MC_data(generate_X_mc):
 @pytest.fixture(name="_write_LF_MC_data_to_pickle")
 def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
-    file_name = 'LF_MC_data.pickle'
+    file_name = "LF_MC_data.pickle"
     input_description = {
         "x1": {
             "type": "uniform",
@@ -462,16 +462,16 @@ def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_d
         },
     }
     data = {
-        'input_data': generate_X_mc,
-        'input_description': input_description,
-        'output': generate_LF_MC_data,
-        'eigenfunc': None,
-        'eigenvalue': None,
+        "input_data": generate_X_mc,
+        "input_description": input_description,
+        "output": generate_LF_MC_data,
+        "eigenfunc": None,
+        "eigenvalue": None,
     }
     write_results(data, tmp_path / file_name)
 
 
-@pytest.fixture(name="design_method", params=['random', 'diverse_subset'])
+@pytest.fixture(name="design_method", params=["random", "diverse_subset"])
 def fixture_design_method(request):
     """TODO_doc."""
     design = request.param

@@ -92,7 +92,7 @@ class SurrogateModel(Model):
         """
 
     @abc.abstractmethod
-    def predict(self, x_test, support='y'):
+    def predict(self, x_test, support="y"):
         """Predict."""
 
     @abc.abstractmethod
@@ -158,7 +158,7 @@ class SurrogateModel(Model):
             raise RuntimeError("Cannot compute accuracy on uninitialized model")
 
         response = self.predict(x_test)
-        y_prediction = response['result'].reshape((-1, 1))
+        y_prediction = response["result"].reshape((-1, 1))
 
         error_info = {}
         if measures is not None:
@@ -204,7 +204,7 @@ class SurrogateModel(Model):
         for train_index, test_index in kf.split(x_train):
             self.setup(x_train[train_index], y_train[train_index])
             self.train()
-            outputs[test_index] = self.predict(x_train[test_index].T, support='f')['result']
+            outputs[test_index] = self.predict(x_train[test_index].T, support="f")["result"]
 
         return outputs
 
@@ -289,20 +289,20 @@ class SurrogateModel(Model):
             x (ndarray): input (samples)
             y (ndarray): output (response)
         """
-        if hasattr(iterator, 'samples'):
+        if hasattr(iterator, "samples"):
             x = iterator.samples
         else:
             raise AttributeError(
-                f'Your iterator {type(iterator).__name__} has no samples and, thus, cannot be used '
-                f'for training or testing a surrogate model.'
+                f"Your iterator {type(iterator).__name__} has no samples and, thus, cannot be used "
+                f"for training or testing a surrogate model."
             )
 
-        if hasattr(iterator, 'output'):
-            y = iterator.output['result']
+        if hasattr(iterator, "output"):
+            y = iterator.output["result"]
         else:
             raise AttributeError(
-                f'Your iterator {type(iterator).__name__} has no output data and, thus, cannot be '
-                f'used for training or testing a surrogate model.'
+                f"Your iterator {type(iterator).__name__} has no output data and, thus, cannot be "
+                f"used for training or testing a surrogate model."
             )
 
         return x, y

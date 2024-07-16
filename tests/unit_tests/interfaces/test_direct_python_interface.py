@@ -16,7 +16,7 @@ from queens.utils.path_utils import relative_path_from_source
 _logger = logging.getLogger(__name__)
 
 
-@pytest.fixture(name="parameters", scope='module')
+@pytest.fixture(name="parameters", scope="module")
 def fixture_parameters():
     """Options dictionary to create variables."""
     parameter_x1 = UniformDistribution(lower_bound=-3.14, upper_bound=3.14)
@@ -25,7 +25,7 @@ def fixture_parameters():
     return Parameters(x1=parameter_x1, x2=parameter_x2, x3=parameter_x3)
 
 
-@pytest.fixture(name="samples", scope='module')
+@pytest.fixture(name="samples", scope="module")
 def fixture_samples():
     """Parameters and samples."""
     # set values
@@ -33,31 +33,31 @@ def fixture_samples():
     return samples
 
 
-@pytest.fixture(name="expected_result", scope='module')
+@pytest.fixture(name="expected_result", scope="module")
 def fixture_expected_result():
     """Expected result of ishigami function for [1., 1., 1.]."""
     return np.array([[5.8821320112036846]])
 
 
-@pytest.fixture(name="expected_results", scope='module')
+@pytest.fixture(name="expected_results", scope="module")
 def fixture_expected_results(expected_result):
     """Expected results corresponding to *list_of_samples*."""
     return np.concatenate([expected_result, expected_result])
 
 
-@pytest.fixture(name="direct_python_interface", scope='module')
+@pytest.fixture(name="direct_python_interface", scope="module")
 def fixture_direct_python_interface(parameters):
     """Direct python interface."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=1)
 
 
-@pytest.fixture(name="direct_python_interface_parallel", scope='module')
+@pytest.fixture(name="direct_python_interface_parallel", scope="module")
 def fixture_direct_python_interface_parallel(parameters):
     """Direct python interface."""
     return DirectPythonInterface(parameters=parameters, function="ishigami90", num_workers=2)
 
 
-@pytest.fixture(name="direct_python_interface_function_passing", scope='module')
+@pytest.fixture(name="direct_python_interface_function_passing", scope="module")
 def fixture_direct_python_interface_function_passing(parameters):
     """Direct python interface with function in init."""
     function = example_simulator_function_by_name("ishigami90")
@@ -96,13 +96,13 @@ def fixture_function_with_kwargs():
     return function
 
 
-@pytest.fixture(name="direct_python_interface_path", scope='module')
+@pytest.fixture(name="direct_python_interface_path", scope="module")
 def fixture_direct_python_interface_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
     path_to_file = relative_path_from_source("example_simulator_functions/ishigami90.py")
     _logger.info(path_to_file)
     return DirectPythonInterface(
-        parameters=parameters, function='ishigami90', external_python_module_function=path_to_file
+        parameters=parameters, function="ishigami90", external_python_module_function=path_to_file
     )
 
 

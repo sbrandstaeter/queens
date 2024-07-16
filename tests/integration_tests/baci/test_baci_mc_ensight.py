@@ -86,8 +86,8 @@ def test_baci_mc_ensight(
     results = load_result(global_settings.result_file(".pickle"))
 
     # assert statements
-    np.testing.assert_array_almost_equal(results['mean'], baci_example_expected_mean, decimal=6)
-    np.testing.assert_array_almost_equal(results['var'], baci_example_expected_var, decimal=6)
+    np.testing.assert_array_almost_equal(results["mean"], baci_example_expected_mean, decimal=6)
+    np.testing.assert_array_almost_equal(results["var"], baci_example_expected_var, decimal=6)
     np.testing.assert_array_almost_equal(
-        results['raw_output_data']['result'], baci_example_expected_output, decimal=6
+        results["raw_output_data"]["result"], baci_example_expected_output, decimal=6
     )

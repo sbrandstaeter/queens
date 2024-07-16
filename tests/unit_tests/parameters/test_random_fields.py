@@ -8,7 +8,7 @@ import pytest
 from queens.parameters.parameters import from_config_create_parameters
 
 
-@pytest.fixture(name='parameters', scope='module')
+@pytest.fixture(name="parameters", scope="module")
 def fixture_parameters(pre_processor):
     """Parameters dict with random fields."""
     # mock np.linalg.eigh function
@@ -324,7 +324,7 @@ def test_to_list(parameters):
     assert len(parameters_list) == 3
 
 
-@pytest.fixture(name='pre_processor', scope='module')
+@pytest.fixture(name="pre_processor", scope="module")
 def fixture_pre_processor():
     """Create basic preprocessor class instance."""
 
@@ -339,21 +339,21 @@ def fixture_pre_processor():
             key_list_1 = []
             key_list_2 = []
             for i in range(grid.shape[0]):
-                key_list_0.append('x_' + str(i))
-                key_list_1.append('y_' + str(i))
-                key_list_2.append('z_' + str(i))
+                key_list_0.append("x_" + str(i))
+                key_list_1.append("y_" + str(i))
+                key_list_2.append("z_" + str(i))
             self.coords_dict = {
-                'field_1': {
-                    'keys': key_list_0,
-                    'coords': grid,
+                "field_1": {
+                    "keys": key_list_0,
+                    "coords": grid,
                 },
-                'field_2': {
-                    'keys': key_list_1,
-                    'coords': grid,
+                "field_2": {
+                    "keys": key_list_1,
+                    "coords": grid,
                 },
-                'field_3': {
-                    'keys': key_list_2,
-                    'coords': grid,
+                "field_3": {
+                    "keys": key_list_2,
+                    "coords": grid,
                 },
             }
 
@@ -363,43 +363,43 @@ def fixture_pre_processor():
 def test_from_config_create_parameters(parameters):
     """Test from_config_create_parameters method with random fields."""
     assert parameters.num_parameters == 29
-    assert parameters.dict['field_1'].dimension == 8
-    assert parameters.dict['field_2'].dimension == 12
-    assert parameters.dict['field_3'].dimension == 9
+    assert parameters.dict["field_1"].dimension == 8
+    assert parameters.dict["field_2"].dimension == 12
+    assert parameters.dict["field_3"].dimension == 9
     assert parameters.parameters_keys == [
-        'x_0',
-        'x_1',
-        'x_2',
-        'x_3',
-        'x_4',
-        'x_5',
-        'x_6',
-        'x_7',
-        'x_8',
-        'y_0',
-        'y_1',
-        'y_2',
-        'y_3',
-        'y_4',
-        'y_5',
-        'y_6',
-        'y_7',
-        'y_8',
-        'z_0',
-        'z_1',
-        'z_2',
-        'z_3',
-        'z_4',
-        'z_5',
-        'z_6',
-        'z_7',
-        'z_8',
+        "x_0",
+        "x_1",
+        "x_2",
+        "x_3",
+        "x_4",
+        "x_5",
+        "x_6",
+        "x_7",
+        "x_8",
+        "y_0",
+        "y_1",
+        "y_2",
+        "y_3",
+        "y_4",
+        "y_5",
+        "y_6",
+        "y_7",
+        "y_8",
+        "z_0",
+        "z_1",
+        "z_2",
+        "z_3",
+        "z_4",
+        "z_5",
+        "z_6",
+        "z_7",
+        "z_8",
     ]
     assert parameters.random_field_flag is True
-    assert parameters.names == ['field_1', 'field_2', 'field_3']
-    rf_1 = parameters.dict['field_1']
-    rf_2 = parameters.dict['field_2']
-    rf_3 = parameters.dict['field_3']
+    assert parameters.names == ["field_1", "field_2", "field_3"]
+    rf_1 = parameters.dict["field_1"]
+    rf_2 = parameters.dict["field_2"]
+    rf_3 = parameters.dict["field_3"]
     assert rf_1.corr_length == 0.3
     assert rf_2.corr_length == 0.3
     assert rf_3.distribution.mean[0] == 0.0
@@ -411,7 +411,7 @@ def test_from_config_create_parameters(parameters):
     grad_field_2 = rf_2.latent_gradient(sample_2)
     grad_field_3 = rf_3.latent_gradient(sample_3)
     grad_dict = {
-        'field_1': np.array(
+        "field_1": np.array(
             [
                 [
                     -1.97560304e00,
@@ -435,17 +435,17 @@ def test_from_config_create_parameters(parameters):
                 ],
             ]
         ),
-        'field_2': np.array([[0.84598704, 0.0, 0.0, 0.0], [0.84598704, 0.0, 0.0, 0.0]]),
-        'field_3': np.array(
+        "field_2": np.array([[0.84598704, 0.0, 0.0, 0.0], [0.84598704, 0.0, 0.0, 0.0]]),
+        "field_3": np.array(
             [
                 [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
                 [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
             ]
         ),
     }
-    pytest.approx(grad_field_1, grad_dict['field_1'])
-    pytest.approx(grad_field_2, grad_dict['field_2'])
-    pytest.approx(grad_field_3, grad_dict['field_3'])
+    pytest.approx(grad_field_1, grad_dict["field_1"])
+    pytest.approx(grad_field_2, grad_dict["field_2"])
+    pytest.approx(grad_field_3, grad_dict["field_3"])
 
     sample_joint = np.concatenate((sample_1, sample_2, sample_3), axis=1)
     latent_grad = parameters.latent_grad(sample_joint)

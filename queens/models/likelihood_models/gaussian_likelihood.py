@@ -78,16 +78,16 @@ class GaussianLikelihood(LikelihoodModel):
         if noise_value is None and noise_type.startswith("fixed"):
             raise InvalidOptionError(f"You have to provide a 'noise_value' for {noise_type}.")
 
-        if noise_type == 'fixed_variance':
+        if noise_type == "fixed_variance":
             covariance = noise_value * np.eye(y_obs_dim)
-        elif noise_type == 'fixed_variance_vector':
+        elif noise_type == "fixed_variance_vector":
             covariance = np.diag(noise_value)
-        elif noise_type == 'fixed_covariance_matrix':
+        elif noise_type == "fixed_covariance_matrix":
             covariance = noise_value
         elif noise_type in [
-            'MAP_jeffrey_variance',
-            'MAP_jeffrey_variance_vector',
-            'MAP_jeffrey_covariance_matrix',
+            "MAP_jeffrey_variance",
+            "MAP_jeffrey_variance_vector",
+            "MAP_jeffrey_covariance_matrix",
         ]:
             covariance = np.eye(y_obs_dim)
         else:
@@ -110,11 +110,11 @@ class GaussianLikelihood(LikelihoodModel):
             dict: log-likelihood values at input samples
         """
         self.response = self.forward_model.evaluate(samples)
-        if self.noise_type.startswith('MAP'):
-            self.update_covariance(self.response['result'])
-        log_likelihood = self.normal_distribution.logpdf(self.response['result'])
+        if self.noise_type.startswith("MAP"):
+            self.update_covariance(self.response["result"])
+        log_likelihood = self.normal_distribution.logpdf(self.response["result"])
 
-        return {'result': log_likelihood}
+        return {"result": log_likelihood}
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.
@@ -133,7 +133,7 @@ class GaussianLikelihood(LikelihoodModel):
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         # shape convention: num_samples x jacobian_shape
-        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response['result'])
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response["result"])
         upstream_gradient = upstream_gradient * log_likelihood_grad
         gradient = self.forward_model.grad(samples, upstream_gradient)
         return gradient
@@ -146,9 +146,9 @@ class GaussianLikelihood(LikelihoodModel):
         """
         dist = y_model - self.y_obs.reshape(1, -1)
         num_samples, dim_y = y_model.shape
-        if self.noise_type == 'MAP_jeffrey_variance':
+        if self.noise_type == "MAP_jeffrey_variance":
             covariance = np.eye(dim_y) / (dim_y * (num_samples + dim_y + 2)) * np.sum(dist**2)
-        elif self.noise_type == 'MAP_jeffrey_variance_vector':
+        elif self.noise_type == "MAP_jeffrey_variance_vector":
             covariance = np.diag(1 / (num_samples + dim_y + 2) * np.sum(dist**2, axis=0))
         else:
             covariance = 1 / (num_samples + dim_y + 2) * np.dot(dist.T, dist)

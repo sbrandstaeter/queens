@@ -80,10 +80,10 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
     f0 = np.array([])
     h = _compute_absolute_step(rel_step, x0, f0, method)
 
-    if method == '2-point':
-        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, '1-sided', lb, ub)
-    elif method == '3-point':
-        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, '2-sided', lb, ub)
+    if method == "2-point":
+        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, "1-sided", lb, ub)
+    elif method == "3-point":
+        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, "2-sided", lb, ub)
 
     return h, use_one_sided
 
@@ -123,29 +123,29 @@ def get_positions(x0, method, rel_step, bounds):
     dx_stack = []
 
     for i in range(h.size):
-        if method == '2-point':
+        if method == "2-point":
             x1 = x0 + h_vecs[i]
             dx = x1[i] - x0[i]  # Recompute dx as exactly representable number.
             # df = fun(x1) - f0
-        elif method == '3-point' and use_one_sided[i]:
+        elif method == "3-point" and use_one_sided[i]:
             x1 = x0 + h_vecs[i]
             x2 = x0 + 2 * h_vecs[i]
             dx = x2[i] - x0[i]
             # f1 = fun(x1)
             # f2 = fun(x2)
             # df = -3.0 * f0 + 4 * f1 - f2
-        elif method == '3-point' and not use_one_sided[i]:
+        elif method == "3-point" and not use_one_sided[i]:
             x1 = x0 - h_vecs[i]
             x2 = x0 + h_vecs[i]
             dx = x2[i] - x1[i]
             # f1 = fun(x1)
             # f2 = fun(x2)
             # df = f2 - f1
-        elif method == 'cs':
+        elif method == "cs":
             raise NotImplementedError("Complex steps not implemented.")
 
         x1_stack.append(x1)
-        if method == '3-point':
+        if method == "3-point":
             x2_stack.append(x2)
         dx_stack.append(np.array([dx]))
 
@@ -190,11 +190,11 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
     """
     num_feval_perturbed = f_perturbed.shape[0]
 
-    if method == '2-point':
+    if method == "2-point":
         f1 = np.stack(f_perturbed, axis=0)
 
         df = f1 - f0
-    elif method == '3-point':
+    elif method == "3-point":
         len_f1 = int(num_feval_perturbed / 2)
         f1 = np.stack(f_perturbed[0:len_f1], axis=0)
         f2 = np.stack(f_perturbed[len_f1:], axis=0)

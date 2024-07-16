@@ -62,7 +62,7 @@ def test_gaussian_hmc(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results['mean'].mean(axis=0) == pytest.approx(
+    assert results["mean"].mean(axis=0) == pytest.approx(
         np.array([0.19363280864587615, -1.1303341362165935])
     )
-    assert results['var'].mean(axis=0) == pytest.approx([0, 0])
+    assert results["var"].mean(axis=0) == pytest.approx([0, 0])

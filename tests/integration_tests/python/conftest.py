@@ -28,8 +28,8 @@ def fixture_create_experimental_data_gaussian_1d(tmp_path):
     pdf = np.array(pdf).flatten()
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': pdf}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": pdf}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)
 
@@ -44,8 +44,8 @@ def fixture_create_experimental_data_gaussian_2d(tmp_path):
     pdf = np.array(pdf)
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': pdf}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": pdf}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
 
@@ -56,8 +56,8 @@ def fixture_create_experimental_data_zero(tmp_path):
     samples = np.array([0, 0]).flatten()
 
     # write the data to a csv file in tmp_path
-    data_dict = {'y_obs': samples}
-    experimental_data_path = tmp_path / 'experimental_data.csv'
+    data_dict = {"y_obs": samples}
+    experimental_data_path = tmp_path / "experimental_data.csv"
     dataframe = pd.DataFrame.from_dict(data_dict)
     dataframe.to_csv(experimental_data_path, index=False)
 

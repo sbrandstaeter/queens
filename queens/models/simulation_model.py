@@ -51,9 +51,9 @@ class SimulationModel(Model):
             gradient (np.array): Gradient w.r.t. current set of input samples
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        if self.response.get('gradient') is None:
-            raise ValueError('Gradient information not available.')
+        if self.response.get("gradient") is None:
+            raise ValueError("Gradient information not available.")
         # The shape of the returned gradient is weird
-        response_gradient = np.swapaxes(self.response['gradient'], 1, 2)
+        response_gradient = np.swapaxes(self.response["gradient"], 1, 2)
         gradient = np.sum(upstream_gradient[:, :, np.newaxis] * response_gradient, axis=1)
         return gradient

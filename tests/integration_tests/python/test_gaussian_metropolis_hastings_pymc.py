@@ -56,10 +56,10 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results['mean'].mean(axis=0) == pytest.approx(
+    assert results["mean"].mean(axis=0) == pytest.approx(
         np.array([-0.5680310153118374, 0.9247536392514567])
     )
-    assert results['var'].mean(axis=0) == pytest.approx([0.13601070852470507, 0.6672200465857734])
+    assert results["var"].mean(axis=0) == pytest.approx([0.13601070852470507, 0.6672200465857734])
 
 
 def target_density(self, samples):  # pylint: disable=unused-argument

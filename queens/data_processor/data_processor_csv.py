@@ -38,14 +38,14 @@ class DataProcessorCsv(DataProcessor):
         returned_filter_format (str): Returned data format after filtering.
     """
 
-    expected_filter_entire_file = {'type': 'entire_file'}
-    expected_filter_by_row_index = {'type': 'by_row_index', 'rows': [1, 2]}
+    expected_filter_entire_file = {"type": "entire_file"}
+    expected_filter_by_row_index = {"type": "by_row_index", "rows": [1, 2]}
     expected_filter_by_target_values = {
-        'type': 'by_target_values',
-        'target_values': [1.0, 2.0, 3.0],
-        'tolerance': 0.0,
+        "type": "by_target_values",
+        "target_values": [1.0, 2.0, 3.0],
+        "tolerance": 0.0,
     }
-    expected_filter_by_range = {'type': 'by_range', 'range': [1.0, 2.0], 'tolerance': 0.0}
+    expected_filter_by_range = {"type": "by_range", "range": [1.0, 2.0], "tolerance": 0.0}
 
     @log_init_args
     def __init__(
@@ -94,28 +94,28 @@ class DataProcessorCsv(DataProcessor):
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
-        header_row = file_options_dict.get('header_row')
+        header_row = file_options_dict.get("header_row")
         if header_row and not isinstance(header_row, int):
             raise ValueError(
                 "The option 'header_row' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(header_row)}'. Abort..."
             )
 
-        use_cols_lst = file_options_dict.get('use_cols_lst')
+        use_cols_lst = file_options_dict.get("use_cols_lst")
         if use_cols_lst and not isinstance(use_cols_lst, list):
             raise TypeError(
                 "The option 'use_cols_lst' must be of type 'list' "
                 f"but you provided type {type(use_cols_lst)}. Abort..."
             )
 
-        skip_rows = file_options_dict.get('skip_rows', 0)
+        skip_rows = file_options_dict.get("skip_rows", 0)
         if not isinstance(skip_rows, int):
             raise ValueError(
                 "The option 'skip_rows' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(skip_rows)}'. Abort..."
             )
 
-        index_column = file_options_dict.get('index_column', False)
+        index_column = file_options_dict.get("index_column", False)
         if index_column and not isinstance(index_column, (int, str)):
             raise TypeError(
                 "The option 'index_column' must be either of type 'int' or 'str', "
@@ -124,19 +124,19 @@ class DataProcessorCsv(DataProcessor):
                 "Abort..."
             )
 
-        returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
+        returned_filter_format = file_options_dict.get("returned_filter_format", "numpy")
 
-        filter_options_dict = file_options_dict.get('filter')
+        filter_options_dict = file_options_dict.get("filter")
         self.check_valid_filter_options(filter_options_dict)
 
-        filter_type = filter_options_dict.get('type')
+        filter_type = filter_options_dict.get("type")
         if not isinstance(filter_type, str):
             raise ValueError(
                 "The option 'type' in the data_processor settings must be of type 'str'! "
                 f"You provided type '{type(filter_type)}'. Abort..."
             )
 
-        use_rows_lst = filter_options_dict.get('rows', [])
+        use_rows_lst = filter_options_dict.get("rows", [])
         if not isinstance(use_rows_lst, list):
             raise TypeError(
                 "The option 'rows' must be of type 'list' "
@@ -148,21 +148,21 @@ class DataProcessorCsv(DataProcessor):
                 f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
             )
 
-        filter_range = filter_options_dict.get('range', [])
+        filter_range = filter_options_dict.get("range", [])
         if filter_range and not isinstance(filter_range, list):
             raise TypeError(
                 "The option 'range' has to be of type 'list', "
                 f"but you provided type {type(filter_range)}. Abort..."
             )
 
-        filter_target_values = filter_options_dict.get('target_values', [])
+        filter_target_values = filter_options_dict.get("target_values", [])
         if not isinstance(filter_target_values, list):
             raise TypeError(
                 "The option 'target_values' has to be of type 'list', "
                 f"but you provided type {type(filter_target_values)}. Abort..."
             )
 
-        filter_tol = filter_options_dict.get('tolerance', 0.0)
+        filter_tol = filter_options_dict.get("tolerance", 0.0)
         if not isinstance(filter_tol, float):
             raise TypeError(
                 "The option 'tolerance' has to be of type 'float', "
@@ -187,28 +187,28 @@ class DataProcessorCsv(DataProcessor):
         Args:
             filter_options_dict (dict): dictionary with filter options
         """
-        if filter_options_dict["type"] == 'entire_file':
+        if filter_options_dict["type"] == "entire_file":
             if not filter_options_dict.keys() == cls.expected_filter_entire_file.keys():
                 raise TypeError(
                     "For the filter type `entire_file`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_entire_file}."
                 )
             return
-        if filter_options_dict["type"] == 'by_range':
+        if filter_options_dict["type"] == "by_range":
             if not filter_options_dict.keys() == cls.expected_filter_by_range.keys():
                 raise TypeError(
                     "For the filter type `by_range`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_range}."
                 )
             return
-        if filter_options_dict["type"] == 'by_row_index':
+        if filter_options_dict["type"] == "by_row_index":
             if not filter_options_dict.keys() == cls.expected_filter_by_row_index.keys():
                 raise TypeError(
                     "For the filter type `by_row_index`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_row_index}."
                 )
             return
-        if filter_options_dict["type"] == 'by_target_values':
+        if filter_options_dict["type"] == "by_target_values":
             if not filter_options_dict.keys() == cls.expected_filter_by_target_values.keys():
                 raise TypeError(
                     "For the filter type `by_target_values`, you have to provide "
@@ -232,11 +232,11 @@ class DataProcessorCsv(DataProcessor):
         try:
             raw_data = pd.read_csv(
                 file_path,
-                sep=r',|\s+',
+                sep=r",|\s+",
                 usecols=self.use_cols_lst,
                 skiprows=self.skip_rows,
                 header=self.header_row,
-                engine='python',
+                engine="python",
                 index_col=self.index_column,
             )
             _logger.info("Successfully read-in data from %s.", file_path)
@@ -260,10 +260,10 @@ class DataProcessorCsv(DataProcessor):
             processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         """
         valid_filter_types = {
-            'entire_file': self._filter_entire_file,
-            'by_range': self._filter_by_range,
-            'by_row_index': self._filter_by_row_index,
-            'by_target_values': self._filter_by_target_values,
+            "entire_file": self._filter_entire_file,
+            "by_range": self._filter_by_range,
+            "by_row_index": self._filter_by_row_index,
+            "by_target_values": self._filter_by_target_values,
         }
 
         error_message = "You provided an invalid 'filter_type'!"
@@ -273,7 +273,7 @@ class DataProcessorCsv(DataProcessor):
         processed_data = filter_method(raw_data)
         filter_formats_dict = {
             "numpy": processed_data.to_numpy(),
-            "dict": processed_data.to_dict('list'),
+            "dict": processed_data.to_dict("list"),
         }
 
         processed_data = get_option(

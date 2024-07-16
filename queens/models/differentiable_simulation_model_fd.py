@@ -95,7 +95,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
             gradient (np.array): Gradient w.r.t. current set of input samples
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
-        gradient = np.sum(upstream_gradient[:, :, np.newaxis] * self.response['gradient'], axis=1)
+        gradient = np.sum(upstream_gradient[:, :, np.newaxis] * self.response["gradient"], axis=1)
         return gradient
 
     def evaluate_finite_differences(self, samples):
@@ -129,7 +129,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.interface.evaluate(combined_samples)['result'].reshape(
+        all_responses = self.interface.evaluate(combined_samples)["result"].reshape(
             combined_samples.shape[0], -1
         )
 
@@ -153,4 +153,4 @@ class DifferentiableSimulationModelFD(SimulationModel):
 
         gradient_response = np.array(model_gradients_lst)
 
-        return {'result': response, 'gradient': gradient_response}
+        return {"result": response, "gradient": gradient_response}

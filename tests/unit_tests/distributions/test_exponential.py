@@ -14,13 +14,13 @@ def fixture_sample_pos_1d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="rate_1d", scope='module')
+@pytest.fixture(name="rate_1d", scope="module")
 def fixture_rate_1d():
     """A possible rate."""
     return 2.0
 
 
-@pytest.fixture(name="exponential_1d", scope='module')
+@pytest.fixture(name="exponential_1d", scope="module")
 def fixture_exponential_1d(rate_1d):
     """An exponential distribution."""
     return ExponentialDistribution(rate=rate_1d)
@@ -39,13 +39,13 @@ def fixture_sample_pos_2d(request):
     return np.array(request.param)
 
 
-@pytest.fixture(name="rate_2d", scope='module')
+@pytest.fixture(name="rate_2d", scope="module")
 def fixture_rate_2d():
     """A possible rate."""
     return np.array([1.0, 0.5])
 
 
-@pytest.fixture(name="exponential_2d", scope='module')
+@pytest.fixture(name="exponential_2d", scope="module")
 def fixture_exponential_2d(rate_2d):
     """An exponential distribution."""
     return ExponentialDistribution(rate=rate_2d)
@@ -73,7 +73,7 @@ def test_init_exponential_1d(exponential_1d, rate_1d):
 
 def test_init_exponential_1d_wrong_rate(rate_1d):
     """Test init method of Exponential Distribution class."""
-    with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
+    with pytest.raises(ValueError, match=r"The parameter \'rate\' has to be positive.*"):
         ExponentialDistribution(rate=-rate_1d)
 
 
@@ -149,7 +149,7 @@ def test_init_exponential_2d(exponential_2d, rate_2d):
 
 def test_init_exponential_2d_wrong_rate():
     """Test init method of Exponential Distribution class."""
-    with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
+    with pytest.raises(ValueError, match=r"The parameter \'rate\' has to be positive.*"):
         ExponentialDistribution(rate=np.array([-1, 1]))
 
 
@@ -202,5 +202,5 @@ def test_pdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
 
 def test_ppf_exponential_2d(exponential_2d):
     """Test ppf method of Exponential distribution class."""
-    with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
+    with pytest.raises(ValueError, match="Method does not support multivariate distributions!"):
         exponential_2d.ppf(np.zeros(2))

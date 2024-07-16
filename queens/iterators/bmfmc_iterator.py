@@ -150,7 +150,7 @@ class BMFMCIterator(Iterator):
             **Remark**: An optimization routine for the optimal number of
             features to be considered will be added in the future.
         """
-        design_method = self.initial_design.get('method')
+        design_method = self.initial_design.get("method")
         n_points = self.initial_design.get("num_HF_eval")
         run_design_method = self.get_design_method(design_method)
         run_design_method(n_points)
@@ -172,10 +172,10 @@ class BMFMCIterator(Iterator):
             run_design_method (obj): Design method for selecting the HF training set
         """
         self.model.calculate_extended_gammas()
-        if design_method == 'random':
+        if design_method == "random":
             run_design_method = self.random_design
 
-        elif design_method == 'diverse_subset':
+        elif design_method == "diverse_subset":
             run_design_method = self.diverse_subset_design
 
         else:
@@ -198,7 +198,7 @@ class BMFMCIterator(Iterator):
              n_points (int): Number of HF training points to be selected
         """
         design = self.model.gammas_ext_mc
-        prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
+        prelim_subset = psa_select(design, n_points, selection_target="max_dist_from_boundary")
 
         # return training data for outputs and corresponding inputs
         index = np.vstack(
@@ -272,6 +272,6 @@ class BMFMCIterator(Iterator):
                 self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
             )
 
-        if self.result_description['write_results'] is True:
+        if self.result_description["write_results"] is True:
             results = process_outputs(self.output, self.result_description)
             write_results(results, self.global_settings.result_file(".pickle"))

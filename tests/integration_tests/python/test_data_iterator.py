@@ -11,12 +11,12 @@ from queens.utils.io_utils import load_result
 def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):
     """Test case for data iterator."""
     output = {}
-    output['result'] = ref_result_iterator
+    output["result"] = ref_result_iterator
 
     samples = ref_result_iterator
 
     mocker.patch(
-        'queens.iterators.data_iterator.DataIterator.read_pickle_file',
+        "queens.iterators.data_iterator.DataIterator.read_pickle_file",
         return_value=[samples, output],
     )
 
