@@ -9,6 +9,7 @@ from time import perf_counter
 import numpy as np
 import pytest
 
+from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
 from queens.utils.path_utils import relative_path_from_queens, relative_path_from_source
@@ -281,3 +282,23 @@ def fixture_reset_loggers():
 
     # Test is done, now reset the loggers.
     reset_logging()
+
+
+@pytest.fixture(name="test_name")
+def fixture_test_name(request):
+    """Return the test's name."""
+    test_name = request.node.name
+    _logger.info("Name of current test: %s", test_name)
+    _logger.info("the above name will be used as the experiment_name")
+    return test_name
+
+
+@pytest.fixture(name="global_settings")
+def fixture_global_settings(test_name, tmp_path):
+    """Initialize GlobalSettings object."""
+    # Setup and initialize global settings
+    global_settings = GlobalSettings(experiment_name=test_name, output_dir=tmp_path)
+
+    # wrap the tests in a global settings context
+    with global_settings:
+        yield global_settings

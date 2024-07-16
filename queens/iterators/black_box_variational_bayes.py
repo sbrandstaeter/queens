@@ -100,7 +100,7 @@ class BBVIIterator(VariationalInferenceIterator):
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
                                               and the output directory
             result_description (dict): Settings for storing and visualizing the results
-            variational_distribution (dict): Description of variational distribution
+            variational_distribution (VariationalDistribution): variational distribution object
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be

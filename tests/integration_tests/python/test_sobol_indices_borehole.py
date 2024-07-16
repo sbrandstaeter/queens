@@ -2,15 +2,48 @@
 
 import numpy as np
 
-from queens.main import run
+from queens.distributions.uniform import UniformDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_sobol_indices_borehole(inputdir, tmp_path):
+def test_sobol_indices_borehole(global_settings):
     """Test case for Sobol Index iterator."""
-    run(inputdir / 'sobol_indices_borehole.yml', tmp_path)
+    # Parameters
+    rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
+    r = UniformDistribution(lower_bound=100, upper_bound=50000)
+    tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
+    hu = UniformDistribution(lower_bound=990, upper_bound=1110)
+    tl = UniformDistribution(lower_bound=63.1, upper_bound=116)
+    hl = UniformDistribution(lower_bound=700, upper_bound=820)
+    l = UniformDistribution(lower_bound=1120, upper_bound=1680)
+    kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
+    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
-    results = load_result(tmp_path / 'xxx.pickle')
+    # Setup iterator
+    interface = DirectPythonInterface(function="borehole83_lofi", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = SobolIndexIterator(
+        seed=42,
+        calc_second_order=True,
+        num_samples=1024,
+        confidence_level=0.95,
+        num_bootstrap_samples=1000,
+        result_description={"write_results": True, "plot_results": False},
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
+
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
+
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_first_order_indices = np.array(
         [

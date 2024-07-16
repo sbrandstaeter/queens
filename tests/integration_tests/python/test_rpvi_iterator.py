@@ -1,94 +1,96 @@
 """Integration test for reparameterization trick VI."""
 
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
 from mock import patch
 
 from queens.distributions.normal import NormalDistribution
-from queens.main import run
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
+from queens.main import run_iterator
+from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.utils import injector
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.stochastic_optimizers.adam import Adam
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
+from queens.variational_distributions.mean_field_normal import MeanFieldNormalVariational
 
 
 def test_rpvi_iterator_park91a_hifi(
-    inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
-    module_path,
+    global_settings,
 ):
     """Integration test for the rpvi iterator.
 
     Based on the *park91a_hifi* function.
     """
-    template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
-    dir_dict = {
-        "experimental_data_path": tmp_path,
-        "plot_dir": tmp_path,
-        "forward_model_name": "fd_model",
-        "my_function": "park91a_hifi_on_grid",
-        "model": "model",
-        "external_python_module": module_path,
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup iterator
+    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        optimization_type="max",
+        learning_rate=0.025,
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=500,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=tmp_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
+    forward_model = DifferentiableSimulationModelFD(
+        finite_difference_method="2-point", step_size=1e-07, interface=interface
+    )
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=1000,
+        n_samples_per_iter=2,
+        score_function_bool=True,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": tmp_path,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
-    run(input_file, tmp_path)
-    # actual main call
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
-
-    # Actual tests
-    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
-    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
-
-
-def test_rpvi_iterator_park91a_hifi_external_module(
-    inputdir,
-    tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
-    _write_custom_likelihood_model,
-    module_path,
-):
-    """Integration test for the rpvi iterator.
-
-    Based on the *park91a_hifi* function.
-    """
-    template = inputdir / "rpvi_park91a_hifi_template.yml"
-    dir_dict = {
-        "experimental_data_path": tmp_path,
-        "plot_dir": tmp_path,
-        "forward_model_name": "fd_model",
-        "my_function": "park91a_hifi_on_grid",
-        "model": "model_external",
-        "external_python_module": module_path,
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
-
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
-
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
-    run(input_file, tmp_path)
-    # actual main call
-
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -98,34 +100,75 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
 
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
-    inputdir, tmp_path, _create_experimental_data_park91a_hifi_on_grid, module_path
+    tmp_path,
+    _create_experimental_data_park91a_hifi_on_grid,
+    global_settings,
 ):
-    """Test for the rpvi iterator based on the *park91a_hifi* function."""
-    # generate json input file from template
-    template = inputdir / "rpvi_park91a_hifi_template.yml"
-    experimental_data_path = tmp_path  # pylint: disable=duplicate-code
-    plot_dir = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
-        "forward_model_name": "simulation_model",
-        "my_function": "park91a_hifi_on_grid_with_gradients",
-        "model": "model",
-        "external_python_module": module_path,
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
+    """Test rpvi on *park91a_hifi* function with analytical gradients."""
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup iterator
+    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        optimization_type="max",
+        learning_rate=0.025,
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=500,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=tmp_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    interface = DirectPythonInterface(
+        function="park91a_hifi_on_grid_with_gradients",
+        parameters=parameters,
+    )
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=1000,
+        n_samples_per_iter=2,
+        score_function_bool=True,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": tmp_path,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
-    # actual main call of vi_rp
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -156,24 +199,70 @@ def fixture_forward_model(request):
 
 
 @pytest.mark.max_time_for_test(20)
-def test_gaussian_rpvi(inputdir, tmp_path, _create_experimental_data, forward_model):
+def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, global_settings):
     """Test RPVI with univariate Gaussian."""
-    template = inputdir / "rpvi_gaussian_template.yml"
+    # Parameters
+    x1 = NormalDistribution(mean=0.0, covariance=1.0)
+    x2 = NormalDistribution(mean=10.0, covariance=100.0)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    dir_dict = {
-        "plot_dir": tmp_path,
-        "experimental_data_path": tmp_path,
-        "forward_model_name": forward_model,
-    }
-    input_file = tmp_path / "rpvi_gaussian.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Setup iterator
+    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        learning_rate=0.05,
+        optimization_type="max",
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="*.csv",
+        csv_data_base_dir=tmp_path,
+        output_label="y_obs",
+    )
+    interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="fixed_variance",
+        noise_value=1,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=100000,
+        n_samples_per_iter=10,
+        score_function_bool=False,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        verbose_every_n_iter=1000,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": tmp_path,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # mock methods related to likelihood
+    # Actual analysis
     with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
-        run(input_file, tmp_path)
+        run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "rpvi_gaussian.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     posterior_covariance = np.diag(np.array([1 / 11, 100 / 11]))
     posterior_mean = np.array([-20 / 11, 20 / 11]).reshape(-1, 1)

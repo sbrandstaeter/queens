@@ -9,19 +9,20 @@ from queens.utils import injector
 from queens.utils.io_utils import load_result
 
 
-def test_bmfia_baci_scatra_smc(inputdir, tmp_path, dir_dict):
+def test_bmfia_baci_scatra_smc(inputdir, tmp_path, paths_dictionary):
     """Integration test for smc with a simple diffusion problem in BACI."""
     # generate yaml input file from template
     # template for actual smc evaluation
     template = inputdir / 'bmfia_scatra_baci_template_grid_gp_precompiled.yml'
     input_file = tmp_path / 'hf_scatra_baci.yml'
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "bmfia_baci_scatra_smc.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     samples = results['input_data'].squeeze()
     weights = results['raw_output_data'].squeeze()

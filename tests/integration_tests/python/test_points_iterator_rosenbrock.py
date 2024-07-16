@@ -1,28 +1,41 @@
 """Test points iterator."""
 
-import pickle
-
 import numpy as np
 import pytest
 
+from queens.distributions.free import FreeVariable
 from queens.example_simulator_functions.rosenbrock60 import rosenbrock60
-from queens.main import run
-from queens.utils.injector import inject
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.points_iterator import PointsIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.io_utils import load_result
 
 
-def test_points_iterator(inputdir, tmp_path, inputs, expected_results):
+def test_points_iterator(inputs, expected_results, global_settings):
     """Integration test for the points iterator."""
-    template = inputdir / 'points_iterator_rosenbrock_template.yml'
-    input_file = tmp_path / 'points_iterator_rosenbrock.yml'
+    # Parameters
+    x1 = FreeVariable(dimension=1)
+    x2 = FreeVariable(dimension=1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    inject(inputs, template, input_file)
+    # Setup iterator
+    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = PointsIterator(
+        points=inputs,
+        result_description={"write_results": True},
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    run(input_file, tmp_path)
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    result_file = tmp_path / 'points_iterator_rosenbrock.pickle'
-
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_array_equal(
         results["output"]["result"],
@@ -30,19 +43,29 @@ def test_points_iterator(inputdir, tmp_path, inputs, expected_results):
     )
 
 
-def test_points_iterator_failure(inputdir, tmp_path):
+def test_points_iterator_failure(global_settings):
     """Test failure of the points iterator."""
-    template = inputdir / 'points_iterator_rosenbrock_template.yml'
-    input_file = tmp_path / 'points_iterator_rosenbrock_failure.yml'
-
     inputs = {"x1": [1], "x2": [1, 2]}
+    # Parameters
+    x1 = FreeVariable(dimension=1)
+    x2 = FreeVariable(dimension=1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    inject(inputs, template, input_file)
+    # Setup iterator
+    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = PointsIterator(
+        points=inputs,
+        result_description={"write_results": True},
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
     with pytest.raises(
         ValueError, match="Non-matching number of points for the different parameters: x1: 1, x2: 2"
     ):
-        run(input_file, tmp_path)
+        run_iterator(iterator, global_settings=global_settings)
 
 
 @pytest.fixture(name="inputs")

@@ -26,15 +26,16 @@ def test_bmfia_park_hf_smc(
     # generate yaml input file from template
     template = inputdir / 'bmfia_smc_park.yml'
     experimental_data_path = tmp_path
-    dir_dict = {'experimental_data_path': experimental_data_path, 'plot_dir': tmp_path}
+    paths_dictionary = {'experimental_data_path': experimental_data_path, 'plot_dir': tmp_path}
     input_file = tmp_path / 'smc_mf_park_realization.yml'
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "smc_park_mf.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     assert_weights_and_samples(results, expected_weights, expected_samples)
 

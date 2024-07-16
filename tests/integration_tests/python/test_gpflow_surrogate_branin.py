@@ -3,17 +3,73 @@
 import numpy as np
 import pytest
 
-from queens.main import run
+from queens.distributions.uniform import UniformDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
+from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
 def test_gpflow_surrogate_branin(
-    inputdir, tmp_path, expected_mean, expected_variance, expected_posterior_samples
+    expected_mean,
+    expected_variance,
+    expected_posterior_samples,
+    global_settings,
 ):
     """Test case for GPflow based GP model."""
-    run(inputdir / 'gpflow_surrogate_branin.yml', tmp_path)
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
+    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    results = load_result(tmp_path / 'xxx.pickle')
+    # Setup iterator
+    interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    training_iterator = MonteCarloIterator(
+        seed=42,
+        num_samples=20,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
+    model = GPFlowRegressionModel(
+        train_likelihood_variance=False,
+        number_restarts=5,
+        number_training_iterations=1000,
+        number_posterior_samples=3,
+        seed_posterior_samples=42,
+        dimension_lengthscales=2,
+        plotting_options={
+            "plot_booleans": [False, False],
+            "plotting_dir": "dummy",
+            "plot_names": ["1D", "2D"],
+            "save_bool": [False, False],
+        },
+        training_iterator=training_iterator,
+    )
+    iterator = MonteCarloIterator(
+        seed=44,
+        num_samples=10,
+        result_description={
+            "write_results": True,
+            "plot_results": False,
+            "bayesian": False,
+            "num_support_points": 10,
+            "estimate_all": False,
+        },
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
+
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
+
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["result"], expected_mean, decimal=3

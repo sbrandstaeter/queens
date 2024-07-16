@@ -1,12 +1,15 @@
 """TODO_doc."""
 
-import pickle
-
 import numpy as np
 import pytest
 
-from queens.main import run
-from queens.utils import injector
+from queens.distributions.free import FreeVariable
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.optimization_iterator import OptimizationIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.io_utils import load_result
 
 
 @pytest.fixture(name="algorithm", params=['COBYLA', 'SLSQP'])
@@ -15,24 +18,41 @@ def fixture_algorithm(request):
     return request.param
 
 
-def test_optimization_paraboloid_constrained(inputdir, tmp_path, algorithm):
+def test_optimization_paraboloid_constrained(algorithm, global_settings):
     """Test different solution algorithms in optimization iterator.
 
     COBYLA: constrained but unbounded
 
     SLSQP:  constrained and bounded
     """
-    template = inputdir / 'optimization_paraboloid_template.yml'
-    input_file = tmp_path / 'paraboloid_opt.yml'
+    # Parameters
+    x1 = FreeVariable(dimension=1)
+    x2 = FreeVariable(dimension=1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    algorithm_dict = {'algorithm': algorithm}
+    # Setup iterator
+    interface = DirectPythonInterface(function="paraboloid", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = OptimizationIterator(
+        initial_guess=[2.0, 0.0],
+        algorithm=algorithm,
+        result_description={"write_results": True, "plot_results": True},
+        bounds=[[0.0, 0.0], float("inf")],
+        constraints={
+            "cons1": {"type": "ineq", "fun": "lambda x:  x[0] - 2 * x[1] + 2"},
+            "cons2": {"type": "ineq", "fun": "lambda x: -x[0] - 2 * x[1] + 6"},
+            "cons3": {"type": "ineq", "fun": "lambda x: -x[0] + 2 * x[1] + 2"},
+        },
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    injector.inject(algorithm_dict, template, input_file)
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    run(input_file, tmp_path)
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
-    result_file = tmp_path / 'Paraboloid.pickle'
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.4, +1.7]), rtol=1.0e-4)
     np.testing.assert_allclose(results.fun, np.array(+0.8), atol=1.0e-07)

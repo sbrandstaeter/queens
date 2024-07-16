@@ -49,3 +49,21 @@ def rosenbrock60_residual_1d(x1):
         ndarray: Vector of residuals of the Rosenbrock function
     """
     return rosenbrock60_residual(x1, x2=1)
+
+
+def rosenbrock60_residual_3d(x1, x2, x3):
+    """Residuals of the Rosenbrock banana function.
+
+    Args:
+        x1 (float):  Input parameter 1
+        x2 (float):  Input parameter 2
+        x3 (float):  Input parameter 3
+
+    Returns:
+        ndarray: Vector of residuals of the Rosenbrock function
+    """
+    # Reuse the rosenbrock60_residual function for res1 and res2
+    res1, res2 = rosenbrock60_residual(x1, x2)
+    res3 = x3**2
+
+    return np.array([res1, res2, res3])

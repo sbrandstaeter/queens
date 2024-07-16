@@ -1,18 +1,29 @@
 """Test BACI with RF materials."""
 
-import pickle
-
 import numpy as np
 import pytest
 from mock import patch
 
-from queens.main import run
+from queens.data_processor.data_processor_ensight import DataProcessorEnsight
+from queens.drivers.mpi_driver import MpiDriver
+from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.interfaces.job_interface import JobInterface
+from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
-from queens.utils import injector
+from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
+from queens.utils.io_utils import load_result
 
 
 def test_write_random_material_to_dat(
-    inputdir, tmp_path, third_party_inputs, baci_link_paths, expected_mean, expected_var
+    tmp_path,
+    third_party_inputs,
+    baci_link_paths,
+    expected_mean,
+    expected_var,
+    global_settings,
 ):
     """Test BACI with random field for material parameters."""
     dat_template = third_party_inputs / "baci" / "coarse_plate_dirichlet_template.dat"
@@ -21,28 +32,87 @@ def test_write_random_material_to_dat(
 
     baci_release, post_ensight, _ = baci_link_paths
 
-    dir_dict = {
-        'baci_input': dat_template,
-        'baci_input_preprocessed': dat_file_preprocessed,
-        'post_ensight': post_ensight,
-        'baci_release': baci_release,
-    }
-    template = inputdir / "baci_mc_random_field_ensight_template.yml"
-    input_file = tmp_path / "baci_mc_random_field_ensight.yml"
-    injector.inject(dir_dict, template, input_file)
+    baci_input = dat_template
+    baci_input_preprocessed = dat_file_preprocessed
 
+    # Parameters
+    random_field_preprocessor = BaciDatExternalGeometry(
+        list_geometric_sets=["DSURFACE 1"],
+        associated_material_numbers_geometric_set=[[10, 11]],
+        random_fields=[
+            {
+                "name": "mat_param",
+                "type": "material",
+                "external_instance": "DSURFACE 1",
+            }
+        ],
+        input_template=baci_input,
+        input_template_preprocessed=baci_input_preprocessed,
+    )
+    random_field_preprocessor.main_run()
+    random_field_preprocessor.write_random_fields_to_dat()
+    mat_param = KarhunenLoeveRandomField(
+        corr_length=5.0,
+        std=0.03,
+        mean=0.25,
+        explained_variance=0.95,
+        coords=random_field_preprocessor.coords_dict["mat_param"],
+    )
+    parameters = Parameters(mat_param=mat_param)
+
+    # Setup iterator
+    external_geometry = BaciDatExternalGeometry(
+        list_geometric_sets=["DSURFACE 1"],
+        input_template=baci_input_preprocessed,
+    )
+    data_processor = DataProcessorEnsight(
+        file_name_identifier="baci_*structure.case",
+        file_options_dict={
+            "delete_field_data": False,
+            "geometric_target": ["geometric_set", "DSURFACE 1"],
+            "physical_field_dict": {
+                "vtk_field_type": "structure",
+                "vtk_array_type": "point_array",
+                "vtk_field_label": "displacement",
+                "field_components": [0, 1],
+            },
+            "target_time_lst": ["last"],
+        },
+        external_geometry=external_geometry,
+    )
+    scheduler = LocalScheduler(
+        num_procs=1,
+        num_procs_post=1,
+        max_concurrent=1,
+        experiment_name=global_settings.experiment_name,
+    )
+    driver = MpiDriver(
+        input_template=baci_input_preprocessed,
+        path_to_executable=baci_release,
+        path_to_postprocessor=post_ensight,
+        post_file_prefix="baci_mc_random_field_ensight",
+        data_processor=data_processor,
+    )
+    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = MonteCarloIterator(
+        seed=1,
+        num_samples=3,
+        result_description={"write_results": True, "plot_results": False},
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
+
+    # Actual analysis
     def expanded_representation(self, sample):
         return self.mean + self.std**2 * np.linalg.norm(self.coords['coords'], axis=1) * sample[0]
 
     with patch.object(KarhunenLoeveRandomField, "expanded_representation", expanded_representation):
-        run(input_file, tmp_path)
+        run_iterator(iterator, global_settings=global_settings)
 
-    experiment_name = "baci_mc_random_field_ensight"
-    result_file_name = experiment_name + ".pickle"
-
-    result_file = tmp_path / result_file_name
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Check if we got the expected results
     np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=8)

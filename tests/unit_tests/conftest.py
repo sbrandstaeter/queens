@@ -5,20 +5,8 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from queens.global_settings import GlobalSettings
 from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.models.simulation_model import SimulationModel
-
-
-@pytest.fixture(name="_initialize_global_settings")
-def fixture_initialize_global_settings(tmp_path):
-    """Initialize GlobalSettings object."""
-    # Setup and initialize global settings
-    global_settings = GlobalSettings(experiment_name="dummy_experiment_name", output_dir=tmp_path)
-
-    # wrap the tests in a global settings context
-    with global_settings:
-        yield global_settings
 
 
 @pytest.fixture(name="dummy_simulation_model")
@@ -30,7 +18,7 @@ def fixture_dummy_simulation_model():
 
 
 @pytest.fixture(name="get_patched_bmfia_iterator")
-def fixture_get_patched_bmfia_iterator(_initialize_global_settings):
+def fixture_get_patched_bmfia_iterator(global_settings):
     """Function that returns a dummy BMFIA iterator for testing."""
 
     def get_patched_bmfia_iterator(parameters, hf_model, lf_model):
@@ -43,7 +31,7 @@ def fixture_get_patched_bmfia_iterator(_initialize_global_settings):
         with patch.object(BMFIAIterator, 'calculate_initial_x_train', lambda *args: x_train):
             iterator = BMFIAIterator(
                 parameters=parameters,
-                global_settings=_initialize_global_settings,
+                global_settings=global_settings,
                 features_config=features_config,
                 hf_model=hf_model,
                 lf_model=lf_model,

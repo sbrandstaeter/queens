@@ -5,7 +5,6 @@ import pytest
 
 from queens.distributions.uniform import UniformDistribution
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
-from queens.global_settings import GlobalSettings
 from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -83,7 +82,12 @@ def fixture_expected_std():
 
 
 def test_constrained_gp_ip_park(
-    tmp_path, approx_type, likelihood_model, parameters, expected_mean, expected_std
+    approx_type,
+    likelihood_model,
+    parameters,
+    expected_mean,
+    expected_std,
+    global_settings,
 ):
     """Test."""
     num_steps = 3
@@ -95,65 +99,62 @@ def test_constrained_gp_ip_park(
     if approx_type == "CFBGP":
         num_steps = 2
 
-    experiments_name = approx_type
-    global_settings = GlobalSettings(experiment_name=experiments_name, output_dir=tmp_path)
+    logpdf_gp_model = LogpdfGPModel(
+        approx_type=approx_type,
+        num_hyper=10,
+        num_optimizations=3,
+        hmc_burn_in=100,
+        hmc_steps=100,
+        prior_rate=[1.0e-1, 10.0, 1.0e8],
+        prior_gp_mean=-1.0,
+        quantile=quantile,
+        jitter=1.0e-16,
+    )
 
-    with global_settings:
-        logpdf_gp_model = LogpdfGPModel(
-            approx_type=approx_type,
-            num_hyper=10,
-            num_optimizations=3,
-            hmc_burn_in=100,
-            hmc_steps=100,
-            prior_rate=[1.0e-1, 10.0, 1.0e8],
-            prior_gp_mean=-1.0,
-            quantile=quantile,
-            jitter=1.0e-16,
-        )
+    initial_train_iterator = MonteCarloIterator(
+        model=None,
+        parameters=parameters,
+        global_settings=global_settings,
+        seed=seed,
+        num_samples=num_initial_samples,
+    )
 
-        initial_train_iterator = MonteCarloIterator(
-            model=None,
-            parameters=parameters,
-            global_settings=global_settings,
-            seed=seed,
-            num_samples=num_initial_samples,
-        )
+    solving_iterator = SequentialMonteCarloChopinIterator(
+        model=logpdf_gp_model,
+        parameters=parameters,
+        global_settings=global_settings,
+        seed=42,
+        waste_free=True,
+        feynman_kac_model="adaptive_tempering",
+        max_feval=1_000_000_000,
+        num_particles=3000,
+        num_rejuvenation_steps=30,
+        resampling_method='residual',
+        resampling_threshold=0.5,
+        result_description={},
+    )
 
-        solving_iterator = SequentialMonteCarloChopinIterator(
-            model=logpdf_gp_model,
-            parameters=parameters,
-            global_settings=global_settings,
-            seed=42,
-            waste_free=True,
-            feynman_kac_model="adaptive_tempering",
-            max_feval=1_000_000_000,
-            num_particles=3000,
-            num_rejuvenation_steps=30,
-            resampling_method='residual',
-            resampling_threshold=0.5,
-            result_description={},
-        )
+    adaptive_sampling_iterator = AdaptiveSamplingIterator(
+        model=logpdf_gp_model,
+        parameters=parameters,
+        global_settings=global_settings,
+        likelihood_model=likelihood_model,
+        initial_train_iterator=initial_train_iterator,
+        solving_iterator=solving_iterator,
+        num_new_samples=num_new_samples,
+        num_steps=num_steps,
+    )
 
-        adaptive_sampling_iterator = AdaptiveSamplingIterator(
-            model=logpdf_gp_model,
-            parameters=parameters,
-            global_settings=global_settings,
-            likelihood_model=likelihood_model,
-            initial_train_iterator=initial_train_iterator,
-            solving_iterator=solving_iterator,
-            num_new_samples=num_new_samples,
-            num_steps=num_steps,
-        )
+    run_iterator(adaptive_sampling_iterator, global_settings)
 
-        run_iterator(adaptive_sampling_iterator, global_settings)
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
-        results = load_result(tmp_path / (experiments_name + '.pickle'))
+    particles = results['particles'][-1]
+    weights = results['weights'][-1]
 
-        particles = results['particles'][-1]
-        weights = results['weights'][-1]
+    mean = np.average(particles, weights=weights, axis=0)
+    std = np.average((particles - mean) ** 2, weights=weights, axis=0) ** (1 / 2)
 
-        mean = np.average(particles, weights=weights, axis=0)
-        std = np.average((particles - mean) ** 2, weights=weights, axis=0) ** (1 / 2)
-
-        np.testing.assert_allclose(mean, expected_mean[approx_type], rtol=2.5e-2)
-        np.testing.assert_allclose(std, expected_std[approx_type], rtol=5e-1)
+    np.testing.assert_allclose(mean, expected_mean[approx_type], rtol=2.5e-2)
+    np.testing.assert_allclose(std, expected_std[approx_type], rtol=5e-1)

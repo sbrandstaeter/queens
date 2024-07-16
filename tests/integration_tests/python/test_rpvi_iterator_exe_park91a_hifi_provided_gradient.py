@@ -3,10 +3,25 @@
 import numpy as np
 import pytest
 
-from queens.main import run
-from queens.utils import injector
+from queens.data_processor import DataProcessorCsv
+from queens.distributions import NormalDistribution
+from queens.drivers import MpiDriver
+from queens.interfaces import JobInterface
+from queens.iterators import RPVIIterator
+from queens.main import run_iterator
+from queens.models import (
+    DifferentiableSimulationModelAdjoint,
+    DifferentiableSimulationModelFD,
+    GaussianLikelihood,
+    SimulationModel,
+)
+from queens.parameters import Parameters
+from queens.schedulers import LocalScheduler
+from queens.stochastic_optimizers import Adam
+from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.run_subprocess import run_subprocess
+from queens.variational_distributions import FullRankNormalVariational
 
 
 @pytest.fixture(name="python_path")
@@ -16,44 +31,124 @@ def fixture_python_path():
     return stdout.strip()
 
 
+@pytest.fixture(name="mpirun_path", scope="session")
+def fixture_mpi_run_path():
+    """Path to mpirun executable."""
+    _, _, stdout, _ = run_subprocess("which mpirun")
+    return stdout.strip()
+
+
+@pytest.fixture(name="mpi_command", scope="session")
+def fixture_mpi_command(mpirun_path):
+    """Basecommand to call mpirun with MpiDriver."""
+    return mpirun_path + " --bind-to none -np"
+
+
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
-    inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
+    mpi_command,
+    global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
     # generate json input file from template
-    template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} p"
     plot_dir = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
-        "input_file": third_party_input_file,
-        "executable": executable,
-        "adjoint_executable": "_",
-        "forward_model_name": "simulation_model",
-        "driver": "driver_with_gradient",
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup iterator
+    variational_distribution = FullRankNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        optimization_type="max",
+        learning_rate=0.02,
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="experimental_data.csv",
+        csv_data_base_dir=experimental_data_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    scheduler = LocalScheduler(
+        num_procs=1,
+        num_procs_post=1,
+        max_concurrent=1,
+        experiment_name=global_settings.experiment_name,
+    )
+    data_processor = DataProcessorCsv(
+        file_name_identifier="*_output.csv",
+        file_options_dict={
+            "delete_field_data": False,
+            "filter": {"type": "entire_file"},
+        },
+    )
+    gradient_data_processor = DataProcessorCsv(
+        file_name_identifier="*_gradient.csv",
+        file_options_dict={
+            "delete_field_data": False,
+            "filter": {"type": "entire_file"},
+        },
+    )
+    driver = MpiDriver(
+        input_template=third_party_input_file,
+        path_to_executable=executable,
+        data_processor=data_processor,
+        gradient_data_processor=gradient_data_processor,
+        mpi_cmd=mpi_command,
+    )
+    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    forward_model = SimulationModel(interface=interface)
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=10,
+        n_samples_per_iter=3,
+        score_function_bool=True,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": plot_dir,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -64,43 +159,104 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
 
 @pytest.mark.max_time_for_test(20)
 def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
-    inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
+    mpi_command,
+    global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
     # generate json input file from template
-    template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} s"
     plot_dir = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
-        "input_file": third_party_input_file,
-        "adjoint_executable": "_",
-        "executable": executable,
-        "forward_model_name": "fd_model",
-        "driver": "driver",
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup iterator
+    variational_distribution = FullRankNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        optimization_type="max",
+        learning_rate=0.02,
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="experimental_data.csv",
+        csv_data_base_dir=experimental_data_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    scheduler = LocalScheduler(
+        num_procs=1,
+        num_procs_post=1,
+        max_concurrent=1,
+        experiment_name=global_settings.experiment_name,
+    )
+    data_processor = DataProcessorCsv(
+        file_name_identifier="*_output.csv",
+        file_options_dict={
+            "delete_field_data": False,
+            "filter": {"type": "entire_file"},
+        },
+    )
+    driver = MpiDriver(
+        input_template=third_party_input_file,
+        path_to_executable=executable,
+        data_processor=data_processor,
+        mpi_cmd=mpi_command,
+    )
+    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    forward_model = DifferentiableSimulationModelFD(
+        finite_difference_method="2-point", interface=interface
+    )
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=10,
+        n_samples_per_iter=3,
+        score_function_bool=True,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": plot_dir,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -110,20 +266,19 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
 
 
 def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
-    inputdir,
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
+    mpi_command,
+    global_settings,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
     # pylint: disable=duplicate-code
     # generate json input file from template
-    template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
-    # standard executable of forward run
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} s"
     # adjoint executable (here we actually use the same executable but call it with
@@ -133,27 +288,106 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     adjoint_executable = f"{python_path} {adjoint_executable} a"
     plot_dir = tmp_path
-    dir_dict = {
-        "experimental_data_path": experimental_data_path,
-        "plot_dir": plot_dir,
-        "input_file": third_party_input_file,
-        "executable": executable,
-        "forward_model_name": "adjoint_model",
-        "adjoint_executable": adjoint_executable,
-        "driver": "driver",
-    }
-    input_file = tmp_path / "rpvi_park91a_hifi.yml"
-    injector.inject(dir_dict, template, input_file)
+    # Parameters
+    x1 = NormalDistribution(mean=0.6, covariance=0.2)
+    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    parameters = Parameters(x1=x1, x2=x2)
 
-    # run the main routine of QUEENS
-    run(input_file, tmp_path)
+    # Setup iterator
+    variational_distribution = FullRankNormalVariational(dimension=2)
+    stochastic_optimizer = Adam(
+        optimization_type="max",
+        learning_rate=0.02,
+        rel_l1_change_threshold=-1,
+        rel_l2_change_threshold=-1,
+        max_iteration=10000000,
+    )
+    experimental_data_reader = ExperimentalDataReader(
+        file_name_identifier="experimental_data.csv",
+        csv_data_base_dir=experimental_data_path,
+        output_label="y_obs",
+        coordinate_labels=["x3", "x4"],
+    )
+    scheduler = LocalScheduler(
+        num_procs=1,
+        num_procs_post=1,
+        max_concurrent=1,
+        experiment_name=global_settings.experiment_name,
+    )
+    data_processor = DataProcessorCsv(
+        file_name_identifier="*_output.csv",
+        file_options_dict={
+            "delete_field_data": False,
+            "filter": {"type": "entire_file"},
+        },
+    )
+    driver = MpiDriver(
+        input_template=third_party_input_file,
+        path_to_executable=executable,
+        data_processor=data_processor,
+        mpi_cmd=mpi_command,
+    )
+    gradient_data_processor = DataProcessorCsv(
+        file_name_identifier="*_gradient.csv",
+        file_options_dict={
+            "delete_field_data": False,
+            "filter": {"type": "entire_file"},
+        },
+    )
+    adjoint_driver = MpiDriver(
+        input_template=third_party_input_file,
+        path_to_executable=adjoint_executable,
+        data_processor=gradient_data_processor,
+        mpi_cmd=mpi_command,
+    )
+    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    gradient_interface = JobInterface(
+        scheduler=scheduler, driver=adjoint_driver, parameters=parameters
+    )
+    forward_model = DifferentiableSimulationModelAdjoint(
+        adjoint_file="grad_objective.csv",
+        interface=interface,
+        gradient_interface=gradient_interface,
+    )
+    model = GaussianLikelihood(
+        noise_type="MAP_jeffrey_variance",
+        nugget_noise_variance=1e-08,
+        experimental_data_reader=experimental_data_reader,
+        forward_model=forward_model,
+    )
+    iterator = RPVIIterator(
+        max_feval=10,
+        n_samples_per_iter=3,
+        score_function_bool=True,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=0.01,
+        FIM_dampening_lower_bound=1e-08,
+        variational_transformation=None,
+        variational_parameter_initialization="prior",
+        random_seed=1,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_boolean": False,
+                "plotting_dir": plot_dir,
+                "plot_name": "variational_params_convergence.eps",
+                "save_bool": False,
+            },
+        },
+        variational_distribution=variational_distribution,
+        stochastic_optimizer=stochastic_optimizer,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
+    )
 
-    # This seed is fixed so that the variational distribution is initialized so that the park
-    # function can be evaluated correctly
-    np.random.seed(211)
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "inverse_rpvi_park91a_hifi.pickle")
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25

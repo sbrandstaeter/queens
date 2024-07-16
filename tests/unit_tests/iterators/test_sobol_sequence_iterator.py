@@ -8,14 +8,14 @@ from queens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 
 @pytest.fixture(name="default_qmc_iterator")
 def fixture_default_qmc_iterator(
-    _initialize_global_settings, default_simulation_model, default_parameters_mixed
+    global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Sobol sequence iterator."""
     default_simulation_model.interface.parameters = default_parameters_mixed
     my_iterator = SobolSequenceIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         seed=42,
         number_of_samples=100,
         randomize=True,

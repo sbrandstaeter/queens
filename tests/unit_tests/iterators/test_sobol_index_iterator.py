@@ -8,7 +8,7 @@ from queens.iterators.sobol_index_iterator import SobolIndexIterator
 
 @pytest.fixture(name="default_sobol_index_iterator")
 def fixture_default_sobol_index_iterator(
-    _initialize_global_settings, default_simulation_model, default_parameters_uniform_3d
+    global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default sobol index iterator."""
     default_simulation_model.interface.parameters = default_parameters_uniform_3d
@@ -16,7 +16,7 @@ def fixture_default_sobol_index_iterator(
     my_iterator = SobolIndexIterator(
         default_simulation_model,
         parameters=default_parameters_uniform_3d,
-        global_settings=_initialize_global_settings,
+        global_settings=global_settings,
         seed=42,
         num_samples=2,
         calc_second_order=True,

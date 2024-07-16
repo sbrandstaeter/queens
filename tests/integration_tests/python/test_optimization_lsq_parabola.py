@@ -11,21 +11,21 @@ from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 
 
-def test_optimization_lsq_rosenbrock_1d(global_settings):
+def test_optimization_lsq_parabola(global_settings):
     """Test special case for optimization iterator with the least squares.
 
-    Special case: 1 unknown but 2 residuals.
+    Special case: 1 unknown and 1 residual.
     """
     # Parameters
     x1 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="rosenbrock60_residual_1d", parameters=parameters)
+    interface = DirectPythonInterface(function="parabola_residual", parameters=parameters)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
         algorithm="LSQ",
-        initial_guess=[3.0],
+        initial_guess=[0.75],
         result_description={"write_results": True},
         bounds=[float("-inf"), float("inf")],
         model=model,
@@ -39,5 +39,5 @@ def test_optimization_lsq_rosenbrock_1d(global_settings):
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    np.testing.assert_allclose(results.x, np.array([+1.0]))
-    np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))
+    np.testing.assert_allclose(results.x, np.array([+0.3]))
+    np.testing.assert_allclose(results.fun, np.array([+0.0]))

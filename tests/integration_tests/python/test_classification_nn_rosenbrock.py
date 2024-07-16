@@ -1,37 +1,71 @@
 """Integration test for the classification iterator."""
 
 import numpy as np
+from sklearn.neural_network._multilayer_perceptron import MLPClassifier
 
-from queens.main import run
-from queens.utils.injector import inject
-from queens.utils.pickle_utils import load_pickle
+from queens.distributions.uniform import UniformDistribution
+from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.iterators.classification import ClassificationIterator
+from queens.main import run_iterator
+from queens.models.simulation_model import SimulationModel
+from queens.parameters.parameters import Parameters
+from queens.utils.classifier import ActiveLearningClassifier
+from queens.utils.io_utils import load_result
 
 
-def test_classification_iterator(inputdir, tmp_path):
+def test_classification_iterator(tmp_path, global_settings):
     """Integration test for the classification iterator."""
-    input_template = inputdir / "classification_nn_rosenbrock_template.yaml"
-    classification_function_path = tmp_path / "classification_function.py"
 
-    # create classification function called classify
-    classification_function_name = "classify"
-    classification_function_path.write_text(
-        f"{classification_function_name} = lambda x: x>80", encoding="utf-8"
-    )
-    experiment_name = "classification_nn_rosenbrock"
-    input_path = tmp_path / f"{experiment_name}.yaml"
-    inject(
-        params={
-            "experiment_name": experiment_name,
-            "plotting_dir": str(tmp_path),
-            "classification_function_name": classification_function_name,
-            "external_module_path": str(classification_function_path),
+    def classification_function(x):
+        """Classification function.
+
+        Classes are defined in the following way:
+        1 or True if the value of x is larger than a threshold.
+        0 or False if the value of x is smaller than equal to a threshold.
+
+        Args:
+            x (np.array): unclassified data
+        Returns:
+             classified data (np.array)
+        """
+        return x > 80
+
+    # Parameters
+    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    parameters = Parameters(x1=x1, x2=x2)
+
+    # Setup iterator
+    classifier_obj = MLPClassifier()
+    classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
+    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    model = SimulationModel(interface=interface)
+    iterator = ClassificationIterator(
+        num_sample_points=10000,
+        num_model_calls=12,
+        random_sampling_frequency=2,
+        seed=42,
+        result_description={
+            "write_results": True,
+            "plotting_options": {
+                "plot_bool": False,
+                "plotting_dir": tmp_path,
+                "plot_name": "neural_classifier_convergence_plot",
+                "save_bool": True,
+            },
         },
-        template_path=input_template,
-        output_file=input_path,
+        classification_function=classification_function,
+        classifier=classifier,
+        model=model,
+        parameters=parameters,
+        global_settings=global_settings,
     )
-    run(input_path, tmp_path)
-    result_file = tmp_path / f"{experiment_name}.pickle"
-    results = load_pickle(result_file)
+
+    # Actual analysis
+    run_iterator(iterator, global_settings=global_settings)
+
+    # Load results
+    results = load_result(global_settings.result_file(".pickle"))
 
     expected_results_classified = np.ones((12, 1))
     expected_results_classified[-2:] = 0

@@ -8,7 +8,9 @@ from queens.utils.io_utils import load_result
 from test_utils.benchmarks import assert_weights_and_samples
 
 
-def test_bmfia_baci_scatra_smc(inputdir, tmp_path, dir_dict, expected_weights, expected_samples):
+def test_bmfia_baci_scatra_smc(
+    inputdir, tmp_path, paths_dictionary, expected_weights, expected_samples
+):
     """TODO_doc: add a one-line description.
 
     Integration test for smc with a simple diffusion problem (scatra) in
@@ -17,13 +19,14 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, dir_dict, expected_weights, e
     # generate yaml input file from template
     template = inputdir / 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml'
     input_file = tmp_path / 'hf_scatra_baci.yml'
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
-    # get the results of the QUEENS run
-    results = load_result(tmp_path / "bmfia_baci_scatra_smc.pickle")
+    # Load results
+    result_file = tmp_path / "dummy_experiment_name.pickle"
+    results = load_result(result_file)
 
     assert_weights_and_samples(results, expected_weights, expected_samples)
 
