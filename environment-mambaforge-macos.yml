@@ -37,11 +37,14 @@ dependencies:
   # Machine learning libraries
   - arviz  # Bayesian visualization
   - optax  # google jax based optimizer
-  - tensorflow
-  - tensorflow-probability
+  - tensorflow<2.16  # This is a restriction by gpflow remove in the future
+  - tensorflow-probability<0.24  # This is a restriction by tensorflow 2.15
   - jax[cpu]
   - jax
   - pymc
+  - pytensor
+  - keras==2.15.0
+  - gpflow  # LV and variational GPs
 
   # making fancy plots
   - matplotlib
@@ -64,21 +67,21 @@ dependencies:
 
   # Other Python stuff
   - pathos  # multiprocessing with more complex python objects
-  - black # >=24.4.2  # formatter, needed to format code created by QUEENS
+  - black>=24.4.2  # formatter, needed to format code created by QUEENS
 
   # Development
-  - commitizen # >=3.12.0
-  - pylint # >=2.16
+  - commitizen
+  - pylint
   - isort>=5.0
   - pre-commit
-  - pre-commit-hooks # >=4.4.0
+  - pre-commit-hooks
   - sphinx
   - nbsphinx
   - pandoc
-  - pydocstyle # >=6.3.0
-  - docformatter # >=1.5.1
+  - pydocstyle
+  - docformatter
   - yamllint>=1.19.0
-  - pytensor
+
 
   # These packages need to be installed via pip
   - pip
@@ -92,4 +95,3 @@ dependencies:
       - pylint-exit
       - scikit-activeml>=0.4.1
       - chaospy>=4.3.13  # polynomial chaos
-      - gpflow  # LV and variational GPs
