@@ -19,7 +19,8 @@ Modules for scheduling and submitting computational jobs.
 
 from queens.schedulers._scheduler import Scheduler
 from queens.schedulers.cluster import Cluster
+from queens.schedulers.cluster_local import ClusterLocal
 from queens.schedulers.local import Local
 from queens.schedulers.pool import Pool
 
-VALID_TYPES = {"local": Local, "cluster": Cluster, "pool": Pool}
+VALID_TYPES = {"local": Local, "cluster": Cluster, "cluster_local": ClusterLocal, "pool": Pool}
