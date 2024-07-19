@@ -297,7 +297,8 @@ class RemoteConnection(Connection):
         environment_name = Path(self.remote_python).parents[1].name
         command_string = (
             f"cd {self.remote_queens_repository}; "
-            f"{package_manager} env create -f environment.yml --name {environment_name} --force; "
+            f"{package_manager} remove --name {environment_name} --all -y;"
+            f"{package_manager} env create -f environment.yml --name {environment_name}; "
             f"{package_manager} activate {environment_name};"
             f"pip install -e ."
         )
