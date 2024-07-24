@@ -476,7 +476,8 @@ class EnsightFile(DataProcessor):
 
                 # the data is in the first block of the vtk object
                 vtk_solution_field = input_vtk.GetBlock(0)
-
+            else:
+                vtk_solution_field = 0
         return vtk_solution_field
 
     @staticmethod

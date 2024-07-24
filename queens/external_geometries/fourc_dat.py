@@ -692,8 +692,8 @@ class FourcDat(ExternalGeometry):
                 # exchange material number for new number in structure element
                 new_line = line.replace(material_expression, "MAT " + str(new_material_number))
                 print(new_line)
-        else:
-            print(line)
+            else:
+                print(line)
 
     def _write_elementwise_materials(self, line, random_field_lst):
         """Write the new material definitions under `MATERIALS`.

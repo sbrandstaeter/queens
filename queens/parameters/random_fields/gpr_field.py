@@ -1,32 +1,81 @@
-#
-# SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024-2025, QUEENS contributors.
-#
-# This file is part of QUEENS.
-#
-# QUEENS is free software: you can redistribute it and/or modify it under the terms of the GNU
-# Lesser General Public License as published by the Free Software Foundation, either version 3 of
-# the License, or (at your option) any later version. QUEENS is distributed in the hope that it will
-# be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
-# should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
-# see <https://www.gnu.org/licenses/>.
-#
-"""Karhunen-Loève Random fields class."""
+"""KL Random fields class."""
 
 import logging
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
-from sklearn.gaussian_process.kernels import RationalQuadratic, RBF, Matern
+import tensorflow as tf
+import gpflow
+from check_shapes import inherit_check_shapes
+from gpflow.base import Parameter, TensorType
+from gpflow.config import default_int
+from gpflow.functions import Function, MeanFunction
 
-from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.parameters.random_fields._random_field import RandomField
+from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.parameters.fields.random_fields import RandomField
 
 _logger = logging.getLogger(__name__)
 
 
-class KarhunenLoeve(RandomField):
+class DamagedBeam(MeanFunction, Function):
+    def __init__(
+        self,
+        mu: TensorType = None,
+        sigma: TensorType = None,
+        relative_peak: TensorType = None,
+        offset: TensorType = None,
+        jump: TensorType = None,
+        scale: TensorType = None,
+    ) -> None:
+        super().__init__()
+
+        mu = np.zeros(1) if mu is None else mu
+        sigma = np.ones(1) if sigma is None else sigma
+        relative_peak = np.ones(1) if relative_peak is None else relative_peak
+        offset = np.zeros(1) if offset is None else offset
+        jump = np.zeros(1) if jump is None else jump
+        scale = np.ones(1) if scale is None else scale
+
+        self.mu = Parameter(mu)
+        self.sigma = Parameter(sigma)
+        self.relative_peak = Parameter(relative_peak)
+        self.offset = Parameter(offset)
+        self.jump = Parameter(jump)
+        self.scale = Parameter(scale)
+
+    @inherit_check_shapes
+    def __call__(self, X: TensorType) -> tf.Tensor:
+        x, Y, Z = np.split(X, 3, axis=1)
+
+        reshape_shape_X = tf.concat(
+            [tf.ones(shape=(tf.rank(x) - 1), dtype=default_int()), [-1]],
+            axis=0,
+        )
+        reshape_shape_Y = tf.concat(
+            [tf.ones(shape=(tf.rank(Y) - 1), dtype=default_int()), [-1]],
+            axis=0,
+        )
+        reshape_shape_Z = tf.concat(
+            [tf.ones(shape=(tf.rank(Z) - 1), dtype=default_int()), [-1]],
+            axis=0,
+        )
+        mu = tf.reshape(self.mu, reshape_shape_X)
+        sigma = tf.reshape(self.sigma, reshape_shape_X)
+        relative_peak = tf.reshape(self.relative_peak, reshape_shape_X)
+        offset = tf.reshape(self.offset, reshape_shape_X)
+
+        jump = tf.reshape(self.jump, reshape_shape_Y)
+        scale = tf.reshape(self.scale, reshape_shape_Y)
+
+        return (
+            tf.exp(-((x - mu) ** 2) / (2 * sigma**2))
+            * relative_peak
+            * tf.sigmoid(scale * (Y - jump))
+            + offset
+        )
+
+
+class GPRRandomField(RandomField):
     """Karhunen Loeve RandomField class.
 
     Attributes:
@@ -53,8 +102,21 @@ class KarhunenLoeve(RandomField):
         explained_variance=None,
         latent_dimension=None,
         cut_off=0.0,
+        kernel="RBF",
+        nu=1.5,
+        alpha=1.0,
+        X=[],
+        y=[],
+        noise_std=1e-5,
+        fit=False,
+        mu=0,
+        sigma=0,
+        relative_peak=0,
+        offset=0,
+        scale=0,
+        jump=0,
     ):
-        """Initialize KL object.
+        """Initialize GPR object.
 
         Args:
             coords (dict): Dictionary with coordinates of discretized random field and the
@@ -78,21 +140,59 @@ class KarhunenLoeve(RandomField):
         self.eigenbasis = None
         self.eigenvalues = None
         self.eigenvectors = None
+        self.kernel = kernel
+        self.nu = nu
+        self.alpha = alpha
+        self.X = X
+        self.y = y
+        self.noise_std = noise_std
+        self.fit = fit
 
         if (latent_dimension is None and explained_variance is None) or (
             latent_dimension is not None and explained_variance is not None
         ):
             raise KeyError("Specify either dimension or explained variance")
-
+        if kernel == "RBF":
+            self.kernel = gpflow.kernels.RBF(variance=self.std**2, lengthscales=self.corr_length)
+        if kernel == "Matern":
+            self.kernel = gpflow.kernels.Matern52(
+                variance=self.std**2, lengthscales=self.corr_length
+            )
+        if kernel == "SE":
+            self.kernel = gpflow.kernels.SquaredExponential(
+                variance=self.std**2, lengthscales=self.corr_length
+            )
+        if kernel != "RBF" and kernel != "Matern" and kernel != "SE":
+            raise KeyError("Kernel must be RBF, Matern, or SE (Squared Exponential)")
         if latent_dimension is not None:
             self.dimension = latent_dimension
         else:
             self.dimension = None
 
+        damaged_beam = DamagedBeam(
+            mu=mu,
+            sigma=sigma,
+            relative_peak=relative_peak,
+            offset=offset,
+            scale=scale,
+            jump=jump,
+        )
+        _logger.info(gpflow.__version__)
         self.calculate_covariance_matrix()
         self.eigendecomp_cov_matrix()
-
-        self.distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
+        if self.fit == True:
+            self.distribution = gpflow.models.GPR(
+                (X, y), kernel=self.kernel, mean_function=damaged_beam
+            )
+        else:
+            X = np.zeros((0, 3))
+            y = np.zeros((0, 1))
+            self.distribution = gpflow.models.GPR(
+                (X, y), kernel=self.kernel, mean_function=damaged_beam
+            )
+        # self.distribution = MeanFieldNormalDistribution(
+        #     mean=0, variance=1, dimension=self.dimension
+        # )
 
     def draw(self, num_samples):
         """Draw samples from the latent representation of the random field.
@@ -102,7 +202,12 @@ class KarhunenLoeve(RandomField):
         Returns:
             samples (np.ndarray): Drawn samples
         """
-        return self.distribution.draw(num_samples)
+
+        mean_distribution = MeanFieldNormalDistribution(
+            mean=0, variance=1, dimension=self.dimension
+        )
+        return mean_distribution.draw(num_samples)
+        # return np.zeros(num_samples, self.dimension)
 
     def logpdf(self, samples):
         """Get joint logpdf of latent space.
@@ -113,7 +218,8 @@ class KarhunenLoeve(RandomField):
         Returns:
             logpdf (np.array): Logpdf of the samples
         """
-        return self.distribution.logpdf(samples)
+        logpdf, grad_logpdf = self.distribution.log_marginal_likelihood()
+        return logpdf
 
     def grad_logpdf(self, samples):
         """Get gradient of joint logpdf of latent space.
@@ -124,7 +230,8 @@ class KarhunenLoeve(RandomField):
         Returns:
             gradient (np.array): Gradient of the logpdf
         """
-        return self.distribution.grad_logpdf(samples)
+        logpdf, grad_logpdf = self.distribution.log_marginal_likelihood()
+        return grad_logpdf
 
     def expanded_representation(self, samples):
         """Expand latent representation of sample.
@@ -135,7 +242,22 @@ class KarhunenLoeve(RandomField):
         Returns:
             samples_expanded (np.ndarray): Expanded representation of sample
         """
-        samples_expanded = self.mean + np.matmul(samples, self.eigenbasis.T)
+        sample_coords = np.stack(
+            (self.coords['coords'][:, 0], self.coords['coords'][:, 1], self.coords['coords'][:, 2]),
+            axis=-1,
+        ).reshape(-1, 3)
+        samples_expanded = np.array(
+            self.distribution.predict_f_samples(sample_coords, num_samples=1)
+        ).reshape(1, -1)
+        _logger.info("Samples:")
+        _logger.info(np.size(samples, 0))
+        # _logger.info(np.size(samples, 1))
+        _logger.info("Samples Expanded")
+        _logger.info(np.size(samples_expanded, 0))
+        _logger.info(np.size(samples_expanded, 1))
+        _logger.info("Eigenbasis")
+        _logger.info(np.size(self.eigenbasis, 0))
+        _logger.info(np.size(self.eigenbasis, 1))
         return samples_expanded
 
     def latent_gradient(self, upstream_gradient):
@@ -158,8 +280,19 @@ class KarhunenLoeve(RandomField):
         covariance matrix using the external geometry and coordinates.
         """
         # assume squared exponential kernel
-        distance = squareform(pdist(self.coords["coords"], "sqeuclidean"))
-        covariance = (self.std**2) * np.exp(-distance / (2 * self.corr_length**2))
+        distance = squareform(pdist(self.coords['coords'], 'sqeuclidean'))
+        # covariance = * np.exp(-distance / (2 * self.corr_length**2))
+        if self.kernel == "RBF":
+            self.kernel = gpflow.kernels.RBF(variance=self.std**2, lengthscales=self.corr_length)
+        if self.kernel == "Matern":
+            self.kernel = gpflow.kernels.Matern52(
+                variance=self.std**2, lengthscales=self.corr_length
+            )
+        if self.kernel == "SE":
+            self.kernel = gpflow.kernels.SquaredExponential(
+                variance=self.std**2, lengthscales=self.corr_length
+            )
+        covariance = np.array(self.kernel(self.coords['coords']))
         covariance[covariance < self.cut_off] = 0
         self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)
 
