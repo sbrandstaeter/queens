@@ -471,10 +471,10 @@ class DataProcessorEnsight(DataProcessor):
         This method uses the QUEENS external geometry module.
 
         Args:
-            external_geometry_obj (queens.baci_dat_geometry)
+            external_geometry_obj (queens.fourc_dat_geometry)
 
         Returns:
-            dict: set with BACI topology
+            dict: set with fourc topology
         """
         # read in the external geometry
         external_geometry.main_run()

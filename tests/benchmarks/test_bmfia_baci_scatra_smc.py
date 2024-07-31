@@ -8,17 +8,17 @@ from queens.utils.io_utils import load_result
 from test_utils.benchmarks import assert_weights_and_samples
 
 
-def test_bmfia_baci_scatra_smc(
+def test_bmfia_fourc_scatra_smc(
     inputdir, tmp_path, paths_dictionary, expected_weights, expected_samples
 ):
     """TODO_doc: add a one-line description.
 
     Integration test for smc with a simple diffusion problem (scatra) in
-    BACI.
+    fourc.
     """
     # generate yaml input file from template
-    template = inputdir / "bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml"
-    input_file = tmp_path / "hf_scatra_baci.yml"
+    template = inputdir / "bmfia_scatra_fourc_template_smc_gp_precompiled_copy.yml"
+    input_file = tmp_path / "hf_scatra_fourc.yml"
     injector.inject(paths_dictionary, template, input_file)
 
     # run the main routine of QUEENS

@@ -51,16 +51,16 @@ def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
 
     This Test checks the removal of the leading regex in the log file
     inserted by the queens logger. The "filtered" queens log files is
-    compared to the original baci log file.
+    compared to the original fourc log file.
     """
-    file_path_baci_log = relative_path_from_queens(
-        "tests/unit_tests/data_processor/baci_example_log.txt"
+    file_path_fourc_log = relative_path_from_queens(
+        "tests/unit_tests/data_processor/fourc_example_log.txt"
     )
-    with open(file_path_baci_log, "r", encoding="utf-8") as file:
-        raw_data_baci = file.readlines()
+    with open(file_path_fourc_log, "r", encoding="utf-8") as file:
+        raw_data_fourc = file.readlines()
     # Remove leading and trailing whitespaces from each string in the list
-    raw_data_baci = [s.strip() for s in raw_data_baci]
-    assert raw_data_baci == default_raw_data
+    raw_data_fourc = [s.strip() for s in raw_data_fourc]
+    assert raw_data_fourc == default_raw_data
     assert len(default_raw_data) == 850
     assert default_raw_data[0] == ""
     assert (

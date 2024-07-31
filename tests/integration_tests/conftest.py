@@ -17,6 +17,7 @@ from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_g
 from queens.utils.path_utils import relative_path_from_queens
 from queens.utils.process_outputs import write_results
 from queens.utils.remote_operations import RemoteConnection
+from test_utils.integration_tests import fourc_build_paths_from_home
 
 _logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class ClusterConfig:
         cluster_script_path (Path):          path to the cluster_script which defines functions
                                             needed for the jobscript
         dask_jobscript_template (Path):     path to the shell script template that runs a
-                                            forward solver call (e.g., BACI plus post-processor)
+                                            forward solver call (e.g., fourc plus post-processor)
         queue (str, opt):                   Destination queue for each worker job
     """
 
@@ -186,8 +187,8 @@ def fixture_remote_queens_repository(pytestconfig):
     return remote_queens
 
 
-@pytest.fixture(name="baci_cluster_paths", scope="session")
-def fixture_baci_cluster_paths(remote_connection):
+@pytest.fixture(name="fourc_cluster_paths", scope="session")
+def fixture_fourc_cluster_paths(remote_connection):
     """Paths to executables on the clusters.
 
     Checks also for existence of the executables.
@@ -195,32 +196,28 @@ def fixture_baci_cluster_paths(remote_connection):
     result = remote_connection.run("echo ~", in_stream=False)
     remote_home = Path(result.stdout.rstrip())
 
-    base_directory = remote_home / "workspace" / "build"
-
-    path_to_executable = base_directory / "baci-release"
-    path_to_post_processor = base_directory / "post_processor"
-    path_to_post_ensight = base_directory / "post_ensight"
+    fourc, post_processor, post_ensight = fourc_build_paths_from_home(remote_home)
 
     def exists_on_remote(file_path):
         """Check for existence of a file on remote machine."""
         find_result = remote_connection.run(f"find {file_path}", in_stream=False)
         return Path(find_result.stdout.rstrip())
 
-    exists_on_remote(path_to_executable)
-    exists_on_remote(path_to_post_processor)
-    exists_on_remote(path_to_post_ensight)
+    exists_on_remote(fourc)
+    exists_on_remote(post_processor)
+    exists_on_remote(post_ensight)
 
-    baci_cluster_paths = {
-        "path_to_executable": path_to_executable,
-        "path_to_post_ensight": path_to_post_ensight,
-        "path_to_post_processor": path_to_post_processor,
+    fourc_cluster_paths = {
+        "path_to_executable": fourc,
+        "path_to_post_ensight": post_ensight,
+        "path_to_post_processor": post_processor,
     }
-    return baci_cluster_paths
+    return fourc_cluster_paths
 
 
-@pytest.fixture(name="baci_example_expected_mean")
-def fixture_baci_example_expected_mean():
-    """Expected result for the BACI example."""
+@pytest.fixture(name="fourc_example_expected_mean")
+def fixture_fourc_example_expected_mean():
+    """Expected result for the fourc example."""
     result = np.array(
         [
             [0.0041549, 0.00138497, -0.00961201],
@@ -244,9 +241,9 @@ def fixture_baci_example_expected_mean():
     return result
 
 
-@pytest.fixture(name="baci_example_expected_var")
-def fixture_baci_example_expected_var():
-    """Expected variance for the BACI example."""
+@pytest.fixture(name="fourc_example_expected_var")
+def fixture_fourc_example_expected_var():
+    """Expected variance for the fourc example."""
     result = np.array(
         [
             [3.19513506e-07, 3.55014593e-08, 2.94994460e-07],
@@ -270,9 +267,9 @@ def fixture_baci_example_expected_var():
     return result
 
 
-@pytest.fixture(name="baci_example_expected_output")
-def fixture_baci_example_expected_output():
-    """Expected outputs for the BACI example."""
+@pytest.fixture(name="fourc_example_expected_output")
+def fixture_fourc_example_expected_output():
+    """Expected outputs for the fourc example."""
     result = np.array(
         [
             [

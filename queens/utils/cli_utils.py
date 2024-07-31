@@ -184,7 +184,7 @@ def build_html_coverage_report():
     _logger.info("Build html coverage report...")
 
     pytest_command_string = (
-        'pytest -m "unit_tests or integration_tests or integration_tests_baci" '
+        'pytest -m "unit_tests or integration_tests or integration_tests_fourc" '
         "--cov --cov-report=html:html_coverage_report"
     )
     command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]

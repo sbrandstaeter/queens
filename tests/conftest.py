@@ -13,6 +13,7 @@ from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
 from queens.utils.path_utils import relative_path_from_queens, relative_path_from_source
+from test_utils.integration_tests import fourc_build_paths_from_home
 
 _logger = logging.getLogger(__name__)
 
@@ -103,8 +104,8 @@ def pytest_collection_modifyitems(items):
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):
                 item.add_marker(pytest.mark.max_time_for_test(10))
-        elif "integration_tests/baci/" in item.nodeid:
-            item.add_marker(pytest.mark.integration_tests_baci)
+        elif "integration_tests/fourc/" in item.nodeid:
+            item.add_marker(pytest.mark.integration_tests_fourc)
 
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):
@@ -218,23 +219,19 @@ def fixture_config_dir():
     return config_dir_path
 
 
-@pytest.fixture(name="baci_link_paths", scope="session")
-def fixture_baci_link_paths(config_dir):
-    """Set symbolic links for baci on testing machine."""
-    baci = config_dir / "baci-release"
+@pytest.fixture(name="fourc_link_paths", scope="session")
+def fixture_fourc_link_paths(config_dir):
+    """Set symbolic links for fourc on testing machine."""
+    fourc = config_dir / "4C"
     post_ensight = config_dir / "post_ensight"
     post_processor = config_dir / "post_processor"
-    return baci, post_ensight, post_processor
+    return fourc, post_ensight, post_processor
 
 
-@pytest.fixture(name="baci_source_paths_for_gitlab_runner", scope="session")
-def fixture_baci_source_paths_for_gitlab_runner():
-    """Set symbolic links for baci on testing machine."""
-    home = Path.home()
-    src_baci = home / "workspace/build/baci-release"
-    src_post_ensight = home / "workspace/build/post_ensight"
-    src_post_processor = home / "workspace/build/post_processor"
-    return src_baci, src_post_ensight, src_post_processor
+@pytest.fixture(name="fourc_build_paths_for_gitlab_runner", scope="session")
+def fixture_fourc_build_paths_for_gitlab_runner():
+    """Fourc build paths on testing machine."""
+    return fourc_build_paths_from_home(Path.home())
 
 
 @pytest.fixture(name="example_simulator_fun_dir", scope="session")

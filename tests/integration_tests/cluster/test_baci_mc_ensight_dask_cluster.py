@@ -1,4 +1,4 @@
-"""Test remote BACI simulations with ensight data-processor."""
+"""Test remote fourc simulations with ensight data-processor."""
 
 import logging
 from pathlib import Path
@@ -10,7 +10,7 @@ import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disab
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers import JobscriptDriver
-from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -37,7 +37,7 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 class TestDaskCluster:
-    """Test class collecting all test with Dask jobqueue clusters and Baci.
+    """Test class collecting all test with Dask jobqueue clusters and fourc.
 
     NOTE: we use a class here since our fixture are set to autouse, but we only want to call them
     for these tests.
@@ -83,44 +83,44 @@ class TestDaskCluster:
         """Path of the tests on the remote cluster."""
         return self.experiment_dir_on_cluster() + f"/{pytest_id}"
 
-    def test_baci_mc_ensight_cluster(
+    def test_fourc_mc_ensight_cluster(
         self,
         third_party_inputs,
         cluster_settings,
-        baci_cluster_paths,
-        baci_example_expected_mean,
-        baci_example_expected_var,
-        baci_example_expected_output,
+        fourc_cluster_paths,
+        fourc_example_expected_mean,
+        fourc_example_expected_var,
+        fourc_example_expected_output,
         global_settings,
         gateway,
     ):
-        """Test remote BACI simulations with DASK jobqueue and MC iterator.
+        """Test remote fourc simulations with DASK jobqueue and MC iterator.
 
-        Test for remote BACI simulations on a remote cluster in combination
+        Test for remote fourc simulations on a remote cluster in combination
         with
         - DASK jobqueue cluster
         - Monte-Carlo (MC) iterator
-        - BACI ensight data-processor.
+        - fourc ensight data-processor.
 
 
         Args:
             self:
             inputdir (Path): Path to the JSON input file
             tmp_path (Path): Temporary directory for this test
-            third_party_inputs (str): Path to the BACI input files
+            third_party_inputs (str): Path to the fourc input files
             cluster_settings (dict): Cluster settings
-            baci_cluster_paths (dict): collection of paths to BACI executables on the cluster
-            baci_example_expected_mean (np.ndarray): Expected mean for the MC samples
-            baci_example_expected_var (np.ndarray): Expected var for the MC samples
-            baci_example_expected_output (np.ndarray): Expected output for the MC samples
+            fourc_cluster_paths (dict): collection of paths to fourc executables on the cluster
+            fourc_example_expected_mean (np.ndarray): Expected mean for the MC samples
+            fourc_example_expected_var (np.ndarray): Expected var for the MC samples
+            fourc_example_expected_output (np.ndarray): Expected output for the MC samples
             patched_base_directory (str): directory of the test simulation data on the cluster
             gateway: TODO
             global_settings: object containing experiment name and tmp_path
         """
         cluster_name = cluster_settings.pop("name")
 
-        baci_input_file_template = Path(
-            third_party_inputs, "baci", "meshtying3D_patch_lin_duallagr_new_struct.dat"
+        fourc_input_file_template = Path(
+            third_party_inputs, "fourc", "meshtying3D_patch_lin_duallagr_new_struct.dat"
         )
 
         # Parameters
@@ -129,12 +129,12 @@ class TestDaskCluster:
         parameters = Parameters(nue=nue, young=young)
 
         # Setup iterator
-        external_geometry = BaciDatExternalGeometry(
+        external_geometry = FourcDatExternalGeometry(
             list_geometric_sets=["DSURFACE 1"],
-            input_template=baci_input_file_template,
+            input_template=fourc_input_file_template,
         )
         data_processor = DataProcessorEnsight(
-            file_name_identifier=f"baci_mc_ensight_{cluster_name}*.case",
+            file_name_identifier=f"fourc_mc_ensight_{cluster_name}*.case",
             file_options_dict={
                 "delete_field_data": False,
                 "geometric_target": ["geometric_set", "DSURFACE 1"],
@@ -172,11 +172,11 @@ class TestDaskCluster:
         )
 
         driver = JobscriptDriver(
-            input_template=baci_input_file_template,
-            path_to_executable=baci_cluster_paths["path_to_executable"],
+            input_template=fourc_input_file_template,
+            path_to_executable=fourc_cluster_paths["path_to_executable"],
             dask_jobscript_template=cluster_settings["dask_jobscript_template"],
-            path_to_postprocessor=baci_cluster_paths["path_to_post_ensight"],
-            post_file_prefix=f"baci_mc_ensight_{cluster_name}",
+            path_to_postprocessor=fourc_cluster_paths["path_to_post_ensight"],
+            post_file_prefix=f"fourc_mc_ensight_{cluster_name}",
             cluster_script_path=cluster_settings["cluster_script_path"],
             data_processor=data_processor,
         )
@@ -202,10 +202,12 @@ class TestDaskCluster:
         self.delete_simulation_data(remote_connection)
 
         # assert statements
-        np.testing.assert_array_almost_equal(results["mean"], baci_example_expected_mean, decimal=6)
-        np.testing.assert_array_almost_equal(results["var"], baci_example_expected_var, decimal=6)
         np.testing.assert_array_almost_equal(
-            results["raw_output_data"]["result"], baci_example_expected_output, decimal=6
+            results["mean"], fourc_example_expected_mean, decimal=6
+        )
+        np.testing.assert_array_almost_equal(results["var"], fourc_example_expected_var, decimal=6)
+        np.testing.assert_array_almost_equal(
+            results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
 
     def delete_simulation_data(self, remote_connection):

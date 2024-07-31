@@ -1,4 +1,4 @@
-"""Test BACI with RF materials."""
+"""Test fourc with RF materials."""
 
 import numpy as np
 import pytest
@@ -6,7 +6,7 @@ from mock import patch
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
 from queens.drivers.mpi_driver import MpiDriver
-from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -20,23 +20,23 @@ from queens.utils.io_utils import load_result
 def test_write_random_material_to_dat(
     tmp_path,
     third_party_inputs,
-    baci_link_paths,
+    fourc_link_paths,
     expected_mean,
     expected_var,
     global_settings,
 ):
-    """Test BACI with random field for material parameters."""
-    dat_template = third_party_inputs / "baci" / "coarse_plate_dirichlet_template.dat"
+    """Test fourc with random field for material parameters."""
+    dat_template = third_party_inputs / "fourc" / "coarse_plate_dirichlet_template.dat"
 
     dat_file_preprocessed = tmp_path / "coarse_plate_dirichlet_template.dat"
 
-    baci_release, post_ensight, _ = baci_link_paths
+    fourc_executable, post_ensight, _ = fourc_link_paths
 
-    baci_input = dat_template
-    baci_input_preprocessed = dat_file_preprocessed
+    fourc_input = dat_template
+    fourc_input_preprocessed = dat_file_preprocessed
 
     # Parameters
-    random_field_preprocessor = BaciDatExternalGeometry(
+    random_field_preprocessor = FourcDatExternalGeometry(
         list_geometric_sets=["DSURFACE 1"],
         associated_material_numbers_geometric_set=[[10, 11]],
         random_fields=[
@@ -46,8 +46,8 @@ def test_write_random_material_to_dat(
                 "external_instance": "DSURFACE 1",
             }
         ],
-        input_template=baci_input,
-        input_template_preprocessed=baci_input_preprocessed,
+        input_template=fourc_input,
+        input_template_preprocessed=fourc_input_preprocessed,
     )
     random_field_preprocessor.main_run()
     random_field_preprocessor.write_random_fields_to_dat()
@@ -61,12 +61,12 @@ def test_write_random_material_to_dat(
     parameters = Parameters(mat_param=mat_param)
 
     # Setup iterator
-    external_geometry = BaciDatExternalGeometry(
+    external_geometry = FourcDatExternalGeometry(
         list_geometric_sets=["DSURFACE 1"],
-        input_template=baci_input_preprocessed,
+        input_template=fourc_input_preprocessed,
     )
     data_processor = DataProcessorEnsight(
-        file_name_identifier="baci_*structure.case",
+        file_name_identifier="fourc_*structure.case",
         file_options_dict={
             "delete_field_data": False,
             "geometric_target": ["geometric_set", "DSURFACE 1"],
@@ -87,10 +87,10 @@ def test_write_random_material_to_dat(
         experiment_name=global_settings.experiment_name,
     )
     driver = MpiDriver(
-        input_template=baci_input_preprocessed,
-        path_to_executable=baci_release,
+        input_template=fourc_input_preprocessed,
+        path_to_executable=fourc_executable,
         path_to_postprocessor=post_ensight,
-        post_file_prefix="baci_mc_random_field_ensight",
+        post_file_prefix="fourc_mc_random_field_ensight",
         data_processor=data_processor,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

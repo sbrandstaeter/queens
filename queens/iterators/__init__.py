@@ -8,13 +8,13 @@ QUEENS also permits nesting of iterators to enable hierarchical methods
 or surrogate based UQ approaches.
 """
 
-from queens.iterators.baci_lm_iterator import BaciLMIterator
 from queens.iterators.black_box_variational_bayes import BBVIIterator
 from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.iterators.classification import ClassificationIterator
 from queens.iterators.data_iterator import DataIterator
 from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
+from queens.iterators.fourc_lm_iterator import FourcLMIterator
 from queens.iterators.grid_iterator import GridIterator
 from queens.iterators.hmc_iterator import HMCIterator
 from queens.iterators.lhs_iterator import LHSIterator
@@ -51,7 +51,7 @@ VALID_TYPES = {
     "points": PointsIterator,
     "bmfmc": BMFMCIterator,
     "grid": GridIterator,
-    "baci_lm": BaciLMIterator,
+    "fourc_lm": FourcLMIterator,
     "bbvi": BBVIIterator,
     "bmfia": BMFIAIterator,
     "rpvi": RPVIIterator,

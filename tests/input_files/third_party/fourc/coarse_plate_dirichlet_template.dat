@@ -4,7 +4,7 @@
 -------------------------------------------------------------TITLE
 created by pre_exodus
 
-BACI git SHA1: 8c6b750a15845d2a094f0de90f209d811fab6391
+4C git SHA1: b23a601ba839ee3749c44a8d4436fb7c509f9d69
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121
@@ -39,8 +39,6 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-06
 TOLRES                          1.0E-06
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.01
 MAXITER                         200
 UZAWAPARAM                      1.0
 RESEVRYERGY			1

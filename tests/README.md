@@ -9,17 +9,17 @@ for more control over the test you can run pytest directly
 Every test is marked with a pytest marker. These allow us to group tests together and run every test of a group:
 - Unit tests
   - `pytest -m unit_tests`
-- Integration tests without BACI
+- Integration tests without fourc
   - `pytest -m integration_tests`
-- Integration tests with BACI
-  - `pytest -m integration_tests_baci`
-- Integration tests with or without BACI
-  - `pytest -m "integration_tests or integration_tests_baci"`
-- Cluster tests on LNM clusters (requires LNM clusters access as well as BACI)
+- Integration tests with fourc
+  - `pytest -m integration_tests_fourc`
+- Integration tests with or without fourc
+  - `pytest -m "integration_tests or integration_tests_fourc"`
+- Cluster tests on LNM clusters (requires LNM clusters access as well as fourc)
   - `pytest -m lnm_cluster`
-- Cluster tests on IMCS clusters (requires IMCS cluster access as well as BACI)
+- Cluster tests on IMCS clusters (requires IMCS cluster access as well as fourc)
   - `pytest -m imcs_cluster`
-- Benchmarks (requires BACI)
+- Benchmarks (requires fourc)
   - `pytest -m benchmark`
 
 Note that per default the options defined in  `setup.cfg` under

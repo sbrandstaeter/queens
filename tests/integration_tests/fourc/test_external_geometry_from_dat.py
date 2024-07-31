@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 
 
 def test_external_geometry_from_dat(
@@ -11,11 +11,11 @@ def test_external_geometry_from_dat(
 ):
     """Test if geometry is read in correctly from dat file."""
     dat_input_template = (
-        third_party_inputs / "baci" / "meshtying3D_patch_lin_duallagr_new_struct.dat"
+        third_party_inputs / "fourc" / "meshtying3D_patch_lin_duallagr_new_struct.dat"
     )
 
     # Create pre-processing module form config
-    preprocessor_obj = BaciDatExternalGeometry(
+    preprocessor_obj = FourcDatExternalGeometry(
         input_template=dat_input_template, list_geometric_sets=["DSURFACE 1"]
     )
     preprocessor_obj.main_run()
