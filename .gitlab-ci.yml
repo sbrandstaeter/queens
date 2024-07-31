@@ -30,7 +30,7 @@ variables:
     value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on LNM clusters"
   IMCS_REMOTE_PYTHON:
-    value: "/home/queens/mambaforge/envs/queens-$CI_PIPELINE_ID/bin/python"
+    value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on IMCS clusters"
   PYTHON_PACKAGE_MANAGER:
     value: "mamba"
