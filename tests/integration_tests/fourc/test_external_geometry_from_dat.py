@@ -10,9 +10,7 @@ def test_external_geometry_from_dat(
     third_party_inputs, expected_node_coordinates, expected_surface_topology
 ):
     """Test if geometry is read in correctly from dat file."""
-    dat_input_template = (
-        third_party_inputs / "fourc" / "meshtying3D_patch_lin_duallagr_new_struct.dat"
-    )
+    dat_input_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
     # Create pre-processing module form config
     preprocessor_obj = FourcDatExternalGeometry(
@@ -26,7 +24,6 @@ def test_external_geometry_from_dat(
     np.testing.assert_allclose(
         preprocessor_obj.node_coordinates["coordinates"],
         expected_node_coordinates["coordinates"],
-        rtol=1.0e-3,
     )
 
 
@@ -35,25 +32,8 @@ def fixture_expected_surface_topology():
     """Reference surface topology."""
     expected_topology = [
         {
-            "node_mesh": [
-                145,
-                148,
-                149,
-                152,
-                162,
-                164,
-                170,
-                172,
-                177,
-                180,
-                186,
-                190,
-                193,
-                196,
-                202,
-                206,
-            ],
-            "surface_topology": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "node_mesh": [3, 1, 4, 2],
+            "surface_topology": [1, 1, 1, 1],
             "topology_name": "DSURFACE 1",
         }
     ]
@@ -64,41 +44,7 @@ def fixture_expected_surface_topology():
 def fixture_expected_node_coordinates():
     """Reference node coordinates and nodes."""
     node_coordinates = {
-        "node_mesh": [
-            145,
-            148,
-            149,
-            152,
-            162,
-            164,
-            170,
-            172,
-            177,
-            180,
-            186,
-            190,
-            193,
-            196,
-            202,
-            206,
-        ],
-        "coordinates": [
-            [-2.5, -2.5, 6.0],
-            [-2.5, -0.8333333333333335, 6.0],
-            [-0.8333333333333333, -2.5, 6.0],
-            [-0.8333333333333333, -0.8333333333333338, 6.0],
-            [-2.5, 0.8333333333333333, 6.0],
-            [-0.8333333333333335, 0.8333333333333335, 6.0],
-            [-2.5, 2.5, 6.0],
-            [-0.8333333333333335, 2.5, 6.0],
-            [0.8333333333333335, -2.5, 6.0],
-            [0.8333333333333335, -0.8333333333333333, 6.0],
-            [0.8333333333333334, 0.8333333333333331, 6.0],
-            [0.8333333333333333, 2.5, 6.0],
-            [2.5, -2.5, 6.0],
-            [2.5, -0.8333333333333333, 6.0],
-            [2.5, 0.8333333333333335, 6.0],
-            [2.5, 2.5, 6.0],
-        ],
+        "node_mesh": [1, 2, 3, 4],
+        "coordinates": [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
     }
     return node_coordinates

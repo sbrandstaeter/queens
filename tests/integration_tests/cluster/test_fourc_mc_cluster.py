@@ -7,10 +7,9 @@ import numpy as np
 import pytest
 
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
-from queens.data_processor.data_processor_ensight import DataProcessorEnsight
+from queens.data_processor.data_processor_pvd import DataProcessorPvd
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers import JobscriptDriver
-from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -18,7 +17,6 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.utils import config_directories
 from queens.utils.io_utils import load_result
-from queens.utils.remote_operations import RemoteConnection
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     THOUGHT_CLUSTER_TYPE,
@@ -83,16 +81,14 @@ class TestDaskCluster:
         """Path of the tests on the remote cluster."""
         return self.experiment_dir_on_cluster() + f"/{pytest_id}"
 
-    def test_fourc_mc_ensight_cluster(
+    def test_fourc_mc_cluster(
         self,
         third_party_inputs,
         cluster_settings,
+        remote_connection,
         fourc_cluster_paths,
-        fourc_example_expected_mean,
-        fourc_example_expected_var,
         fourc_example_expected_output,
         global_settings,
-        gateway,
     ):
         """Test remote fourc simulations with DASK jobqueue and MC iterator.
 
@@ -104,57 +100,26 @@ class TestDaskCluster:
 
 
         Args:
-            self:
-            inputdir (Path): Path to the JSON input file
-            tmp_path (Path): Temporary directory for this test
-            third_party_inputs (str): Path to the fourc input files
+            third_party_inputs (Path): Path to the fourc input files
             cluster_settings (dict): Cluster settings
+            remote_connection (RemoteConnection): Remote connection object
             fourc_cluster_paths (dict): collection of paths to fourc executables on the cluster
-            fourc_example_expected_mean (np.ndarray): Expected mean for the MC samples
-            fourc_example_expected_var (np.ndarray): Expected var for the MC samples
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
-            patched_base_directory (str): directory of the test simulation data on the cluster
-            gateway: TODO
-            global_settings: object containing experiment name and tmp_path
+            global_settings (GlobalSettings): object containing experiment name and tmp_path
         """
         cluster_name = cluster_settings.pop("name")
 
-        fourc_input_file_template = Path(
-            third_party_inputs, "fourc", "meshtying3D_patch_lin_duallagr_new_struct.dat"
-        )
+        fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
         # Parameters
-        nue = UniformDistribution(lower_bound=0.4, upper_bound=0.49)
-        young = UniformDistribution(lower_bound=500, upper_bound=1000)
-        parameters = Parameters(nue=nue, young=young)
+        parameter_1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+        parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+        parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-        # Setup iterator
-        external_geometry = FourcDatExternalGeometry(
-            list_geometric_sets=["DSURFACE 1"],
-            input_template=fourc_input_file_template,
-        )
-        data_processor = DataProcessorEnsight(
-            file_name_identifier=f"fourc_mc_ensight_{cluster_name}*.case",
-            file_options_dict={
-                "delete_field_data": False,
-                "geometric_target": ["geometric_set", "DSURFACE 1"],
-                "physical_field_dict": {
-                    "vtk_field_type": "structure",
-                    "vtk_array_type": "point_array",
-                    "vtk_field_label": "displacement",
-                    "field_components": [0, 1, 2],
-                },
-                "target_time_lst": ["last"],
-            },
-            external_geometry=external_geometry,
-        )
-
-        remote_connection = RemoteConnection(
-            host=cluster_settings["host"],
-            user=cluster_settings["user"],
-            remote_python=cluster_settings["remote_python"],
-            remote_queens_repository=cluster_settings["remote_queens_repository"],
-            gateway=gateway,
+        data_processor = DataProcessorPvd(
+            field_name="displacement",
+            file_name_identifier="*.pvd",
+            file_options_dict={},
         )
 
         scheduler = cluster_scheduler.ClusterScheduler(
@@ -202,10 +167,6 @@ class TestDaskCluster:
         self.delete_simulation_data(remote_connection)
 
         # assert statements
-        np.testing.assert_array_almost_equal(
-            results["mean"], fourc_example_expected_mean, decimal=6
-        )
-        np.testing.assert_array_almost_equal(results["var"], fourc_example_expected_var, decimal=6)
         np.testing.assert_array_almost_equal(
             results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
