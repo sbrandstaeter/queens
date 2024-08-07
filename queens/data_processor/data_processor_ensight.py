@@ -20,7 +20,7 @@ class DataProcessorEnsight(DataProcessor):
         coordinates_label_experimental (lst): List of (spatial) coordinate labels
                                                 of the experimental data set.
         time_label_experimental (str): Time label of the experimental data set.
-        external_geometry_obj (obj): QUEENS external geometry object.
+        external_geometry (obj): QUEENS external geometry object.
         target_time_lst (lst): Target time list for the ensight data, meaning time for which the
                                 simulation state should be extracted.
         time_tol (float): Tolerance for the target time extraction.
