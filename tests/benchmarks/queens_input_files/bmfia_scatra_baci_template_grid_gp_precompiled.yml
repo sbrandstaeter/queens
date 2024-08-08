@@ -1,4 +1,4 @@
-experiment_name: bmfia_baci_scatra_smc
+experiment_name: bmfia_fourc_scatra_smc
 database:
   type: mongodb
   address: localhost:27017
@@ -138,22 +138,22 @@ local_scheduler:
   num_procs_post: 1
 hf_driver:
   type: mpi
-  input_template: {baci_hf_input}
-  path_to_executable: {baci-release}
+  input_template: {fourc_hf_input}
+  path_to_executable: {fourc}
   path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_hf
 lf_driver_1:
   type: mpi
-  input_template: {baci_lf_input}
-  path_to_executable: {baci-release}
+  input_template: {fourc_lf_input}
+  path_to_executable: {fourc}
   path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_lf_hf
 lf_driver_2:
   type: mpi
-  input_template: {baci_lf_input}
-  path_to_executable: {baci-release}
+  input_template: {fourc_lf_input}
+  path_to_executable: {fourc}
   path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
   data_processor_name: data_processor_lf_hf

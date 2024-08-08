@@ -1,4 +1,4 @@
-experiment_name: hf_scatra_baci
+experiment_name: hf_scatra_fourc
 database:
   type: mongodb
   address: localhost:27017
@@ -68,12 +68,12 @@ local_scheduler:
   num_procs_post: 1
 driver:
   type: mpi
-  input_template: {baci_hf_input}
-  path_to_executable: {baci-release}
+  input_template: {fourc_hf_input}
+  path_to_executable: {fourc}
   path_to_postprocessor: {post_ensight}
   post_file_name_prefix: scatra
-  data_processor_name: data_processor_baci
-data_processor_baci:
+  data_processor_name: data_processor_fourc
+data_processor_fourc:
   type: ensight
   file_name_identifier: scatra
   file_options_dict:

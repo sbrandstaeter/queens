@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 
 
 # general input fixtures
@@ -19,7 +19,7 @@ def fixture_default_geo_obj(tmp_path):
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
 
-    geo_obj = BaciDatExternalGeometry(
+    geo_obj = FourcDatExternalGeometry(
         input_template=path_to_dat_file,
         input_template_preprocessed=path_to_preprocessed_dat_file,
         list_geometric_sets=list_geometric_sets,
@@ -201,7 +201,7 @@ def test_init(mocker, tmp_path):
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
 
-    geo_obj = BaciDatExternalGeometry(
+    geo_obj = FourcDatExternalGeometry(
         input_template=path_to_dat_file,
         input_template_preprocessed=path_to_preprocessed_dat_file,
         list_geometric_sets=list_geometric_sets,
@@ -231,30 +231,30 @@ def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default
     write_to_file(dat_dummy_comment, filepath)
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_current_dat_section",
         return_value=False,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_only_desired_topology",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_only_desired_coordinates",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_materials",
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_materials",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_elements_belonging_to_desired_material",
         return_value=1,
     )
@@ -276,30 +276,30 @@ def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, d
     default_geo_obj.current_dat_section = "dummy"
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_current_dat_section",
         return_value=False,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_only_desired_topology",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_only_desired_coordinates",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_materials",
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_materials",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_elements_belonging_to_desired_material",
         return_value=1,
     )
@@ -402,19 +402,19 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
     """TODO_doc."""
     line = "dummy"
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".check_if_in_desired_dat_section",
         return_value=True,
     )
     mp1 = mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry.get_topology",
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_topology",
         return_value=None,
     )
     default_geo_obj.get_only_desired_topology(line)
     assert mp1.call_count == 1
 
     mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".check_if_in_desired_dat_section",
         return_value=False,
     )
@@ -427,12 +427,12 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
     """TODO_doc."""
     line = "dummy 2"
     mp1 = mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_nodes_of_interest",
         return_value=[1, 2, 3, 4, 5],
     )
     mp2 = mocker.patch(
-        "queens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry"
+        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
         ".get_coordinates_of_desired_geometric_sets",
         return_value=None,
     )

@@ -1,4 +1,4 @@
-"""BACI geometry handling."""
+"""Fourc geometry handling."""
 
 # pylint: disable=too-many-lines
 import copy
@@ -13,8 +13,8 @@ from queens.external_geometry.external_geometry import ExternalGeometry
 from queens.utils.logger_settings import log_init_args
 
 
-class BaciDatExternalGeometry(ExternalGeometry):
-    """Class to read in external geometries based on BACI-dat files.
+class FourcDatExternalGeometry(ExternalGeometry):
+    """Class to read in external geometries based on fourc dat files.
 
     Attributes:
         path_to_dat_file (str): Path to dat file from which the *external_geometry_obj* should be
@@ -62,7 +62,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         random_fields (lst): List of random field descriptions.
 
     Returns:
-        geometry_obj (obj): Instance of BaciDatExternalGeometry class
+        geometry_obj (obj): Instance of FourcDatExternalGeometry class
     """
 
     dat_sections = [
@@ -103,7 +103,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         associated_material_numbers_geometric_set=None,
         random_fields=None,
     ):
-        """Initialise BACI external geometry.
+        """Initialise fourc external geometry.
 
         Args:
             input_template (str): Path to dat file from which the external_geometry_obj should be
@@ -742,7 +742,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
             # potentially replace material parameter
             #  TODO idx seems to be wrong here # pylint: disable=fixme
-            line_new = BaciDatExternalGeometry._parse_material_value_dependent_on_element_center(
+            line_new = FourcDatExternalGeometry._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
             )
 
@@ -783,7 +783,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # below we loop over numbers of nested materials
         for idx, material_num in enumerate(self.new_material_numbers[1]):
             # potentially replace material parameter
-            line_new = BaciDatExternalGeometry._parse_material_value_dependent_on_element_center(
+            line_new = FourcDatExternalGeometry._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
             )
 
@@ -851,7 +851,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 if (field["type"] == "dirichlet") and (field["external_instance"] == geometric_set)
             ]
             if fields_dirich_on_geo_set:
-                old_num = BaciDatExternalGeometry._get_old_num_design_point_dirichlet_conditions(
+                old_num = FourcDatExternalGeometry._get_old_num_design_point_dirichlet_conditions(
                     line
                 )
                 self._overwrite_num_design_point_dirichlet_conditions(random_field_lst, old_num)
@@ -973,13 +973,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                                 coordinate matrix) for the depicted dimension of the
                                                 Dirichlet DOF.
             fun_1 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_2 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_3 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
         """
         # take care of random dirichlet fields
@@ -1050,13 +1050,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                                 coordinate matrix) for the depicted dimension of the
                                                 Dirichlet DOF.
             fun_1 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_2 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_3 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
 
         Returns:
@@ -1073,13 +1073,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                                 coordinate matrix) for the depicted dimension of the
                                                 Dirichlet DOF.
             fun_1 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_2 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
             fun_3 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a BACI specific
+                              associated dimension of the random field. This is a fourc specific
                               function that might, e.g., vary in time.
         """
         # TODO see how this behaves for several fields # pylint: disable=fixme
@@ -1119,7 +1119,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         # catch fields that were not set
         if fun_1 is None or fun_2 is None or fun_3 is None:
-            raise ValueError("One BACI function of a Dirichlet DOF was not defined! Abort...")
+            raise ValueError("One fourc function of a Dirichlet DOF was not defined! Abort...")
         if (
             realized_random_field_1 is None
             or realized_random_field_2 is None

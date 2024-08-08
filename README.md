@@ -210,15 +210,15 @@ before the make command.
 ## Run Test Suite
 QUEENS has a couple of **unittests** and **integration test** which can be found under
  `<QUEENS_BaseDir>/tests`.
-In order to run local integration tests together with `BACI`, it is necessary that the user creates
-**symbolic links** to the `BACI-executables`, which are then stored under
+In order to run local integration tests together with `4C`, it is necessary that the user creates
+**symbolic links** to the `4C`-executables, which are then stored under
 `<QUEENS_BaseDir>/config`. The links can be created by running the following commands:
 ```
-ln -s <your/path/to/baci-release> <QUEENS_BaseDir>/config/baci-release
+ln -s <your/path/to/4C> <QUEENS_BaseDir>/config/4C
 ln -s <your/path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight
 ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
-> **NOTE**: The workflows with BACI are tested with the BACI version [8c6b750a15845d2a094f0de90f209d811fab6391](https://gitlab.lrz.de/baci/baci/-/commit/8c6b750a15845d2a094f0de90f209d811fab6391)
+> **NOTE**: The workflows with fourc are tested with the fourc version [b23a601ba839ee3749c44a8d4436fb7c509f9d69](https://gitlab.lrz.de/baci/baci/-/commit/b23a601ba839ee3749c44a8d4436fb7c509f9d69)
 
 The testing strategy is more closely described in [TESTING.md](tests/README.md)
 To run the test suite type:

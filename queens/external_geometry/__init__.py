@@ -3,8 +3,8 @@
 Read in external geometry to QUEENS.
 """
 
-from queens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
+from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 
 VALID_TYPES = {
-    "baci_dat": BaciDatExternalGeometry,
+    "fourc_dat": FourcDatExternalGeometry,
 }

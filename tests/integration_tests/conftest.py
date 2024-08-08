@@ -10,13 +10,13 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import pytest
-import yaml
 
 from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
 from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 from queens.utils.path_utils import relative_path_from_queens
 from queens.utils.process_outputs import write_results
 from queens.utils.remote_operations import RemoteConnection
+from test_utils.integration_tests import fourc_build_paths_from_home
 
 _logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class ClusterConfig:
         cluster_script_path (Path):          path to the cluster_script which defines functions
                                             needed for the jobscript
         dask_jobscript_template (Path):     path to the shell script template that runs a
-                                            forward solver call (e.g., BACI plus post-processor)
+                                            forward solver call (e.g., fourc plus post-processor)
         queue (str, opt):                   Destination queue for each worker job
     """
 
@@ -142,22 +142,7 @@ def fixture_cluster_settings(
     settings["user"] = remote_user
     settings["remote_python"] = remote_python
     settings["remote_queens_repository"] = remote_queens_repository
-
-    if gateway is None:
-        # None is equal to null in yaml
-        settings["gateway"] = "null"
-    elif isinstance(gateway, dict):
-        # the gateway settings should be supplied via a dict:
-        # save the settings in string of yaml format to make it more flexible for parsing it into
-        # the yaml input file (we don't know which keywords the user used to supply the settings)
-
-        # in the yaml file this dict is already two level indented: add four spaces before each line
-        indentation = 4 * " "
-        settings["gateway"] = (
-            "\n" + indentation + yaml.dump(gateway).replace("\n", "\n" + indentation)
-        )
-    else:
-        raise ValueError(f"Cannot handle gateway information {gateway} of type {type(gateway)}.")
+    settings["gateway"] = gateway
     return settings
 
 
@@ -168,14 +153,14 @@ def fixture_remote_python(pytestconfig):
 
 
 @pytest.fixture(name="remote_connection", scope="session")
-def fixture_remote_connection(cluster_settings, gateway):
+def fixture_remote_connection(cluster_settings):
     """Fabric connection to remote."""
     return RemoteConnection(
         host=cluster_settings["host"],
         user=cluster_settings["user"],
         remote_python=cluster_settings["remote_python"],
         remote_queens_repository=cluster_settings["remote_queens_repository"],
-        gateway=gateway,
+        gateway=cluster_settings["gateway"],
     )
 
 
@@ -186,130 +171,64 @@ def fixture_remote_queens_repository(pytestconfig):
     return remote_queens
 
 
-@pytest.fixture(name="baci_cluster_paths", scope="session")
-def fixture_baci_cluster_paths(remote_connection):
-    """Paths to executables on the clusters.
+@pytest.fixture(name="fourc_cluster_path", scope="session")
+def fixture_fourc_cluster_path(remote_connection):
+    """Paths to fourc executable on the clusters.
 
-    Checks also for existence of the executables.
+    Checks also for existence of the executable.
     """
     result = remote_connection.run("echo ~", in_stream=False)
     remote_home = Path(result.stdout.rstrip())
 
-    base_directory = remote_home / "workspace" / "build"
+    fourc, _, _ = fourc_build_paths_from_home(remote_home)
 
-    path_to_executable = base_directory / "baci-release"
-    path_to_post_processor = base_directory / "post_processor"
-    path_to_post_ensight = base_directory / "post_ensight"
+    # Check for existence of fourc on remote machine.
+    find_result = remote_connection.run(f"find {fourc}", in_stream=False)
+    Path(find_result.stdout.rstrip())
 
-    def exists_on_remote(file_path):
-        """Check for existence of a file on remote machine."""
-        find_result = remote_connection.run(f"find {file_path}", in_stream=False)
-        return Path(find_result.stdout.rstrip())
-
-    exists_on_remote(path_to_executable)
-    exists_on_remote(path_to_post_processor)
-    exists_on_remote(path_to_post_ensight)
-
-    baci_cluster_paths = {
-        "path_to_executable": path_to_executable,
-        "path_to_post_ensight": path_to_post_ensight,
-        "path_to_post_processor": path_to_post_processor,
-    }
-    return baci_cluster_paths
+    return fourc
 
 
-@pytest.fixture(name="baci_example_expected_mean")
-def fixture_baci_example_expected_mean():
-    """Expected result for the BACI example."""
-    result = np.array(
-        [
-            [0.0041549, 0.00138497, -0.00961201],
-            [0.00138497, 0.00323159, -0.00961201],
-            [0.00230828, 0.00323159, -0.00961201],
-            [0.0041549, 0.00230828, -0.00961201],
-            [0.00138497, 0.0041549, -0.00961201],
-            [0.0041549, 0.00323159, -0.00961201],
-            [0.00230828, 0.0041549, -0.00961201],
-            [0.0041549, 0.0041549, -0.00961201],
-            [0.00138497, 0.00138497, -0.00961201],
-            [0.00323159, 0.00138497, -0.00961201],
-            [0.00138497, 0.00230828, -0.00961201],
-            [0.00230828, 0.00138497, -0.00961201],
-            [0.00323159, 0.00230828, -0.00961201],
-            [0.00230828, 0.00230828, -0.00961201],
-            [0.00323159, 0.00323159, -0.00961201],
-            [0.00323159, 0.0041549, -0.00961201],
-        ]
-    )
-    return result
-
-
-@pytest.fixture(name="baci_example_expected_var")
-def fixture_baci_example_expected_var():
-    """Expected variance for the BACI example."""
-    result = np.array(
-        [
-            [3.19513506e-07, 3.55014593e-08, 2.94994460e-07],
-            [3.55014593e-08, 1.93285820e-07, 2.94994460e-07],
-            [9.86153027e-08, 1.93285820e-07, 2.94994460e-07],
-            [3.19513506e-07, 9.86153027e-08, 2.94994460e-07],
-            [3.55014593e-08, 3.19513506e-07, 2.94994460e-07],
-            [3.19513506e-07, 1.93285820e-07, 2.94994460e-07],
-            [9.86153027e-08, 3.19513506e-07, 2.94994460e-07],
-            [3.19513506e-07, 3.19513506e-07, 2.94994460e-07],
-            [3.55014593e-08, 3.55014593e-08, 2.94994460e-07],
-            [1.93285820e-07, 3.55014593e-08, 2.94994460e-07],
-            [3.55014593e-08, 9.86153027e-08, 2.94994460e-07],
-            [9.86153027e-08, 3.55014593e-08, 2.94994460e-07],
-            [1.93285820e-07, 9.86153027e-08, 2.94994460e-07],
-            [9.86153027e-08, 9.86153027e-08, 2.94994460e-07],
-            [1.93285820e-07, 1.93285820e-07, 2.94994460e-07],
-            [1.93285820e-07, 3.19513506e-07, 2.94994460e-07],
-        ]
-    )
-    return result
-
-
-@pytest.fixture(name="baci_example_expected_output")
-def fixture_baci_example_expected_output():
-    """Expected outputs for the BACI example."""
+@pytest.fixture(name="fourc_example_expected_output")
+def fixture_fourc_example_expected_output():
+    """Expected outputs for the fourc example."""
     result = np.array(
         [
             [
-                [0.00375521, 0.00125174, -0.00922795],
-                [0.00125174, 0.00292072, -0.00922795],
-                [0.00208623, 0.00292072, -0.00922795],
-                [0.00375521, 0.00208623, -0.00922795],
-                [0.00125174, 0.00375521, -0.00922795],
-                [0.00375521, 0.00292072, -0.00922795],
-                [0.00208623, 0.00375521, -0.00922795],
-                [0.00375521, 0.00375521, -0.00922795],
-                [0.00125174, 0.00125174, -0.00922795],
-                [0.00292072, 0.00125174, -0.00922795],
-                [0.00125174, 0.00208623, -0.00922795],
-                [0.00208623, 0.00125174, -0.00922795],
-                [0.00292072, 0.00208623, -0.00922795],
-                [0.00208623, 0.00208623, -0.00922795],
-                [0.00292072, 0.00292072, -0.00922795],
-                [0.00292072, 0.00375521, -0.00922795],
+                [0.0, 0.0, 0.0],
+                [0.1195746416995907, -0.002800078802811129, -0.005486393250866545],
+                [0.1260656705382511, -0.002839272898349505, -0.005591796485367413],
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [0.1322571001660478, -0.00290530963354552, -0.005635750492708091],
+                [0.1387400363966301, -0.002944141371541845, -0.005740445608910146],
+                [0.0, 0.0, 0.0],
+                [0.1195746416995907, -0.002800078802811129, -0.005486393250866545],
+                [0.2289195764727486, -0.01428888900910762, -0.02789834740243489],
+                [0.24879304060717, -0.01437712967153365, -0.02801932699697155],
+                [0.1260656705382511, -0.002839272898349505, -0.005591796485367413],
+                [0.1322571001660478, -0.00290530963354552, -0.005635750492708091],
+                [0.2674182375147958, -0.01440529789560568, -0.02822643380369276],
+                [0.2865938203259575, -0.01448421374089244, -0.02832919236100399],
+                [0.1387400363966301, -0.002944141371541845, -0.005740445608910146],
             ],
             [
-                [0.00455460, 0.00151820, -0.00999606],
-                [0.00151820, 0.00354247, -0.00999606],
-                [0.00253033, 0.00354247, -0.00999606],
-                [0.00455460, 0.00253033, -0.00999606],
-                [0.00151820, 0.00455460, -0.00999606],
-                [0.00455460, 0.00354247, -0.00999606],
-                [0.00253033, 0.00455460, -0.00999606],
-                [0.00455460, 0.00455460, -0.00999606],
-                [0.00151820, 0.00151820, -0.00999606],
-                [0.00354247, 0.00151820, -0.00999606],
-                [0.00151820, 0.00253033, -0.00999606],
-                [0.00253033, 0.00151820, -0.00999606],
-                [0.00354247, 0.00253033, -0.00999606],
-                [0.00253033, 0.00253033, -0.00999606],
-                [0.00354247, 0.00354247, -0.00999606],
-                [0.00354247, 0.00455460, -0.00999606],
+                [0.0, 0.0, 0.0],
+                [0.1324695606381951, -0.00626315166779166, -0.003933720977121313],
+                [0.1472676510502675, -0.006473749929398404, -0.004119847415735578],
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [0.1417895586931143, -0.006449559916104635, -0.004017410516711057],
+                [0.1565760384270568, -0.006658631448567143, -0.004202575461905436],
+                [0.0, 0.0, 0.0],
+                [0.1324695606381951, -0.00626315166779166, -0.003933720977121313],
+                [0.250425194294125, -0.0327911259093084, -0.02066877798205112],
+                [0.2973138520084483, -0.03326225476238921, -0.02086982506734491],
+                [0.1472676510502675, -0.006473749929398404, -0.004119847415735578],
+                [0.1417895586931143, -0.006449559916104635, -0.004017410516711057],
+                [0.2801976826134401, -0.03299992343589411, -0.0208604824244337],
+                [0.3257952884928654, -0.03343065913125062, -0.02103608880631498],
+                [0.1565760384270568, -0.006658631448567143, -0.004202575461905436],
             ],
         ]
     )
