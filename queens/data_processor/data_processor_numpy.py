@@ -1,4 +1,4 @@
-"""Data processor class for csv data extraction."""
+"""Data processor class for numpy data extraction."""
 
 import logging
 

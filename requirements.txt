@@ -211,6 +211,7 @@ matplotlib==3.7.5
     # via
     #   -r requirements.in
     #   arviz
+    #   pyvista
     #   salib
     #   scikit-activeml
     #   seaborn
@@ -273,6 +274,7 @@ numpy==1.23.5
     #   pydoe
     #   pymc
     #   pytensor
+    #   pyvista
     #   salib
     #   scikit-activeml
     #   scikit-learn
@@ -304,6 +306,7 @@ packaging==24.0
     #   h5netcdf
     #   matplotlib
     #   plotly
+    #   pooch
     #   pytest
     #   tensorflow
     #   xarray
@@ -329,12 +332,17 @@ pillow==10.3.0
     # via
     #   bokeh
     #   matplotlib
+    #   pyvista
 platformdirs==4.2.2
-    # via black
+    # via
+    #   black
+    #   pooch
 plotly==5.21.0
     # via -r requirements.in
 pluggy==1.5.0
     # via pytest
+pooch==1.8.2
+    # via pyvista
 pox==0.3.4
     # via pathos
 ppft==1.7.6.8
@@ -392,6 +400,8 @@ python-dateutil==2.9.0.post0
     #   pandas
 pytz==2024.1
     # via pandas
+pyvista==0.44.1
+    # via -r requirements.in
 pyyaml==6.0.1
     # via
     #   -r requirements.in
@@ -400,6 +410,7 @@ pyyaml==6.0.1
     #   distributed
 requests==2.31.0
     # via
+    #   pooch
     #   requests-oauthlib
     #   tensorboard
 requests-oauthlib==2.0.0
@@ -434,6 +445,8 @@ scipy==1.10.1
     #   scikit-activeml
     #   scikit-learn
     #   xarray-einstats
+scooby==0.10.0
+    # via pyvista
 seaborn==0.13.2
     # via -r requirements.in
 six==1.16.0
@@ -501,13 +514,16 @@ typing-extensions==4.11.0
     #   gpflow
     #   pymc
     #   pytensor
+    #   pyvista
     #   tensorflow
 urllib3==2.2.1
     # via
     #   distributed
     #   requests
 vtk==9.3.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pyvista
 werkzeug==3.0.2
     # via tensorboard
 wheel==0.43.0

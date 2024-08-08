@@ -23,6 +23,7 @@ pyDOE # design of experiments
 SALib # for sensitivity analysis
 diversipy # sampling from space filling subsets
 vtk>=9.2.0 # vtk format handler
+pyvista
 autograd # wrapper around numpy for automated differentiation
 particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
 chaospy # polynomial chaos
