@@ -171,32 +171,22 @@ def fixture_remote_queens_repository(pytestconfig):
     return remote_queens
 
 
-@pytest.fixture(name="fourc_cluster_paths", scope="session")
-def fixture_fourc_cluster_paths(remote_connection):
-    """Paths to executables on the clusters.
+@pytest.fixture(name="fourc_cluster_path", scope="session")
+def fixture_fourc_cluster_path(remote_connection):
+    """Paths to fourc executable on the clusters.
 
-    Checks also for existence of the executables.
+    Checks also for existence of the executable.
     """
     result = remote_connection.run("echo ~", in_stream=False)
     remote_home = Path(result.stdout.rstrip())
 
-    fourc, post_processor, post_ensight = fourc_build_paths_from_home(remote_home)
+    fourc, _, _ = fourc_build_paths_from_home(remote_home)
 
-    def exists_on_remote(file_path):
-        """Check for existence of a file on remote machine."""
-        find_result = remote_connection.run(f"find {file_path}", in_stream=False)
-        return Path(find_result.stdout.rstrip())
+    # Check for existence of fourc on remote machine.
+    find_result = remote_connection.run(f"find {fourc}", in_stream=False)
+    Path(find_result.stdout.rstrip())
 
-    exists_on_remote(fourc)
-    exists_on_remote(post_processor)
-    exists_on_remote(post_ensight)
-
-    fourc_cluster_paths = {
-        "path_to_executable": fourc,
-        "path_to_post_ensight": post_ensight,
-        "path_to_post_processor": post_processor,
-    }
-    return fourc_cluster_paths
+    return fourc
 
 
 @pytest.fixture(name="fourc_example_expected_output")

@@ -86,7 +86,7 @@ class TestDaskCluster:
         third_party_inputs,
         cluster_settings,
         remote_connection,
-        fourc_cluster_paths,
+        fourc_cluster_path,
         fourc_example_expected_output,
         global_settings,
     ):
@@ -103,12 +103,10 @@ class TestDaskCluster:
             third_party_inputs (Path): Path to the fourc input files
             cluster_settings (dict): Cluster settings
             remote_connection (RemoteConnection): Remote connection object
-            fourc_cluster_paths (dict): collection of paths to fourc executables on the cluster
+            fourc_cluster_path (Path): paths to fourc executable on the cluster
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
             global_settings (GlobalSettings): object containing experiment name and tmp_path
         """
-        cluster_name = cluster_settings.pop("name")
-
         fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
         # Parameters
@@ -138,10 +136,8 @@ class TestDaskCluster:
 
         driver = JobscriptDriver(
             input_template=fourc_input_file_template,
-            path_to_executable=fourc_cluster_paths["path_to_executable"],
+            path_to_executable=fourc_cluster_path,
             dask_jobscript_template=cluster_settings["dask_jobscript_template"],
-            path_to_postprocessor=fourc_cluster_paths["path_to_post_ensight"],
-            post_file_prefix=f"fourc_mc_ensight_{cluster_name}",
             cluster_script_path=cluster_settings["cluster_script_path"],
             data_processor=data_processor,
         )
