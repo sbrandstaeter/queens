@@ -29,7 +29,6 @@ class JobscriptDriver(Driver):
         dask_jobscript_template,
         cluster_script_path,
         files_to_copy=None,
-        post_file_prefix=None,
         post_process_options="",
         path_to_postprocessor=None,
         data_processor=None,
@@ -44,7 +43,6 @@ class JobscriptDriver(Driver):
             dask_jobscript_template (str, Path): path to (dask specific) jobscript template
             cluster_script_path (str, Path): path to cluster script
             files_to_copy (list): files or directories to copy to experiment_dir
-            post_file_prefix (str, opt): unique prefix to name the post-processed files
             post_process_options (str, opt): options for post-processing
             path_to_postprocessor (path, opt): path to post_processor
             data_processor (obj, opt): instance of data processor class
@@ -62,7 +60,6 @@ class JobscriptDriver(Driver):
         jobscript_options = {
             "EXE": path_to_executable,
             "BUILDDIR": Path(path_to_executable).parent,
-            "OUTPUTPREFIX": post_file_prefix,
             "POSTPROCESS": str(bool(post_processor)).lower(),
             "POSTEXE": str(post_processor),
             "POSTOPTIONS": post_process_options,
@@ -87,7 +84,7 @@ class JobscriptDriver(Driver):
             Result and potentially the gradient
         """
         job_id = sample_dict.pop("job_id")
-        job_dir, output_dir, _, input_file, log_file, error_file = self._manage_paths(
+        job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
@@ -102,6 +99,7 @@ class JobscriptDriver(Driver):
             "DESTDIR": output_dir,
             "INPUT": input_file,
             "JOB_ID": job_id,
+            "OUTPUTPREFIX": output_file.stem,
         }
 
         # Strict is False as the options depend on the cluster jobscripts
