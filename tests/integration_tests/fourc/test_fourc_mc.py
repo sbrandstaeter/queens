@@ -44,7 +44,7 @@ def test_fourc_mc(
     )
     driver = MpiDriver(
         input_template=fourc_input_file_template,
-        path_to_executable=fourc_executable,
+        executable=fourc_executable,
         data_processor=data_processor,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

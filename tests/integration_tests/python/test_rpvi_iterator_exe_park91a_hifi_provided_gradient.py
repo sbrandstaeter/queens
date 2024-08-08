@@ -31,26 +31,12 @@ def fixture_python_path():
     return stdout.strip()
 
 
-@pytest.fixture(name="mpirun_path", scope="session")
-def fixture_mpi_run_path():
-    """Path to mpirun executable."""
-    _, _, stdout, _ = run_subprocess("which mpirun")
-    return stdout.strip()
-
-
-@pytest.fixture(name="mpi_command", scope="session")
-def fixture_mpi_command(mpirun_path):
-    """Basecommand to call mpirun with MpiDriver."""
-    return mpirun_path + " --bind-to none -np"
-
-
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     tmp_path,
     _create_experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
-    mpi_command,
     global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
@@ -103,10 +89,9 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
         gradient_data_processor=gradient_data_processor,
-        mpi_cmd=mpi_command,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     forward_model = SimulationModel(interface=interface)
@@ -164,7 +149,6 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
-    mpi_command,
     global_settings,
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
@@ -210,9 +194,8 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
-        mpi_cmd=mpi_command,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     forward_model = DifferentiableSimulationModelFD(
@@ -271,7 +254,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
-    mpi_command,
     global_settings,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
@@ -323,9 +305,8 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
-        mpi_cmd=mpi_command,
     )
     gradient_data_processor = DataProcessorCsv(
         file_name_identifier="*_gradient.csv",
@@ -336,9 +317,8 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     adjoint_driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=adjoint_executable,
+        executable=adjoint_executable,
         data_processor=gradient_data_processor,
-        mpi_cmd=mpi_command,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
     gradient_interface = JobInterface(

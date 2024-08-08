@@ -88,8 +88,8 @@ def test_write_random_material_to_dat(
     )
     driver = MpiDriver(
         input_template=fourc_input_preprocessed,
-        path_to_executable=fourc_executable,
-        path_to_postprocessor=post_ensight,
+        executable=fourc_executable,
+        post_processor=post_ensight,
         post_file_prefix="fourc_mc_random_field_ensight",
         data_processor=data_processor,
     )

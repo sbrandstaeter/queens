@@ -13,12 +13,12 @@ module list
 ##########################################
 
 RUN_BACI="ON"
-BACI_BUILD_DIR={{ BUILDDIR }}
-EXE={{ EXE }}
+BACI_BUILD_DIR={{ build_dir }}  # Can this be removed?
+EXE={{ executable }}
 
-INPUT={{ INPUT }}
-BACI_OUTPUT_DIR={{ DESTDIR }}
-OUTPUT_PREFIX={{ OUTPUTPREFIX }}
+INPUT={{ input_file }}
+BACI_OUTPUT_DIR={{ output_dir }}
+OUTPUTPREFIX={{ post_file_prefix }}
 
 
 ##########################################
@@ -26,16 +26,16 @@ OUTPUT_PREFIX={{ OUTPUTPREFIX }}
 #  Postprocessing                        #
 #                                        #
 ##########################################
-DoPostprocess={{ POSTPROCESS }}
-if [ $DoPostprocess = true ]
+DoPostprocess=$[ ! -z "{{ post_processor }}" ]
+if [ $DoPostprocess ]
 then
   RUN_ENSIGHT_FILTER="ON"
 else
   RUN_ENSIGHT_FILTER="OFF"
 fi
 
-ENSIGHT_OUTPUT_DIR={{ DESTDIR }}
-ENSIGHT_OPTIONS={{ POSTOPTIONS }}
+ENSIGHT_OUTPUT_DIR={{ output_dir }}
+ENSIGHT_OPTIONS={{ post_options }}
 
 
 ##########################################

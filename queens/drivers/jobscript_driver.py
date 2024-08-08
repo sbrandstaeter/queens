@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 
 class JobscriptDriver(Driver):
-    """Driver to run an executable with mpi.
+    """Driver to run an executable with a jobscript.
 
     Attributes:
         jobscript_template (str): read in jobscript template as string
@@ -25,29 +25,31 @@ class JobscriptDriver(Driver):
     def __init__(
         self,
         input_template,
-        path_to_executable,
-        dask_jobscript_template,
-        cluster_script_path,
+        jobscript_template,
+        executable,
         files_to_copy=None,
+        post_processor=None,
         post_process_options="",
-        path_to_postprocessor=None,
+        post_file_prefix=None,
         data_processor=None,
         gradient_data_processor=None,
         jobscript_file_name="jobscript.sh",
+        extra_options=None,
     ):
-        """Initialize MpiDriver object.
+        """Initialize JobscriptDriver object.
 
         Args:
             input_template (str, Path): path to simulation input template
-            path_to_executable (str, Path): path to main executable of respective software
-            dask_jobscript_template (str, Path): path to (dask specific) jobscript template
-            cluster_script_path (str, Path): path to cluster script
-            files_to_copy (list): files or directories to copy to experiment_dir
+            jobscript_template (str, Path): path to jobscript template or read in jobscript template
+            executable (str, Path): path to main executable of respective software
+            files_to_copy (list, opt): files or directories to copy to experiment_dir
+            post_processor (path, opt): path to post_processor
             post_process_options (str, opt): options for post-processing
-            path_to_postprocessor (path, opt): path to post_processor
+            post_file_prefix (str, opt): unique prefix to name the post-processed files
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
+            extra_options (dict): Extra options to inject into jobscript template
         """
         super().__init__(
             input_template,
@@ -55,19 +57,20 @@ class JobscriptDriver(Driver):
             gradient_data_processor,
             files_to_copy,
         )
-        post_processor = path_to_postprocessor if path_to_postprocessor else None
+        if Path(jobscript_template).is_file():
+            self.jobscript_template = read_file(jobscript_template)
+        else:
+            self.jobscript_template = jobscript_template
 
-        jobscript_options = {
-            "EXE": path_to_executable,
-            "BUILDDIR": Path(path_to_executable).parent,
-            "POSTPROCESS": str(bool(post_processor)).lower(),
-            "POSTEXE": str(post_processor),
-            "POSTOPTIONS": post_process_options,
-            "CLUSTERSCRIPT": cluster_script_path,
+        if extra_options is None:
+            extra_options = {}
+        self.jobscript_options = {
+            "post_processor": post_processor,
+            "post_process_options": post_process_options,
+            "post_file_prefix": post_file_prefix,
+            **extra_options,
         }
-
-        self.jobscript_template = read_file(dask_jobscript_template)
-        self.jobscript_options = jobscript_options
+        self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
 
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
@@ -94,20 +97,23 @@ class JobscriptDriver(Driver):
         with metadata.time_code("prepare_input_files"):
             self.prepare_input_files(sample_dict, experiment_dir, input_file)
 
-        final_jobscript_options = {
-            **self.jobscript_options,
-            "DESTDIR": output_dir,
-            "INPUT": input_file,
-            "JOB_ID": job_id,
-            "OUTPUTPREFIX": output_file.stem,
-        }
+            final_jobscript_options = {
+                "job_dir": job_dir,
+                "output_dir": output_dir,
+                "output_file": output_file,
+                "input_file": input_file,
+                "job_id": job_id,
+                "num_procs": num_procs,
+                "num_procs_post": num_procs_post,
+                **self.jobscript_options,
+            }
 
-        # Strict is False as the options depend on the cluster jobscripts
-        inject_in_template(
-            final_jobscript_options, self.jobscript_template, str(jobscript_file), strict=False
-        )
+            # Strict is False as some options might not be needed
+            inject_in_template(
+                final_jobscript_options, self.jobscript_template, str(jobscript_file), strict=False
+            )
 
-        with metadata.time_code("run_executable_and_postprocessing"):
+        with metadata.time_code("run_jobscript"):
             execute_cmd = "bash " + str(jobscript_file)
             self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
 
