@@ -13,7 +13,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class FourcLMIterator(Iterator):
+class LMIterator(Iterator):
     """Iterator for deterministic optimization problems.
 
     Levenberg Marquardt iterator in the style of fourc *gen_inv_analysis*.
@@ -106,7 +106,7 @@ class FourcLMIterator(Iterator):
     def jacobian_and_residual(self, x0):
         """Evaluate Jacobian and residual of objective function at *x0*.
 
-        For fourc LM we can restrict to "2-point".
+        For LM we can restrict to "2-point".
 
         Args:
             x0 (numpy.ndarray): Vector with current parameters
@@ -144,7 +144,7 @@ class FourcLMIterator(Iterator):
         Print console output and optionally open .csv file for results
         and write header.
         """
-        _logger.info("Initialize fourc Levenberg-Marquardt run.")
+        _logger.info("Initialize Levenberg-Marquardt run.")
 
         # produce .csv file and write header
         if self.result_description:

@@ -14,10 +14,10 @@ from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.iterators.classification import ClassificationIterator
 from queens.iterators.data_iterator import DataIterator
 from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
-from queens.iterators.fourc_lm_iterator import FourcLMIterator
 from queens.iterators.grid_iterator import GridIterator
 from queens.iterators.hmc_iterator import HMCIterator
 from queens.iterators.lhs_iterator import LHSIterator
+from queens.iterators.lm_iterator import LMIterator
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -51,7 +51,7 @@ VALID_TYPES = {
     "points": PointsIterator,
     "bmfmc": BMFMCIterator,
     "grid": GridIterator,
-    "fourc_lm": FourcLMIterator,
+    "lm": LMIterator,
     "bbvi": BBVIIterator,
     "bmfia": BMFIAIterator,
     "rpvi": RPVIIterator,
