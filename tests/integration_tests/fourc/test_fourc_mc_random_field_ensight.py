@@ -66,7 +66,7 @@ def test_write_random_material_to_dat(
         input_template=fourc_input_preprocessed,
     )
     data_processor = DataProcessorEnsight(
-        file_name_identifier="fourc_*structure.case",
+        file_name_identifier="*_structure.case",
         file_options_dict={
             "delete_field_data": False,
             "geometric_target": ["geometric_set", "DSURFACE 1"],
@@ -90,7 +90,6 @@ def test_write_random_material_to_dat(
         input_template=fourc_input_preprocessed,
         executable=fourc_executable,
         post_processor=post_ensight,
-        post_file_prefix="fourc_mc_random_field_ensight",
         data_processor=data_processor,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

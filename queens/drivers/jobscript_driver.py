@@ -30,7 +30,6 @@ class JobscriptDriver(Driver):
         files_to_copy=None,
         post_processor=None,
         post_process_options="",
-        post_file_prefix=None,
         data_processor=None,
         gradient_data_processor=None,
         jobscript_file_name="jobscript.sh",
@@ -45,7 +44,6 @@ class JobscriptDriver(Driver):
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             post_processor (path, opt): path to post_processor
             post_process_options (str, opt): options for post-processing
-            post_file_prefix (str, opt): unique prefix to name the post-processed files
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
@@ -67,7 +65,6 @@ class JobscriptDriver(Driver):
         self.jobscript_options = {
             "post_processor": post_processor,
             "post_process_options": post_process_options,
-            "post_file_prefix": post_file_prefix,
             **extra_options,
         }
         self.jobscript_options["executable"] = executable
