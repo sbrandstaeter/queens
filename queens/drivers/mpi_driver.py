@@ -7,5 +7,5 @@ from queens.utils.path_utils import relative_path_from_queens
 
 MpiDriver = partial(
     JobscriptDriver,
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_local.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/mpi_local.sh"),
 )

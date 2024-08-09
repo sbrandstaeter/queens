@@ -5,7 +5,7 @@ import pytest
 from mock import patch
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
-from queens.drivers.mpi_driver import MpiDriver
+from queens.drivers.fourc_driver import FourcDriver
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -86,7 +86,7 @@ def test_write_random_material_to_dat(
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )
-    driver = MpiDriver(
+    driver = FourcDriver(
         input_template=fourc_input_preprocessed,
         executable=fourc_executable,
         post_processor=post_ensight,

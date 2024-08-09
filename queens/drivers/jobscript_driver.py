@@ -28,8 +28,6 @@ class JobscriptDriver(Driver):
         jobscript_template,
         executable,
         files_to_copy=None,
-        post_processor=None,
-        post_process_options="",
         data_processor=None,
         gradient_data_processor=None,
         jobscript_file_name="jobscript.sh",
@@ -42,18 +40,16 @@ class JobscriptDriver(Driver):
             jobscript_template (str, Path): path to jobscript template or read in jobscript template
             executable (str, Path): path to main executable of respective software
             files_to_copy (list, opt): files or directories to copy to experiment_dir
-            post_processor (path, opt): path to post_processor
-            post_process_options (str, opt): options for post-processing
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
             extra_options (dict): Extra options to inject into jobscript template
         """
         super().__init__(
-            input_template,
-            data_processor,
-            gradient_data_processor,
-            files_to_copy,
+            input_template=input_template,
+            data_processor=data_processor,
+            gradient_data_processor=gradient_data_processor,
+            files_to_copy=files_to_copy,
         )
         if Path(jobscript_template).is_file():
             self.jobscript_template = read_file(jobscript_template)
@@ -62,11 +58,7 @@ class JobscriptDriver(Driver):
 
         if extra_options is None:
             extra_options = {}
-        self.jobscript_options = {
-            "post_processor": post_processor,
-            "post_process_options": post_process_options,
-            **extra_options,
-        }
+        self.jobscript_options = extra_options
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
 
