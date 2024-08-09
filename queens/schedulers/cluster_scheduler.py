@@ -64,7 +64,6 @@ class ClusterScheduler(Scheduler):
         max_jobs=1,
         min_jobs=0,
         num_procs=1,
-        num_procs_post=1,
         num_nodes=1,
         queue=None,
         cluster_internal_address=None,
@@ -83,7 +82,6 @@ class ClusterScheduler(Scheduler):
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
             num_procs (int, opt): Number of cores per job per node
-            num_procs_post (int, opt): Number of cores per job for post-processing
             num_nodes (int, opt): Number of cluster nodes per job
             queue (str, opt): Destination queue for each worker job
             cluster_internal_address (str, opt): Internal address of cluster
@@ -107,9 +105,8 @@ class ClusterScheduler(Scheduler):
         )
 
         # collect all settings for the dask cluster
-        num_cores = max(num_procs, num_procs_post)
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
-        job_extra_directives = dask_cluster_options["job_extra_directives"](num_nodes, num_cores)
+        job_extra_directives = dask_cluster_options["job_extra_directives"](num_nodes, num_procs)
         job_directives_skip = dask_cluster_options["job_directives_skip"]
         if queue is None:
             job_directives_skip.append("#SBATCH -p")
@@ -191,7 +188,6 @@ class ClusterScheduler(Scheduler):
             experiment_dir=experiment_dir,
             client=client,
             num_procs=num_procs,
-            num_procs_post=num_procs_post,
             restart_workers=restart_workers,
         )
 

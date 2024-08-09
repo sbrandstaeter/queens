@@ -82,7 +82,6 @@ def test_write_random_material_to_dat(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        num_procs_post=1,
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )

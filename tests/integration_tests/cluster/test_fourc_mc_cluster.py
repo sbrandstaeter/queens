@@ -126,7 +126,6 @@ class TestDaskCluster:
             max_jobs=1,
             min_jobs=1,
             num_procs=1,
-            num_procs_post=1,
             num_nodes=1,
             remote_connection=remote_connection,
             cluster_internal_address=cluster_settings["cluster_internal_address"],

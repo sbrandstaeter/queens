@@ -62,13 +62,12 @@ class JobscriptDriver(Driver):
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
 
-    def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
+    def run(self, sample_dict, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
             sample_dict (dict): Dict containing sample and job id
             num_procs (int): number of cores
-            num_procs_post (int): number of cores for post-processing
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
 
@@ -93,7 +92,6 @@ class JobscriptDriver(Driver):
                 "input_file": input_file,
                 "job_id": job_id,
                 "num_procs": num_procs,
-                "num_procs_post": num_procs_post,
                 **self.jobscript_options,
             }
 
