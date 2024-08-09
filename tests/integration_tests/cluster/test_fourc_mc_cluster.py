@@ -139,10 +139,7 @@ class TestDaskCluster:
             jobscript_template=cluster_settings["jobscript_template"],
             executable=fourc_cluster_path,
             data_processor=data_processor,
-            extra_options={
-                "cluster_script": cluster_settings["cluster_script_path"],
-                "build_dir": fourc_cluster_path.parent,
-            },
+            extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
 
         interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

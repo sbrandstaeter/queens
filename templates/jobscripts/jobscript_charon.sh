@@ -13,8 +13,8 @@ module list
 ##########################################
 
 RUN_BACI="ON"
-BACI_BUILD_DIR={{ build_dir }}  # Can this be removed?
 EXE={{ executable }}
+BACI_BUILD_DIR="$(dirname "${EXE}")"
 
 INPUT={{ input_file }}
 BACI_OUTPUT_DIR={{ output_dir }}
