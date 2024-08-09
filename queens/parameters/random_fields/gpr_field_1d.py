@@ -133,18 +133,9 @@ class DamagedBeam(MeanFunction, Function):
 
     @inherit_check_shapes
     def __call__(self, X: TensorType) -> tf.Tensor:
-        x, Y, Z = np.split(X, 3, axis=1)
 
         reshape_shape_X = tf.concat(
-            [tf.ones(shape=(tf.rank(x) - 1), dtype=default_int()), [-1]],
-            axis=0,
-        )
-        reshape_shape_Y = tf.concat(
-            [tf.ones(shape=(tf.rank(Y) - 1), dtype=default_int()), [-1]],
-            axis=0,
-        )
-        reshape_shape_Z = tf.concat(
-            [tf.ones(shape=(tf.rank(Z) - 1), dtype=default_int()), [-1]],
+            [tf.ones(shape=(tf.rank(X) - 1), dtype=default_int()), [-1]],
             axis=0,
         )
         mu = tf.reshape(self.mu, reshape_shape_X)
@@ -153,15 +144,12 @@ class DamagedBeam(MeanFunction, Function):
         offset = tf.reshape(self.offset, reshape_shape_X)
         width = tf.reshape(self.width, reshape_shape_X)
 
-        jump = tf.reshape(self.jump, reshape_shape_Y)
-        scale = tf.reshape(self.scale, reshape_shape_Y)
-
         return (
-            tf.sigmoid(sigma * (x - mu + (width / 2))) * tf.sigmoid(-sigma * (x - mu - (width / 2)))
-        ) * relative_peak * tf.sigmoid(scale * (Y - jump)) + offset
+            tf.sigmoid(sigma * (X - mu + (width / 2))) * tf.sigmoid(-sigma * (X - mu - (width / 2)))
+        ) * relative_peak + offset
 
 
-class GPRRandomField(RandomField):
+class GPRRandomField1D(RandomField):
     """Karhunen Loeve RandomField class.
 
     Attributes:
@@ -277,7 +265,7 @@ class GPRRandomField(RandomField):
                 (X, y), kernel=self.kernel, mean_function=damaged_beam
             )
         else:
-            X = np.zeros((0, 3))
+            X = np.zeros((0, 1))
             y = np.zeros((0, 1))
             self.distribution = gpflow.models.GPR(
                 (X, y), kernel=self.kernel, mean_function=damaged_beam
@@ -335,9 +323,11 @@ class GPRRandomField(RandomField):
             samples_expanded (np.ndarray): Expanded representation of sample
         """
         sample_coords = np.stack(
-            (self.coords['coords'][:, 0], self.coords['coords'][:, 1], self.coords['coords'][:, 2]),
+            (self.coords['coords'][:, 0]),
             axis=-1,
-        ).reshape(-1, 3)
+        ).reshape(
+            -1, 1
+        )[:, None]
         samples_expanded = np.array(
             self.distribution.predict_f_samples(sample_coords, num_samples=1)
         ).reshape(1, -1)
