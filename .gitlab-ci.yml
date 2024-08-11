@@ -387,6 +387,8 @@ benchmarks:
     - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS --color=yes
   needs:
     - lnm-build_conda_env
+  tags:
+    - lnm-ubuntu
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: badges
