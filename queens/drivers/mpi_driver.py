@@ -1,11 +1,49 @@
 """Convenience wrapper around Jobscript Driver."""
 
-from functools import partial
+import logging
 
 from queens.drivers.jobscript_driver import JobscriptDriver
-from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.logger_settings import log_init_args
 
-MpiDriver = partial(
-    JobscriptDriver,
-    jobscript_template=relative_path_from_queens("templates/jobscripts/mpi_local.sh"),
+_logger = logging.getLogger(__name__)
+
+_MPI_COMMAND = (
+    "{{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}"
 )
+
+
+class MpiDriver(JobscriptDriver):
+    """Driver to run a generic MPI run."""
+
+    @log_init_args
+    def __init__(
+        self,
+        input_template,
+        executable,
+        files_to_copy=None,
+        data_processor=None,
+        gradient_data_processor=None,
+        mpi_cmd="/usr/bin/mpirun --bind-to none",
+    ):
+        """Initialize FourcDriver object.
+
+        Args:
+            input_template (str, Path): path to simulation input template
+            executable (str, Path): path to main executable of respective software
+            files_to_copy (list, opt): files or directories to copy to experiment_dir
+            data_processor (obj, opt): instance of data processor class
+            gradient_data_processor (obj, opt): instance of data processor class for gradient data
+            mpi_cmd (str, opt): mpi command
+        """
+        extra_options = {
+            "mpi_cmd": mpi_cmd,
+        }
+        super().__init__(
+            input_template=input_template,
+            jobscript_template=_MPI_COMMAND,
+            executable=executable,
+            files_to_copy=files_to_copy,
+            data_processor=data_processor,
+            gradient_data_processor=gradient_data_processor,
+            extra_options=extra_options,
+        )
