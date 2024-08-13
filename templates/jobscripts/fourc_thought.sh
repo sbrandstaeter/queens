@@ -6,11 +6,11 @@ module load mpi/openmpi-4.1.5
 #  Specify your paths                    #
 #                                        #
 ##########################################
-JOB_ID={{ JOB_ID }}
-EXE={{ EXE }}
-INPUT={{ INPUT }}
-OUTPUTDIR={{ DESTDIR }}
-OUTPUTPREFIX={{ OUTPUTPREFIX }}
+JOB_ID={{ job_id }}
+EXE={{ executable }}
+INPUT={{ input_file }}
+OUTPUTDIR={{ output_dir }}
+OUTPUTPREFIX={{ post_file_prefix }}
 
 ##########################################
 #                                        #
