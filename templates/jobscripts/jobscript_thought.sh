@@ -1,14 +1,15 @@
 #!/bin/bash
 source /etc/profile
+module load mpi/openmpi-4.1.5
 ##########################################
 #                                        #
 #  Specify your paths                    #
 #                                        #
 ##########################################
 JOB_ID={{ JOB_ID }}
-DESTDIR={{ DESTDIR }}  # output directory for run
-EXE={{ EXE }} # CAE executable
-INPUT={{ INPUT }}  # input file
+EXE={{ EXE }}
+INPUT={{ INPUT }}
+OUTPUTDIR={{ DESTDIR }}
 OUTPUTPREFIX={{ OUTPUTPREFIX }}
 
 ##########################################
@@ -44,7 +45,6 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
-LoadBACIModules
 DoChecks
 StageIn
 RunProgram
@@ -55,4 +55,8 @@ StageOut
 Show
 # END ################## DO NOT TOUCH ME #########################
 echo
-echo "Job finished with exit code $? at: `date`"
+echo "Main run finished with exit code $PROGRAMEXITCODE"
+echo "Post processor finished with exit code $POSTPROCESSOREXITCODE"
+echo "Combined exit code is $(CombineExitCodes)"
+echo "Job finished at `date`"
+exit $(CombineExitCodes)
