@@ -4,9 +4,16 @@ import logging
 
 from queens.drivers.jobscript_driver import JobscriptDriver
 from queens.utils.logger_settings import log_init_args
-from queens.utils.path_utils import relative_path_from_queens
 
 _logger = logging.getLogger(__name__)
+
+_MPI_COMMAND = """
+{{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}
+if [ ! -z "{{ post_processor }}" ]
+then
+  {{ mpi_cmd }} -np {{ num_procs }} {{ post_processor }} --file={{ output_file }} {{ post_options }}
+fi
+"""
 
 
 class FourcDriver(JobscriptDriver):
@@ -43,7 +50,7 @@ class FourcDriver(JobscriptDriver):
         }
         super().__init__(
             input_template=input_template,
-            jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_local.sh"),
+            jobscript_template=_MPI_COMMAND,
             executable=executable,
             files_to_copy=files_to_copy,
             data_processor=data_processor,
