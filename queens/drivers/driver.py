@@ -127,7 +127,7 @@ class Driver(metaclass=abc.ABCMeta):
         """Prepare and parse data to input files.
 
         Args:
-            sample_dict (dict): Dict containing sample and job id
+            sample_dict (dict): Dict containing sample
             experiment_dir (Path): Path to QUEENS experiment directory.
             input_file (Path): Path to input file
         """
