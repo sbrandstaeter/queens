@@ -138,15 +138,23 @@ class DamagedBeam(MeanFunction, Function):
             [tf.ones(shape=(tf.rank(X) - 1), dtype=default_int()), [-1]],
             axis=0,
         )
-        mu = tf.reshape(self.mu, reshape_shape_X)
+
         sigma = tf.reshape(self.sigma, reshape_shape_X)
         relative_peak = tf.reshape(self.relative_peak, reshape_shape_X)
         offset = tf.reshape(self.offset, reshape_shape_X)
         width = tf.reshape(self.width, reshape_shape_X)
-
-        return (
-            tf.sigmoid(sigma * (X - mu + (width / 2))) * tf.sigmoid(-sigma * (X - mu - (width / 2)))
-        ) * relative_peak + offset
+        prior = offset
+        for i in self.mu:
+            mu_i = tf.reshape(i, reshape_shape_X)
+            prior = (
+                prior
+                + (
+                    tf.sigmoid(sigma * (X - mu_i + (width / 2)))
+                    * tf.sigmoid(-sigma * (X - mu_i - (width / 2)))
+                )
+                * relative_peak
+            )
+        return prior
 
 
 class GPRRandomField1D(RandomField):
