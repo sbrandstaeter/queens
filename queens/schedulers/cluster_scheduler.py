@@ -81,7 +81,7 @@ class ClusterScheduler(Scheduler):
             remote_connection (RemoteConnection): ssh connection to the remote host
             max_jobs (int, opt): Maximum number of active workers on the cluster
             min_jobs (int, opt): Minimum number of active workers for the cluster
-            num_procs (int, opt): Number of cores per job per node
+            num_procs (int, opt): Number of processors per job per node
             num_nodes (int, opt): Number of cluster nodes per job
             queue (str, opt): Destination queue for each worker job
             cluster_internal_address (str, opt): Internal address of cluster

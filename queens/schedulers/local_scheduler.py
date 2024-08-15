@@ -28,7 +28,7 @@ class LocalScheduler(Scheduler):
         Args:
             experiment_name (str): name of the current experiment
             max_concurrent (int, opt): Number of concurrent jobs
-            num_procs (int, opt): number of cores per job
+            num_procs (int, opt): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
         """

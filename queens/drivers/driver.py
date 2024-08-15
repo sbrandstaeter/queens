@@ -42,7 +42,7 @@ class Driver(metaclass=abc.ABCMeta):
 
         Args:
             sample_dict (dict): Dict containing sample and job id
-            num_procs (int): number of cores
+            num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
 

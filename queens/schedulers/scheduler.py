@@ -20,7 +20,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         client (Client): Dask client that connects to and submits computation to a Dask cluster
-        num_procs (int): number of cores per job
+        num_procs (int): number of processors per job
         restart_workers (bool): If true, restart workers after each finished job
     """
 
@@ -38,7 +38,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
             client (Client): Dask client that connects to and submits computation to a Dask cluster
-            num_procs (int): number of cores per job
+            num_procs (int): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job
         """
         self.experiment_name = experiment_name
