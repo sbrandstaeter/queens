@@ -126,7 +126,6 @@ class TestDaskCluster:
             max_jobs=1,
             min_jobs=1,
             num_procs=1,
-            num_procs_post=1,
             num_nodes=1,
             remote_connection=remote_connection,
             cluster_internal_address=cluster_settings["cluster_internal_address"],
@@ -136,10 +135,10 @@ class TestDaskCluster:
 
         driver = JobscriptDriver(
             input_template=fourc_input_file_template,
-            path_to_executable=fourc_cluster_path,
-            dask_jobscript_template=cluster_settings["dask_jobscript_template"],
-            cluster_script_path=cluster_settings["cluster_script_path"],
+            jobscript_template=cluster_settings["jobscript_template"],
+            executable=fourc_cluster_path,
             data_processor=data_processor,
+            extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
 
         interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

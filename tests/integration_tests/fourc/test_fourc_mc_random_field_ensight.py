@@ -5,7 +5,7 @@ import pytest
 from mock import patch
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
-from queens.drivers.mpi_driver import MpiDriver
+from queens.drivers.fourc_driver import FourcDriver
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -66,7 +66,7 @@ def test_write_random_material_to_dat(
         input_template=fourc_input_preprocessed,
     )
     data_processor = DataProcessorEnsight(
-        file_name_identifier="fourc_*structure.case",
+        file_name_identifier="*_structure.case",
         file_options_dict={
             "delete_field_data": False,
             "geometric_target": ["geometric_set", "DSURFACE 1"],
@@ -82,15 +82,13 @@ def test_write_random_material_to_dat(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        num_procs_post=1,
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )
-    driver = MpiDriver(
+    driver = FourcDriver(
         input_template=fourc_input_preprocessed,
-        path_to_executable=fourc_executable,
-        path_to_postprocessor=post_ensight,
-        post_file_prefix="fourc_mc_random_field_ensight",
+        executable=fourc_executable,
+        post_processor=post_ensight,
         data_processor=data_processor,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

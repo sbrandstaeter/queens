@@ -20,8 +20,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         client (Client): Dask client that connects to and submits computation to a Dask cluster
-        num_procs (int): number of cores per job
-        num_procs_post (int): number of cores per job for post-processing
+        num_procs (int): number of processors per job
         restart_workers (bool): If true, restart workers after each finished job
     """
 
@@ -31,7 +30,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_dir,
         client,
         num_procs,
-        num_procs_post,
         restart_workers,
     ):
         """Initialize scheduler.
@@ -40,14 +38,12 @@ class Scheduler(metaclass=abc.ABCMeta):
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
             client (Client): Dask client that connects to and submits computation to a Dask cluster
-            num_procs (int): number of cores per job
-            num_procs_post (int): number of cores per job for post-processing
+            num_procs (int): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_procs = num_procs
-        self.num_procs_post = num_procs_post
         self.client = client
         self.restart_workers = restart_workers
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
@@ -78,7 +74,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             samples_list,
             pure=False,
             num_procs=self.num_procs,
-            num_procs_post=self.num_procs_post,
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )

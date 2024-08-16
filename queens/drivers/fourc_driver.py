@@ -1,15 +1,19 @@
-"""Convenience wrapper around Jobscript Driver."""
+"""Driver to run fourc."""
 
 from queens.drivers.jobscript_driver import JobscriptDriver
 from queens.utils.logger_settings import log_init_args
 
-_JOBSCRIPT_TEMPLATE = (
-    "{{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}"
-)
+_JOBSCRIPT_TEMPLATE = """
+{{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}
+if [ ! -z "{{ post_processor }}" ]
+then
+  {{ mpi_cmd }} -np {{ num_procs }} {{ post_processor }} --file={{ output_file }} {{ post_options }}
+fi
+"""
 
 
-class MpiDriver(JobscriptDriver):
-    """Driver to run a generic MPI run."""
+class FourcDriver(JobscriptDriver):
+    """Driver to run fourc."""
 
     @log_init_args
     def __init__(
@@ -19,6 +23,8 @@ class MpiDriver(JobscriptDriver):
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
+        post_processor=None,
+        post_process_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
         """Initialize FourcDriver object.
@@ -29,9 +35,13 @@ class MpiDriver(JobscriptDriver):
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
+            post_processor (path, opt): path to post_processor
+            post_process_options (str, opt): options for post-processing
             mpi_cmd (str, opt): mpi command
         """
         extra_options = {
+            "post_processor": post_processor,
+            "post_process_options": post_process_options,
             "mpi_cmd": mpi_cmd,
         }
         super().__init__(

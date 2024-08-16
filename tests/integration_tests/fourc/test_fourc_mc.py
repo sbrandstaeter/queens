@@ -4,7 +4,7 @@ import numpy as np
 
 from queens.data_processor.data_processor_pvd import DataProcessorPvd
 from queens.distributions.uniform import UniformDistribution
-from queens.drivers.mpi_driver import MpiDriver
+from queens.drivers.fourc_driver import FourcDriver
 from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -39,12 +39,11 @@ def test_fourc_mc(
     scheduler = LocalScheduler(
         experiment_name=global_settings.experiment_name,
         num_procs=2,
-        num_procs_post=1,
         max_concurrent=2,
     )
-    driver = MpiDriver(
+    driver = FourcDriver(
         input_template=fourc_input_file_template,
-        path_to_executable=fourc_executable,
+        executable=fourc_executable,
         data_processor=data_processor,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)

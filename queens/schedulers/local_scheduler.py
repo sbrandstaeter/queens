@@ -21,7 +21,6 @@ class LocalScheduler(Scheduler):
         experiment_name,
         max_concurrent=1,
         num_procs=1,
-        num_procs_post=1,
         restart_workers=False,
     ):
         """Initialize local scheduler.
@@ -29,18 +28,16 @@ class LocalScheduler(Scheduler):
         Args:
             experiment_name (str): name of the current experiment
             max_concurrent (int, opt): Number of concurrent jobs
-            num_procs (int, opt): number of cores per job
-            num_procs_post (int, opt): number of cores per job for post-processing
+            num_procs (int, opt): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
         """
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
-        threads_per_worker = max(num_procs, num_procs_post)
         cluster = LocalCluster(
             n_workers=max_concurrent,
             processes=True,
-            threads_per_worker=threads_per_worker,
+            threads_per_worker=num_procs,
             silence_logs=False,
         )
         client = Client(cluster)
@@ -52,7 +49,6 @@ class LocalScheduler(Scheduler):
             experiment_dir=experiment_dir,
             client=client,
             num_procs=num_procs,
-            num_procs_post=num_procs_post,
             restart_workers=restart_workers,
         )
 

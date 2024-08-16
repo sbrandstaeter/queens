@@ -41,7 +41,7 @@ def fixture_mpi_run_path():
 @pytest.fixture(name="mpi_command", scope="session")
 def fixture_mpi_command(mpirun_path):
     """Basecommand to call mpirun with MpiDriver."""
-    return mpirun_path + " --bind-to none -np"
+    return mpirun_path + " --bind-to none"
 
 
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
@@ -83,7 +83,6 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        num_procs_post=1,
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )
@@ -103,7 +102,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
         gradient_data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
@@ -197,7 +196,6 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        num_procs_post=1,
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )
@@ -210,7 +208,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
@@ -310,7 +308,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        num_procs_post=1,
         max_concurrent=1,
         experiment_name=global_settings.experiment_name,
     )
@@ -323,7 +320,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=executable,
+        executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
@@ -336,7 +333,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     adjoint_driver = MpiDriver(
         input_template=third_party_input_file,
-        path_to_executable=adjoint_executable,
+        executable=adjoint_executable,
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )

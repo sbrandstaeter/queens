@@ -38,8 +38,6 @@ class ClusterConfig:
         default_python_path (str):          path indicating the default remote python location
         cluster_script_path (Path):          path to the cluster_script which defines functions
                                             needed for the jobscript
-        dask_jobscript_template (Path):     path to the shell script template that runs a
-                                            forward solver call (e.g., fourc plus post-processor)
         queue (str, opt):                   Destination queue for each worker job
     """
 
@@ -50,7 +48,6 @@ class ClusterConfig:
     cluster_internal_address: str | None
     default_python_path: str
     cluster_script_path: Path
-    dask_jobscript_template: Path
     queue: Optional[str | None] = None
 
     dict = asdict
@@ -61,11 +58,10 @@ THOUGHT_CONFIG = ClusterConfig(
     host="129.187.58.22",
     workload_manager="slurm",
     queue="normal",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_thought.sh"),
     cluster_internal_address=None,
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
-    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_thought.sh"),
 )
 
 
@@ -73,23 +69,19 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
     host="bruteforce.lnm.ed.tum.de",
     workload_manager="slurm",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_bruteforce.sh"),
     cluster_internal_address="10.10.0.1",
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
-    dask_jobscript_template=relative_path_from_queens(
-        "templates/jobscripts/jobscript_bruteforce.sh"
-    ),
 )
 CHARON_CONFIG = ClusterConfig(
     name="charon",
     host="charon.bauv.unibw-muenchen.de",
     workload_manager="slurm",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_charon.sh"),
     cluster_internal_address="192.168.2.253",
     default_python_path="$HOME/miniconda3/envs/queens/bin/python",
     cluster_script_path=Path(),
-    dask_jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
 )
 
 CLUSTER_CONFIGS = {

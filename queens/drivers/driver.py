@@ -14,38 +14,35 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
-        simulation_input_template (Path): read in simulation input template as string
+        input_template (Path): read in simulation input template as string
         data_processor (obj): instance of data processor class
         gradient_data_processor (obj): instance of data processor class for gradient data
         files_to_copy (list): files or directories to copy to experiment_dir
     """
 
-    def __init__(
-        self, simulation_input_template, data_processor, gradient_data_processor, files_to_copy=None
-    ):
+    def __init__(self, input_template, data_processor, gradient_data_processor, files_to_copy=None):
         """Initialize Driver object.
 
         Args:
-            simulation_input_template (str, Path): path to simulation input template
+            input_template (str, Path): path to simulation input template
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             files_to_copy (list): files or directories to copy to experiment_dir
         """
-        self.simulation_input_template = Path(simulation_input_template)
+        self.input_template = Path(input_template)
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
-        self.files_to_copy = [self.simulation_input_template]
+        self.files_to_copy = [self.input_template]
         if files_to_copy is not None:
             self.files_to_copy.extend(files_to_copy)
 
     @abc.abstractmethod
-    def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
+    def run(self, sample_dict, num_procs, experiment_dir, experiment_name):
         """Abstract method for driver run.
 
         Args:
             sample_dict (dict): Dict containing sample and job id
-            num_procs (int): number of cores
-            num_procs_post (int): number of cores for post-processing
+            num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
 
@@ -76,7 +73,7 @@ class Driver(metaclass=abc.ABCMeta):
         output_prefix = experiment_name + "_" + str(job_id)
         output_file = output_dir.joinpath(output_prefix)
 
-        input_file_str = output_prefix + self.simulation_input_template.suffix
+        input_file_str = output_prefix + self.input_template.suffix
         input_file = job_dir.joinpath(input_file_str)
 
         log_file = output_dir.joinpath(output_prefix + ".log")
@@ -130,8 +127,8 @@ class Driver(metaclass=abc.ABCMeta):
         """Prepare and parse data to input files.
 
         Args:
-            sample_dict (dict): Dict containing sample and job id
+            sample_dict (dict): Dict containing sample
             experiment_dir (Path): Path to QUEENS experiment directory.
             input_file (Path): Path to input file
         """
-        inject(sample_dict, experiment_dir / self.simulation_input_template.name, str(input_file))
+        inject(sample_dict, experiment_dir / self.input_template.name, str(input_file))
