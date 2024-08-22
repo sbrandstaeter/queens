@@ -6,9 +6,10 @@ import types
 from queens.data_processor import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from queens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
+from queens.drivers import JobscriptDriver
 from queens.external_geometry import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
 from queens.interfaces import VALID_TYPES as VALID_INTERFACE_TYPES
-from queens.interfaces.interface import Interface
+from queens.interfaces import DirectPythonInterface
 from queens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
 from queens.iterators.iterator import Iterator
 from queens.models import VALID_TYPES as VALID_MODEL_TYPES
@@ -131,7 +132,7 @@ def from_config_create_object(obj_description, global_settings=None, parameters=
     object_class = get_module_class(obj_description, VALID_TYPES)
     if isinstance(object_class, types.FunctionType):
         return object_class
-    if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
+    if issubclass(object_class, (Iterator, DirectPythonInterface, BMFMCModel, JobscriptDriver)):
         obj_description["parameters"] = parameters
     if issubclass(object_class, (Iterator, BMFMCModel)):
         obj_description["global_settings"] = global_settings
