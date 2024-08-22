@@ -61,7 +61,6 @@ def test_bmfia_smc_park(
     mf_interface = BmfiaInterface(
         num_processors_multi_processing=4,
         probabilistic_mapping_type="per_coordinate",
-        parameters=parameters,
     )
     stochastic_optimizer = Adam(
         learning_rate=0.008,
@@ -172,7 +171,6 @@ def test_bmfia_rpvi_gp_park(
     mf_interface = BmfiaInterface(
         num_processors_multi_processing=4,
         probabilistic_mapping_type="per_coordinate",
-        parameters=parameters,
     )
     stochastic_optimizer = Adam(
         learning_rate=0.008,
@@ -303,7 +301,6 @@ def test_bmfia_rpvi_nn_park(
     mf_interface = BmfiaInterface(
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_time_step",
-        parameters=parameters,
     )
     hf_interface = DirectPythonInterface(
         function="park91a_hifi_on_grid", num_workers=1, parameters=parameters
