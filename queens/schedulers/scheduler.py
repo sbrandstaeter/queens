@@ -49,11 +49,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def evaluate(self, samples_list, driver):
+    def evaluate(self, job_ids_and_samples, driver):
         """Submit jobs to driver.
 
         Args:
-            samples_list (list): List of dicts containing samples and job ids
+            job_ids_and_samples (np.array): array containing job ids and samples (row-wise)
             driver (Driver): Driver object that runs simulation
 
         Returns:
@@ -71,7 +71,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         futures = self.client.map(
             run_driver,
-            samples_list,
+            job_ids_and_samples,
             pure=False,
             num_procs=self.num_procs,
             experiment_dir=self.experiment_dir,

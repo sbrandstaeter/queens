@@ -16,6 +16,7 @@ class MpiDriver(JobscriptDriver):
         self,
         input_template,
         executable,
+        parameters,
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
@@ -26,6 +27,7 @@ class MpiDriver(JobscriptDriver):
         Args:
             input_template (str, Path): path to simulation input template
             executable (str, Path): path to main executable of respective software
+            parameters (Parameters): Parameters object
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
@@ -42,4 +44,5 @@ class MpiDriver(JobscriptDriver):
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             extra_options=extra_options,
+            parameters=parameters,
         )

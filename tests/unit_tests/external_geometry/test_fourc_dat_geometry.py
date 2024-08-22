@@ -228,7 +228,7 @@ def test_init(mocker, tmp_path):
 def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default_geo_obj):
     """TODO_doc."""
     filepath = tmp_path / "myfile.dat"
-    write_to_file(dat_dummy_comment, filepath)
+    filepath.write_text(dat_dummy_comment)
 
     mocker.patch(
         "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
@@ -271,7 +271,7 @@ def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default
 def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, default_geo_obj):
     """TODO_doc."""
     filepath = tmp_path / "myfile.dat"
-    write_to_file(dat_dummy_get_fun, filepath)
+    filepath.write_text(dat_dummy_get_fun)
 
     default_geo_obj.current_dat_section = "dummy"
 

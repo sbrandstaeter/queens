@@ -45,8 +45,9 @@ def test_fourc_mc(
         input_template=fourc_input_file_template,
         executable=fourc_executable,
         data_processor=data_processor,
+        parameters=parameters,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
         seed=42,

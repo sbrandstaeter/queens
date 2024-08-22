@@ -504,20 +504,18 @@ class BmfiaInterface(Interface):
     @log_init_args
     def __init__(
         self,
-        parameters,
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_coordinate",
     ):
         """Instantiate a BMFIA interface.
 
         Args:
-            parameters (obj): Parameters object
             num_processors_multi_processing (int): Number of processors that should be used in the
                                                    multi-processing pool.
             probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
                                               mapping objects
         """
-        super().__init__(parameters=None)
+        super().__init__()
         # instantiate probabilistic mapping objects
         (
             instantiate_probabilistic_mappings,

@@ -90,8 +90,9 @@ def test_write_random_material_to_dat(
         executable=fourc_executable,
         post_processor=post_ensight,
         data_processor=data_processor,
+        parameters=parameters,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
         seed=1,

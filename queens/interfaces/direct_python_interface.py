@@ -23,6 +23,7 @@ class DirectPythonInterface(Interface):
     this class is to be able to call the test examples in the said folder.
 
     Attributes:
+        parameters (Parameters): Parameters object
         function (function): Function to evaluate.
         pool (pathos pool): Multiprocessing pool.
         verbose (boolean): Verbosity of evaluations.
@@ -41,13 +42,14 @@ class DirectPythonInterface(Interface):
         """Create interface.
 
         Args:
-            parameters (obj): Parameters object
+            parameters (Parameters): Parameters object
             function (callable, str): Function or name of example function provided by QUEENS
             external_python_module_function (Path | str): Path to external module with function
             num_workers (int): Number of workers
             verbose (boolean): verbosity of evaluations
         """
-        super().__init__(parameters)
+        super().__init__()
+
         if external_python_module_function is None:
             if isinstance(function, str):
                 # Try to load existing simulator functions
@@ -65,7 +67,7 @@ class DirectPythonInterface(Interface):
             inspect.getfullargspec(my_function).varkw
             or "job_id" in inspect.getfullargspec(my_function).args
         )
-
+        self.parameters = parameters
         # Wrap function to clean the output
         self.function = self.function_wrapper(my_function)
         self.pool = pool
@@ -75,7 +77,7 @@ class DirectPythonInterface(Interface):
         """Orchestrate call to simulator function.
 
         Args:
-            samples (list): List of variables objects
+            samples (np.array): Samples of simulation input variables
 
         Returns:
             dict: dictionary with
@@ -146,3 +148,23 @@ class DirectPythonInterface(Interface):
             return result_array
 
         return reshaped_output_function
+
+    def create_samples_list(self, samples, add_job_id=True):
+        """Create a list of sample dictionaries with job id.
+
+        Args:
+            samples (np.array): Samples of simulation input variables
+            add_job_id (bool): add the job_id to the samples if desired.
+
+        Returns:
+            samples_list (list): List of dicts containing samples and job ids
+        """
+        samples_list = []
+        for sample in samples:
+            self.latest_job_id += 1
+            sample_dict = self.parameters.sample_as_dict(sample)
+            if add_job_id:
+                sample_dict["job_id"] = self.latest_job_id
+            samples_list.append(sample_dict)
+
+        return samples_list

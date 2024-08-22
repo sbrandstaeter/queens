@@ -106,8 +106,9 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         data_processor=data_processor,
         gradient_data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
+        parameters=parameters,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
@@ -211,8 +212,9 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
+        parameters=parameters,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = DifferentiableSimulationModelFD(
         finite_difference_method="2-point", interface=interface
     )
@@ -323,6 +325,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
+        parameters=parameters,
     )
     gradient_data_processor = DataProcessorCsv(
         file_name_identifier="*_gradient.csv",
@@ -336,11 +339,10 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         executable=adjoint_executable,
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
+        parameters=parameters,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver, parameters=parameters)
-    gradient_interface = JobInterface(
-        scheduler=scheduler, driver=adjoint_driver, parameters=parameters
-    )
+    interface = JobInterface(scheduler=scheduler, driver=driver)
+    gradient_interface = JobInterface(scheduler=scheduler, driver=adjoint_driver)
     forward_model = DifferentiableSimulationModelAdjoint(
         adjoint_file="grad_objective.csv",
         interface=interface,
