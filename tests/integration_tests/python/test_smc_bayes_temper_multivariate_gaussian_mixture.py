@@ -7,17 +7,19 @@ from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
+from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
 )
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -48,7 +50,9 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             [0.0, 0.0, 0.0, 0.001],
         ],
     )
-    interface = DirectPythonInterface(num_workers=1, function="agawal09a", parameters=parameters)
+    driver = FunctionDriver(function="agawal09a")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="fixed_variance",

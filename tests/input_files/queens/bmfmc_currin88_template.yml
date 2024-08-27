@@ -38,7 +38,13 @@ high_fidelity_model:
   type: simulation_model
   interface_name: interface
 interface:
-  type: direct_python_interface
+  type: job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: local
+driver:
+  type: function
   function: currin88_hifi
 parameters:
   x1:

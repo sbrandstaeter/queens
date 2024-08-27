@@ -6,13 +6,15 @@ import pytest
 from mock import patch
 
 from queens.distributions.normal import NormalDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.stochastic_optimizers.adam import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
@@ -48,7 +50,9 @@ def test_rpvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    interface = DirectPythonInterface(function="park91a_hifi_on_grid", parameters=parameters)
+    driver = FunctionDriver(function="park91a_hifi_on_grid")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = DifferentiableSimulationModelFD(
         finite_difference_method="2-point", step_size=1e-07, interface=interface
     )
@@ -125,10 +129,9 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    interface = DirectPythonInterface(
-        function="park91a_hifi_on_grid_with_gradients",
-        parameters=parameters,
-    )
+    driver = FunctionDriver(function="park91a_hifi_on_grid_with_gradients")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
@@ -220,7 +223,9 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
+    driver = FunctionDriver(function="patch_for_likelihood")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="fixed_variance",

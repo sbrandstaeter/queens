@@ -6,6 +6,7 @@ the actual call to the simulation software.
 """
 
 from queens.drivers.fourc_driver import FourcDriver
+from queens.drivers.function_driver import FunctionDriver
 from queens.drivers.jobscript_driver import JobscriptDriver
 from queens.drivers.mpi_driver import MpiDriver
 
@@ -13,4 +14,5 @@ VALID_TYPES = {
     "fourc": FourcDriver,
     "mpi": MpiDriver,
     "jobscript": JobscriptDriver,
+    "function": FunctionDriver,
 }

@@ -7,11 +7,13 @@ import numpy as np
 import pytest
 
 from queens.distributions.free import FreeVariable
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -32,7 +34,9 @@ def test_optimization_rosenbrock(algorithm, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    driver = FunctionDriver(function="rosenbrock60")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
         algorithm=algorithm,

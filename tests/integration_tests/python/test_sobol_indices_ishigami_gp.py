@@ -3,13 +3,15 @@
 import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -22,7 +24,9 @@ def test_sobol_indices_ishigami_gp(global_settings):
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="ishigami90", parameters=parameters)
+    driver = FunctionDriver(function="ishigami90")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(
         seed=42,

@@ -4,12 +4,14 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow_svgp import GPflowSVGPModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
@@ -23,7 +25,9 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
+    driver = FunctionDriver(function="branin78_hifi")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
         seed=42,

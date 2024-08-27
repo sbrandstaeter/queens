@@ -3,11 +3,13 @@
 import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -32,7 +34,9 @@ def test_elementary_effects_sobol(
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="sobol_g_function", parameters=parameters)
+    driver = FunctionDriver(function="sobol_g_function")
+    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = ElementaryEffectsIterator(
         seed=2,

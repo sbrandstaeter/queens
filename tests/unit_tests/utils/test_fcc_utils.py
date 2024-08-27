@@ -3,7 +3,7 @@
 import pytest
 from mock import Mock
 
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.models.simulation_model import SimulationModel
 from queens.utils.exceptions import InvalidOptionError
@@ -117,11 +117,9 @@ def test_from_config_create_object_model(parameters, mocker, config_1):
 
 def test_from_config_create_object_interface(mocker, config_1, parameters, global_settings):
     """Test case for from_config_create_object function."""
-    mp1 = mocker.patch(
-        "queens.utils.fcc_utils.get_module_class", return_value=DirectPythonInterface
-    )
+    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=JobInterface)
     mp2 = mocker.patch(
-        "queens.interfaces.direct_python_interface.DirectPythonInterface.__init__",
+        "queens.interfaces.job_interface.JobInterface.__init__",
         return_value=None,
     )
     from_config_create_object(config_1, global_settings, parameters)

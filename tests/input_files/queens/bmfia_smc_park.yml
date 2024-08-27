@@ -72,14 +72,22 @@ proposal_distribution:
   type: normal
   mean: [0.0, 0.0]
   covariance: [[0.01, 0.0], [0.0, 0.01]]
-lf_interface:
-  type: direct_python_interface
-  num_workers: 1
-  function: park91a_lofi_on_grid
 hf_interface:
-  type: direct_python_interface
-  num_workers: 1
+  type: job_interface
+  scheduler_name: scheduler
+  driver_name: hf_driver
+scheduler:
+  type: local
+hf_driver:
+  type: function
   function: park91a_hifi_on_grid
+lf_interface:
+  type: job_interface
+  scheduler_name: scheduler
+  driver_name: lf_driver
+lf_driver:
+  type: function
+  function: park91a_lofi_on_grid
 parameters:
   x1:
     type: uniform
