@@ -24,7 +24,7 @@ interface:
   scheduler_name: scheduler
   driver_name: driver
 scheduler:
-  type: local
+  type: pool
 driver:
   type: function
   function: sobol_g_function

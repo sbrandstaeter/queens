@@ -9,7 +9,7 @@ from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -22,7 +22,7 @@ def test_branin_monte_carlo(global_settings):
 
     # Setup iterator
     driver = FunctionDriver(function="branin78_hifi")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, driver=driver, scheduler=scheduler)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(

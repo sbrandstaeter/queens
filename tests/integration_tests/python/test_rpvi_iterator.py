@@ -14,7 +14,7 @@ from queens.models.differentiable_simulation_model_fd import DifferentiableSimul
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.stochastic_optimizers.adam import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
@@ -51,7 +51,7 @@ def test_rpvi_iterator_park91a_hifi(
         coordinate_labels=["x3", "x4"],
     )
     driver = FunctionDriver(function="park91a_hifi_on_grid")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = DifferentiableSimulationModelFD(
         finite_difference_method="2-point", step_size=1e-07, interface=interface
@@ -130,7 +130,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         coordinate_labels=["x3", "x4"],
     )
     driver = FunctionDriver(function="park91a_hifi_on_grid_with_gradients")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
@@ -224,7 +224,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         output_label="y_obs",
     )
     driver = FunctionDriver(function="patch_for_likelihood")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(

@@ -17,7 +17,7 @@ from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
 from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
@@ -85,7 +85,7 @@ def test_bmfia_smc_park(
         mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]]
     )
     lf_driver = FunctionDriver(function="park91a_lofi_on_grid")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     lf_interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=lf_driver)
     lf_model = SimulationModel(interface=lf_interface)
     hf_driver = FunctionDriver(function="park91a_hifi_on_grid")
@@ -190,7 +190,7 @@ def test_bmfia_rpvi_gp_park(
         stochastic_optimizer=stochastic_optimizer,
     )
     lf_driver = FunctionDriver(function="park91a_lofi_on_grid_with_gradients")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     lf_interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=lf_driver)
     lf_model = SimulationModel(interface=lf_interface)
     hf_driver = FunctionDriver(function="park91a_hifi_on_grid")
@@ -304,7 +304,7 @@ def test_bmfia_rpvi_nn_park(
         parameters=parameters,
     )
     lf_driver = FunctionDriver(function="park91a_lofi_on_grid_with_gradients")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     lf_interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=lf_driver)
     lf_model = SimulationModel(interface=lf_interface)
     hf_driver = FunctionDriver(function="park91a_hifi_on_grid")

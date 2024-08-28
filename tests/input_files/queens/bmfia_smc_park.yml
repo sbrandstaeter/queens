@@ -77,7 +77,7 @@ hf_interface:
   scheduler_name: scheduler
   driver_name: hf_driver
 scheduler:
-  type: local
+  type: pool
 hf_driver:
   type: function
   function: park91a_hifi_on_grid

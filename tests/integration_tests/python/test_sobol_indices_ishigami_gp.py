@@ -11,7 +11,7 @@ from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -25,7 +25,7 @@ def test_sobol_indices_ishigami_gp(global_settings):
 
     # Setup iterator
     driver = FunctionDriver(function="ishigami90")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     simulation_model = SimulationModel(interface=interface)
     training_iterator = LHSIterator(

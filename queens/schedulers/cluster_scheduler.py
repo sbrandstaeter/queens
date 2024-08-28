@@ -7,7 +7,7 @@ from datetime import timedelta
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
-from queens.schedulers.scheduler import Scheduler
+from queens.schedulers.dask_scheduler import DaskScheduler
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
@@ -51,7 +51,7 @@ def timedelta_to_str(timedelta_obj):
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 
-class ClusterScheduler(Scheduler):
+class ClusterScheduler(DaskScheduler):
     """Cluster scheduler for QUEENS."""
 
     @log_init_args
@@ -186,8 +186,8 @@ class ClusterScheduler(Scheduler):
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
-            client=client,
             num_procs=num_procs,
+            client=client,
             restart_workers=restart_workers,
         )
 

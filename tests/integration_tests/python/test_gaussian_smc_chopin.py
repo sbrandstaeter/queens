@@ -11,7 +11,7 @@ from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -34,7 +34,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
         output_label="y_obs",
     )
     driver = FunctionDriver(function="patch_for_likelihood")
-    scheduler = LocalScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
