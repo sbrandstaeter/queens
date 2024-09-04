@@ -14,11 +14,11 @@ module list
 
 RUN_BACI="ON"
 EXE={{ executable }}
-BACI_BUILD_DIR="$(dirname "${EXE}")"
+BACI_BUILD_DIR="$(dirname {{ executable }})"
 
 INPUT={{ input_file }}
 BACI_OUTPUT_DIR={{ output_dir }}
-OUTPUTPREFIX={{ post_file_prefix }}
+OUTPUTPREFIX="$(basename {{ output_file }})"
 
 
 ##########################################
