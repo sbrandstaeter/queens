@@ -14,17 +14,20 @@ class Scheduler(metaclass=abc.ABCMeta):
     Attributes:
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
+        num_jobs (int): Maximum number of parallel jobs
     """
 
-    def __init__(self, experiment_name, experiment_dir):
+    def __init__(self, experiment_name, experiment_dir, num_jobs):
         """Initialize scheduler.
 
         Args:
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            num_jobs (int): Maximum number of parallel jobs
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
+        self.num_jobs = num_jobs
 
     @abc.abstractmethod
     def evaluate(self, samples_list, driver):

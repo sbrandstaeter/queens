@@ -34,6 +34,7 @@ class PoolScheduler(Scheduler):
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_directory(experiment_name=experiment_name),
+            num_jobs=num_jobs,
         )
         self.pool = create_pool(num_jobs)
         self.verbose = verbose

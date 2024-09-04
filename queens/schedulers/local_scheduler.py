@@ -46,6 +46,7 @@ class LocalScheduler(DaskScheduler):
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
+            num_jobs=num_jobs,
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,

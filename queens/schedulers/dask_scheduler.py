@@ -24,17 +24,22 @@ class DaskScheduler(Scheduler):
         restart_workers (bool): If true, restart workers after each finished job
     """
 
-    def __init__(self, experiment_name, experiment_dir, num_procs, client, restart_workers):
+    def __init__(
+        self, experiment_name, experiment_dir, num_jobs, num_procs, client, restart_workers
+    ):
         """Initialize scheduler.
 
         Args:
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            num_jobs (int): Maximum number of parallel jobs
             num_procs (int): number of processors per job
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             restart_workers (bool): If true, restart workers after each finished job
         """
-        super().__init__(experiment_name=experiment_name, experiment_dir=experiment_dir)
+        super().__init__(
+            experiment_name=experiment_name, experiment_dir=experiment_dir, num_jobs=num_jobs
+        )
         self.num_procs = num_procs
         self.client = client
         self.restart_workers = restart_workers
