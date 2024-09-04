@@ -19,21 +19,12 @@ class DaskScheduler(Scheduler):
     """Abstract base class for schedulers in QUEENS.
 
     Attributes:
-        experiment_name (str): name of the current experiment
-        experiment_dir (Path): Path to QUEENS experiment directory.
-        client (Client): Dask client that connects to and submits computation to a Dask cluster
         num_procs (int): number of processors per job
+        client (Client): Dask client that connects to and submits computation to a Dask cluster
         restart_workers (bool): If true, restart workers after each finished job
     """
 
-    def __init__(
-        self,
-        experiment_name,
-        experiment_dir,
-        num_procs,
-        client,
-        restart_workers,
-    ):
+    def __init__(self, experiment_name, experiment_dir, num_procs, client, restart_workers):
         """Initialize scheduler.
 
         Args:
@@ -43,9 +34,8 @@ class DaskScheduler(Scheduler):
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             restart_workers (bool): If true, restart workers after each finished job
         """
-        super().__init__(
-            experiment_name=experiment_name, experiment_dir=experiment_dir, num_procs=num_procs
-        )
+        super().__init__(experiment_name=experiment_name, experiment_dir=experiment_dir)
+        self.num_procs = num_procs
         self.client = client
         self.restart_workers = restart_workers
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned

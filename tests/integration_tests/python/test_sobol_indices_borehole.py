@@ -28,7 +28,7 @@ def test_sobol_indices_borehole(global_settings):
 
     # Setup iterator
     driver = FunctionDriver(function="borehole83_lofi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, num_workers=2)
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, num_jobs=2)
     interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = SobolIndexIterator(

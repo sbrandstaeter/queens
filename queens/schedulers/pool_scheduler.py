@@ -23,20 +23,19 @@ class PoolScheduler(Scheduler):
     """
 
     @log_init_args
-    def __init__(self, experiment_name, num_workers=1, verbose=True):
+    def __init__(self, experiment_name, num_jobs=1, verbose=True):
         """Initialize PoolScheduler.
 
         Args:
             experiment_name (str): name of the current experiment
-            num_workers (int, opt): Number of workers
+            num_jobs (int, opt): Maximum number of parallel jobs
             verbose (bool, opt): verbosity of evaluations
         """
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_directory(experiment_name=experiment_name),
-            num_procs=1,
         )
-        self.pool = create_pool(num_workers)
+        self.pool = create_pool(num_jobs)
         self.verbose = verbose
 
     def evaluate(self, samples_list, driver):
@@ -51,7 +50,7 @@ class PoolScheduler(Scheduler):
         """
         function = partial(
             driver.run,
-            num_procs=self.num_procs,
+            num_procs=1,
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )

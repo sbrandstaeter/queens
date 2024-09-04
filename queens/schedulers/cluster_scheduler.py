@@ -61,7 +61,7 @@ class ClusterScheduler(DaskScheduler):
         workload_manager,
         walltime,
         remote_connection,
-        max_jobs=1,
+        num_jobs=1,
         min_jobs=0,
         num_procs=1,
         num_nodes=1,
@@ -79,7 +79,7 @@ class ClusterScheduler(DaskScheduler):
             workload_manager (str): Workload manager ("pbs" or "slurm")
             walltime (str): Walltime for each worker job. Format (hh:mm:ss)
             remote_connection (RemoteConnection): ssh connection to the remote host
-            max_jobs (int, opt): Maximum number of active workers on the cluster
+            num_jobs (int, opt): Maximum number of parallel jobs
             min_jobs (int, opt): Minimum number of active workers for the cluster
             num_procs (int, opt): Number of processors per job per node
             num_nodes (int, opt): Number of cluster nodes per job
@@ -149,7 +149,7 @@ class ClusterScheduler(DaskScheduler):
         }
         dask_cluster_adapt_kwargs = {
             "minimum_jobs": min_jobs,
-            "maximum_jobs": max_jobs,
+            "maximum_jobs": num_jobs,
         }
 
         # actually start the dask cluster on remote host

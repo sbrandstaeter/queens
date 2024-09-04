@@ -14,25 +14,17 @@ class Scheduler(metaclass=abc.ABCMeta):
     Attributes:
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
-        num_procs (int): number of processors per job
     """
 
-    def __init__(
-        self,
-        experiment_name,
-        experiment_dir,
-        num_procs,
-    ):
+    def __init__(self, experiment_name, experiment_dir):
         """Initialize scheduler.
 
         Args:
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
-            num_procs (int): number of processors per job
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
-        self.num_procs = num_procs
 
     @abc.abstractmethod
     def evaluate(self, samples_list, driver):

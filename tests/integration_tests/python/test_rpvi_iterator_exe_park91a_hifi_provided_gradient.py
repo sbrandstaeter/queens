@@ -83,7 +83,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        max_concurrent=1,
+        num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(
@@ -196,7 +196,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        max_concurrent=1,
+        num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(
@@ -308,7 +308,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     scheduler = LocalScheduler(
         num_procs=1,
-        max_concurrent=1,
+        num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
     data_processor = DataProcessorCsv(

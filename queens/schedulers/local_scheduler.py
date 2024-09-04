@@ -18,7 +18,7 @@ class LocalScheduler(DaskScheduler):
     def __init__(
         self,
         experiment_name,
-        max_concurrent=1,
+        num_jobs=1,
         num_procs=1,
         restart_workers=False,
     ):
@@ -26,7 +26,7 @@ class LocalScheduler(DaskScheduler):
 
         Args:
             experiment_name (str): name of the current experiment
-            max_concurrent (int, opt): Number of concurrent jobs
+            num_jobs (int, opt): Maximum number of parallel jobs
             num_procs (int, opt): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
@@ -34,7 +34,7 @@ class LocalScheduler(DaskScheduler):
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
         cluster = LocalCluster(
-            n_workers=max_concurrent,
+            n_workers=num_jobs,
             processes=True,
             threads_per_worker=num_procs,
             silence_logs=False,

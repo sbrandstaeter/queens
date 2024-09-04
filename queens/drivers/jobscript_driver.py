@@ -54,9 +54,6 @@ class JobscriptDriver(Driver):
         self.input_template = Path(input_template)
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
-        self.files_to_copy = [self.input_template]
-        if files_to_copy is not None:
-            self.files_to_copy.extend(files_to_copy)
 
         if Path(jobscript_template).is_file():
             self.jobscript_template = read_file(jobscript_template)
