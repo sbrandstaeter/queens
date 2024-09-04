@@ -26,7 +26,7 @@ OUTPUTPREFIX={{ post_file_prefix }}
 #  Postprocessing                        #
 #                                        #
 ##########################################
-DoPostprocess=$[ ! -z "{{ post_processor }}" ]
+DoPostprocess=$[ ! -z "{{ post_processor or '' }}" ]
 if [ $DoPostprocess ]
 then
   RUN_ENSIGHT_FILTER="ON"
@@ -35,7 +35,7 @@ else
 fi
 
 ENSIGHT_OUTPUT_DIR={{ output_dir }}
-ENSIGHT_OPTIONS={{ post_options }}
+ENSIGHT_OPTIONS={{ post_options or '' }}
 
 
 ##########################################

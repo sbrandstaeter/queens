@@ -5,7 +5,7 @@ from queens.utils.logger_settings import log_init_args
 
 _JOBSCRIPT_TEMPLATE = """
 {{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}
-if [ ! -z "{{ post_processor }}" ]
+if [ ! -z "{{ post_processor or '' }}" ]
 then
   {{ mpi_cmd }} -np {{ num_procs }} {{ post_processor }} --file={{ output_file }} {{ post_options }}
 fi

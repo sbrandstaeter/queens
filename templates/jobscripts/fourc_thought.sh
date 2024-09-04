@@ -23,7 +23,7 @@ RESTART_FROM_PREFIX=xxx                  #
 #                                        #
 #     POSTPROCESSING SPECIFICATION       #
 #                                        #
-DoPostprocess=$[ ! -z "{{ post_processor }}" ]
+DoPostprocess=$[ ! -z "{{ post_processor or '' }}" ]
 # Note: supported post processor is the  #
 #       post_processor.                  #
 POSTEXE={{ post_processor }}             #
@@ -34,7 +34,7 @@ POSTEXE={{ post_processor }}             #
 # what OUTPUTPREFIX it has!              #
 # For detailed information on what can   #
 # be specified please use --help         #
-POSTOPTIONS={{ post_options }}           #
+POSTOPTIONS={{ post_options or '' }}     #
 ##########################################
 
 
@@ -43,7 +43,7 @@ POSTOPTIONS={{ post_options }}           #
 #################################################################
 # This is not a suggestion, this is a rule.
 # Talk to admin before touching this section.
-source {{ cluster_script }}
+source {{ cluster_script or '/lnm/share/donottouch.sh' }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
