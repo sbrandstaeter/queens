@@ -1,4 +1,4 @@
-"""QUEENS scheduler parent class."""
+"""QUEENS dask scheduler parent class."""
 
 import abc
 import logging
