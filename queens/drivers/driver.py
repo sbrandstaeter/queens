@@ -31,7 +31,8 @@ class Driver(metaclass=abc.ABCMeta):
         """Abstract method for driver run.
 
         Args:
-            sample_dict (dict): Dict containing sample and job id
+            sample (dict): Dict containing sample
+            job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
