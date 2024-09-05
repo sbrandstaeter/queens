@@ -44,11 +44,10 @@ def fixture_proposed_sample(current_sample):
 def test_mh_select(
     acceptance_probability, log_acceptance_probability, current_sample, proposed_sample, mocker
 ):
-    """TODO_doc: add a one-line explanation.
+    """Test Metropolis-Hastings selection process.
 
     Test rejection and acceptance of proposal based on given acceptance
     probability.
-
     """
     mocker.patch(
         "numpy.random.uniform",
@@ -66,12 +65,7 @@ def test_mh_select(
 
 
 def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
-    r"""TODO_doc: add a one-line explanation.
-
-    Test acceptance of proposal based on acceptance probability :math:`\geq`
-    1.0.
-
-    """
+    r"""Test MH acceptance when acceptance probability is >= 1."""
     acceptance_probability = np.ones((num_chains, 1))
     log_acceptance_probability = np.log(acceptance_probability)
     selected_sample, accepted = mh_select(

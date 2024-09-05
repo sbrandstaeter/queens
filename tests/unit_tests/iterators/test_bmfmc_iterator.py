@@ -10,14 +10,14 @@ from queens.iterators.bmfmc_iterator import BMFMCIterator
 
 @pytest.fixture(name="approx_name")
 def fixture_approx_name():
-    """TODO_doc."""
+    """Approximation name."""
     name = "gp_approximation_gpflow"
     return name
 
 
 @pytest.fixture(name="config")
 def fixture_config():
-    """TODO_doc."""
+    """Configuration dictionary."""
     config = {
         "type": "gp_approximation_gpflow",
         "features_config": "opt_features",
@@ -29,7 +29,7 @@ def fixture_config():
 
 @pytest.fixture(name="default_bmfmc_model")
 def fixture_default_bmfmc_model():
-    """TODO_doc."""
+    """A default BMFMC model."""
     np.random.seed(1)
     model = Mock()
     model.X_mc = np.random.random((20, 2))
@@ -37,22 +37,15 @@ def fixture_default_bmfmc_model():
     return model
 
 
-@pytest.fixture(name="result_description")
-def fixture_result_description():
-    """TODO_doc."""
-    description = {"write_results": True}
-    return description
-
-
 @pytest.fixture(name="experiment_dir")
 def fixture_experiment_dir():
-    """TODO_doc."""
+    """Experiment directory."""
     return "my_dummy_dir"
 
 
 @pytest.fixture(name="initial_design")
 def fixture_initial_design():
-    """TODO_doc."""
+    """Initial design dictionary."""
     return {"num_HF_eval": 5, "num_bins": 5, "method": "diverse_subset"}
 
 
@@ -64,7 +57,7 @@ def fixture_default_bmfmc_iterator(
     result_description,
     initial_design,
 ):
-    """TODO_doc."""
+    """A default BMFMCIterator instance."""
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
@@ -83,7 +76,7 @@ def test_init(
     initial_design,
     global_settings,
 ):
-    """TODO_doc."""
+    """Test initialization of BMFMCIterator."""
     my_bmfmc_iterator = BMFMCIterator(
         model=default_bmfmc_model,
         parameters=default_parameters_uniform_2d,
@@ -100,7 +93,7 @@ def test_init(
 
 
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
-    """TODO_doc."""
+    """Test core_run method of BMFMCIterator."""
     mp1 = mocker.patch("queens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train")
 
     default_bmfmc_iterator.core_run()
@@ -116,7 +109,7 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test calculate_optimal_X_train method of BMFMCIterator."""
     mp1 = mocker.patch("queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design")
     mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
 
@@ -136,7 +129,7 @@ def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
 
 
 def test_get_design_method(mocker, default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test get_design_method method of BMFMCIterator."""
     mocker.patch(
         "queens.iterators.bmfmc_iterator.BMFMCIterator.random_design", return_value="random"
     )
@@ -157,7 +150,7 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
 
 
 def test_diverse_subset_design(mocker, default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test diverse_subset_design method of BMFMCIterator."""
     mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
@@ -177,7 +170,7 @@ def test_diverse_subset_design(mocker, default_bmfmc_iterator):
 
 
 def test_random_design(mocker, default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test random_design method of BMFMCIterator."""
     mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
@@ -204,13 +197,13 @@ def test_random_design(mocker, default_bmfmc_iterator):
 
 
 def test_model_evaluate(default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test model evaluate method of BMFMCIterator."""
     default_bmfmc_iterator.model.evaluate(None)
     default_bmfmc_iterator.model.evaluate.assert_called_once()
 
 
 def test_post_run(mocker, default_bmfmc_iterator):
-    """TODO_doc."""
+    """Test post_run method of BMFMCIterator."""
     mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
 
     mp1 = mocker.patch(

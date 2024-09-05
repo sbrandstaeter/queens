@@ -22,7 +22,7 @@ import seaborn as sns
 from matplotlib import style
 
 cycle_colors = sns.color_palette()
-style.use("seaborn")
+style.use("seaborn-v0_8")
 this = sys.modules[__name__]
 this.sa_visualization_instance = None
 

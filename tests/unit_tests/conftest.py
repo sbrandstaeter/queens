@@ -11,7 +11,7 @@ from queens.models.simulation_model import SimulationModel
 
 @pytest.fixture(name="dummy_simulation_model")
 def fixture_dummy_simulation_model():
-    """Fixture for dummy model."""
+    """Dummy model."""
     interface = "my_dummy_interface"
     model = SimulationModel(interface)
     return model
@@ -55,6 +55,6 @@ def fixture_get_patched_bmfia_iterator(global_settings):
 
 @pytest.fixture(name="result_description")
 def fixture_result_description():
-    """Fixture for a dummy result description."""
+    """A dummy result description."""
     description = {"write_results": True}
     return description
