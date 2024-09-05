@@ -14,7 +14,8 @@ from queens.utils.valid_options_utils import InvalidOptionError
 def fixture_default_fd_model():
     """A default finite difference model."""
     model_obj = DifferentiableSimulationModelFD(
-        interface=Mock(),
+        scheduler=Mock(),
+        driver=Mock(),
         finite_difference_method="2-point",
     )
     return model_obj
@@ -23,25 +24,29 @@ def fixture_default_fd_model():
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the finite difference model."""
-    interface = "my_interface"
+    scheduler = Mock()
+    driver = Mock()
     finite_difference_method = "3-point"
     step_size = 1e-6
     bounds = [-10, np.inf]
 
     model_obj = DifferentiableSimulationModelFD(
-        interface=interface,
+        scheduler=scheduler,
+        driver=driver,
         finite_difference_method=finite_difference_method,
         step_size=step_size,
         bounds=bounds,
     )
-    assert model_obj.interface == interface
+    assert model_obj.scheduler == scheduler
+    assert model_obj.driver == driver
     assert model_obj.finite_difference_method == finite_difference_method
     assert model_obj.step_size == step_size
     np.testing.assert_equal(model_obj.bounds, np.array(bounds))
 
     with pytest.raises(InvalidOptionError):
         DifferentiableSimulationModelFD(
-            interface=interface,
+            scheduler=scheduler,
+            driver=driver,
             finite_difference_method="invalid_method",
             step_size=step_size,
         )
@@ -49,7 +54,9 @@ def test_init():
 
 def test_evaluate(default_fd_model):
     """Test the evaluation method."""
-    default_fd_model.interface.evaluate = lambda x: {"result": np.sum(x**2, axis=1, keepdims=True)}
+    default_fd_model.scheduler.evaluate = lambda x, driver: {
+        "result": np.sum(x**2, axis=1, keepdims=True)
+    }
     samples = np.random.random((3, 2))
 
     expected_mean = np.sum(samples**2, axis=1, keepdims=True)
@@ -73,7 +80,7 @@ def test_evaluate(default_fd_model):
     np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=5)
 
-    default_fd_model.interface.evaluate = lambda x: {
+    default_fd_model.scheduler.evaluate = lambda x, driver: {
         "result": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
     }
     samples = np.random.random((3, 4))

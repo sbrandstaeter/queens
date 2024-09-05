@@ -10,18 +10,22 @@ class SimulationModel(Model):
     """Simulation model class.
 
     Attributes:
-        interface (interface): Interface to simulations/functions.
+        scheduler (Scheduler):      scheduler for the simulations
+        driver (Driver):            driver for the simulations
     """
 
     @log_init_args
-    def __init__(self, interface):
+    def __init__(self, scheduler, driver):
         """Initialize simulation model.
 
         Args:
-            interface (interface):      Interface to simulator
+            scheduler (Scheduler):      scheduler for the simulations
+            driver (Driver):            driver for the simulations
         """
         super().__init__()
-        self.interface = interface
+        self.scheduler = scheduler
+        self.driver = driver
+        self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
 
     def evaluate(self, samples):
         """Evaluate model with current set of input samples.
@@ -32,7 +36,7 @@ class SimulationModel(Model):
         Returns:
             response (dict): Response of the underlying model at input samples
         """
-        self.response = self.interface.evaluate(samples)
+        self.response = self.scheduler.evaluate(samples, driver=self.driver)
         return self.response
 
     def grad(self, samples, upstream_gradient):

@@ -4,7 +4,6 @@ import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
 from queens.main import run_iterator
@@ -26,8 +25,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    simulation_model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,
@@ -114,8 +112,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    simulation_model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,
@@ -183,8 +180,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    simulation_model = SimulationModel(interface=interface)
+    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
     training_iterator = LHSIterator(
         seed=42,
         num_samples=100,

@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import pytest
+from mock import Mock
 
 from queens.distributions.free import FreeVariable
 from queens.iterators.lm_iterator import LMIterator
@@ -55,7 +56,7 @@ def fixture_output_html(global_settings):
 def fixture_default_lm_iterator(global_settings):
     """A default LMIterator instance."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
-    model = SimulationModel(interface="interface")
+    model = SimulationModel(scheduler=Mock(), driver=Mock())
 
     my_lm_iterator = LMIterator(
         model=model,

@@ -4,7 +4,6 @@ import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -37,8 +36,7 @@ def test_sobol_indices_sobol(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="sobol_g_function")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = SobolIndexIterator(
         seed=42,
         calc_second_order=True,

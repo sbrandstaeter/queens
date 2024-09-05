@@ -6,7 +6,6 @@ import pytest
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
@@ -47,8 +46,7 @@ def fixture_likelihood_model(parameters, global_settings):
     np.random.seed(42)
     driver = FunctionDriver(parameters=parameters, function=park91a_hifi_on_grid)
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
 
     y_obs = park91a_hifi_on_grid(x1=0.3, x2=0.7)
     noise_var = 1e-4

@@ -2,12 +2,10 @@
 
 import numpy as np
 import pytest
-from mock import patch
 
 from queens.data_processor.data_processor_ensight import DataProcessorEnsight
 from queens.drivers.fourc_driver import FourcDriver
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -20,9 +18,9 @@ from queens.utils.io_utils import load_result
 class DummyKLField(KarhunenLoeveRandomField):
     """Dummy Karhunen-Loeve random field."""
 
-    def expanded_representation(self, sample):
+    def expanded_representation(self, samples):
         """Dummy method for expansion."""
-        return self.mean + self.std**2 * np.linalg.norm(self.coords["coords"], axis=1) * sample[0]
+        return self.mean + self.std**2 * np.linalg.norm(self.coords["coords"], axis=1) * samples[0]
 
 
 def test_write_random_material_to_dat(
@@ -100,8 +98,7 @@ def test_write_random_material_to_dat(
         post_processor=post_ensight,
         data_processor=data_processor,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = MonteCarloIterator(
         seed=1,
         num_samples=3,

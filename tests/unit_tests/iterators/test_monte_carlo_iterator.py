@@ -11,7 +11,7 @@ def fixture_default_mc_iterator(
     global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Default monte carlo iterator."""
-    default_simulation_model.interface.driver.parameters = default_parameters_mixed
+    default_simulation_model.driver.parameters = default_parameters_mixed
 
     # create LHS iterator
     my_iterator = MonteCarloIterator(

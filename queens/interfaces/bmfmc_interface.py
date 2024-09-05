@@ -1,12 +1,11 @@
 """Interface for grouping outputs with inputs."""
 
-from queens.interfaces.interface import Interface
 from queens.utils.logger_settings import log_init_args
 
 # pylint: disable=invalid-name
 
 
-class BmfmcInterface(Interface):
+class BmfmcInterface:
     """Interface for grouping outputs with inputs.
 
     Interface for grouping the outputs of several simulations with identical

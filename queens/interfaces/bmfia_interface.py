@@ -10,14 +10,13 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-from queens.interfaces.interface import Interface
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
 
-class BmfiaInterface(Interface):
+class BmfiaInterface:
     r"""Interface class for Bayesian multi-fidelity inverse analysis.
 
     Interface for grouping the outputs of several simulation models with

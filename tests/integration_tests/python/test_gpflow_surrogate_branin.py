@@ -5,7 +5,6 @@ import pytest
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -30,8 +29,7 @@ def test_gpflow_surrogate_branin(
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     training_iterator = MonteCarloIterator(
         seed=42,
         num_samples=20,

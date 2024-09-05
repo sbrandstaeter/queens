@@ -68,28 +68,22 @@ bmfia_iterator:
     num_HF_eval: 50
     seed: 1
     type: random
-hf_interface:
-  type: job_interface
-  scheduler_name: scheduler
-  driver_name: hf_driver
 scheduler:
   type: pool
 hf_driver:
   type: function
   function: park91a_hifi_on_grid
 hf_model:
-  interface_name: hf_interface
   type: simulation_model
-lf_interface:
-  type: job_interface
   scheduler_name: scheduler
-  driver_name: lf_driver
+  driver_name: hf_driver
 lf_driver:
   type: function
   function: park91a_lofi_on_grid_with_gradients
 lf_model:
-  interface_name: lf_interface
   type: simulation_model
+  scheduler_name: scheduler
+  driver_name: lf_driver
 optimizer:
   learning_rate: 0.01
   max_iteration: 100

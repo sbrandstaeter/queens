@@ -5,7 +5,6 @@ import numpy as np
 from queens.data_processor.data_processor_pvd import DataProcessorPvd
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.fourc_driver import FourcDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -47,8 +46,7 @@ def test_fourc_mc(
         executable=fourc_executable,
         data_processor=data_processor,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = MonteCarloIterator(
         seed=42,
         num_samples=2,

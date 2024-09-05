@@ -1,6 +1,6 @@
 """Fixtures needed across unit_tests."""
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -12,8 +12,7 @@ from queens.models.simulation_model import SimulationModel
 @pytest.fixture(name="dummy_simulation_model")
 def fixture_dummy_simulation_model():
     """Dummy model."""
-    interface = "my_dummy_interface"
-    model = SimulationModel(interface)
+    model = SimulationModel(scheduler=Mock(), driver=Mock())
     return model
 
 

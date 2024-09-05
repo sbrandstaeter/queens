@@ -18,9 +18,6 @@ method:
       save_bool: [false, false]
 model:
   type: simulation_model
-  interface_name: interface
-interface:
-  type: job_interface
   scheduler_name: scheduler
   driver_name: driver
 scheduler:

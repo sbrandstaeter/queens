@@ -7,7 +7,6 @@ from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.nuts_iterator import NUTSIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
@@ -37,8 +36,7 @@ def test_gaussian_nuts(
     )
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1.0,

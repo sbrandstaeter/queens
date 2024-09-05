@@ -4,7 +4,6 @@ import pytest
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.polynomial_chaos_iterator import PolynomialChaosIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -29,8 +28,7 @@ def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = PolynomialChaosIterator(
         approach="pseudo_spectral",
         seed=42,
@@ -69,8 +67,7 @@ def test_polynomial_chaos_collocation_borehole(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = PolynomialChaosIterator(
         approach="collocation",
         seed=42,

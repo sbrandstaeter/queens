@@ -91,8 +91,7 @@ def fixture_expected_samples_three():
 @pytest.fixture(name="default_model")
 def fixture_default_model():
     """A default simulation model."""
-    interface = "dummy_interface"
-    model = SimulationModel(interface)
+    model = SimulationModel(scheduler=Mock(), driver=Mock())
     return model
 
 

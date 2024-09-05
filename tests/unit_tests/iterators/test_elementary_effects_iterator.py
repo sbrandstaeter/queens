@@ -11,7 +11,7 @@ def fixture_default_elementary_effects_iterator(
     global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default elementary effects iterator."""
-    default_simulation_model.interface.driver.parameters = default_parameters_uniform_3d
+    default_simulation_model.driver.parameters = default_parameters_uniform_3d
 
     my_iterator = ElementaryEffectsIterator(
         model=default_simulation_model,

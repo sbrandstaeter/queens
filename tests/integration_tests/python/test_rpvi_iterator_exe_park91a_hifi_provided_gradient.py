@@ -6,7 +6,6 @@ import pytest
 from queens.data_processor import DataProcessorCsv
 from queens.distributions import NormalDistribution
 from queens.drivers import MpiDriver
-from queens.interfaces import JobInterface
 from queens.iterators import RPVIIterator
 from queens.main import run_iterator
 from queens.models import (
@@ -108,8 +107,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         gradient_data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
@@ -214,9 +212,8 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = DifferentiableSimulationModelFD(
-        finite_difference_method="2-point", interface=interface
+        scheduler=scheduler, driver=driver, finite_difference_method="2-point"
     )
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
@@ -341,12 +338,11 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    gradient_interface = JobInterface(scheduler=scheduler, driver=adjoint_driver)
     forward_model = DifferentiableSimulationModelAdjoint(
         adjoint_file="grad_objective.csv",
-        interface=interface,
-        gradient_interface=gradient_interface,
+        scheduler=scheduler,
+        driver=driver,
+        gradient_driver=adjoint_driver,
     )
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",

@@ -4,7 +4,6 @@ import numpy as np
 
 from queens.distributions.free import FreeVariable
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -25,8 +24,7 @@ def test_optimization_lsq_parabola(global_settings):
     # Setup iterator
     driver = FunctionDriver(parameters=parameters, function="parabola_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = OptimizationIterator(
         algorithm="LSQ",
         initial_guess=[0.75],

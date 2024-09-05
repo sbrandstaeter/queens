@@ -7,7 +7,6 @@ from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
@@ -52,9 +51,8 @@ def test_rpvi_iterator_park91a_hifi(
     )
     driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = DifferentiableSimulationModelFD(
-        finite_difference_method="2-point", step_size=1e-07, interface=interface
+        scheduler=scheduler, driver=driver, finite_difference_method="2-point", step_size=1e-07
     )
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
@@ -131,8 +129,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     )
     driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
@@ -225,8 +222,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     )
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1,

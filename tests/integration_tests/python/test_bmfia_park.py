@@ -7,7 +7,6 @@ from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
 from queens.interfaces.bmfia_interface import BmfiaInterface
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
@@ -85,11 +84,9 @@ def test_bmfia_smc_park(
     )
     lf_driver = FunctionDriver(parameters=parameters, function="park91a_lofi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_interface = JobInterface(scheduler=scheduler, driver=lf_driver)
-    lf_model = SimulationModel(interface=lf_interface)
+    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_interface = JobInterface(scheduler=scheduler, driver=hf_driver)
-    hf_model = SimulationModel(interface=hf_interface)
+    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
     mf_subiterator = BMFIAIterator(
         features_config="man_features",
         X_cols=[0],
@@ -191,11 +188,9 @@ def test_bmfia_rpvi_gp_park(
         parameters=parameters, function="park91a_lofi_on_grid_with_gradients"
     )
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_interface = JobInterface(scheduler=scheduler, driver=lf_driver)
-    lf_model = SimulationModel(interface=lf_interface)
+    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_interface = JobInterface(scheduler=scheduler, driver=hf_driver)
-    hf_model = SimulationModel(interface=hf_interface)
+    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
     mf_subiterator = BMFIAIterator(
         features_config="man_features",
         num_features=1,
@@ -306,11 +301,9 @@ def test_bmfia_rpvi_nn_park(
         parameters=parameters, function="park91a_lofi_on_grid_with_gradients"
     )
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_interface = JobInterface(scheduler=scheduler, driver=lf_driver)
-    lf_model = SimulationModel(interface=lf_interface)
+    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_interface = JobInterface(scheduler=scheduler, driver=hf_driver)
-    hf_model = SimulationModel(interface=hf_interface)
+    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
     mf_subiterator = BMFIAIterator(
         features_config="no_features",
         initial_design={"num_HF_eval": 50, "seed": 1, "type": "random"},

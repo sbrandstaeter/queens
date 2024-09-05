@@ -8,7 +8,6 @@ from mock import patch
 from queens.distributions.normal import NormalDistribution
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
@@ -48,8 +47,7 @@ def test_smc_generic_temper_multivariate_gaussian(
     )
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1.0,
