@@ -11,7 +11,7 @@ def fixture_default_lhs_iterator(
     global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Default latin hypercube sampling iterator."""
-    default_simulation_model.interface.parameters = default_parameters_mixed
+    default_simulation_model.interface.driver.parameters = default_parameters_mixed
 
     # create LHS iterator
     # pylint: disable=duplicate-code

@@ -17,7 +17,6 @@ class FunctionDriver(Driver):
     """Driver to run an python function.
 
     Attributes:
-        parameters (Parameters): Parameters object
         function (function): Function to evaluate.
         function_requires_job_id (bool): True if function requires job_id
     """
@@ -25,6 +24,7 @@ class FunctionDriver(Driver):
     @log_init_args
     def __init__(
         self,
+        parameters,
         function,
         external_python_module_function=None,
     ):
@@ -35,7 +35,7 @@ class FunctionDriver(Driver):
             function (callable, str): Function or name of example function provided by QUEENS
             external_python_module_function (Path | str): Path to external module with function
         """
-        super().__init__()
+        super().__init__(parameters=parameters)
         if external_python_module_function is None:
             if isinstance(function, str):
                 # Try to load existing simulator functions
@@ -51,7 +51,7 @@ class FunctionDriver(Driver):
             inspect.getfullargspec(my_function).varkw
             or "job_id" in inspect.getfullargspec(my_function).args
         )
-        self.parameters = parameters
+
         # Wrap function to clean the output
         self.function = self.function_wrapper(my_function)
 
@@ -94,11 +94,11 @@ class FunctionDriver(Driver):
 
         return reshaped_output_function
 
-    def run(self, sample_dict, num_procs, experiment_dir, experiment_name):
+    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
-            sample_dict (dict): Dict containing sample and job id
+            sample (dict): Dict containing sample and job id
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -106,7 +106,8 @@ class FunctionDriver(Driver):
         Returns:
             Result and potentially the gradient
         """
-        if not self.function_requires_job_id:
-            sample_dict.pop("job_id")
+        sample_dict = self.parameters.sample_as_dict(sample)
+        if self.function_requires_job_id:
+            sample_dict["job_id"] = job_id
         results = self.function(sample_dict)
         return results

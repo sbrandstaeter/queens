@@ -7,7 +7,7 @@ from pathlib import Path
 import black
 
 from queens.distributions.distributions import ContinuousDistribution
-from queens.interfaces.interface import Interface
+from queens.drivers.driver import Driver
 from queens.iterators.iterator import Iterator
 from queens.models.bmfmc_model import BMFMCModel
 from queens.parameters.fields.random_fields import RandomField
@@ -265,7 +265,7 @@ def create_initialization_call(obj_description, python_code):
         return f"{class_name}"
 
     # add parameters
-    if issubclass(object_class, (Iterator, Interface, BMFMCModel)):
+    if issubclass(object_class, (Iterator, Driver, BMFMCModel)):
         obj_description["parameters"] = VariableName("parameters")
     if issubclass(object_class, (Iterator, BMFMCModel)):
         obj_description["global_settings"] = VariableName("gs")

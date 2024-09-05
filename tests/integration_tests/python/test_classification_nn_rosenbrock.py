@@ -40,9 +40,9 @@ def test_classification_iterator(tmp_path, global_settings):
     # Setup iterator
     classifier_obj = MLPClassifier()
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
-    driver = FunctionDriver(function="rosenbrock60")
+    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = ClassificationIterator(
         num_sample_points=10000,

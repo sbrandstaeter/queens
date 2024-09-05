@@ -69,7 +69,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         num_samples = samples.shape[0]
         # get last job_ids
         last_job_ids = [
-            self.interface.latest_job_id - num_samples + i + 1 for i in range(num_samples)
+            self.interface.scheduler.latest_job_id - num_samples + i + 1 for i in range(num_samples)
         ]
         experiment_dir = self.gradient_interface.scheduler.experiment_dir
 
@@ -80,5 +80,6 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
+        self.interface.scheduler.latest_job_id -= num_samples
         gradient = self.gradient_interface.evaluate(samples)["result"]
         return gradient

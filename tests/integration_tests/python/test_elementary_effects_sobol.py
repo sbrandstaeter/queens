@@ -34,9 +34,9 @@ def test_elementary_effects_sobol(
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
     # Setup iterator
-    driver = FunctionDriver(function="sobol_g_function")
+    driver = FunctionDriver(parameters=parameters, function="sobol_g_function")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = ElementaryEffectsIterator(
         seed=2,

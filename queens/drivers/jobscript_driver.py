@@ -23,16 +23,15 @@ class JobscriptDriver(Driver):
         jobscript_template (str): read in jobscript template as string
         jobscript_options (dict): Dictionary containing jobscript options
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
-        parameters (Parameters): Parameters object
     """
 
     @log_init_args
     def __init__(
         self,
+        parameters,
         input_template,
         jobscript_template,
         executable,
-        parameters,
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
@@ -42,17 +41,17 @@ class JobscriptDriver(Driver):
         """Initialize JobscriptDriver object.
 
         Args:
+            parameters (Parameters): Parameters object
             input_template (str, Path): path to simulation input template
             jobscript_template (str, Path): path to jobscript template or read in jobscript template
             executable (str, Path): path to main executable of respective software
-            parameters (Parameters): Parameters object
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
             extra_options (dict): Extra options to inject into jobscript template
         """
-        super().__init__(files_to_copy=files_to_copy)
+        super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.files_to_copy.append(input_template)
         self.input_template = Path(input_template)
         self.data_processor = data_processor
@@ -68,13 +67,12 @@ class JobscriptDriver(Driver):
         self.jobscript_options = extra_options
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
-        self.parameters = parameters
 
-    def run(self, job_id_and_sample, num_procs, experiment_dir, experiment_name):
+    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
-            job_id_and_sample (np.array): array containing the job_id and the sample
+            sample (dict): Dict containing sample and job id
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -82,14 +80,11 @@ class JobscriptDriver(Driver):
         Returns:
             Result and potentially the gradient
         """
-        job_id = int(job_id_and_sample[0])
-        sample = job_id_and_sample[1:]
-        sample_dict = self.parameters.sample_as_dict(sample)
         job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
-
+        sample_dict = self.parameters.sample_as_dict(sample)
         metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
 
         with metadata.time_code("prepare_input_files"):

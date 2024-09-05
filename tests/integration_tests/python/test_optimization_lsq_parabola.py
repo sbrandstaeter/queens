@@ -23,9 +23,9 @@ def test_optimization_lsq_parabola(global_settings):
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    driver = FunctionDriver(function="parabola_residual")
+    driver = FunctionDriver(parameters=parameters, function="parabola_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
         algorithm="LSQ",

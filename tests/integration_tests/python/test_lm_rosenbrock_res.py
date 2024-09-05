@@ -21,9 +21,9 @@ def test_lm_rosenbrock_res(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="rosenbrock60_residual")
+    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = LMIterator(
         jac_rel_step=1e-05,

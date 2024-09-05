@@ -46,11 +46,11 @@ class DaskScheduler(Scheduler):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def evaluate(self, samples_list, driver):
+    def evaluate(self, samples, driver):
         """Submit jobs to driver.
 
         Args:
-            samples_list (list): List of dicts containing samples and job ids
+            samples (np.array): Array of samples
             driver (Driver): Driver object that runs simulation
 
         Returns:
@@ -66,9 +66,11 @@ class DaskScheduler(Scheduler):
         else:
             run_driver = driver.run
 
+        job_ids = self.get_job_ids(len(samples))
         futures = self.client.map(
             run_driver,
-            samples_list,
+            samples,
+            job_ids,
             pure=False,
             num_procs=self.num_procs,
             experiment_dir=self.experiment_dir,

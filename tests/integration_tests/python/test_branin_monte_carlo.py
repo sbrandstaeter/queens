@@ -21,9 +21,9 @@ def test_branin_monte_carlo(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="branin78_hifi")
+    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, driver=driver, scheduler=scheduler)
+    interface = JobInterface(driver=driver, scheduler=scheduler)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
         seed=42,

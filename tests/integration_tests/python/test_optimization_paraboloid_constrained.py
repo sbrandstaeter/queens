@@ -33,9 +33,9 @@ def test_optimization_paraboloid_constrained(algorithm, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="paraboloid")
+    driver = FunctionDriver(parameters=parameters, function="paraboloid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
         initial_guess=[2.0, 0.0],

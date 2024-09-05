@@ -11,15 +11,7 @@ class Interface(metaclass=abc.ABCMeta):
     to define a unified interface on the one hand, while at the other
     hand taking care of the construction of the appropriate objects from
     the derived class.
-
-    Attributes:
-        parameters (obj): Parameters object.
-        latest_job_id (int):    Latest job ID.
     """
-
-    def __init__(self):
-        """Initialize interface object."""
-        self.latest_job_id = 0
 
     @abc.abstractmethod
     def evaluate(self, samples):
@@ -29,5 +21,5 @@ class Interface(metaclass=abc.ABCMeta):
         software or approximation.
 
         Args:
-            samples (np.array): Samples of simulation input variables
+            samples (np.array):  Array of samples
         """

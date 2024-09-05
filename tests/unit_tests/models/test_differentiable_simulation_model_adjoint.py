@@ -56,7 +56,7 @@ def test_grad(default_adjoint_model):
     """Test grad method."""
     experiment_dir = Path("path_to_experiment_dir")
     differentiable_simulation_model_adjoint.write_to_csv = Mock()
-    default_adjoint_model.interface.latest_job_id = 6
+    default_adjoint_model.interface.scheduler.latest_job_id = 6
     default_adjoint_model.gradient_interface.scheduler.experiment_dir = experiment_dir
     default_adjoint_model.gradient_interface.evaluate = lambda x: {"result": x**2}
 

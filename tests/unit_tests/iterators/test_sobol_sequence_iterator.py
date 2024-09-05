@@ -11,7 +11,7 @@ def fixture_default_qmc_iterator(
     global_settings, default_simulation_model, default_parameters_mixed
 ):
     """Sobol sequence iterator."""
-    default_simulation_model.interface.parameters = default_parameters_mixed
+    default_simulation_model.interface.driver.parameters = default_parameters_mixed
     my_iterator = SobolSequenceIterator(
         model=default_simulation_model,
         parameters=default_parameters_mixed,

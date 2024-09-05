@@ -27,9 +27,9 @@ def test_monte_carlo_borehole(global_settings):
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
     # Setup iterator
-    driver = FunctionDriver(function="borehole83_lofi")
+    driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
         seed=42,

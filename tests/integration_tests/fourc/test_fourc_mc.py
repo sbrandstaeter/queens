@@ -42,10 +42,10 @@ def test_fourc_mc(
         num_jobs=2,
     )
     driver = FourcDriver(
+        parameters=parameters,
         input_template=fourc_input_file_template,
         executable=fourc_executable,
         data_processor=data_processor,
-        parameters=parameters,
     )
     interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)

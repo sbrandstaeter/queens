@@ -23,9 +23,9 @@ def test_points_iterator(inputs, expected_results, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="rosenbrock60")
+    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(
         points=inputs,
@@ -56,9 +56,9 @@ def test_points_iterator_failure(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="rosenbrock60")
+    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = PointsIterator(
         points=inputs,

@@ -101,9 +101,9 @@ def test_bbvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(function="park91a_hifi_on_grid")
+    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="MAP_jeffrey_variance",

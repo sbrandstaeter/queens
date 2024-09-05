@@ -23,9 +23,9 @@ def test_optimization_lsq_rosenbrock_1d(global_settings):
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    driver = FunctionDriver(function="rosenbrock60_residual_1d")
+    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual_1d")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = OptimizationIterator(
         algorithm="LSQ",

@@ -134,12 +134,12 @@ class TestDaskCluster:
         )
 
         driver = JobscriptDriver(
+            parameters=parameters,
             input_template=fourc_input_file_template,
             jobscript_template=cluster_settings["jobscript_template"],
             executable=fourc_cluster_path,
             data_processor=data_processor,
             extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
-            parameters=parameters,
         )
 
         interface = JobInterface(scheduler=scheduler, driver=driver)

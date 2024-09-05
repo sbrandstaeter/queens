@@ -3,6 +3,8 @@
 import abc
 import logging
 
+import numpy as np
+
 from queens.utils.rsync import rsync
 
 _logger = logging.getLogger(__name__)
@@ -15,6 +17,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         num_jobs (int): Maximum number of parallel jobs
+        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, experiment_name, experiment_dir, num_jobs):
@@ -28,13 +31,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_jobs = num_jobs
+        self.latest_job_id = 0
 
     @abc.abstractmethod
-    def evaluate(self, samples_list, driver):
+    def evaluate(self, samples, driver):
         """Submit jobs to driver.
 
         Args:
-            job_ids_and_samples (np.array): array containing job ids and samples (row-wise)
+            samples (np.array): Array of samples
             driver (Driver): Driver object that runs simulation
 
         Returns:
@@ -50,3 +54,16 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         destination = f"{self.experiment_dir}/"
         rsync(paths, destination)
+
+    def get_job_ids(self, num_samples):
+        """Get job ids and update latest_job_id.
+
+        Args:
+            num_samples (int): Number of samples
+
+        Returns:
+            job_ids (np.array): Array of job ids
+        """
+        job_ids = self.latest_job_id + np.arange(1, num_samples + 1)
+        self.latest_job_id += num_samples
+        return job_ids

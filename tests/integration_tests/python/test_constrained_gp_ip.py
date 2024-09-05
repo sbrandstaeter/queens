@@ -45,9 +45,9 @@ def fixture_parameters():
 def fixture_likelihood_model(parameters, global_settings):
     """Likelihood model fixture."""
     np.random.seed(42)
-    driver = FunctionDriver(function=park91a_hifi_on_grid)
+    driver = FunctionDriver(parameters=parameters, function=park91a_hifi_on_grid)
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface)
 
     y_obs = park91a_hifi_on_grid(x1=0.3, x2=0.7)

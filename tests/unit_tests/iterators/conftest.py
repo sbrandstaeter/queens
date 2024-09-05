@@ -18,9 +18,9 @@ from queens.schedulers.local_scheduler import LocalScheduler
 @pytest.fixture(name="default_simulation_model")
 def fixture_default_simulation_model():
     """Default simulation model."""
-    driver = FunctionDriver(function="ishigami90")
+    driver = FunctionDriver(parameters=Mock(), function="ishigami90")
     scheduler = LocalScheduler(experiment_name="dummy_experiment_name")
-    interface = JobInterface(parameters=Mock(), scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     return model
 

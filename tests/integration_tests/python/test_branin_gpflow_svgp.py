@@ -25,9 +25,9 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="branin78_hifi")
+    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     training_iterator = MonteCarloIterator(
         seed=42,

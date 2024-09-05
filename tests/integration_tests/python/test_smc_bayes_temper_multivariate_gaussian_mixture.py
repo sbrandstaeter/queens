@@ -50,9 +50,9 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             [0.0, 0.0, 0.0, 0.001],
         ],
     )
-    driver = FunctionDriver(function="agawal09a")
+    driver = FunctionDriver(parameters=parameters, function="agawal09a")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="fixed_variance",

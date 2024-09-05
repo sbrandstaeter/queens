@@ -23,9 +23,9 @@ def test_sobol_indices_ishigami(global_settings):
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=False)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
+    driver = FunctionDriver(parameters=parameters, function="ishigami90")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=True)
+    interface = JobInterface(scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = SobolIndexIterator(
         seed=42,

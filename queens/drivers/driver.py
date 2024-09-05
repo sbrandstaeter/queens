@@ -10,25 +10,28 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
+        parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
     """
 
-    def __init__(self, files_to_copy=None):
+    def __init__(self, parameters, files_to_copy=None):
         """Initialize Driver object.
 
         Args:
+            parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
         """
+        self.parameters = parameters
         if files_to_copy is None:
             files_to_copy = []
         self.files_to_copy = files_to_copy
 
     @abc.abstractmethod
-    def run(self, job_id_and_sample, num_procs, experiment_dir, experiment_name):
+    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Abstract method for driver run.
 
         Args:
-            job_id_and_sample (np.array): array containing the job_id and the sample
+            sample_dict (dict): Dict containing sample and job id
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
