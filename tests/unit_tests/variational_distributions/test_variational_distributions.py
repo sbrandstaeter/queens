@@ -310,7 +310,7 @@ def fixture_particles_reference_data():
 
 @pytest.fixture(name="distributions")
 def fixture_distributions(request):
-    """Fixture to loop through the distributions."""
+    """The distributions and reference data."""
     distribution_name = request.param
     distribution = request.getfixturevalue(distribution_name + "_distribution")
     reference_data = request.getfixturevalue(distribution_name + "_reference_data")

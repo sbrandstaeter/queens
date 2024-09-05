@@ -33,10 +33,10 @@ def fixture_dummy_high_fidelity_model():
 
 
 class PreProcessor:
-    """TODO_doc."""
+    """PreProcessor for handling coordinates."""
 
     def __init__(self):
-        """TODO_doc."""
+        """Initialize with random inflow coordinates."""
         self.coords_dict = {
             "random_inflow": {"keys": list(range(10)), "coords": np.random.rand(10)}
         }
@@ -57,7 +57,7 @@ def fixture_parameters():
 
 @pytest.fixture(name="config")
 def fixture_config():
-    """Fixture for dummy configuration."""
+    """Dummy configuration."""
     config = {
         "joint_density_approx": {
             "type": "gp_approximation_gpflow",

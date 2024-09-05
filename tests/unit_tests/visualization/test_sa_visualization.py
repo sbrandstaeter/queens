@@ -56,7 +56,7 @@ def fixture_dummy_sensitivity_indices():
 
 
 def test_sa_visualization_bar(tmp_path, dummy_vis, dummy_sensitivity_indices):
-    """TODO_doc: add a one-line explanation.
+    """Test bar plot generation and saving functionality.
 
     Test whether bar plot of sensitivity indices is plotting and saving the
     plot as a file.
@@ -71,7 +71,7 @@ def test_sa_visualization_bar(tmp_path, dummy_vis, dummy_sensitivity_indices):
 
 
 def test_sa_visualization_scatter(tmp_path, dummy_vis, dummy_sensitivity_indices):
-    """TODO_doc: add a one-line explanation.
+    """Test scatter plot generation and saving functionality.
 
     Test whether scatter plot of sensitivity indices is plotting and saving
     the plot as a file.

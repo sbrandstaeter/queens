@@ -23,7 +23,7 @@ from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
 matplotlib.use("agg")
-style.use("seaborn")
+style.use("seaborn-v0_8")
 this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 

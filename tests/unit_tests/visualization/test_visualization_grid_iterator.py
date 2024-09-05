@@ -30,7 +30,7 @@ class TestVisualizationGridIterator:
 
     # ------------------------------- actual unit_tests --------------------------------------------
     def test_init(self, tmp_path):
-        """TODO_doc."""
+        """Test initialization of GridIteratorVisualization attributes."""
         # expected attributes
         paths = [tmp_path / "myplot.png"]
         save_bools = [True]
@@ -51,7 +51,7 @@ class TestVisualizationGridIterator:
         assert grid_vis.var_names_list == var_names_list
 
     def test_plot_qoi_grid(self, tmp_path):
-        """TODO_doc."""
+        """Test plotting of grid."""
         # set arguments
         output = {"result": np.array([1.0, 2.0, 3.0, 4.0])}
         samples = np.array([[1.0, 1.0], [2.0, 2.0], [1.0, 2.0], [2.0, 1.0]])
@@ -64,35 +64,35 @@ class TestVisualizationGridIterator:
         assert filepath.is_file()
 
     def test_get_plotter_one(self):
-        """TODO_doc."""
+        """Test retrieval of plotter function for one-dimensional data."""
         num_params = 1
         plotter = qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         expected_str = re.split("[\\s\\.]", str(plotter))[3]
         assert "plot_one_d" == expected_str
 
     def test_get_plotter_two(self):
-        """TODO_doc."""
+        """Test retrieval of plotter function for two-dimensional data."""
         num_params = 2
         plotter = qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         expected_str = re.split("[\\s\\.]", str(plotter))[3]
         assert "plot_two_d" == expected_str
 
     def test_higher_d(self):
-        """TODO_doc."""
+        """Test for plotter function with more than two parameters."""
         num_params = 3
         with pytest.raises(NotImplementedError) as not_implemented_error:
             qvis.grid_iterator_visualization_instance.get_plotter(num_params)
         assert str(not_implemented_error.value) == "Grid plot only possible up to 2 parameters"
 
     def test_plot_one_d(self):
-        """TODO_doc."""
+        """Test one-dimensional plot."""
         output = {"result": np.array([0.0, 1.0])}
         samples = np.array([0.0, 1.0])
         dummy = 1.0
         qvis.grid_iterator_visualization_instance.plot_one_d(output, samples, dummy)
 
     def test_plot_two_d(self):
-        """TODO_doc."""
+        """Test two-dimensional plot."""
         samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
         output = {"result": np.array([0.0, 1.0, 0.0, 1.0])}
         n_grid_p = [2, 2]
