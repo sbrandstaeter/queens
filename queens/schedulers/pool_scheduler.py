@@ -58,7 +58,7 @@ class PoolScheduler(Scheduler):
         job_ids = self.get_job_ids(len(samples))
         # Pool or no pool
         if self.pool:
-            results = self.pool.starmap(function, [samples, job_ids])
+            results = self.pool.map(function, samples, job_ids)
         elif self.verbose:
             results = list(map(function, tqdm(samples), job_ids))
         else:
