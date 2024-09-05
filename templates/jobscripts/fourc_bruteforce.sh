@@ -9,7 +9,7 @@ JOB_ID={{ job_id }}
 EXE={{ executable }}
 INPUT={{ input_file }}
 OUTPUTDIR={{ output_dir }}
-OUTPUTPREFIX={{ post_file_prefix }}
+OUTPUTPREFIX="$(basename {{ output_file }})"
 
 ##########################################
 #                                        #

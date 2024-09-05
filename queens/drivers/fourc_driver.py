@@ -24,7 +24,7 @@ class FourcDriver(JobscriptDriver):
         data_processor=None,
         gradient_data_processor=None,
         post_processor=None,
-        post_process_options="",
+        post_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
         """Initialize FourcDriver object.
@@ -36,12 +36,12 @@ class FourcDriver(JobscriptDriver):
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             post_processor (path, opt): path to post_processor
-            post_process_options (str, opt): options for post-processing
+            post_options (str, opt): options for post-processing
             mpi_cmd (str, opt): mpi command
         """
         extra_options = {
             "post_processor": post_processor,
-            "post_process_options": post_process_options,
+            "post_options": post_options,
             "mpi_cmd": mpi_cmd,
         }
         super().__init__(
