@@ -9,7 +9,7 @@ from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 # general input fixtures
 @pytest.fixture(name="default_geo_obj")
 def fixture_default_geo_obj(tmp_path):
-    """TODO_doc."""
+    """Create a default FourcDatExternalGeometry object for testing."""
     path_to_dat_file = tmp_path / "myfile.dat"
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -29,15 +29,9 @@ def fixture_default_geo_obj(tmp_path):
     return geo_obj
 
 
-def write_to_file(data, filepath):
-    """TODO_doc."""
-    with open(filepath, "w", encoding="utf-8") as fp:
-        fp.write(data)
-
-
 @pytest.fixture(name="dat_dummy_comment")
 def fixture_dat_dummy_comment():
-    """TODO_doc."""
+    """Provide dummy comment data for .dat files."""
     data = [
         "// this is a comment\n",
         " // this is another comment --------------------------------------"
@@ -49,7 +43,7 @@ def fixture_dat_dummy_comment():
 
 @pytest.fixture(name="dat_dummy_get_fun")
 def fixture_dat_dummy_get_fun():
-    """TODO_doc."""
+    """Provide dummy data for get function tests."""
     data = [
         "NODE    3419 DSURFACE 10\n",
         "NODE    3421 DSURFACE 10\n",
@@ -72,7 +66,7 @@ def fixture_dat_dummy_get_fun():
     ],
 )
 def fixture_dat_section_true(request):
-    """TODO_doc."""
+    """Provide valid .dat file section names."""
     return request.param
 
 
@@ -88,7 +82,7 @@ def fixture_dat_section_true(request):
     ],
 )
 def fixture_dat_section_false(request):
-    """TODO_doc."""
+    """Provide invalid .dat file section names."""
     return request.param
 
 
@@ -102,13 +96,13 @@ def fixture_dat_section_false(request):
     ],
 )
 def fixture_current_dat_sections(request):
-    """TODO_doc."""
+    """Provide current .dat file section names."""
     return request.param
 
 
 @pytest.fixture(name="desired_sections")
 def fixture_desired_sections():
-    """TODO_doc."""
+    """Provide desired .dat file sections."""
     sections = {
         "DLINE-NODE TOPOLOGY": ["DLINE 1"],
         "DSURF-NODE TOPOLOGY": ["DSURFACE 2", "DSURFACE 1"],
@@ -120,7 +114,7 @@ def fixture_desired_sections():
 
 @pytest.fixture(name="default_coords")
 def fixture_default_coords():
-    """TODO_doc."""
+    """Provide default node coordinates."""
     coords = [
         "NODE 1 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 0.0000000000000000e+00",
         "NODE 2 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 -3.7500000000000006e-02",
@@ -132,7 +126,7 @@ def fixture_default_coords():
 
 @pytest.fixture(name="default_topology_node")
 def fixture_default_topology_node():
-    """TODO_doc."""
+    """Provide default node topology."""
     data = [
         "NODE    1 DNODE 1",
         "NODE    2 DNODE 1",
@@ -145,7 +139,7 @@ def fixture_default_topology_node():
 
 @pytest.fixture(name="default_topology_line")
 def fixture_default_topology_line():
-    """TODO_doc."""
+    """Provide default line topology."""
     data = [
         "NODE    1 DLINE 1",
         "NODE    2 DLINE 1",
@@ -158,7 +152,7 @@ def fixture_default_topology_line():
 
 @pytest.fixture(name="default_topology_surf")
 def fixture_default_topology_surf():
-    """TODO_doc."""
+    """Provide default surface topology."""
     data = [
         "NODE    1 DSURFACE 1",
         "NODE    2 DSURFACE 1",
@@ -171,7 +165,7 @@ def fixture_default_topology_surf():
 
 @pytest.fixture(name="default_topology_vol")
 def fixture_default_topology_vol():
-    """TODO_doc."""
+    """Provide default volume topology."""
     data = [
         "NODE    1 DVOL 1",
         "NODE    2 DVOL 1",
@@ -184,7 +178,7 @@ def fixture_default_topology_vol():
 
 # ----------------- actual unit_tests -------------------------------------------------------------
 def test_init(mocker, tmp_path):
-    """TODO_doc."""
+    """Test the initialization of FourcDatExternalGeometry."""
     path_to_dat_file = "dummy_path"
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -226,9 +220,9 @@ def test_init(mocker, tmp_path):
 
 
 def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default_geo_obj):
-    """TODO_doc."""
+    """Test reading data with comments from dat file."""
     filepath = tmp_path / "myfile.dat"
-    filepath.write_text(dat_dummy_comment)
+    filepath.write_text(dat_dummy_comment, encoding="utf-8")
 
     mocker.patch(
         "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
@@ -269,7 +263,7 @@ def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default
 
 
 def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, default_geo_obj):
-    """TODO_doc."""
+    """Test reading data with get functions from dat file."""
     filepath = tmp_path / "myfile.dat"
     filepath.write_text(dat_dummy_get_fun)
 
@@ -314,7 +308,7 @@ def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, d
 
 
 def test_organize_sections(default_geo_obj):
-    """Wrapper for *get_desired_dat_sections*."""
+    """Test organization of desired sections."""
     desired_geo_sets = ["DSURFACE 9", "DVOL 2", "DLINE 1", "DSURFACE 8"]
     expected_dat_section = {
         "DLINE-NODE TOPOLOGY": ["DLINE 1"],
@@ -329,7 +323,7 @@ def test_organize_sections(default_geo_obj):
 
 
 def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
-    """TODO_doc."""
+    """Test getting current dat section with a valid section."""
     default_geo_obj.get_current_dat_section(dat_section_true)
     clean_section_name = dat_section_true.strip()
     clean_section_name = clean_section_name.strip("-")
@@ -337,13 +331,13 @@ def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
 
 
 def test_get_current_dat_section_false(default_geo_obj, dat_section_false):
-    """TODO_doc."""
+    """Test getting current dat section with an invalid section."""
     default_geo_obj.get_current_dat_section(dat_section_false)
     assert default_geo_obj.current_dat_section is None
 
 
 def test_check_if_in_desired_dat_section(default_geo_obj):
-    """TODO_doc."""
+    """Test checking if in desired dat section."""
     default_geo_obj.desired_dat_sections = {
         "DLINE-NODE TOPOLOGY": ["DLINE 1"],
         "DSURF-NODE TOPOLOGY": ["DSURFACE 9", "DSURFACE 8"],
@@ -369,7 +363,7 @@ def test_get_topology(
     default_topology_surf,
     default_topology_vol,
 ):
-    """TODO_doc."""
+    """Test getting topology for different sections."""
     default_geo_obj.current_dat_section = current_dat_sections
     default_geo_obj.desired_dat_sections = desired_sections
 
@@ -399,7 +393,7 @@ def test_get_topology(
 
 
 def test_get_only_desired_topology(default_geo_obj, mocker):
-    """TODO_doc."""
+    """Test getting only desired topology."""
     line = "dummy"
     mocker.patch(
         "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
@@ -424,7 +418,7 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
 
 
 def test_get_only_desired_coordinates(default_geo_obj, mocker):
-    """TODO_doc."""
+    """Test getting only desired coordinates."""
     line = "dummy 2"
     mp1 = mocker.patch(
         "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
@@ -448,7 +442,7 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
 
 
 def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coords):
-    """TODO_doc."""
+    """Test getting coordinates of desired geometric sets."""
     for line in default_coords:
         node_list = line.split()
         default_geo_obj.get_coordinates_of_desired_geometric_sets(node_list)
@@ -467,7 +461,7 @@ def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coor
 
 
 def test_get_nodes_of_interest(default_geo_obj):
-    """TODO_doc."""
+    """Test getting nodes of interest."""
     default_geo_obj.node_topology[-1]["node_mesh"] = [1, 2, 4, 9, 13]
     default_geo_obj.node_topology[-1]["node_topology"] = [1, 1, 1, 1, 1]
     default_geo_obj.line_topology[-1]["node_mesh"] = [1, 2, 4, 9, 13]

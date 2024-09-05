@@ -6,13 +6,15 @@ from scipy.stats import entropy
 
 import queens.utils.pdf_estimation as est
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.main import run_iterator
 from queens.models.bmfmc_model import BMFMCModel
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -45,7 +47,9 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         number_training_iterations=1000,
         dimension_lengthscales=2,
     )
-    interface = DirectPythonInterface(function="currin88_hifi", parameters=parameters)
+    driver = FunctionDriver(function="currin88_hifi")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     hf_model = SimulationModel(interface=interface)
     model = BMFMCModel(
         predictive_var=False,

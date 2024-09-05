@@ -15,7 +15,7 @@ from queens.utils.io_utils import load_input_file
 
 @pytest.fixture(name="input_file")
 def fixture_input_file(tmp_path):
-    """Fixture to create input file."""
+    """Creating input file."""
     input_file_dict = {"experiment_name": "test_experiment_name", "Iterator": "A"}
     input_file_path = tmp_path / "input_file.yml"
     with open(input_file_path, "w", encoding="utf-8") as stream:

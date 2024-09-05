@@ -76,5 +76,5 @@ def test_exponential_averaging(type_of_averaging_quantity):
     params=[1, np.arange(5), np.arange(5).reshape(-1, 1)],
 )
 def fixture_type_of_averaging_quantity(request):
-    """Fixture to test averaging on different types of obj."""
+    """Different objects for which to test averaging."""
     return request.param

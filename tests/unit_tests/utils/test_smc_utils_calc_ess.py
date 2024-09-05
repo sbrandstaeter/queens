@@ -31,12 +31,13 @@ def test_calc_ess_equal_weights(num_particles):
 def test_calc_ess():
     """Test ESS=0.5*N.
 
-    The ess is a measure for the amount of potent particles. The higher
-    the weight of a particle, the more potent it is. For particles with
-    weights (close to) zero give to contribution to ess (**TODO_doc:**
-    Please check this sentence). In case X percent of the particles have
-    zero weight, the ess is N*(100%-X). E.g. half of the particles ->
-    ESS = N/2.
+    The effective sample size (ESS) is a measure for the amount of
+    potent particles. The higher the weight of a particle, the more
+    potent it is. Particles with weights close to zero contribute little
+    to the ESS. If X percent of the N particles have zero weight and all
+    remaining particles have the same non-zero weight, the ESS is
+    N*(100%-X). For example, if half of the particles have zero weight
+    and the other half has weight 1/N, ESS = N/2.
     """
     num_particles = 10
     half_num_particles = int(0.5 * num_particles)

@@ -39,7 +39,7 @@ def test_fourc_mc(
     scheduler = LocalScheduler(
         experiment_name=global_settings.experiment_name,
         num_procs=2,
-        max_concurrent=2,
+        num_jobs=2,
     )
     driver = FourcDriver(
         input_template=fourc_input_file_template,

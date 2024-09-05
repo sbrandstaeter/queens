@@ -3,11 +3,13 @@
 import pytest
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -19,7 +21,9 @@ def test_branin_monte_carlo(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="branin78_hifi", parameters=parameters)
+    driver = FunctionDriver(function="branin78_hifi")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, driver=driver, scheduler=scheduler)
     model = SimulationModel(interface=interface)
     iterator = MonteCarloIterator(
         seed=42,

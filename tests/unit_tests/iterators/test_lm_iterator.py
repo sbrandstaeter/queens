@@ -17,43 +17,43 @@ _logger = logging.getLogger(__name__)
 
 @pytest.fixture(name="iterator_name_cases", scope="module", params=["method"])
 def fixture_iterator_name_cases(request):
-    """TODO_doc."""
+    """Iterator name cases."""
     return request.param
 
 
 @pytest.fixture(name="model_cases", scope="module", params=[None, "dummy_model"])
 def fixture_model_cases(request):
-    """TODO_doc."""
+    """Model cases."""
     return request.param
 
 
 @pytest.fixture(name="fix_update_reg", scope="module", params=["grad", "res", "not_valid"])
 def fixture_fix_update_reg(request):
-    """TODO_doc."""
+    """Update reg cases."""
     return request.param
 
 
 @pytest.fixture(name="fix_tolerance", scope="module", params=[1e-6, 1e0])
 def fixture_fix_tolerance(request):
-    """TODO_doc."""
+    """Tolerance cases."""
     return request.param
 
 
 @pytest.fixture(name="output_csv")
 def fixture_output_csv(global_settings):
-    """Absolute path to output csv file."""
+    """The absolute path to output csv file."""
     return global_settings.result_file(".csv")
 
 
 @pytest.fixture(name="output_html")
 def fixture_output_html(global_settings):
-    """Absolute path to output html file."""
+    """The absolute path to output html file."""
     return global_settings.result_file(".html")
 
 
 @pytest.fixture(name="default_lm_iterator")
 def fixture_default_lm_iterator(global_settings):
-    """TODO_doc."""
+    """A default LMIterator instance."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     model = SimulationModel(interface="interface")
 
@@ -76,13 +76,13 @@ def fixture_default_lm_iterator(global_settings):
 
 @pytest.fixture(name="fix_true_false_param", scope="module", params=[True, False])
 def fixture_fix_true_false_param(request):
-    """TODO_doc."""
+    """A boolean parameter."""
     return request.param
 
 
 @pytest.fixture(name="fix_plotly_fig", scope="module")
 def fixture_fix_plotly_fig():
-    """TODO_doc."""
+    """A Plotly figure."""
     data = pd.DataFrame({"x": [1.0, 2.0], "y": [1.1, 2.1], "z": [1.2, 2.2]})
     fig = px.line_3d(
         data,
@@ -94,7 +94,7 @@ def fixture_fix_plotly_fig():
 
 
 def test_init(global_settings):
-    """TODO_doc."""
+    """Test LMIterator initialization."""
     initial_guess = np.array([1, 2.2])
     bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
     jac_rel_step = 1e-3
@@ -136,14 +136,14 @@ def test_init(global_settings):
 
 
 def test_model_evaluate(default_lm_iterator, mocker):
-    """TODO_doc."""
+    """Test model evaluation in LMIterator."""
     mp = mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=None)
     default_lm_iterator.model.evaluate(None)
     mp.assert_called_once()
 
 
 def test_residual(default_lm_iterator, mocker):
-    """TODO_doc."""
+    """Test residual calculation in LMIterator."""
     mocker.patch(
         "queens.iterators.lm_iterator.LMIterator.get_positions_raw_2pointperturb",
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
@@ -163,7 +163,7 @@ def test_residual(default_lm_iterator, mocker):
 
 
 def test_jacobian(default_lm_iterator, fix_true_false_param, mocker):
-    """TODO_doc."""
+    """Test Jacobian calculation in LMIterator."""
     mocker.patch(
         "queens.iterators.lm_iterator.LMIterator.get_positions_raw_2pointperturb",
         return_value=[
@@ -199,7 +199,7 @@ def test_jacobian(default_lm_iterator, fix_true_false_param, mocker):
 
 
 def test_pre_run(mocker, fix_true_false_param, default_lm_iterator, output_csv):
-    """TODO_doc."""
+    """Test pre-run setup in LMIterator."""
     default_lm_iterator.result_description["write_results"] = fix_true_false_param
 
     mock_pandas_dataframe_to_csv = mocker.patch("pandas.core.generic.NDFrame.to_csv")
@@ -215,7 +215,7 @@ def test_pre_run(mocker, fix_true_false_param, default_lm_iterator, output_csv):
 
 
 def test_core_run(default_lm_iterator, mocker, fix_update_reg, fix_tolerance):
-    """TODO_doc."""
+    """Test core run routine in LMIterator."""
     m1 = mocker.patch(
         "queens.iterators.lm_iterator.LMIterator.jacobian_and_residual",
         return_value=(np.array([[1.0, 2.0], [0.0, 1.0]]), np.array([0.1, 0.01])),
@@ -246,7 +246,7 @@ def test_core_run(default_lm_iterator, mocker, fix_update_reg, fix_tolerance):
 def test_post_run_2param(
     mocker, fix_true_false_param, default_lm_iterator, fix_plotly_fig, output_csv, output_html
 ):
-    """TODO_doc."""
+    """Test post-run operations in LMIterator with 2 parameters."""
     default_lm_iterator.solution = np.array([1.1, 2.2])
     default_lm_iterator.iter_opt = 3
 
@@ -290,7 +290,7 @@ def test_post_run_2param(
 
 
 def test_post_run_1param(mocker, default_lm_iterator, fix_plotly_fig, output_html):
-    """TODO_doc."""
+    """Test post-run operations in LMIterator with 1 parameter."""
     default_lm_iterator.solution = np.array([1.1, 2.2])
     default_lm_iterator.iter_opt = 3
 
@@ -320,7 +320,7 @@ def test_post_run_1param(mocker, default_lm_iterator, fix_plotly_fig, output_htm
 
 
 def test_post_run_3param(mocker, default_lm_iterator, caplog):
-    """Test post run functionality."""
+    """Test post-run operations in LMIterator with 3 parameters."""
     default_lm_iterator.solution = np.array([1.1, 2.2])
     default_lm_iterator.iter_opt = 3
 
@@ -346,7 +346,7 @@ def test_post_run_3param(mocker, default_lm_iterator, caplog):
 
 
 def test_post_run_0param(mocker, default_lm_iterator):
-    """TODO_doc."""
+    """Test post-run operations in LMIterator with 0 parameters."""
     default_lm_iterator.solution = np.array([1.1, 2.2])
     default_lm_iterator.iter_opt = 3
 
@@ -357,7 +357,7 @@ def test_post_run_0param(mocker, default_lm_iterator):
 
 
 def test_get_positions_raw_2pointperturb(default_lm_iterator):
-    """TODO_doc."""
+    """Test get_positions_raw_2pointperturb method in LMIterator."""
     x = np.array([1.1, 2.5])
     pos, delta_pos = default_lm_iterator.get_positions_raw_2pointperturb(x)
     np.testing.assert_almost_equal(pos, np.array([[1.1, 2.5], [1.101011, 2.5], [1.1, 2.501025]]), 8)
@@ -373,7 +373,7 @@ def test_get_positions_raw_2pointperturb(default_lm_iterator):
 
 
 def test_printstep(mocker, default_lm_iterator, fix_true_false_param, output_csv):
-    """TODO_doc."""
+    """Test print step output in LMIterator."""
     default_lm_iterator.result_description["write_results"] = fix_true_false_param
 
     mock_pandas_dataframe_to_csv = mocker.patch("pandas.core.generic.NDFrame.to_csv")

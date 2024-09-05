@@ -39,7 +39,7 @@ def test_tune_scale_covariance(accept_rate_and_scale_covariance):
 
 
 def test_tune_scale_covariance_multiple_chains():
-    """TODO_doc: add a one-line explanation.
+    """Test scale tuning for MCMC methods with multiple chains.
 
     Test the tuning of proposal covariance in MCMC methods with multiple
     chains.

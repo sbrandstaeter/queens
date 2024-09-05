@@ -29,7 +29,7 @@ def fixture_dummy_config():
 
 @pytest.fixture(name="my_lik_model")
 def fixture_my_lik_model():
-    """Fixture for dummy likelihood model."""
+    """A dummy likelihood model."""
     forward_model_dummy = namedtuple("forward_model", ["evaluate"])
 
     class FakeDistr:

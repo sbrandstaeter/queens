@@ -2,10 +2,6 @@
 
 import abc
 import logging
-from pathlib import Path
-
-from queens.utils.injector import inject
-from queens.utils.run_subprocess import run_subprocess_with_logging
 
 _logger = logging.getLogger(__name__)
 
@@ -14,27 +10,18 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
-        input_template (Path): read in simulation input template as string
-        data_processor (obj): instance of data processor class
-        gradient_data_processor (obj): instance of data processor class for gradient data
         files_to_copy (list): files or directories to copy to experiment_dir
     """
 
-    def __init__(self, input_template, data_processor, gradient_data_processor, files_to_copy=None):
+    def __init__(self, files_to_copy=None):
         """Initialize Driver object.
 
         Args:
-            input_template (str, Path): path to simulation input template
-            data_processor (obj): instance of data processor class
-            gradient_data_processor (obj): instance of data processor class for gradient data
             files_to_copy (list): files or directories to copy to experiment_dir
         """
-        self.input_template = Path(input_template)
-        self.data_processor = data_processor
-        self.gradient_data_processor = gradient_data_processor
-        self.files_to_copy = [self.input_template]
-        if files_to_copy is not None:
-            self.files_to_copy.extend(files_to_copy)
+        if files_to_copy is None:
+            files_to_copy = []
+        self.files_to_copy = files_to_copy
 
     @abc.abstractmethod
     def run(self, job_id_and_sample, num_procs, experiment_dir, experiment_name):
@@ -49,86 +36,3 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
-
-    def _manage_paths(self, job_id, experiment_dir, experiment_name):
-        """Manage paths for driver run.
-
-        Args:
-            job_id (int): Job id.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): name of QUEENS experiment.
-
-        Returns:
-            job_dir (Path): Path to job directory
-            output_dir (Path): Path to output directory
-            output_file (Path): Path to output file(s)
-            input_file (Path): Path to input file
-            log_file (Path): Path to log file
-            error_file (Path): Path to error file
-        """
-        job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        output_prefix = experiment_name + "_" + str(job_id)
-        output_file = output_dir.joinpath(output_prefix)
-
-        input_file_str = output_prefix + self.input_template.suffix
-        input_file = job_dir.joinpath(input_file_str)
-
-        log_file = output_dir.joinpath(output_prefix + ".log")
-        error_file = output_dir.joinpath(output_prefix + ".err")
-
-        return job_dir, output_dir, output_file, input_file, log_file, error_file
-
-    @staticmethod
-    def _run_executable(job_id, execute_cmd, log_file, error_file, verbose=False):
-        """Run executable.
-
-        Args:
-            job_id (int): Job id
-            execute_cmd (str): Executed command
-            log_file (Path): Path to log file
-            error_file (Path): Path to error file
-            verbose (bool, opt): flag for additional streaming to terminal
-        """
-        run_subprocess_with_logging(
-            execute_cmd,
-            terminate_expression="PROC.*ERROR",
-            logger_name=__name__ + f"_{job_id}",
-            log_file=str(log_file),
-            error_file=str(error_file),
-            streaming=verbose,
-            raise_error_on_subprocess_failure=False,
-        )
-
-    def _get_results(self, output_dir):
-        """Get results from driver run.
-
-        Args:
-            output_dir (Path): Path to output directory
-
-        Returns:
-            result (np.array): Result from the driver run
-            gradient (np.array, None): Gradient from the driver run (potentially None)
-        """
-        result = None
-        if self.data_processor:
-            result = self.data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got result: %s", result)
-
-        gradient = None
-        if self.gradient_data_processor:
-            gradient = self.gradient_data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got gradient: %s", gradient)
-        return result, gradient
-
-    def prepare_input_files(self, sample_dict, experiment_dir, input_file):
-        """Prepare and parse data to input files.
-
-        Args:
-            sample_dict (dict): Dict containing sample
-            experiment_dir (Path): Path to QUEENS experiment directory.
-            input_file (Path): Path to input file
-        """
-        inject(sample_dict, experiment_dir / self.input_template.name, str(input_file))

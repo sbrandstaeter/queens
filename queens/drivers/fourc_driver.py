@@ -5,7 +5,7 @@ from queens.utils.logger_settings import log_init_args
 
 _JOBSCRIPT_TEMPLATE = """
 {{ mpi_cmd }} -np {{ num_procs }} {{ executable }} {{ input_file }} {{ output_file }}
-if [ ! -z "{{ post_processor }}" ]
+if [ ! -z "{{ post_processor or '' }}" ]
 then
   {{ mpi_cmd }} -np {{ num_procs }} {{ post_processor }} --file={{ output_file }} {{ post_options }}
 fi
@@ -25,7 +25,7 @@ class FourcDriver(JobscriptDriver):
         data_processor=None,
         gradient_data_processor=None,
         post_processor=None,
-        post_process_options="",
+        post_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
         """Initialize FourcDriver object.
@@ -38,12 +38,12 @@ class FourcDriver(JobscriptDriver):
             data_processor (obj, opt): instance of data processor class
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             post_processor (path, opt): path to post_processor
-            post_process_options (str, opt): options for post-processing
+            post_options (str, opt): options for post-processing
             mpi_cmd (str, opt): mpi command
         """
         extra_options = {
             "post_processor": post_processor,
-            "post_process_options": post_process_options,
+            "post_options": post_options,
             "mpi_cmd": mpi_cmd,
         }
         super().__init__(

@@ -4,11 +4,13 @@ import numpy as np
 import pandas as pd
 
 from queens.distributions.free import FreeVariable
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.lm_iterator import LMIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 
 
 def test_lm_rosenbrock_res(global_settings):
@@ -19,7 +21,9 @@ def test_lm_rosenbrock_res(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="rosenbrock60_residual", parameters=parameters)
+    driver = FunctionDriver(function="rosenbrock60_residual")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = LMIterator(
         jac_rel_step=1e-05,

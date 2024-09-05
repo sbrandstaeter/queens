@@ -13,7 +13,7 @@ from queens.utils.exceptions import InvalidOptionError
 # ---- Fixtures and helper methods / classes ---------
 @pytest.fixture(name="default_bmfia_interface")
 def fixture_default_bmfia_interface():
-    """Fixture for a dummy bmfia interface."""
+    """A dummy bmfia interface."""
     default_interface = BmfiaInterface(
         probabilistic_mapping_type="per_coordinate",
         num_processors_multi_processing=2,
@@ -50,21 +50,21 @@ class DummyRegression:
 
 @pytest.fixture(name="dummy_reg_obj")
 def fixture_dummy_reg_obj():
-    """Fixture for a dummy regression object."""
+    """A dummy regression object."""
     obj = DummyRegression()
     return obj
 
 
 @pytest.fixture(name="default_probabilistic_obj_lst")
 def fixture_default_probabilistic_obj_lst(dummy_reg_obj):
-    """Fixture for probabilistic mapping objects."""
+    """A probabilistic mapping object."""
     dummy_lst = [dummy_reg_obj] * 3
     return dummy_lst
 
 
 @pytest.fixture(name="my_state_lst")
 def fixture_my_state_lst():
-    """Fixture for a dummy state list."""
+    """A dummy state list."""
     return [1, 2, 3]
 
 

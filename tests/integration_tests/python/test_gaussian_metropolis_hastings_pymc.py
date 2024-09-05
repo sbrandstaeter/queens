@@ -5,13 +5,15 @@ import pytest
 from mock import patch
 
 from queens.distributions.normal import NormalDistribution
+from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -28,7 +30,9 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    interface = DirectPythonInterface(function="patch_for_likelihood", parameters=parameters)
+    driver = FunctionDriver(function="patch_for_likelihood")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     forward_model = SimulationModel(interface=interface)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
