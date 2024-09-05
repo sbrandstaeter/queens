@@ -8,16 +8,20 @@ from mock import Mock
 from queens.distributions.lognormal import LogNormalDistribution
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.local_scheduler import LocalScheduler
 
 
 @pytest.fixture(name="default_simulation_model")
 def fixture_default_simulation_model():
     """Default simulation model."""
-    interface = DirectPythonInterface(parameters=Mock(), function="ishigami90", num_workers=1)
-    model = SimulationModel(interface)
+    driver = FunctionDriver(function="ishigami90")
+    scheduler = LocalScheduler(experiment_name="dummy_experiment_name")
+    interface = JobInterface(parameters=Mock(), scheduler=scheduler, driver=driver)
+    model = SimulationModel(interface=interface)
     return model
 
 

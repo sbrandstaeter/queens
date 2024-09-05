@@ -4,11 +4,13 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.grid_iterator import GridIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
@@ -20,7 +22,9 @@ def test_grid_iterator(expected_response, expected_grid, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    driver = FunctionDriver(function="rosenbrock60")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = GridIterator(
         grid_design={

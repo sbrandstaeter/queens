@@ -20,7 +20,13 @@ model:
   type: simulation_model
   interface_name: interface
 interface:
-  type: direct_python_interface
+  type: job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: pool
+driver:
+  type: function
   function: sobol_g_function
 parameters:
   x1:

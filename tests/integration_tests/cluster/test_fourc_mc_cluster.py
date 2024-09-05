@@ -123,7 +123,7 @@ class TestDaskCluster:
         scheduler = cluster_scheduler.ClusterScheduler(
             workload_manager=cluster_settings["workload_manager"],
             walltime="00:10:00",
-            max_jobs=1,
+            num_jobs=1,
             min_jobs=1,
             num_procs=1,
             num_nodes=1,

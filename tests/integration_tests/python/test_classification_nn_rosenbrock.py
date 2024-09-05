@@ -4,11 +4,13 @@ import numpy as np
 from sklearn.neural_network._multilayer_perceptron import MLPClassifier
 
 from queens.distributions.uniform import UniformDistribution
-from queens.interfaces.direct_python_interface import DirectPythonInterface
+from queens.drivers.function_driver import FunctionDriver
+from queens.interfaces.job_interface import JobInterface
 from queens.iterators.classification import ClassificationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
+from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.classifier import ActiveLearningClassifier
 from queens.utils.io_utils import load_result
 
@@ -38,7 +40,9 @@ def test_classification_iterator(tmp_path, global_settings):
     # Setup iterator
     classifier_obj = MLPClassifier()
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
-    interface = DirectPythonInterface(function="rosenbrock60", parameters=parameters)
+    driver = FunctionDriver(function="rosenbrock60")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
     model = SimulationModel(interface=interface)
     iterator = ClassificationIterator(
         num_sample_points=10000,

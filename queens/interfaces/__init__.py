@@ -15,11 +15,9 @@ The alternatives are the evaluation of simple python function using the
 """
 
 from queens.interfaces.bmfia_interface import BmfiaInterface
-from queens.interfaces.direct_python_interface import DirectPythonInterface
 from queens.interfaces.job_interface import JobInterface
 
 VALID_TYPES = {
     "job_interface": JobInterface,
-    "direct_python_interface": DirectPythonInterface,
     "bmfia_interface": BmfiaInterface,
 }
