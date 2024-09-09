@@ -14,6 +14,7 @@ import pytest
 from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
 from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.pdf_estimation import estimate_bandwidth_for_kde
 from queens.utils.process_outputs import write_results
 from queens.utils.remote_operations import RemoteConnection
 from test_utils.integration_tests import fourc_build_paths_from_home
@@ -100,13 +101,13 @@ def fixture_user():
 
 @pytest.fixture(name="remote_user", scope="session")
 def fixture_remote_user(pytestconfig):
-    """Username of cluster account to use for tests."""
+    """Name of cluster account user used in tests."""
     return pytestconfig.getoption("remote_user")
 
 
 @pytest.fixture(name="gateway", scope="session")
 def fixture_gateway(pytestconfig):
-    """String of a dictionary that defines gateway connection (proxyjump)."""
+    """Gateway connection (proxyjump)."""
     gateway = pytestconfig.getoption("gateway")
     if isinstance(gateway, str):
         gateway = json.loads(gateway)
@@ -115,7 +116,7 @@ def fixture_gateway(pytestconfig):
 
 @pytest.fixture(name="cluster", scope="session")
 def fixture_cluster(request):
-    """Iterate over clusters.
+    """Name of the cluster to run a test on.
 
     The actual parameterization is done on a per test basis which also
     defines the parameterized markers of the tests.
@@ -127,7 +128,7 @@ def fixture_cluster(request):
 def fixture_cluster_settings(
     cluster, remote_user, gateway, remote_python, remote_queens_repository
 ):
-    """Hold all settings of cluster."""
+    """All cluster settings."""
     settings = CLUSTER_CONFIGS.get(cluster).dict()
     _logger.debug("raw cluster config: %s", settings)
     settings["cluster"] = cluster
@@ -140,13 +141,13 @@ def fixture_cluster_settings(
 
 @pytest.fixture(name="remote_python", scope="session")
 def fixture_remote_python(pytestconfig):
-    """Path to Python environment on remote host."""
+    """Path to the Python environment on remote host."""
     return pytestconfig.getoption("remote_python")
 
 
 @pytest.fixture(name="remote_connection", scope="session")
 def fixture_remote_connection(cluster_settings):
-    """Fabric connection to remote."""
+    """A fabric connection to a remote host."""
     return RemoteConnection(
         host=cluster_settings["host"],
         user=cluster_settings["user"],
@@ -158,7 +159,7 @@ def fixture_remote_connection(cluster_settings):
 
 @pytest.fixture(name="remote_queens_repository", scope="session")
 def fixture_remote_queens_repository(pytestconfig):
-    """Path to queens repository on remote host."""
+    """Path to the queens repository on remote host."""
     remote_queens = pytestconfig.getoption("remote_queens_repository", skip=True)
     return remote_queens
 
@@ -229,7 +230,7 @@ def fixture_fourc_example_expected_output():
 
 @pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
 def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
-    """Create experimental data."""
+    """Create a csv file with experimental data."""
     # Fix random seed
     np.random.seed(seed=1)
 
@@ -260,7 +261,7 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
 # fixtures for Elementary Effects Sobol tests
 @pytest.fixture(name="expected_result_mu")
 def fixture_expected_result_mu():
-    """Mu result fixture."""
+    """Expected Mu result."""
     expected_result_mu = np.array(
         [
             25.8299150077341,
@@ -280,7 +281,7 @@ def fixture_expected_result_mu():
 
 @pytest.fixture(name="expected_result_mu_star")
 def fixture_expected_result_mu_star():
-    """Mu star result fixture."""
+    """Expected Mu star result."""
     expected_result_mu_star = np.array(
         [
             29.84594504725642,
@@ -300,7 +301,7 @@ def fixture_expected_result_mu_star():
 
 @pytest.fixture(name="expected_result_sigma")
 def fixture_expected_result_sigma():
-    """Sigma result fixture."""
+    """Expected sigma result."""
     expected_result_sigma = np.array(
         [
             53.88783786787971,
@@ -320,45 +321,53 @@ def fixture_expected_result_sigma():
 
 # pylint: disable=invalid-name
 # ---- fixtures for bmfmc tests----------------------------------------------------------------
-@pytest.fixture(name="generate_X_mc")
-def fixture_generate_X_mc():
-    """TODO_doc."""
-    # generate 5000 uniform samples for x1 and x2 in [0,1]
+@pytest.fixture(name="monte_carlo_samples_x")
+def fixture_monte_carlo_samples_x():
+    """1000 uniform Monte Carlo samples for x1 and x2 between 0 and 1."""
     np.random.seed(1)
     n_samples = 1000
-    X_mc = np.random.uniform(low=0.0, high=1.0, size=(n_samples, 2))
-    return X_mc
+    monte_carlo_samples_x = np.random.uniform(low=0.0, high=1.0, size=(n_samples, 2))
+    return monte_carlo_samples_x
 
 
-@pytest.fixture(name="generate_LF_MC_data")
-def fixture_generate_LF_MC_data(generate_X_mc):
-    """TODO_doc."""
+@pytest.fixture(name="lf_mc_data")
+def fixture_lf_mc_data(monte_carlo_samples_x):
+    """Samples of low-fidelity model output using currin88_lofi."""
     y = []
-    for x_vec in generate_X_mc:
+    for x_vec in monte_carlo_samples_x:
         params = {"x1": x_vec[0], "x2": x_vec[1]}
         y.append(currin88_lofi(**params))
 
-    Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
+    y_lf_mc = np.array(y).reshape((monte_carlo_samples_x.shape[0], -1))
 
-    return Y_LF_mc
+    return y_lf_mc
 
 
-@pytest.fixture(name="generate_HF_MC_data")
-def fixture_generate_HF_MC_data(generate_X_mc):
-    """TODO_doc."""
+@pytest.fixture(name="hf_mc_data")
+def fixture_hf_mc_data(monte_carlo_samples_x):
+    """Samples of high-fidelity model output using currin88_hifi."""
     y = []
-    for x_vec in generate_X_mc:
+    for x_vec in monte_carlo_samples_x:
         params = {"x1": x_vec[0], "x2": x_vec[1]}
         y.append(currin88_hifi(**params))
 
-    Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
+    y_lf_mc = np.array(y).reshape((monte_carlo_samples_x.shape[0], -1))
 
-    return Y_LF_mc
+    return y_lf_mc
 
 
-@pytest.fixture(name="_write_LF_MC_data_to_pickle")
-def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
-    """TODO_doc."""
+@pytest.fixture(name="bandwidth_lf_mc")
+def fixture_bandwidth_lf_mc(lf_mc_data):
+    """Estimated bandwidth for KDE for low-fidelity data."""
+    bandwidth_lf_mc = estimate_bandwidth_for_kde(
+        lf_mc_data[:, 0], np.amin(lf_mc_data[:, 0]), np.amax(lf_mc_data[:, 0])
+    )
+    return bandwidth_lf_mc
+
+
+@pytest.fixture(name="_write_lf_mc_data_to_pickle")
+def fixture_write_lf_mc_data_to_pickle(tmp_path, monte_carlo_samples_x, lf_mc_data):
+    """Write low-fidelity model data to a pickle file."""
     file_name = "LF_MC_data.pickle"
     input_description = {
         "x1": {
@@ -373,9 +382,9 @@ def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_d
         },
     }
     data = {
-        "input_data": generate_X_mc,
+        "input_data": monte_carlo_samples_x,
         "input_description": input_description,
-        "output": generate_LF_MC_data,
+        "output": lf_mc_data,
         "eigenfunc": None,
         "eigenvalue": None,
     }
@@ -384,7 +393,7 @@ def fixture_write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_d
 
 @pytest.fixture(name="design_method", params=["random", "diverse_subset"])
 def fixture_design_method(request):
-    """TODO_doc."""
+    """Different design methods for parameterized tests."""
     design = request.param
     return design
 
@@ -392,7 +401,7 @@ def fixture_design_method(request):
 # ---- fixtures for bmfia tests-------------------------------------------
 @pytest.fixture(name="expected_samples")
 def fixture_expected_samples():
-    """Fixture for expected SMC samples."""
+    """Expected SMC samples."""
     samples = np.array(
         [
             [0.51711296, 0.55200585],
@@ -413,7 +422,7 @@ def fixture_expected_samples():
 
 @pytest.fixture(name="expected_weights")
 def fixture_expected_weights():
-    """Fixture for expected SMC weights."""
+    """Expected SMC weights."""
     weights = np.array(
         [
             0.00183521,
@@ -433,14 +442,14 @@ def fixture_expected_weights():
 
 @pytest.fixture(name="expected_variational_cov")
 def fixture_expected_variational_cov():
-    """Fixture for expected variational covariance."""
+    """Expected variational covariance."""
     exp_var_cov = np.array([[0.00142648, 0.0], [0.0, 0.00347234]])
     return exp_var_cov
 
 
 @pytest.fixture(name="expected_variational_mean_nn")
 def fixture_expected_variational_mean_nn():
-    """Fixture for expected variational_mean."""
+    """Expected variational mean."""
     exp_var_mean = np.array([0.19221321, 0.33134219]).reshape(-1, 1)
 
     return exp_var_mean
@@ -448,7 +457,7 @@ def fixture_expected_variational_mean_nn():
 
 @pytest.fixture(name="expected_variational_cov_nn")
 def fixture_expected_variational_cov_nn():
-    """Fixture for expected variational covariance."""
+    """Expected variational covariance."""
     exp_var_cov = np.array([[0.01245263, 0.0], [0.0, 0.01393423]])
     return exp_var_cov
 

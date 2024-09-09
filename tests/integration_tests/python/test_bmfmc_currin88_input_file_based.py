@@ -5,19 +5,19 @@
 import numpy as np
 from scipy.stats import entropy
 
-import queens.utils.pdf_estimation as est
 from queens.main import run
 from queens.utils import injector
 from queens.utils.io_utils import load_result
+from queens.utils.pdf_estimation import estimate_pdf
 
 
 # ---- actual integration tests -------------------------------------------------
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     tmp_path,
     inputdir,
-    _write_LF_MC_data_to_pickle,
-    generate_HF_MC_data,
-    generate_LF_MC_data,
+    _write_lf_mc_data_to_pickle,
+    hf_mc_data,
+    bandwidth_lf_mc,
     design_method,
 ):
     """TODO_doc: add a one-line explanation.
@@ -47,14 +47,9 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
 
     # get the y_support and calculate HF MC reference
     y_pdf_support = results["raw_output_data"]["y_pdf_support"]
-    Y_LFs_mc = generate_LF_MC_data
-    Y_HF_mc = generate_HF_MC_data
-    bandwidth_lfmc = est.estimate_bandwidth_for_kde(
-        Y_LFs_mc[:, 0], np.amin(Y_LFs_mc[:, 0]), np.amax(Y_LFs_mc[:, 0])
-    )
 
-    p_yhf_mc, _ = est.estimate_pdf(
-        np.atleast_2d(Y_HF_mc).T, bandwidth_lfmc, support_points=np.atleast_2d(y_pdf_support)
+    p_yhf_mc, _ = estimate_pdf(
+        np.atleast_2d(hf_mc_data).T, bandwidth_lf_mc, support_points=np.atleast_2d(y_pdf_support)
     )
 
     kl_divergence = entropy(p_yhf_mc, results["raw_output_data"]["p_yhf_mean"])
