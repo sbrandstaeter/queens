@@ -76,13 +76,13 @@ def test_points_iterator_failure(global_settings):
 
 @pytest.fixture(name="inputs")
 def fixture_inputs():
-    """Input fixtures."""
+    """Input points."""
     return {"x1": [1, 2], "x2": [3, 4]}
 
 
 @pytest.fixture(name="expected_results")
 def fixture_expected_results(inputs):
-    """Expected results fixture."""
+    """Expected results for given input points."""
     input_as_array = inputs.copy()
     input_as_array["x1"] = np.array(input_as_array["x1"]).reshape(-1, 1)
     input_as_array["x2"] = np.array(input_as_array["x2"]).reshape(-1, 1)

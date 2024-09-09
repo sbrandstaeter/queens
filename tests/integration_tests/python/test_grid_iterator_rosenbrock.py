@@ -61,7 +61,7 @@ def test_grid_iterator(expected_response, expected_grid, global_settings):
 
 @pytest.fixture(name="expected_grid")
 def fixture_expected_grid():
-    """TODO_doc."""
+    """Expected grid coordinates."""
     input_data = np.array(
         [
             [-2.000, -2.000],
@@ -96,7 +96,7 @@ def fixture_expected_grid():
 
 @pytest.fixture(name="expected_response")
 def fixture_expected_response():
-    """TODO_doc."""
+    """Expected response values."""
     expected_response = np.atleast_2d(
         np.array(
             [

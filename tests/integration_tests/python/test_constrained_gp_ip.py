@@ -28,13 +28,13 @@ from queens.utils.io_utils import load_result
     ],
 )
 def fixture_approx_type(request):
-    """Approximation type fixture."""
+    """Different approximation types."""
     return request.param
 
 
 @pytest.fixture(name="parameters")
 def fixture_parameters():
-    """Parameters fixture."""
+    """Two uniformly distributed parameters."""
     x1 = UniformDistribution(lower_bound=0, upper_bound=1)
     x2 = UniformDistribution(lower_bound=0, upper_bound=1)
     parameters = Parameters(x1=x1, x2=x2)
@@ -43,7 +43,7 @@ def fixture_parameters():
 
 @pytest.fixture(name="likelihood_model")
 def fixture_likelihood_model(parameters, global_settings):
-    """Likelihood model fixture."""
+    """A Gaussian likelihood model."""
     np.random.seed(42)
     driver = FunctionDriver(function=park91a_hifi_on_grid)
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
@@ -65,7 +65,7 @@ def fixture_likelihood_model(parameters, global_settings):
 
 @pytest.fixture(name="expected_mean")
 def fixture_expected_mean():
-    """Expected mean fixture."""
+    """Expected mean values."""
     expected_mean = {
         "GPMAP-I": [0.30465568, 0.52168328],
         "CGPMAP-II": [0.29862195, 0.74123874],
@@ -76,7 +76,7 @@ def fixture_expected_mean():
 
 @pytest.fixture(name="expected_std")
 def fixture_expected_std():
-    """Expected standard deviation fixture."""
+    """Expected standard deviation values."""
     expected_std = {
         "GPMAP-I": [0.00105374, 0.03230814],
         "CGPMAP-II": [0.00197814, 0.04068283],
@@ -93,7 +93,7 @@ def test_constrained_gp_ip_park(
     expected_std,
     global_settings,
 ):
-    """Test."""
+    """Test for constrained GP with IP park."""
     num_steps = 3
     num_new_samples = 4
     num_initial_samples = int(num_new_samples * 2)

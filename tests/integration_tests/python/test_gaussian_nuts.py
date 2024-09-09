@@ -75,7 +75,7 @@ def test_gaussian_nuts(
 
 @pytest.fixture(name="_create_experimental_data")
 def fixture_create_experimental_data(tmp_path):
-    """Generate 2 samples from the same gaussian."""
+    """Create a csv file with experimental data."""
     samples = np.array([0, 0]).flatten()
 
     # write the data to a csv file in tmp_path

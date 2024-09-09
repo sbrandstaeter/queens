@@ -162,7 +162,7 @@ def test_bbvi_iterator_park91a_hifi(
 
 @pytest.fixture(name="dummy_bbvi_instance")
 def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
-    """Create visualization module."""
+    """A BBVIIterator instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     max_feval = 10 * n_samples_per_iter
@@ -255,5 +255,5 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
 
 @pytest.fixture(name="my_variational_distribution")
 def fixture_my_variational_distribution():
-    """Create variational distribution."""
+    """A variational distribution."""
     return MeanFieldNormalVariational(dimension=5)

@@ -16,7 +16,7 @@ from queens.utils.io_utils import load_result
 
 @pytest.fixture(name="algorithm", params=["COBYLA", "SLSQP"])
 def fixture_algorithm(request):
-    """TODO_doc."""
+    """Different optimization algorithms."""
     return request.param
 
 

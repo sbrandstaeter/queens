@@ -12,7 +12,7 @@ from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
 
 @pytest.fixture(name="my_model")
 def fixture_my_model():
-    """Configuration for gaussian nn model."""
+    """A Gaussian neural network model."""
     model = GaussianNeuralNetworkModel(
         activation_per_hidden_layer_lst=["elu", "elu", "elu", "elu"],
         nodes_per_hidden_layer_lst=[20, 20, 20, 20],

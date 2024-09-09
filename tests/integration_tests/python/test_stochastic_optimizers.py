@@ -55,7 +55,7 @@ def test_sgd(sgd_optimizer):
 
 @pytest.fixture(name="sgd_optimizer")
 def fixture_sgd_optimizer():
-    """SGD optimizer."""
+    """An SGD optimizer."""
     optimizer = SGD(
         learning_rate=1e-2,
         optimization_type="max",
@@ -68,7 +68,7 @@ def fixture_sgd_optimizer():
 
 @pytest.fixture(name="adam_optimizer")
 def fixture_adam_optimizer():
-    """Adam optimizer."""
+    """An Adam optimizer."""
     optimizer = Adam(
         learning_rate=1e-2,
         optimization_type="max",
@@ -81,7 +81,7 @@ def fixture_adam_optimizer():
 
 @pytest.fixture(name="adamax_optimizer")
 def fixture_adamax_optimizer():
-    """Adamax optimizer."""
+    """An Adamax optimizer."""
     optimizer = Adamax(
         learning_rate=1e-2,
         optimization_type="min",
@@ -94,7 +94,7 @@ def fixture_adamax_optimizer():
 
 @pytest.fixture(name="rmsprop_optimizer")
 def fixture_rmsprop_optimizer():
-    """Rmsprop optimzer."""
+    """A RMSprop optimzer."""
     optimizer = RMSprop(
         learning_rate=5e-2,
         optimization_type="max",

@@ -105,7 +105,7 @@ def test_smc_generic_temper_multivariate_gaussian(
 
 
 def target_density(self, samples):  # pylint: disable=unused-argument
-    """TODO_doc."""
+    """Returns the log likelihood of samples with 4D Gaussian distribution."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_4d_logpdf(samples).reshape(-1, 1)
 
@@ -114,7 +114,7 @@ def target_density(self, samples):  # pylint: disable=unused-argument
 
 @pytest.fixture(name="_create_experimental_data")
 def fixture_create_experimental_data(tmp_path):
-    """TODO_doc."""
+    """Create a csv file with experimental data."""
     # generate 10 samples from the same gaussian
     samples = GAUSSIAN_4D.draw(10)
     pdf = gaussian_4d_logpdf(samples)

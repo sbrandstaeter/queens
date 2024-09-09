@@ -82,7 +82,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
 
 @pytest.fixture(name="expected_mean")
 def fixture_expected_mean():
-    """TODO_doc."""
+    """Expected mean values."""
     mean = np.array(
         [
             [
@@ -104,7 +104,7 @@ def fixture_expected_mean():
 
 @pytest.fixture(name="expected_var")
 def fixture_expected_var():
-    """TODO_doc."""
+    """Expected variance values."""
     var = np.array(
         [
             [

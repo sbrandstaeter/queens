@@ -15,7 +15,7 @@ from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
 
 @pytest.fixture(name="gp_model")
 def fixture_gp_model():
-    """Configuration for jitted GP model."""
+    """A jitted GP model."""
     optimizer = Adam(
         learning_rate=0.05,
         optimization_type="max",

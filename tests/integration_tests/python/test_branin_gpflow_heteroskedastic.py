@@ -85,7 +85,7 @@ def test_branin_gpflow_heteroskedastic(expected_mean, expected_var, global_setti
 
 @pytest.fixture(name="expected_mean")
 def fixture_expected_mean():
-    """TODO_doc."""
+    """Expected mean values."""
     mean = np.array(
         [
             [
@@ -107,7 +107,7 @@ def fixture_expected_mean():
 
 @pytest.fixture(name="expected_var")
 def fixture_expected_var():
-    """TODO_doc."""
+    """Expected variance values."""
     var = np.array(
         [
             [

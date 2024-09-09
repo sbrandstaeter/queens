@@ -33,14 +33,14 @@ def fixture_python_path():
 
 @pytest.fixture(name="mpirun_path", scope="session")
 def fixture_mpi_run_path():
-    """Path to mpirun executable."""
+    """Path to the mpirun executable."""
     _, _, stdout, _ = run_subprocess("which mpirun")
     return stdout.strip()
 
 
 @pytest.fixture(name="mpi_command", scope="session")
 def fixture_mpi_command(mpirun_path):
-    """Basecommand to call mpirun with MpiDriver."""
+    """Base command to call mpirun with MpiDriver."""
     return mpirun_path + " --bind-to none"
 
 
@@ -395,6 +395,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
 
 @pytest.fixture(name="_create_input_file_executable_park91a_hifi_on_grid")
 def fixture_create_input_file_executable_park91a_hifi_on_grid(tmp_path):
-    """Write temporary input file for executable."""
+    """Create a csv file as temporary input file for executable."""
     input_path = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     input_path.write_text("{{ x1 }}\n{{ x2 }}", encoding="utf-8")

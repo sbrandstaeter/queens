@@ -78,7 +78,7 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
 
 @pytest.fixture(name="expected_mean")
 def fixture_expected_mean():
-    """TODO_doc."""
+    """Expected mean values."""
     mean = np.array(
         [
             [181.62057979],
@@ -98,7 +98,7 @@ def fixture_expected_mean():
 
 @pytest.fixture(name="expected_var")
 def fixture_expected_var():
-    """TODO_doc."""
+    """Expected variance values."""
     var = np.array(
         [
             [4.62061],

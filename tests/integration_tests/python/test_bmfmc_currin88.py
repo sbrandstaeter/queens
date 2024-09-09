@@ -27,10 +27,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     design_method,
     global_settings,
 ):
-    """TODO_doc: add a one-line explanation.
+    """Integration tests for BMFMC routine using *currin88* function.
 
-    Integration tests for the BMFMC routine based on the HF and LF
-    *currin88* function.
+    The test uses a high-fidelity (HF) and a low-fidelity (LF) version
+    of the *currin88* function.
     """
     plot_dir = tmp_path
     lf_mc_data_name = "LF_MC_data.pickle"
