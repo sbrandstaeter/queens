@@ -112,7 +112,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 
 
 def target_density(self, samples):  # pylint: disable=unused-argument
-    """TODO_doc."""
+    """Compute the log likelihood of samples under a Gaussian mixture model."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_mixture_4d_logpdf(samples).reshape(-1, 1)
 
@@ -121,7 +121,7 @@ def target_density(self, samples):  # pylint: disable=unused-argument
 
 @pytest.fixture(name="_create_experimental_data")
 def fixture_create_experimental_data(tmp_path):
-    """TODO_doc."""
+    """Create a csv file with experimental data."""
     # generate 10 samples from the same gaussian
     samples = GAUSSIAN_COMPONENT_1.draw(10)
     pdf = gaussian_mixture_4d_logpdf(samples)

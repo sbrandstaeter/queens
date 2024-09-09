@@ -20,10 +20,10 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     bandwidth_lf_mc,
     design_method,
 ):
-    """TODO_doc: add a one-line explanation.
+    """Integration tests for the BMFMC routine using an input file.
 
-    Integration tests for the BMFMC routine based on the HF and LF
-    *currin88* function.
+    The test uses a high-fidelity (HF) and a low-fidelity (LF) version
+    of the *currin88* function.
     """
     # generate json input file from template
     template = inputdir / "bmfmc_currin88_template.yml"

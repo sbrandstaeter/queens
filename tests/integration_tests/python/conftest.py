@@ -16,7 +16,7 @@ from test_utils.integration_tests import get_input_park91a
 
 @pytest.fixture(name="_create_experimental_data_gaussian_1d")
 def fixture_create_experimental_data_gaussian_1d(tmp_path):
-    """Create dummy 1D Gaussian data."""
+    """Create a csv file with experimental data from a 1D Gaussian."""
     # generate 10 samples from the same gaussian
     samples = STANDARD_NORMAL.draw(10).flatten()
 
@@ -36,7 +36,7 @@ def fixture_create_experimental_data_gaussian_1d(tmp_path):
 
 @pytest.fixture(name="_create_experimental_data_gaussian_2d")
 def fixture_create_experimental_data_gaussian_2d(tmp_path):
-    """Create dummy 1D Gaussian data."""
+    """Create a csv file with experimental data from a 2D Gaussian."""
     # generate 10 samples from the same gaussian
     samples = GAUSSIAN_2D.draw(10)
     pdf = gaussian_2d_logpdf(samples)
@@ -52,7 +52,7 @@ def fixture_create_experimental_data_gaussian_2d(tmp_path):
 
 @pytest.fixture(name="_create_experimental_data_zero")
 def fixture_create_experimental_data_zero(tmp_path):
-    """Create 2 samples equal to zero."""
+    """Create a csv file with experimental data equal to zero."""
     samples = np.array([0, 0]).flatten()
 
     # write the data to a csv file in tmp_path
@@ -64,7 +64,7 @@ def fixture_create_experimental_data_zero(tmp_path):
 
 @pytest.fixture(name="training_data_park91a")
 def fixture_training_data_park91a():
-    """Get training data from the park91a benchmark function."""
+    """Create training data from the park91a benchmark function."""
     # create training inputs
     n_train = 7
     x_train, x_3, x_4 = get_input_park91a(n_train)
@@ -78,7 +78,7 @@ def fixture_training_data_park91a():
 
 @pytest.fixture(name="testing_data_park91a")
 def fixture_testing_data_park91a():
-    """Get testing data for the park91a benchmark function."""
+    """Create testing data for the park91a benchmark function."""
     # create testing inputs
     n_test = 25
     x_test, x_3, x_4 = get_input_park91a(n_test)
@@ -97,7 +97,7 @@ def fixture_testing_data_park91a():
 
 @pytest.fixture(name="target_density_gaussian_1d")
 def fixture_target_density_gaussian_1d():
-    """Patch function mimicking a 1D Gaussian distribution."""
+    """A function mimicking a 1D Gaussian distribution."""
 
     def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
         """Target posterior density."""
@@ -111,7 +111,7 @@ def fixture_target_density_gaussian_1d():
 
 @pytest.fixture(name="target_density_gaussian_2d")
 def fixture_target_density_gaussian_2d():
-    """Patch function mimicking a 2D Gaussian distribution."""
+    """A function mimicking a 2D Gaussian distribution."""
 
     def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
         """Target likelihood density."""
@@ -125,7 +125,7 @@ def fixture_target_density_gaussian_2d():
 
 @pytest.fixture(name="target_density_gaussian_2d_with_grad")
 def fixture_target_density_gaussian_2d_with_grad():
-    """Patch function mimicking a 2D Gaussian distribution."""
+    """A function mimicking a 2D Gaussian distribution."""
 
     def target_density_gaussian_2d_with_grad(self, samples):  # pylint: disable=unused-argument
         """Target likelihood density."""

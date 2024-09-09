@@ -88,7 +88,7 @@ def test_gpflow_surrogate_branin(
 
 @pytest.fixture(name="expected_mean")
 def fixture_expected_mean():
-    """Expected mean."""
+    """Expected mean values."""
     expected_mean = np.array(
         [
             [127.97233506],
@@ -108,7 +108,7 @@ def fixture_expected_mean():
 
 @pytest.fixture(name="expected_variance")
 def fixture_expected_variance():
-    """Expected variance."""
+    """Expected variance values."""
     expected_variance = np.array(
         [
             [788.8004288],

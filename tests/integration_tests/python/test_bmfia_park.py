@@ -26,7 +26,7 @@ from queens.variational_distributions import MeanFieldNormalVariational
 
 @pytest.fixture(name="expected_variational_mean")
 def fixture_expected_variational_mean():
-    """Fixture for expected variational_mean."""
+    """Expected variational mean values."""
     exp_var_mean = np.array([0.51, 0.5]).reshape(-1, 1)
 
     return exp_var_mean
