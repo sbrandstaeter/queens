@@ -70,6 +70,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
-        self.scheduler.latest_job_id -= num_samples
-        gradient = self.scheduler.evaluate(samples, driver=self.gradient_driver)["result"]
+        gradient = self.scheduler.evaluate(
+            samples, driver=self.gradient_driver, job_ids=last_job_ids
+        )["result"]
         return gradient

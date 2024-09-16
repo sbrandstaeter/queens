@@ -65,7 +65,7 @@ def test_grad(default_adjoint_model):
     differentiable_simulation_model_adjoint.write_to_csv = Mock()
     default_adjoint_model.scheduler.latest_job_id = 6
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
-    default_adjoint_model.scheduler.evaluate = lambda x, driver: {"result": x**2}
+    default_adjoint_model.scheduler.evaluate = lambda x, driver, job_ids: {"result": x**2}
 
     np.random.seed(42)
     samples = np.random.random((2, 3))

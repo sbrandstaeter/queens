@@ -34,12 +34,13 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.latest_job_id = 0
 
     @abc.abstractmethod
-    def evaluate(self, samples, driver):
+    def evaluate(self, samples, driver, job_ids=None):
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
             driver (Driver): Driver object that runs simulation
+            job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
             result_dict (dict): Dictionary containing results

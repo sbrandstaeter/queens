@@ -39,12 +39,13 @@ class PoolScheduler(Scheduler):
         self.pool = create_pool(num_jobs)
         self.verbose = verbose
 
-    def evaluate(self, samples, driver):
+    def evaluate(self, samples, driver, job_ids=None):
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
             driver (Driver): Driver object that runs simulation
+            job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
             result_dict (dict): Dictionary containing results
@@ -55,7 +56,8 @@ class PoolScheduler(Scheduler):
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
         )
-        job_ids = self.get_job_ids(len(samples))
+        if job_ids is None:
+            job_ids = self.get_job_ids(len(samples))
         # Pool or no pool
         if self.pool:
             results = self.pool.map(function, samples, job_ids)
