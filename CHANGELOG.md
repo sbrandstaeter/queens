@@ -6,6 +6,8 @@ be overwritten!
 
 # Changelog
 
+* [remove-direct-python-interface](https://gitlab.lrz.de/queens_community/queens/-/commit/0c911c4fd40549c147052e8110ca2a8478eb1ffb) (2024-09-05): Remove direct python interface and replace by pool scheduler and python driver
+
 * [delete_old_random_field_implementation](https://gitlab.lrz.de/queens_community/queens/-/commit/1dde8f0a4e6063a68ac7519502252403eab1fb67) (2024-05-21): Delete old random field implementation
 
 * [dask_backend](https://gitlab.lrz.de/queens_community/queens/-/commit/6d07402543432bf9a72c83535f6bf5de76881c8b) (2023-07-24): With this tag the 'old' workflow with interface-resources-scheduler-driver as well as the singularity dependency is removed.  The simulation handling as well as remote communication is handled by dask.
