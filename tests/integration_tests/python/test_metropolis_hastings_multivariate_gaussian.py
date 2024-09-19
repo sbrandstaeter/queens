@@ -1,4 +1,9 @@
-"""TODO_doc."""
+"""Integration test for the Metropolis-Hastings iterator with a single chain.
+
+This test evaluates the performance of the Metropolis-Hastings algorithm
+when sampling from a multivariate Gaussian distribution using a single
+Markov chain.
+"""
 
 import numpy as np
 from mock import patch

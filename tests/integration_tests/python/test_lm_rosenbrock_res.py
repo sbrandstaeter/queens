@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for the Levenberg Marquardt iterator."""
 
 import numpy as np
 import pandas as pd

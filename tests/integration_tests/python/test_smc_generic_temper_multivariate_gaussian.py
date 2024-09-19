@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the SMC iterator.
+
+This test uses a multivariate Gaussian and generic tempering.
+"""
 
 import numpy as np
 import pandas as pd

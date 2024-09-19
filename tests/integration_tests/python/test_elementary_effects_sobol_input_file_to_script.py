@@ -1,4 +1,7 @@
-"""Test creation of scripts from input files."""
+"""Integration test for the elementary effects iterator.
+
+This test is based on Sobol's G function and uses an input file.
+"""
 
 import numpy as np
 

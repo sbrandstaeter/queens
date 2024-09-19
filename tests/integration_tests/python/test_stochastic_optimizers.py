@@ -1,4 +1,4 @@
-"""Test stochastic optimizers."""
+"""Integration tests for stochastic optimizers."""
 
 import numpy as np
 import pytest

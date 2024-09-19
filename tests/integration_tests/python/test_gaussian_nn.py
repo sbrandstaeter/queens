@@ -1,4 +1,4 @@
-"""Integration test for Gaussian Neural Network regression model."""
+"""Integration tests for the Gaussian Neural Network regression model."""
 
 import numpy as np
 import pytest

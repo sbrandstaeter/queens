@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Optimization iterator.
+
+This test analyzes the special case of 1 unknown and 1 residual.
+"""
 
 import numpy as np
 

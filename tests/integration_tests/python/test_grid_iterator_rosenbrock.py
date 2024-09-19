@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for the grid iterator."""
 
 import numpy as np
 import pytest

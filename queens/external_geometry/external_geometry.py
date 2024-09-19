@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Module for handling external geometry objects."""
 
 import abc
 import logging

@@ -1,4 +1,4 @@
-"""Test NUTS Iterator."""
+"""Integration test for the NUTS Iterator."""
 
 import numpy as np
 import pandas as pd

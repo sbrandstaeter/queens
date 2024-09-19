@@ -1,4 +1,4 @@
-"""Integration test for jitted GP model."""
+"""Integration tests for the jitted GP model."""
 
 from copy import deepcopy
 

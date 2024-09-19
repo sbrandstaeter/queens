@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for the data iterator."""
 
 import pytest
 

@@ -1,9 +1,6 @@
-"""TODO_doc: This is currently not in the documentation.
+"""Module providing visualization utilities for sensitivity analysis.
 
-A module that provides utilities and a class for visualization in
-sensitivity analysis (SA).
-
-It is designed such that the SAVisualization class needs only to be initialized one
+It is designed such that the SAVisualization class only needs to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the

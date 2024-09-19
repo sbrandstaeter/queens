@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Latin Hyper Cube iterator.
+
+The test is based on the low-fidelity Borehole function.
+"""
 
 import pytest
 

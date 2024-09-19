@@ -1,4 +1,7 @@
-"""Test Sobol indices estimation with Gaussian process surrogate."""
+"""Integration test for Sobol indices estimation with Ishigami function.
+
+This test uses a Gaussian process surrogate.
+"""
 
 import numpy as np
 

@@ -1,4 +1,4 @@
-"""Unit tests for GridIterator."""
+"""Unit tests for the GridIterator."""
 
 from copy import deepcopy
 

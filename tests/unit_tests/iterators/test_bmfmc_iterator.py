@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Unit tests for the BMFMC iterator."""
 
 # pylint: disable=invalid-name
 import numpy as np

@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the elementary effects iterator.
+
+This test is based on Sobol's G function.
+"""
 
 import numpy as np
 
@@ -19,7 +22,7 @@ def test_elementary_effects_sobol(
     expected_result_sigma,
     global_settings,
 ):
-    """Test case for elementary effects on Sobol's G-function."""
+    """Test case for elementary effects on Sobol's G function."""
     # Parameters
     x1 = UniformDistribution(lower_bound=0, upper_bound=1)
     x2 = UniformDistribution(lower_bound=0, upper_bound=1)

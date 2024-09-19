@@ -1,6 +1,6 @@
-"""Test suite for integration tests of optimization iterator.
+"""Integration test for the Optimization iterator.
 
-Based on the Rosenbrock test function.
+This test is based on the Rosenbrock test function.
 """
 
 import numpy as np

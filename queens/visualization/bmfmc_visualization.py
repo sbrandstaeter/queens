@@ -1,7 +1,7 @@
 """Visualization for BMFMC-UQ.
 
 A module that provides utilities and a class for visualization in BMFMC-UQ.
-It is designed such that the BMFMCVisualization class needs only to be initialized once
+It is designed such that the BMFMCVisualization class only needs to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the

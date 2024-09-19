@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for the Metropolis Hastings iterator."""
 
 import pytest
 from mock import patch

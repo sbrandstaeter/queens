@@ -1,4 +1,4 @@
-"""Tests for ."""
+"""Integration tests for various Gaussian Process approximation methods."""
 
 import numpy as np
 import pytest

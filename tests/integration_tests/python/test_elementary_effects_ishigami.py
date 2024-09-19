@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the elementary effects iterator.
+
+This test is based on the Ishigami function.
+"""
 
 import logging
 
