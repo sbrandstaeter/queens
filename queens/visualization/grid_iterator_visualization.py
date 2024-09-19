@@ -3,7 +3,7 @@
 A module that provides utilities and a class for visualization in the grid
 iterator.
 
-It is designed such that the GridIteratorVisualization class needs only to be initialized once
+It is designed such that the GridIteratorVisualization class only needs to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the

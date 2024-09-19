@@ -1,4 +1,4 @@
-"""Test Sobol indices estimation for Ishigami function."""
+"""Integration test for Sobol indices estimation for Ishigami function."""
 
 import numpy as np
 

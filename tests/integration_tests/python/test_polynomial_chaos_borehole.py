@@ -1,4 +1,4 @@
-"""Test chaospy wrapper."""
+"""Integration test for the Polynomial Chaos iterator."""
 
 import pytest
 

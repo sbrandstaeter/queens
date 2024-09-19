@@ -1,4 +1,4 @@
-"""Test HMC Sampler."""
+"""Integration test for the HMC iterator."""
 
 import numpy as np
 import pytest

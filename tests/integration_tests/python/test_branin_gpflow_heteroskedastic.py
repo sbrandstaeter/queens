@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Integration test for the GPflow based heteroskedastic model."""
 
 import numpy as np
 import pytest

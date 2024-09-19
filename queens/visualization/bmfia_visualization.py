@@ -1,6 +1,6 @@
 """Provide utilities and a class for visualization in BMFIA analysis.
 
-It is designed such that the BMFIAVisualization class needs only to be initialized once
+It is designed such that the BMFIAVisualization class only needs to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the
@@ -127,7 +127,6 @@ class BMFIAVisualization:
                                 Order of the list corresponds to order of columns in sample matrix.
         """
         if self.plot_booleans[1] is True:
-
             if samples.shape[1] > 2:
                 raise RuntimeError(
                     f"At the moment we only support posterior plots up to two dimensions. "
@@ -197,7 +196,6 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
 
     for i in np.arange(num_rows):
         for j in np.arange(num_rows):
-
             num_coord = j + i * num_rows
 
             y_lf_test = np.linspace(
@@ -297,7 +295,6 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
     # posterior mean
     for axx, regression_obj, z, yhf in zip(axs, regression_obj_lst, z_train.T, Y_HF_train.T):
-
         # generate support for plotting
         y_lf_test = np.linspace(np.min(yhf), np.max(yhf), 100)
 

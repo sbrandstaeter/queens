@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Sequential Monte Carlo iterator.
+
+This test uses Gaussian likelihood.
+"""
 
 import numpy as np
 from mock import patch

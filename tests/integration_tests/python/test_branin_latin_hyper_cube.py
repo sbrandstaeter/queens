@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Test for the Latin Hyper Cube iterator.
+
+The test is based on the high-fidelity Branin function.
+"""
 
 import pytest
 

@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration tests for the BMFMC routine.
+
+The test is based on the high-fidelity Currin function.
+"""
 
 # pylint: disable=invalid-name
 import numpy as np

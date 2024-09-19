@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Optimization iterator.
+
+This test uses different solution algorithms.
+"""
 
 import numpy as np
 import pytest

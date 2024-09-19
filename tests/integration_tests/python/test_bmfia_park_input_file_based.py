@@ -1,4 +1,4 @@
-"""Integration tests for the BMFIA."""
+"""Integration tests for the BMFIA using an input file."""
 
 # pylint: disable=invalid-name
 from pathlib import Path

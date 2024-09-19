@@ -1,4 +1,4 @@
-"""Test points iterator."""
+"""Integration test for the points iterator."""
 
 import numpy as np
 import pytest

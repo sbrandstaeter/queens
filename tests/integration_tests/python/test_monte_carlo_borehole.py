@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Monte Carlo iterator.
+
+This test is based on the low-fidelity Borehole function.
+"""
 
 import pytest
 

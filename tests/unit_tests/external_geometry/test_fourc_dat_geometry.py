@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Unit tests for FourcDatExternalGeometry."""
 
 import numpy as np
 import pytest

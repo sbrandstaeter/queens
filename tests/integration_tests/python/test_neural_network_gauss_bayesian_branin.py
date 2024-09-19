@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Gaussian Bayesian neural network model.
+
+This test uses a Monte Carlo simulation.
+"""
 
 import numpy as np
 import pytest

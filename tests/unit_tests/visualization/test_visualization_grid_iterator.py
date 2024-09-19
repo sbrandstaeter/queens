@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Unit tests for grid iterator visualization."""
 
 import re
 
@@ -10,7 +10,7 @@ from queens.visualization.grid_iterator_visualization import GridIteratorVisuali
 
 
 class TestVisualizationGridIterator:
-    """Collection of tests for visualisation features for the grid iterator."""
+    """Collection of tests for visualization features for the grid iterator."""
 
     @pytest.fixture(autouse=True)
     def dummy_vis(self, tmp_path):

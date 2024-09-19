@@ -1,4 +1,4 @@
-"""Test Sobol indices estimation for borehole function."""
+"""Integration test for Sobol indices estimation for Borehole function."""
 
 import numpy as np
 

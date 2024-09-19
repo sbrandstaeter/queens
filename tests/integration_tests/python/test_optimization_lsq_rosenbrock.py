@@ -1,4 +1,7 @@
-"""TODO_doc."""
+"""Integration test for the Optimization iterator.
+
+This test uses the Rosenbrock residual function.
+"""
 
 import numpy as np
 

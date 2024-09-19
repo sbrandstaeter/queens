@@ -1,4 +1,7 @@
-"""Test cases for Sobol index estimation with metamodel uncertainty."""
+"""Integration tests for Sobol indices estimation with Ishigami function.
+
+This test uses metamodel uncertainty.
+"""
 
 import numpy as np
 

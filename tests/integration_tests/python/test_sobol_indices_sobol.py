@@ -1,4 +1,4 @@
-"""Test Sobol indices estimation for Sobol G function."""
+"""Integration test for Sobol indices estimation with Sobol's G function."""
 
 import numpy as np
 
@@ -18,7 +18,7 @@ def test_sobol_indices_sobol(global_settings):
     """Test Sobol Index iterator with Sobol G-function.
 
     Including first, second and total order indices. The test should
-    converge to the analytical solution defined in the Sobol G-function
+    converge to the analytical solution defined in Sobol's G-function
     implementation (see *sobol.py*).
     """
     # Parameters

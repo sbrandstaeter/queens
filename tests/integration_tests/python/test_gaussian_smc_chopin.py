@@ -1,4 +1,7 @@
-"""Tests for Chopin SMC module from 'particles'."""
+"""Integration test for the Chopin Sequential Monte Carlo iterator.
+
+The tested iterator is based on Chopin's 'particles' library.
+"""
 
 import numpy as np
 from mock import patch
