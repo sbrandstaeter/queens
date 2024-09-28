@@ -61,23 +61,3 @@ class SubprocessError(QueensException):
         if additional_message:
             message += "\n\n" + additional_message
         return cls(message)
-
-
-class InjectionError(QueensException):
-    """Exception class for injection errors."""
-
-    @classmethod
-    def construct_error(cls, required_keys, provided_keys):
-        """Construct a Subprocess error from a command and its outputs.
-
-        Args:
-            required_keys (iterable): Keys required by the template
-            provided_keys (iterable): Keys provided to inject
-
-        Returns:
-            InjectionError
-        """
-        return cls(
-            f"Provided keys ({', '.join(provided_keys)}) and required keys "
-            f"({', '.join(required_keys)}) differ, template could not be injected!"
-        )

@@ -1,8 +1,8 @@
 """Test injector util."""
 
 import pytest
+from jinja2.exceptions import UndefinedError
 
-from queens.utils.exceptions import InjectionError
 from queens.utils.injector import render_template
 
 
@@ -11,14 +11,13 @@ from queens.utils.injector import render_template
     [
         {"parameter_1": 1},
         {"parameter_1": 1, "wrong_parameter": 3},
-        {"parameter_1": 1, "parameter_2": 2, "wrong_parameter": 3},
     ],
 )
 def test_failure_injection(injection_parameters):
     """Test if injection raises an error."""
     template = "{{ parameter_1 }} {{ parameter_2 }}"
 
-    with pytest.raises(InjectionError):
+    with pytest.raises(UndefinedError):
         render_template(injection_parameters, template)
 
 
