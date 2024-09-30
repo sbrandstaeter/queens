@@ -22,10 +22,10 @@ RESTART_FROM_PREFIX=xxx                  #
 #                                        #
 #     POSTPROCESSING SPECIFICATION       #
 #                                        #
-DoPostprocess=$[ ! -z "{{ post_processor or '' }}" ]
+DoPostprocess=$[ ! -z "{{ post_processor|default("") }}" ]
 # Note: supported post processor is the  #
 #       post_processor.                  #
-POSTEXE={{ post_processor }}             #
+POSTEXE={{ post_processor|default("") }}
 # Specify everything you need here,      #
 # besides the '--file=' as this is       #
 # already done by default since it is    #
@@ -33,7 +33,7 @@ POSTEXE={{ post_processor }}             #
 # what OUTPUTPREFIX it has!              #
 # For detailed information on what can   #
 # be specified please use --help         #
-POSTOPTIONS={{ post_options or '' }}     #
+POSTOPTIONS={{ post_options|default("") }}
 ##########################################
 
 
