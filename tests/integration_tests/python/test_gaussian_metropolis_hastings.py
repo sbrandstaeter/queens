@@ -5,7 +5,6 @@ from mock import patch
 
 from queens.distributions.normal import NormalDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
@@ -34,10 +33,9 @@ def test_gaussian_metropolis_hastings(
         output_label="y_obs",
     )
     proposal_distribution = NormalDistribution(mean=0.0, covariance=1.0)
-    driver = FunctionDriver(function="patch_for_likelihood")
+    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1.0,

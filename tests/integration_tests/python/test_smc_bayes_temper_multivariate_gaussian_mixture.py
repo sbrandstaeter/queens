@@ -15,7 +15,6 @@ from queens.example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
 )
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
@@ -53,10 +52,9 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             [0.0, 0.0, 0.0, 0.001],
         ],
     )
-    driver = FunctionDriver(function="agawal09a")
+    driver = FunctionDriver(parameters=parameters, function="agawal09a")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    forward_model = SimulationModel(interface=interface)
+    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
         noise_type="fixed_variance",
         noise_value=1.0,

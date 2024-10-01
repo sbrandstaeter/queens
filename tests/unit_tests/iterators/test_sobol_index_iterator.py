@@ -11,7 +11,7 @@ def fixture_default_sobol_index_iterator(
     global_settings, default_simulation_model, default_parameters_uniform_3d
 ):
     """Default sobol index iterator."""
-    default_simulation_model.interface.parameters = default_parameters_uniform_3d
+    default_simulation_model.driver.parameters = default_parameters_uniform_3d
 
     my_iterator = SobolIndexIterator(
         default_simulation_model,

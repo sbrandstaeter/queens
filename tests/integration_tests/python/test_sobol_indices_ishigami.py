@@ -4,7 +4,6 @@ import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -23,10 +22,9 @@ def test_sobol_indices_ishigami(global_settings):
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=False)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    driver = FunctionDriver(parameters=parameters, function="ishigami90")
+    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=True)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = SobolIndexIterator(
         seed=42,
         calc_second_order=True,

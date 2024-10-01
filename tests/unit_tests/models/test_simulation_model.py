@@ -10,25 +10,17 @@ from queens.models.simulation_model import SimulationModel
 # ------------------ actual unit tests --------------------------- #
 def test_init():
     """Test the init method of the simulation model."""
-    interface = "my_interface"
-
-    model_obj = SimulationModel(interface)
-    assert model_obj.interface == interface
-
-
-def test_fcc():
-    """Test the fcc method."""
-    interface = "dummy_interface"
-
-    model_obj = SimulationModel(interface)
-    assert model_obj.interface == interface
-    assert model_obj.__class__.__name__ == "SimulationModel"
+    scheduler = Mock()
+    driver = Mock()
+    model_obj = SimulationModel(scheduler=scheduler, driver=driver)
+    assert model_obj.scheduler == scheduler
+    assert model_obj.driver == driver
 
 
 def test_evaluate():
     """Test the evaluation method."""
-    model_obj = SimulationModel(Mock())
-    model_obj.interface.evaluate = lambda x: {"mean": x**2, "gradient": 2 * x}
+    model_obj = SimulationModel(scheduler=Mock(), driver=Mock())
+    model_obj.scheduler.evaluate = lambda x, driver: {"mean": x**2, "gradient": 2 * x}
 
     samples = np.array([[2.0]])
     response = model_obj.evaluate(samples)
@@ -39,7 +31,7 @@ def test_evaluate():
 
 def test_grad():
     """Test grad method."""
-    model = SimulationModel("dummy_interface")
+    model = SimulationModel(scheduler=Mock(), driver=Mock())
     np.random.seed(42)
     upstream_gradient = np.random.random((2, 4))
     gradient = np.random.random((2, 3, 4))

@@ -64,27 +64,21 @@ bmfia_iterator:
     seed: 1
 lf_model:
   type: simulation_model
-  interface_name: lf_interface
+  scheduler_name: scheduler
+  driver_name: lf_driver
 hf_model:
   type: simulation_model
-  interface_name: hf_interface
+  scheduler_name: scheduler
+  driver_name: hf_driver
 proposal_distribution:
   type: normal
   mean: [0.0, 0.0]
   covariance: [[0.01, 0.0], [0.0, 0.01]]
-hf_interface:
-  type: job_interface
-  scheduler_name: scheduler
-  driver_name: hf_driver
 scheduler:
   type: pool
 hf_driver:
   type: function
   function: park91a_hifi_on_grid
-lf_interface:
-  type: job_interface
-  scheduler_name: scheduler
-  driver_name: lf_driver
 lf_driver:
   type: function
   function: park91a_lofi_on_grid

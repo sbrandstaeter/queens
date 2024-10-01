@@ -36,9 +36,6 @@ probabilistic_mapping:
   dimension_lengthscales: 2
 high_fidelity_model:
   type: simulation_model
-  interface_name: interface
-interface:
-  type: job_interface
   scheduler_name: scheduler
   driver_name: driver
 scheduler:

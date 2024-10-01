@@ -1,12 +1,11 @@
 """Interface for grouping outputs with inputs."""
 
-from queens.interfaces.interface import Interface
 from queens.utils.logger_settings import log_init_args
 
 # pylint: disable=invalid-name
 
 
-class BmfmcInterface(Interface):
+class BmfmcInterface:
     """Interface for grouping outputs with inputs.
 
     Interface for grouping the outputs of several simulations with identical
@@ -32,7 +31,6 @@ class BmfmcInterface(Interface):
                                          probabilistic dependency between high-fidelity model,
                                          low-fidelity models and informative input features.
         """
-        super().__init__(parameters=None)
         self.probabilistic_mapping = probabilistic_mapping
 
     def evaluate(self, samples, support="y", full_cov=False, gradient_bool=False):

@@ -8,7 +8,6 @@ import pytest
 
 from queens.distributions.free import FreeVariable
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -36,10 +35,9 @@ def test_optimization_paraboloid_constrained(algorithm, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(function="paraboloid")
+    driver = FunctionDriver(parameters=parameters, function="paraboloid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = OptimizationIterator(
         initial_guess=[2.0, 0.0],
         algorithm=algorithm,

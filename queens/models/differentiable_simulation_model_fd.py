@@ -33,11 +33,12 @@ class DifferentiableSimulationModelFD(SimulationModel):
     """
 
     @log_init_args
-    def __init__(self, interface, finite_difference_method, step_size=1e-5, bounds=None):
+    def __init__(self, scheduler, driver, finite_difference_method, step_size=1e-5, bounds=None):
         """Initialize model.
 
         Args:
-            interface (Interface): Interface object for simulation run
+            scheduler (Scheduler): Scheduler for the simulations
+            driver (Driver): Driver for the simulations
             finite_difference_method (str): Method to calculate a finite difference
                                             based approximation of the Jacobian matrix:
                                              - '2-point': a one-sided scheme by definition
@@ -51,7 +52,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
                                                same for all variables. Use it to limit the
                                                range of function evaluation.
         """
-        super().__init__(interface)
+        super().__init__(scheduler=scheduler, driver=driver)
 
         check_if_valid_options(VALID_FINITE_DIFFERENCE_METHODS, finite_difference_method)
         self.finite_difference_method = finite_difference_method
@@ -74,7 +75,7 @@ class DifferentiableSimulationModelFD(SimulationModel):
             response (dict): Response of the underlying model at input samples
         """
         if not self.evaluate_and_gradient_bool:
-            self.response = self.interface.evaluate(samples)
+            self.response = self.scheduler.evaluate(samples, driver=self.driver)
         else:
             self.response = self.evaluate_finite_differences(samples)
         return self.response
@@ -129,9 +130,9 @@ class DifferentiableSimulationModelFD(SimulationModel):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.interface.evaluate(combined_samples)["result"].reshape(
-            combined_samples.shape[0], -1
-        )
+        all_responses = self.scheduler.evaluate(combined_samples, driver=self.driver)[
+            "result"
+        ].reshape(combined_samples.shape[0], -1)
 
         response = all_responses[:num_samples, :]
         additional_response_lst = np.array_split(all_responses[num_samples:, :], num_samples)

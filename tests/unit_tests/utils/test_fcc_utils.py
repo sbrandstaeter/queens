@@ -3,7 +3,6 @@
 import pytest
 from mock import Mock
 
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.models.simulation_model import SimulationModel
 from queens.utils.exceptions import InvalidOptionError
@@ -111,21 +110,6 @@ def test_from_config_create_object_model(parameters, mocker, config_1):
 
     assert mp1.called_once_with(config_1, VALID_TYPES)
     assert mp2.call_args_list[0].kwargs == config_1
-    assert not mp2.call_args_list[0].args
-    assert mp2.call_count == 1
-
-
-def test_from_config_create_object_interface(mocker, config_1, parameters, global_settings):
-    """Test case for from_config_create_object function."""
-    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=JobInterface)
-    mp2 = mocker.patch(
-        "queens.interfaces.job_interface.JobInterface.__init__",
-        return_value=None,
-    )
-    from_config_create_object(config_1, global_settings, parameters)
-
-    assert mp1.called_once_with(config_1, VALID_TYPES)
-    assert mp2.call_args_list[0].kwargs == {**config_1, "parameters": parameters}
     assert not mp2.call_args_list[0].args
     assert mp2.call_count == 1
 

@@ -9,7 +9,6 @@ from scipy.stats import entropy
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.main import run_iterator
 from queens.models.bmfmc_model import BMFMCModel
@@ -50,10 +49,9 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         number_training_iterations=1000,
         dimension_lengthscales=2,
     )
-    driver = FunctionDriver(function="currin88_hifi")
+    driver = FunctionDriver(parameters=parameters, function="currin88_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    hf_model = SimulationModel(interface=interface)
+    hf_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = BMFMCModel(
         predictive_var=False,
         BMFMC_reference=False,

@@ -10,14 +10,13 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-from queens.interfaces.interface import Interface
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
 
-class BmfiaInterface(Interface):
+class BmfiaInterface:
     r"""Interface class for Bayesian multi-fidelity inverse analysis.
 
     Interface for grouping the outputs of several simulation models with
@@ -504,20 +503,17 @@ class BmfiaInterface(Interface):
     @log_init_args
     def __init__(
         self,
-        parameters,
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_coordinate",
     ):
         """Instantiate a BMFIA interface.
 
         Args:
-            parameters (obj): Parameters object
             num_processors_multi_processing (int): Number of processors that should be used in the
                                                    multi-processing pool.
             probabilistic_mapping_type (str): Configured method to instantiate the  probabilistic
                                               mapping objects
         """
-        super().__init__(parameters=None)
         # instantiate probabilistic mapping objects
         (
             instantiate_probabilistic_mappings,

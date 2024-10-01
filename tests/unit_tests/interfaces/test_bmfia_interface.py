@@ -15,7 +15,6 @@ from queens.utils.exceptions import InvalidOptionError
 def fixture_default_bmfia_interface():
     """A dummy bmfia interface."""
     default_interface = BmfiaInterface(
-        parameters="dummy_parameters",
         probabilistic_mapping_type="per_coordinate",
         num_processors_multi_processing=2,
     )
@@ -118,11 +117,8 @@ def fixture_dummy_plot_instance():
 # ---- Actual unit_tests ------------------------------
 def test_init():
     """Test from config create method."""
-    parameters = "dummy_parameters"
-
     # test configuration with settings per_coordinate
     bmfia_interface = BmfiaInterface(
-        parameters=parameters,
         num_processors_multi_processing=2,
         probabilistic_mapping_type="per_coordinate",
     )
@@ -149,7 +145,6 @@ def test_init():
 
     # test configuration with settings per_time_step
     bmfia_interface = BmfiaInterface(
-        parameters=parameters,
         num_processors_multi_processing=2,
         probabilistic_mapping_type="per_time_step",
     )
@@ -177,7 +172,6 @@ def test_init():
     # test wrong configuration
     with pytest.raises(InvalidOptionError):
         BmfiaInterface(
-            parameters=parameters,
             num_processors_multi_processing=2,
             probabilistic_mapping_type="blabla",
         )
@@ -192,7 +186,6 @@ def test__init__():
     update_mappings_method = BmfiaInterface.update_mappings_per_coordinate
 
     interface = BmfiaInterface(
-        parameters="dummy_parameters",
         num_processors_multi_processing=num_processors_multi_processing,
         probabilistic_mapping_type="per_coordinate",
     )

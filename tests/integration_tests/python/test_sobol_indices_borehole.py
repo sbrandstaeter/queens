@@ -4,7 +4,6 @@ import numpy as np
 
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.job_interface import JobInterface
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -27,10 +26,9 @@ def test_sobol_indices_borehole(global_settings):
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
     # Setup iterator
-    driver = FunctionDriver(function="borehole83_lofi")
+    driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, num_jobs=2)
-    interface = JobInterface(parameters=parameters, scheduler=scheduler, driver=driver)
-    model = SimulationModel(interface=interface)
+    model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = SobolIndexIterator(
         seed=42,
         calc_second_order=True,

@@ -18,6 +18,7 @@ class FourcDriver(JobscriptDriver):
     @log_init_args
     def __init__(
         self,
+        parameters,
         input_template,
         executable,
         files_to_copy=None,
@@ -30,6 +31,7 @@ class FourcDriver(JobscriptDriver):
         """Initialize FourcDriver object.
 
         Args:
+            parameters (Parameters): Parameters object
             input_template (str, Path): path to simulation input template
             executable (str, Path): path to main executable of respective software
             files_to_copy (list, opt): files or directories to copy to experiment_dir
@@ -45,6 +47,7 @@ class FourcDriver(JobscriptDriver):
             "mpi_cmd": mpi_cmd,
         }
         super().__init__(
+            parameters=parameters,
             input_template=input_template,
             jobscript_template=_JOBSCRIPT_TEMPLATE,
             executable=executable,

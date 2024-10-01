@@ -22,7 +22,6 @@ def fixture_default_interface():
     coords_mat = np.array([[1, 0], [1, 0]])
 
     interface = BmfiaInterface(
-        parameters="dummy_parameters",
         num_processors_multi_processing=num_processors_multi_processing,
         probabilistic_mapping_type="per_coordinate",
     )
