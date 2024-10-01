@@ -220,7 +220,15 @@ class OptimizationIterator(Iterator):
         Returns:
             f_value (float): Response of objective function or model
         """
-        f_value = self.eval_model(x_vec)
+        additional_positions, _, _ = get_positions(
+            x_vec,
+            method=self.jac_method,
+            rel_step=self.jac_rel_step,
+            bounds=(self.bounds.lb, self.bounds.ub),
+        )
+        positions_to_evaluate = np.row_stack((x_vec, additional_positions))
+        f_all = self.eval_model(positions_to_evaluate)
+        f_value = f_all[0]
 
         parameter_list = self.parameters.parameters_keys
         _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
@@ -359,15 +367,23 @@ class OptimizationIterator(Iterator):
             f_batch (np.ndarray): Model response
         """
         positions = positions.reshape(-1, self.parameters.num_parameters)
-        f_batch = []
-        for position in positions:
+        f_batch = [None] * len(positions)
+        new_positions_to_evaluate = []
+        new_positions_batch_id = []
+        for i, position in enumerate(positions):
             precalculated_output = self.check_precalculated(position)
-            if precalculated_output is not None:
-                f_batch.append(precalculated_output)
+            if precalculated_output is None:
+                new_positions_to_evaluate.append(position)
+                new_positions_batch_id.append(i)
             else:
-                f_batch.append(self.model.evaluate(position.reshape(1, -1))["result"].reshape(-1))
-                self.precalculated_positions["position"].append(position)
-                self.precalculated_positions["output"].append(f_batch[-1])
+                f_batch[i] = precalculated_output
+        if len(new_positions_to_evaluate) > 0:
+            new_positions_to_evaluate = np.array(new_positions_to_evaluate)
+            f_new = self.model.evaluate(new_positions_to_evaluate)["result"]
+            for position_id, output in zip(new_positions_batch_id, f_new):
+                f_batch[position_id] = output
+            self.precalculated_positions["position"].extend(new_positions_to_evaluate)
+            self.precalculated_positions["output"].extend(f_new)
         f_batch = np.array(f_batch).squeeze()
         return f_batch
 
