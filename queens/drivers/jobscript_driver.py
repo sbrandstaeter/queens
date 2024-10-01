@@ -101,9 +101,8 @@ class JobscriptDriver(Driver):
                 **self.jobscript_options,
             }
 
-            # Strict is False as some options might not be needed
             inject_in_template(
-                final_jobscript_options, self.jobscript_template, str(jobscript_file), strict=False
+                final_jobscript_options, self.jobscript_template, str(jobscript_file)
             )
 
         with metadata.time_code("run_jobscript"):

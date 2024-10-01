@@ -6,9 +6,8 @@ text file.
 
 from pathlib import Path
 
-from jinja2 import Environment, Template, meta
+from jinja2 import Environment, StrictUndefined, Undefined
 
-from queens.utils.exceptions import InjectionError
 from queens.utils.io_utils import read_file
 
 
@@ -18,26 +17,15 @@ def render_template(params, template, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template (str): Template file as string
-        output_file (str, Path): Name of output file with injected parameters
-        strict (bool): Raises exception if mismatch between provided and required parameters
+        strict (bool): Raises exception if required parameters from the template are missing
 
     Returns:
         str: injected template
     """
-    if strict:
-        # Get the required parameters
-        template_obj = Environment().parse(template)
-        required_parameters_in_template = meta.find_undeclared_variables(template_obj)
+    undefined = StrictUndefined if strict else Undefined
 
-        # Get the parameters to be injected
-        provided_parameters = set(params.keys())
-
-        # In case of mismatch raise Exception
-        if required_parameters_in_template.symmetric_difference(provided_parameters):
-            raise InjectionError.construct_error(
-                required_parameters_in_template, provided_parameters
-            )
-    return Template(template).render(**params)
+    environment = Environment(undefined=undefined).from_string(template)
+    return environment.render(**params)
 
 
 def inject_in_template(params, template, output_file, strict=True):
@@ -46,7 +34,7 @@ def inject_in_template(params, template, output_file, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template (str): Template (str)
-        output_file (str, Path):    Name of output file with injected parameters
+        output_file (str, Path): Name of output file with injected parameters
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
     injected_template = render_template(params, template, strict)
@@ -59,7 +47,7 @@ def inject(params, template_path, output_file, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template_path (str, Path): Path to template
-        output_file (str, Path):    Name of output file with injected parameters
+        output_file (str, Path): Name of output file with injected parameters
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
     template = read_file(template_path)
