@@ -6,6 +6,8 @@ be overwritten!
 
 # Changelog
 
+* [remove_interfaces_and_push_parameters_to_drivers](https://gitlab.lrz.de/queens_community/queens/-/commit/c6fc37b9d5d6bc76cf7fc5492a147e26671def57) (2024-10-01): Remove interfaces and push parameters to drivers
+
 * [remove-direct-python-interface](https://gitlab.lrz.de/queens_community/queens/-/commit/0c911c4fd40549c147052e8110ca2a8478eb1ffb) (2024-09-05): Remove direct python interface and replace by pool scheduler and python driver
 
 * [delete_old_random_field_implementation](https://gitlab.lrz.de/queens_community/queens/-/commit/1dde8f0a4e6063a68ac7519502252403eab1fb67) (2024-05-21): Delete old random field implementation
