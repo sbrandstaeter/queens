@@ -16,7 +16,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
     Attributes:
         adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of the
                             functional w.r.t. to the simulation output.
-        gradient_driver (Driver):   Driver object for the adjoint simulation run.
+        gradient_driver (Driver): Driver object for the adjoint simulation run.
     """
 
     @log_init_args
@@ -30,9 +30,9 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         """Initialize model.
 
         Args:
-            scheduler (Scheduler):      scheduler for the simulations
-            driver (Driver):            driver for the simulations
-            gradient_driver (Driver):   Driver object for the adjoint simulation run.
+            scheduler (Scheduler): Scheduler for the simulations
+            driver (Driver): Driver for the simulations
+            gradient_driver (Driver): Driver object for the adjoint simulation run.
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """

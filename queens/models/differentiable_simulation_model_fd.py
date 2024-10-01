@@ -37,8 +37,8 @@ class DifferentiableSimulationModelFD(SimulationModel):
         """Initialize model.
 
         Args:
-            scheduler (Scheduler):      scheduler for the simulations
-            driver (Driver):            driver for the simulations
+            scheduler (Scheduler): Scheduler for the simulations
+            driver (Driver): Driver for the simulations
             finite_difference_method (str): Method to calculate a finite difference
                                             based approximation of the Jacobian matrix:
                                              - '2-point': a one-sided scheme by definition

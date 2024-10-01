@@ -17,7 +17,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_name (str): name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         num_jobs (int): Maximum number of parallel jobs
-        latest_job_id (int):    Latest job ID.
+        latest_job_id (int): Latest job ID.
     """
 
     def __init__(self, experiment_name, experiment_dir, num_jobs):

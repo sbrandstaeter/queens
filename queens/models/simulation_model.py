@@ -10,8 +10,8 @@ class SimulationModel(Model):
     """Simulation model class.
 
     Attributes:
-        scheduler (Scheduler):      scheduler for the simulations
-        driver (Driver):            driver for the simulations
+        scheduler (Scheduler): Scheduler for the simulations
+        driver (Driver): Driver for the simulations
     """
 
     @log_init_args
@@ -19,8 +19,8 @@ class SimulationModel(Model):
         """Initialize simulation model.
 
         Args:
-            scheduler (Scheduler):      scheduler for the simulations
-            driver (Driver):            driver for the simulations
+            scheduler (Scheduler): Scheduler for the simulations
+            driver (Driver): Driver for the simulations
         """
         super().__init__()
         self.scheduler = scheduler
