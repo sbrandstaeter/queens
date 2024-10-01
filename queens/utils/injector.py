@@ -17,7 +17,6 @@ def render_template(params, template, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template (str): Template file as string
-        output_file (str, Path): Name of output file with injected parameters
         strict (bool): Raises exception if required parameters from the template are missing
 
     Returns:
@@ -35,7 +34,7 @@ def inject_in_template(params, template, output_file, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template (str): Template (str)
-        output_file (str, Path):    Name of output file with injected parameters
+        output_file (str, Path): Name of output file with injected parameters
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
     injected_template = render_template(params, template, strict)
@@ -48,7 +47,7 @@ def inject(params, template_path, output_file, strict=True):
     Args:
         params (dict): Dict with parameters to inject
         template_path (str, Path): Path to template
-        output_file (str, Path):    Name of output file with injected parameters
+        output_file (str, Path): Name of output file with injected parameters
         strict (bool): Raises exception if mismatch between provided and required parameters
     """
     template = read_file(template_path)
