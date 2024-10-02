@@ -72,6 +72,9 @@ workflow:
 .ubuntu_settings:
   before_script:
     - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
+    # This ensures that the correct queens source is used
+    - pip install -e .[develop]
+    - echo Queens source for testing is $(pip list | grep -o '/.*')
   rules:
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
