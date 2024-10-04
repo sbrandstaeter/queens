@@ -231,34 +231,24 @@ class OptimizationIterator(Iterator):
             else:
                 self.objective_and_jacobian = False
 
-    def objective(self, x_vec):
-        """Evaluate objective function at *x_vec*.
+    def objective(self, x0):
+        """Evaluate objective function at *x0*.
 
         Args:
-            x_vec (np.array): Input vector for model/objective function. The variable *x_vec*
-                              corresponds to the parameters that should be calibrated in an
-                              inverse problem.
+            x0 (np.array): position to evaluate objective at
 
         Returns:
-            f_value (float): Response of objective function or model
+            f0 (float): Objective function evaluated at *x0*
         """
         if self.objective_and_jacobian:
-            additional_positions, _, _ = get_positions(
-                x_vec,
-                method=self.jac_method,
-                rel_step=self.jac_rel_step,
-                bounds=(self.bounds.lb, self.bounds.ub),
-            )
-            positions_to_evaluate = np.row_stack((x_vec, additional_positions))
-            f_all = self.eval_model(positions_to_evaluate)
-            f_value = f_all[0]
+            f0 = self.evaluate_fd_positions(x0)[0]
         else:
-            f_value = self.eval_model(x_vec)
+            f0 = self.eval_model(x0)
 
         parameter_list = self.parameters.parameters_keys
-        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x0)
 
-        return f_value
+        return f0
 
     def jacobian(self, x0):
         """Evaluate Jacobian of objective function at *x0*.
@@ -266,7 +256,37 @@ class OptimizationIterator(Iterator):
         Args:
             x0 (np.array): position to evaluate Jacobian at
         Returns:
-            jacobian_matrix (np.array): Jacobian matrix evaluated at *x0*
+            jacobian (np.array): Jacobian matrix evaluated at *x0*
+        """
+        f0, f_perturbed, delta_positions, use_one_sided = self.evaluate_fd_positions(x0)
+        jacobian = fd_jacobian(
+            f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method
+        )
+        # sanity checks:
+        # in the case of LSQ, the number of residuals needs to be
+        # greater or equal to the number of parameters to be fitted
+        if self.algorithm == "LSQ" and jacobian.ndim == 2:
+            num_res, num_par = jacobian.shape
+            if num_res < num_par:
+                raise ValueError(
+                    f"Number of residuals (={num_res}) has to be greater or equal to"
+                    f" number of parameters (={num_par})."
+                    f" You have {num_res}<{num_par}."
+                )
+        return jacobian
+
+    def evaluate_fd_positions(self, x0):
+        """Evaluate objective function at finite difference positions.
+
+        Args:
+            x0 (np.array): Position at which the Jacobian is computed.
+
+        Returns:
+            f0 (ndarray): Objective function value at *x0*
+            f_perturbed (np.array): Perturbed function values
+            delta_positions (np.array): Delta between positions used to approximate Jacobian
+            use_one_sided (np.array): Whether to switch to one-sided scheme due to closeness to
+                                      bounds. Informative only for 3-point method.
         """
         additional_positions, delta_positions, use_one_sided = get_positions(
             x0,
@@ -281,22 +301,7 @@ class OptimizationIterator(Iterator):
 
         f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)
         f_perturbed = f_batch[1:].reshape(-1, f0.size)
-
-        jacobian_matrix = fd_jacobian(
-            f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method
-        )
-        # sanity checks:
-        # in the case of LSQ, the number of residuals needs to be
-        # greater or equal to the number of parameters to be fitted
-        if self.algorithm == "LSQ" and jacobian_matrix.ndim == 2:
-            num_res, num_par = jacobian_matrix.shape
-            if num_res < num_par:
-                raise ValueError(
-                    f"Number of residuals (={num_res}) has to be greater or equal to"
-                    f" number of parameters (={num_par})."
-                    f" You have {num_res}<{num_par}."
-                )
-        return jacobian_matrix
+        return f0, f_perturbed, delta_positions, use_one_sided
 
     def pre_run(self):
         """Pre run of Optimization iterator."""
