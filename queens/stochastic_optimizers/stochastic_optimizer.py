@@ -87,6 +87,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         current_gradient_value (np.array): Current gradient vector w.r.t. the variational
                                            parameters.
         gradient (function): Function to compute the gradient.
+        learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
     """
 
     _name = "Stochastic Optimizer"
@@ -100,6 +101,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         clip_by_l2_norm_threshold=1e6,
         clip_by_value_threshold=1e6,
         max_iteration=1e6,
+        learning_rate_decay=None,
     ):
         """Initialize stochastic optimizer.
 
@@ -113,6 +115,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
+            learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
         """
         valid_options = {"min": -1, "max": 1}
         self.precoefficient = get_option(
@@ -131,6 +134,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self.current_variational_parameters = None
         self.current_gradient_value = None
         self.gradient = None
+        self.learning_rate_decay = learning_rate_decay
 
     @abc.abstractmethod
     def scheme_specific_gradient(self, gradient):
@@ -217,6 +221,12 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             raise StopIteration
         old_parameters = self.current_variational_parameters.copy()
         current_gradient = self.gradient(self.current_variational_parameters)
+        if self.learning_rate_decay:
+            self.learning_rate = self.learning_rate_decay(
+                self.learning_rate,
+                self.current_variational_parameters,
+                current_gradient,
+            )
         current_gradient = self.clip_gradient(current_gradient)
         current_gradient = self.scheme_specific_gradient(current_gradient)
         self.current_gradient_value = current_gradient
