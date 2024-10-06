@@ -15,7 +15,7 @@ class MpiDriver(JobscriptDriver):
     def __init__(
         self,
         parameters,
-        input_template,
+        input_templates,
         executable,
         files_to_copy=None,
         data_processor=None,
@@ -26,7 +26,7 @@ class MpiDriver(JobscriptDriver):
 
         Args:
             parameters (Parameters): Parameters object
-            input_template (str, Path): path to simulation input template
+            input_templates (str, Path, dict): path to simulation input template
             executable (str, Path): path to main executable of respective software
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             data_processor (obj, opt): instance of data processor class
@@ -38,7 +38,7 @@ class MpiDriver(JobscriptDriver):
         }
         super().__init__(
             parameters=parameters,
-            input_template=input_template,
+            input_templates=input_templates,
             jobscript_template=_JOBSCRIPT_TEMPLATE,
             executable=executable,
             files_to_copy=files_to_copy,
