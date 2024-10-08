@@ -75,6 +75,12 @@ class OptimizationIterator(Iterator):
         precalculated_positions (dict): Dictionary containing precalculated positions and
                                         corresponding model responses.
         solution (np.array): Solution obtained from the optimization process.
+        objective_and_jacobian (bool): If true, every time the objective is evaluated also the
+                                       jacobian is evaluated. This leads to improved batching, but
+                                       can lead to unnecessary evaluations of the jacobian during
+                                       line-search.
+                                       This option is only available for gradient methods. Default
+                                       for 'LSQ' is true, and false for remaining gradient methods.
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
@@ -95,6 +101,7 @@ class OptimizationIterator(Iterator):
         algorithm="L-BFGS-B",
         jac_method="2-point",
         jac_rel_step=None,
+        objective_and_jacobian=None,
     ):
         """Initialize an OptimizationIterator.
 
@@ -150,6 +157,13 @@ class OptimizationIterator(Iterator):
             jac_rel_step (array_like): Relative step size to use for finite difference approximation
                                        of Jacobian matrix. If None (default) then it is selected
                                        automatically. (see SciPy documentation for details)
+            objective_and_jacobian (bool, opt): If true, every time the objective is evaluated also
+                                                the jacobian is evaluated. This leads to improved
+                                                batching, but can lead to unnecessary evaluations of
+                                                the jacobian during line-search.
+                                                This option is only available for gradient methods.
+                                                Default for 'LSQ' is true, and false for remaining
+                                                gradient methods.
         """
         super().__init__(model, parameters, global_settings)
 
@@ -208,24 +222,33 @@ class OptimizationIterator(Iterator):
         self.verbose_output = verbose_output
         self.precalculated_positions = {"position": [], "output": []}
         self.solution = None
+        self.objective_and_jacobian = objective_and_jacobian
+        if self.algorithm in ["COBYLA", "NELDER-MEAD", "POWELL"]:
+            self.objective_and_jacobian = False
+        if self.objective_and_jacobian is None:
+            if self.algorithm == "LSQ":
+                self.objective_and_jacobian = True
+            else:
+                self.objective_and_jacobian = False
 
-    def objective_function(self, x_vec):
-        """Evaluate objective function at *x_vec*.
+    def objective(self, x0):
+        """Evaluate objective function at *x0*.
 
         Args:
-            x_vec (np.array): Input vector for model/objective function. The variable *x_vec*
-                              corresponds to the parameters that should be calibrated in an
-                              inverse problem.
+            x0 (np.array): position to evaluate objective at
 
         Returns:
-            f_value (float): Response of objective function or model
+            f0 (float): Objective function evaluated at *x0*
         """
-        f_value = self.eval_model(x_vec)
+        if self.objective_and_jacobian:
+            f0 = self.evaluate_fd_positions(x0)[0]
+        else:
+            f0 = self.eval_model(x0)
 
         parameter_list = self.parameters.parameters_keys
-        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x0)
 
-        return f_value
+        return f0
 
     def jacobian(self, x0):
         """Evaluate Jacobian of objective function at *x0*.
@@ -233,7 +256,37 @@ class OptimizationIterator(Iterator):
         Args:
             x0 (np.array): position to evaluate Jacobian at
         Returns:
-            jacobian_matrix (np.array): Jacobian matrix evaluated at *x0*
+            jacobian (np.array): Jacobian matrix evaluated at *x0*
+        """
+        f0, f_perturbed, delta_positions, use_one_sided = self.evaluate_fd_positions(x0)
+        jacobian = fd_jacobian(
+            f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method
+        )
+        # sanity checks:
+        # in the case of LSQ, the number of residuals needs to be
+        # greater or equal to the number of parameters to be fitted
+        if self.algorithm == "LSQ" and jacobian.ndim == 2:
+            num_res, num_par = jacobian.shape
+            if num_res < num_par:
+                raise ValueError(
+                    f"Number of residuals (={num_res}) has to be greater or equal to"
+                    f" number of parameters (={num_par})."
+                    f" You have {num_res}<{num_par}."
+                )
+        return jacobian
+
+    def evaluate_fd_positions(self, x0):
+        """Evaluate objective function at finite difference positions.
+
+        Args:
+            x0 (np.array): Position at which the Jacobian is computed.
+
+        Returns:
+            f0 (ndarray): Objective function value at *x0*
+            f_perturbed (np.array): Perturbed function values
+            delta_positions (np.array): Delta between positions used to approximate Jacobian
+            use_one_sided (np.array): Whether to switch to one-sided scheme due to closeness to
+                                      bounds. Informative only for 3-point method.
         """
         additional_positions, delta_positions, use_one_sided = get_positions(
             x0,
@@ -248,22 +301,7 @@ class OptimizationIterator(Iterator):
 
         f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)
         f_perturbed = f_batch[1:].reshape(-1, f0.size)
-
-        jacobian_matrix = fd_jacobian(
-            f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method
-        )
-        # sanity checks:
-        # in the case of LSQ, the number of residuals needs to be
-        # greater or equal to the number of parameters to be fitted
-        if self.algorithm == "LSQ" and jacobian_matrix.ndim == 2:
-            num_res, num_par = jacobian_matrix.shape
-            if num_res < num_par:
-                raise ValueError(
-                    f"Number of residuals (={num_res}) has to be greater or equal to"
-                    f" number of parameters (={num_par})."
-                    f" You have {num_res}<{num_par}."
-                )
-        return jacobian_matrix
+        return f0, f_perturbed, delta_positions, use_one_sided
 
     def pre_run(self):
         """Pre run of Optimization iterator."""
@@ -276,7 +314,7 @@ class OptimizationIterator(Iterator):
         # nonlinear least squares with bounds using Jacobian
         if self.algorithm == "LSQ":
             self.solution = least_squares(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 jac=self.jacobian,
                 bounds=self.bounds,
@@ -286,7 +324,7 @@ class OptimizationIterator(Iterator):
         # minimization with bounds using Jacobian
         elif self.algorithm in {"L-BFGS-B", "TNC"}:
             self.solution = minimize(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 method=self.algorithm,
                 jac=self.jacobian,
@@ -297,7 +335,7 @@ class OptimizationIterator(Iterator):
         # minimization with constraints without Jacobian
         elif self.algorithm in {"COBYLA"}:
             self.solution = minimize(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 method=self.algorithm,
                 constraints=self.cons,
@@ -307,7 +345,7 @@ class OptimizationIterator(Iterator):
         # minimization with bounds and constraints using Jacobian
         elif self.algorithm in {"SLSQP"}:
             self.solution = minimize(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 method=self.algorithm,
                 jac=self.jacobian,
@@ -318,7 +356,7 @@ class OptimizationIterator(Iterator):
         # minimization (unconstrained, unbounded) without Jacobian
         elif self.algorithm in {"NELDER-MEAD", "POWELL"}:
             self.solution = minimize(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 method=self.algorithm,
                 options={"disp": self.verbose_output},
@@ -326,7 +364,7 @@ class OptimizationIterator(Iterator):
         # minimization (unconstrained, unbounded) using Jacobian
         elif self.algorithm in {"CG", "BFGS"}:
             self.solution = minimize(
-                self.objective_function,
+                self.objective,
                 self.initial_guess,
                 method=self.algorithm,
                 jac=self.jacobian,
@@ -359,15 +397,23 @@ class OptimizationIterator(Iterator):
             f_batch (np.ndarray): Model response
         """
         positions = positions.reshape(-1, self.parameters.num_parameters)
-        f_batch = []
-        for position in positions:
+        f_batch = [None] * len(positions)
+        new_positions_to_evaluate = []
+        new_positions_batch_id = []
+        for i, position in enumerate(positions):
             precalculated_output = self.check_precalculated(position)
-            if precalculated_output is not None:
-                f_batch.append(precalculated_output)
+            if precalculated_output is None:
+                new_positions_to_evaluate.append(position)
+                new_positions_batch_id.append(i)
             else:
-                f_batch.append(self.model.evaluate(position.reshape(1, -1))["result"].reshape(-1))
-                self.precalculated_positions["position"].append(position)
-                self.precalculated_positions["output"].append(f_batch[-1])
+                f_batch[i] = precalculated_output
+        if new_positions_to_evaluate:
+            new_positions_to_evaluate = np.array(new_positions_to_evaluate)
+            f_new = self.model.evaluate(new_positions_to_evaluate)["result"]
+            for position_id, output in zip(new_positions_batch_id, f_new):
+                f_batch[position_id] = output
+            self.precalculated_positions["position"].extend(new_positions_to_evaluate)
+            self.precalculated_positions["output"].extend(f_new)
         f_batch = np.array(f_batch).squeeze()
         return f_batch
 
