@@ -57,10 +57,10 @@ class RPVIIterator(VariationalInferenceIterator):
         result_description,
         variational_distribution,
         n_samples_per_iter,
-        variational_transformation,
         random_seed,
         max_feval,
         stochastic_optimizer,
+        variational_transformation=None,
         variational_parameter_initialization=None,
         natural_gradient=True,
         FIM_dampening=True,
@@ -81,12 +81,11 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_distribution (VariationalDistribution): variational distribution object
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
-            variational_transformation (str): String encoding the transformation that will be
-                                              applied to
-                                              the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            variational_transformation (str): String encoding the transformation that will be
+                                              applied to the variational density
             variational_parameter_initialization (str): Flag to decide how to initialize the
                                                         variational parameters
             natural_gradient (boolean): True if natural gradient should be used

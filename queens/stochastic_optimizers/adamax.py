@@ -30,10 +30,10 @@ class Adamax(StochasticOptimizer):
         self,
         learning_rate,
         optimization_type,
-        rel_l1_change_threshold=None,
-        rel_l2_change_threshold=None,
-        clip_by_l2_norm_threshold=1e6,
-        clip_by_value_threshold=1e6,
+        rel_l1_change_threshold,
+        rel_l2_change_threshold,
+        clip_by_l2_norm_threshold=np.inf,
+        clip_by_value_threshold=np.inf,
         max_iteration=1e6,
         beta_1=0.9,
         beta_2=0.999,
@@ -45,9 +45,9 @@ class Adamax(StochasticOptimizer):
             learning_rate (float): Learning rate for the optimizer
             optimization_type (str): "max" in case of maximization and "min" for minimization
             rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
-                                             this value, this criteria catches.
+                                             this value, this criterion catches.
             rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
-                                            this value, this criteria catches.
+                                             this value, this criterion catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
