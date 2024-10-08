@@ -13,7 +13,14 @@ from queens.variational_distributions import FullRankNormalVariational, MeanFiel
 
 _logger = logging.getLogger(__name__)
 
-VALID_EXPORT_FIELDS = ["elbo", "n_sims", "samples", "likelihood_variance", "variational_parameters"]
+VALID_EXPORT_FIELDS = [
+    "elbo",
+    "n_sims",
+    "samples",
+    "likelihood_variance",
+    "variational_parameters",
+    "learning_rate",
+]
 
 
 class VariationalInferenceIterator(Iterator):
@@ -152,7 +159,10 @@ class VariationalInferenceIterator(Iterator):
             if self.n_sims >= self.max_feval:
                 break
 
-            self.iteration_data.add(variational_parameters=self.variational_params)
+            self.iteration_data.add(
+                variational_parameters=self.variational_params,
+                learning_rate=self.stochastic_optimizer.learning_rate,
+            )
             old_parameters = self.variational_params.copy()
 
         # Store the final variational params
