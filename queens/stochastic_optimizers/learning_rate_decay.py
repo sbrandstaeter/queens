@@ -16,10 +16,8 @@
 
 import abc
 import logging
-import math
 
 import numpy as np
-from scipy import stats
 
 _logger = logging.getLogger(__name__)
 
@@ -69,8 +67,9 @@ class LogLinearLearningRateDecay(LearningRateDecay):
         Returns:
             learning_rate (float): Adapted learning rate
         """
+        if self.iteration > 1:
+            learning_rate *= (self.iteration - 1) ** self.slope / self.iteration**self.slope
         self.iteration += 1
-        learning_rate /= self.iteration**self.slope
         return learning_rate
 
 
@@ -145,55 +144,3 @@ class DynamicLearningRateDecay:
         self.a = 0
         self.b = 0
         self.c = 0
-
-
-class LearningRateDecaySASA:
-    def __init__(self, n_min=1000, k_test=100, delta=0.05, theta=0.125, tau=0.1):
-        self.n_min = n_min
-        self.k_test = k_test
-        self.delta = delta
-        self.theta = theta
-        self.tau = tau
-        self.laplace = []
-
-        self.k = 0
-        self.k0 = 0
-
-    def __call__(self, learning_rate, params, gradient):
-        self.laplace.append(np.sum(params * gradient) - learning_rate / 2 * np.sum(gradient**2))
-        n = math.ceil(self.theta * (self.k - self.k0))
-        if n > self.n_min and self.k % self.k_test == 0:
-            p = int(math.floor(math.sqrt(n)))
-            n = int(p**2)
-            laplace = np.array(self.laplace[-n:])
-
-            mean = np.mean(laplace)
-
-            batches = laplace.reshape(p, p)
-            batch_means = np.mean(batches, 1)
-            diffs = batch_means - mean
-            std = np.sqrt(p / (p - 1) * np.sum(diffs**2))
-            dof = p - 1
-
-            std = np.std(laplace)
-
-            # confidence interval
-            t_sigma_dof = stats.t.ppf(1 - self.delta / 2.0, dof)
-            half_width = std * t_sigma_dof / math.sqrt(n)
-            lower = mean - half_width
-            upper = mean + half_width
-            # The simple confidence interval test
-            # stationarity = lower < 0 and upper > 0
-
-            # A more stable test is to also check if two half-means are of the same sign
-            half_point = int(math.floor(n / 2))
-            mean1 = np.mean(laplace[:half_point])
-            mean2 = np.mean(laplace[half_point:])
-            stationarity = lower < 0 and upper > 0  # and (mean1 * mean2 > 0)
-
-            if stationarity:
-                self.decay *= self.tau
-                self.k0 = self.k
-                print("Stationarity reached. Decay: ", self.decay)
-        self.k += 1
-        return self.decay
