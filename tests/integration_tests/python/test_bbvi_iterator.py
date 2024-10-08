@@ -47,10 +47,8 @@ def test_bbvi_density_match(
         dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
             dummy_bbvi_instance.get_gradient_function()
         )
-        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
-            var_params.reshape(-1, 1)
-        )  # actual run of the algorithm
-        dummy_bbvi_instance.run()
+        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = var_params
+        dummy_bbvi_instance.run()  # actual run of the algorithm
 
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
 

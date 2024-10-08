@@ -8,7 +8,7 @@ from queens.stochastic_optimizers import SGD, Adam, Adamax, RMSprop
 
 def test_rmsprop_max(rmsprop_optimizer):
     """Test RMSprop."""
-    varparams = 5 * np.ones(5).reshape(-1, 1)
+    varparams = 5 * np.ones(5)
     rmsprop_optimizer.current_variational_parameters = varparams
     rmsprop_optimizer.set_gradient_function(gradient)
     result = None
@@ -22,7 +22,7 @@ def test_rmsprop_max(rmsprop_optimizer):
 
 def test_adamax(adamax_optimizer):
     """Test Adamax."""
-    varparams = np.ones(5).reshape(-1, 1)
+    varparams = np.ones(5)
     adamax_optimizer.current_variational_parameters = varparams
     adamax_optimizer.set_gradient_function(lambda x: -gradient(x))
     result = adamax_optimizer.run_optimization()
@@ -33,7 +33,7 @@ def test_adamax(adamax_optimizer):
 
 def test_adam(adam_optimizer):
     """Test Adam."""
-    varparams = np.ones(5).reshape(-1, 1)
+    varparams = np.ones(5)
     adam_optimizer.current_variational_parameters = varparams
     adam_optimizer.set_gradient_function(gradient)
     result = adam_optimizer.run_optimization()
@@ -44,7 +44,7 @@ def test_adam(adam_optimizer):
 
 def test_sgd(sgd_optimizer):
     """Test Adam."""
-    varparams = np.ones(5).reshape(-1, 1)
+    varparams = np.ones(5)
     sgd_optimizer.current_variational_parameters = varparams
     sgd_optimizer.set_gradient_function(gradient)
     result = sgd_optimizer.run_optimization()
@@ -107,4 +107,4 @@ def fixture_rmsprop_optimizer():
 
 def gradient(x):
     """Gradient function."""
-    return -2 * (x - 0.5).reshape(-1, 1)
+    return -2 * (x - 0.5)

@@ -142,10 +142,10 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_parameters (np.ndarray): variational parameters
 
         Returns:
-            np.ndarray: ELBO gradient (n_params x 1)
+            np.ndarray: ELBO gradient
         """
         # update variational_params
-        self.variational_params = variational_parameters.flatten()
+        self.variational_params = variational_parameters
 
         (
             sample_batch,
@@ -184,7 +184,7 @@ class RPVIIterator(VariationalInferenceIterator):
         grad_elbo = np.mean(sample_elbo_grad, axis=0)
 
         self._calculate_elbo(sample_batch, log_likelihood_batch)
-        return grad_elbo.reshape(-1, 1)
+        return grad_elbo
 
     def _calculate_elbo(self, sample_batch, log_likelihood):
         """Calculate the ELBO of the current variational approximation.
