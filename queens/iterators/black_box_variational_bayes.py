@@ -380,9 +380,9 @@ class BBVIIterator(VariationalInferenceIterator):
             variational_parameters (np.array): Variational parameters
 
         Returns:
-            grad_elbo (np.array): ELBO gradient (n_variational_parameters x 1)
+            grad_elbo (np.array): ELBO gradient
         """
-        self.variational_params = variational_parameters.flatten()
+        self.variational_params = variational_parameters
 
         # Check if evaluating the probabilistic model is necessary
         self._check_if_sampling_necessary()
@@ -429,7 +429,7 @@ class BBVIIterator(VariationalInferenceIterator):
         # MC gradient estimation with control variates
         grad_elbo = normalizing_constant_is * np.mean(
             selfnormalized_weights_is * (f_mat - control_variate_scalings * h_mat), axis=1
-        ).reshape(-1, 1)
+        )
 
         # Compute the logpdf for the elbo estimate (here no IS is used)
         self._calculate_elbo(selfnormalized_weights_is, normalizing_constant_is)

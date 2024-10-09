@@ -143,10 +143,11 @@ class VariationalInferenceIterator(Iterator):
         """Core run for stochastic variational inference."""
         start = time.time()
 
+        self.iteration_data.add(variational_parameters=self.variational_params)
         old_parameters = self.variational_params.copy()
 
         # Stochastic optimization
-        for _ in self.stochastic_optimizer:
+        for self.variational_params in self.stochastic_optimizer:
             self._catch_non_converging_simulations(old_parameters)
 
             # Just to avoid constant spamming
@@ -159,16 +160,9 @@ class VariationalInferenceIterator(Iterator):
             if self.n_sims >= self.max_feval:
                 break
 
-            self.iteration_data.add(
-                variational_parameters=self.variational_params,
-                learning_rate=self.stochastic_optimizer.learning_rate,
-            )
+            self.iteration_data.add(learning_rate=self.stochastic_optimizer.learning_rate)
+            self.iteration_data.add(variational_parameters=self.variational_params)
             old_parameters = self.variational_params.copy()
-
-        # Store the final variational params
-        self.variational_params = (
-            self.stochastic_optimizer.current_variational_parameters.copy().flatten()
-        )
 
         end = time.time()
 
@@ -196,9 +190,7 @@ class VariationalInferenceIterator(Iterator):
 
         # set the gradient according to input
         self.stochastic_optimizer.set_gradient_function(self.get_gradient_function())
-        self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
-            -1, 1
-        )
+        self.stochastic_optimizer.current_variational_parameters = self.variational_params
 
     def post_run(self):
         """Write results and potentially visualize them."""
