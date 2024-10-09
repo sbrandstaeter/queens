@@ -74,9 +74,9 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         max_iteration (int): Maximum number of iterations.
         precoefficient (int): Is 1 in case of maximization and -1 for minimization.
         rel_l1_change_threshold (float): If the L1 relative change in parameters falls below this
-                                         value, this criteria catches.
+                                         value, this criterion catches.
         rel_l2_change_threshold (float): If the L2 relative change in parameters falls below this
-                                         value, this criteria catches.
+                                         value, this criterion catches.
         iteration (int): Number of iterations done in the optimization so far.
         done (bool): True if the optimization is done.
         rel_l2_change (float): Relative change in L2-norm of variational params w.r.t. the previous
@@ -96,10 +96,10 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self,
         learning_rate,
         optimization_type,
-        rel_l1_change_threshold=None,
-        rel_l2_change_threshold=None,
-        clip_by_l2_norm_threshold=1e6,
-        clip_by_value_threshold=1e6,
+        rel_l1_change_threshold,
+        rel_l2_change_threshold,
+        clip_by_l2_norm_threshold=np.inf,
+        clip_by_value_threshold=np.inf,
         max_iteration=1e6,
         learning_rate_decay=None,
     ):
@@ -109,9 +109,9 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             learning_rate (float): Learning rate for the optimizer
             optimization_type (str): "max" in case of maximization and "min" for minimization
             rel_l1_change_threshold (float): If the L1 relative change in parameters falls below
-                                             this value, this criteria catches.
+                                             this value, this criterion catches.
             rel_l2_change_threshold (float): If the L2 relative change in parameters falls below
-                                             this value, this criteria catches.
+                                             this value, this criterion catches.
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
