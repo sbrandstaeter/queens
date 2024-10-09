@@ -6,6 +6,8 @@ be overwritten!
 
 # Changelog
 
+* [allow-multiple-input-files](https://gitlab.lrz.de/queens_community/queens/-/commit/b886962e69012246e47415e03170e2c9437390c1) (2024-10-09): natively support multiple input files in jobscript driver
+
 * [remove_interfaces_and_push_parameters_to_drivers](https://gitlab.lrz.de/queens_community/queens/-/commit/c6fc37b9d5d6bc76cf7fc5492a147e26671def57) (2024-10-01): Remove interfaces and push parameters to drivers
 
 * [remove-direct-python-interface](https://gitlab.lrz.de/queens_community/queens/-/commit/0c911c4fd40549c147052e8110ca2a8478eb1ffb) (2024-09-05): Remove direct python interface and replace by pool scheduler and python driver
