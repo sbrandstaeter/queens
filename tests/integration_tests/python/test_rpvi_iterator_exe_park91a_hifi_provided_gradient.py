@@ -101,7 +101,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     driver = MpiDriver(
         parameters=parameters,
-        input_template=third_party_input_file,
+        input_templates=third_party_input_file,
         executable=executable,
         data_processor=data_processor,
         gradient_data_processor=gradient_data_processor,
@@ -207,7 +207,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     driver = MpiDriver(
         parameters=parameters,
-        input_template=third_party_input_file,
+        input_templates=third_party_input_file,
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
@@ -319,7 +319,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     driver = MpiDriver(
         parameters=parameters,
-        input_template=third_party_input_file,
+        input_templates=third_party_input_file,
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
@@ -333,7 +333,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     adjoint_driver = MpiDriver(
         parameters=parameters,
-        input_template=third_party_input_file,
+        input_templates=third_party_input_file,
         executable=adjoint_executable,
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,

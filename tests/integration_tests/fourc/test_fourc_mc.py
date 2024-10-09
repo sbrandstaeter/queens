@@ -42,7 +42,7 @@ def test_fourc_mc(
     )
     driver = FourcDriver(
         parameters=parameters,
-        input_template=fourc_input_file_template,
+        input_templates=fourc_input_file_template,
         executable=fourc_executable,
         data_processor=data_processor,
     )

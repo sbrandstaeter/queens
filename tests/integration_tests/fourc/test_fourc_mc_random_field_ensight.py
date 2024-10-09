@@ -93,7 +93,7 @@ def test_write_random_material_to_dat(
     )
     driver = FourcDriver(
         parameters=parameters,
-        input_template=fourc_input_preprocessed,
+        input_templates=fourc_input_preprocessed,
         executable=fourc_executable,
         post_processor=post_ensight,
         data_processor=data_processor,
