@@ -79,7 +79,7 @@ class PolynomialChaosIterator(Iterator):
 
         if approach == "collocation":
             valid_sampling_rules = collocation_valid_sampling_rules
-        elif approach == "pseudo_spectral":
+        else:
             _logger.info(
                 "Maximum number of collocation points was set to %s.", num_collocation_points
             )
@@ -124,7 +124,7 @@ class PolynomialChaosIterator(Iterator):
         _logger.info("Polynomial chaos using a %s approach", self.polynomial_chaos_approach)
         if self.polynomial_chaos_approach == "collocation":
             polynomial_expansion, collocation_points = self._regression_based_pc()
-        elif self.polynomial_chaos_approach == "pseudo_spectral":
+        else:
             polynomial_expansion, collocation_points = self._projection_based_pc()
 
         mean = cp.E(polynomial_expansion, self.distribution)

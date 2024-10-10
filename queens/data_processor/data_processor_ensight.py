@@ -324,6 +324,7 @@ class DataProcessorEnsight(DataProcessor):
         geometric_set = self.geometric_target[1]
 
         # get node coordinates by geometric set, loop over all topologies
+        nodes_of_interest = None
         for nodes in self.geometric_set_data["node_topology"]:
             if nodes["topology_name"] == geometric_set:
                 nodes_of_interest = nodes["node_mesh"]
@@ -339,6 +340,8 @@ class DataProcessorEnsight(DataProcessor):
         for vols in self.geometric_set_data["volume_topology"]:
             if vols["topology_name"] == geometric_set:
                 nodes_of_interest = vols["node_mesh"]
+        if nodes_of_interest is None:
+            raise ValueError("Nodes of interest are not in the geometric set.")
 
         both = set(nodes_of_interest).intersection(
             self.geometric_set_data["node_coordinates"]["node_mesh"]
@@ -437,6 +440,7 @@ class DataProcessorEnsight(DataProcessor):
         # Ensight contains different "timesets" which are containers for the actual data
         number_of_timesets = raw_data.GetTimeSets().GetNumberOfItems()
 
+        vtk_solution_field = None
         for num in range(number_of_timesets):
             time_set = vtk_to_numpy(raw_data.GetTimeSets().GetItem(num))
             # Find the timeset that has more than one entry as sometimes there is an empty dummy

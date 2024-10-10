@@ -186,7 +186,7 @@ class GPJittedModel(SurrogateModel):
         log_evidence_max = -np.inf
         log_evidence_history = []
         iterations = []
-
+        params_ev_max = k_mat_ev_max = k_mat_inv_ev_max = cholesky_k_mat_ev_max = None
         for params in self.stochastic_optimizer:
             rel_l2_change_params = self.stochastic_optimizer.rel_l2_change
             iteration = self.stochastic_optimizer.iteration
@@ -234,7 +234,7 @@ class GPJittedModel(SurrogateModel):
                 cholesky_k_mat_ev_max = self.cholesky_k_mat
 
         # use the params that yielded the max log evidence
-        if not np.any(params_ev_max):
+        if params_ev_max is None:
             raise ValueError("The log evidence was not maximized during training!")
 
         self.hyper_params = list(np.exp(params_ev_max))
