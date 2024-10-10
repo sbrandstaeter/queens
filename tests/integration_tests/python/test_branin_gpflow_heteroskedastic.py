@@ -33,7 +33,7 @@ def test_branin_gpflow_heteroskedastic(expected_mean, expected_var, global_setti
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = HeteroskedasticGPModel(
+    gp_model = HeteroskedasticGPModel(
         eval_fit=None,
         error_measures=[
             "sum_squared",
@@ -62,7 +62,7 @@ def test_branin_gpflow_heteroskedastic(expected_mean, expected_var, global_setti
             "num_support_points": 10,
             "estimate_all": False,
         },
-        model=model,
+        model=gp_model,
         parameters=parameters,
         global_settings=global_settings,
     )
@@ -87,16 +87,16 @@ def fixture_expected_mean():
     mean = np.array(
         [
             [
-                5.12898,
-                4.07712,
-                10.22693,
-                2.55123,
-                4.56184,
-                2.45215,
-                2.56100,
-                3.32164,
-                7.84209,
-                6.96919,
+                3.111393972224277,
+                4.871511970865743,
+                9.490107236480078,
+                4.102804715168645,
+                6.834075486918755,
+                3.520856969539679,
+                4.1233575884069715,
+                5.168085181585406,
+                9.71670249292498,
+                8.305574341146198,
             ]
         ]
     ).T
@@ -109,16 +109,16 @@ def fixture_expected_var():
     var = np.array(
         [
             [
-                1057.66078,
-                4802.57196,
-                1298.08163,
-                1217.39827,
-                456.70756,
-                13143.74176,
-                8244.52203,
-                21364.59699,
-                877.14343,
-                207.58535,
+                6069.028670706884,
+                9751.90259532228,
+                1016.0473220348358,
+                1574.7038740682183,
+                894.769154573094,
+                7084.631563266536,
+                4062.370531720105,
+                6767.033077142452,
+                2350.3605807973404,
+                232.3100481516621,
             ]
         ]
     ).T

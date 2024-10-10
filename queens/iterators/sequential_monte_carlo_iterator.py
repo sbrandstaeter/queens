@@ -272,20 +272,13 @@ class SequentialMonteCarloIterator(Iterator):
             f = ess_new - zeta * self.ess_cur
             return f
 
+        if f(1.0) >= 0:
+            return 1.0
         # TODO: adjust accuracy - method, xtol, rtol, maxiter # pylint: disable=fixme
         # TODO: new ESS is already calculated in this step # pylint: disable=fixme
         search_interval = [gamma_cur, 1.0]
-        try:
-            root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method="toms748")
-            gamma_new = root_result.root
-        except ValueError as value_error:
-            if "a, b must bracket a root" in str(value_error):
-                _logger.info(
-                    "Could not find suitable gamma within %s: setting gamma=1.0", search_interval
-                )
-                gamma_new = 1.0
-            else:
-                raise value_error
+        root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method="toms748")
+        gamma_new = root_result.root
         return gamma_new
 
     def update_ess(self, resampled=False):

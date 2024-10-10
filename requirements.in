@@ -3,12 +3,12 @@
 # Do not fix the version of a package if not strictly necessary. We use pip-tools in order to create a requirements.txt file where the version of the different packages are fixed to the latest stable version w.r.t. QUEENS. From time to time pip-tools is used to upgrade to the newer available versions.
 
 # dependencies from environment.yml (i.e., they are handled by conda)
-cython==0.29.35
-numba==0.57.0
-numpy==1.23.5
-pandas==1.5.3
-scikit-learn==1.2.2
-scipy==1.10.1
+cython==3.0.11
+numba==0.60.0
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+scipy==1.14.1
 
 # Dask packages
 dask
@@ -34,8 +34,8 @@ jinja2
 arviz # Bayesian visualization
 gpflow # LV and variational GPs
 optax # google jax based optimizer
-tensorflow<2.16 # This is a current restriction by gpflow. We should remove this in the future
-tensorflow-probability<0.24  # This is a restriction by tensorflow 2.15
+tensorflow
+tensorflow-probability
 jax
 scikit-activeml>=0.4.1
 pymc

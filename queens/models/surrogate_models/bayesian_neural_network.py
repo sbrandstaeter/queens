@@ -3,10 +3,10 @@
 import logging
 import os
 
-import keras  # Once we can upgrade tensorflow: import tf_keras as keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+import tf_keras as keras
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
