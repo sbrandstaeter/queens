@@ -6,7 +6,7 @@ channels:
 # be listed explicitly here.
   - nodefaults
 dependencies:
-  - python==3.10
+  - python==3.11
 # to ensure that performance optimized backends are used,
 # the following packages are installed from conda
 # for example BLAS libraries like Intel MKL for numpy
