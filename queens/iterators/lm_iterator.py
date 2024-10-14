@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 class LMIterator(Iterator):
     """Iterator for deterministic optimization problems.
 
-    Levenberg Marquardt iterator in the style of fourc *gen_inv_analysis*.
+    Levenberg Marquardt iterator in the style of 4C *gen_inv_analysis*.
 
     Parts of this class are boldly stolen from *optimization_iterator*.
     we need to take control of the details, although it is less flexible it is far more

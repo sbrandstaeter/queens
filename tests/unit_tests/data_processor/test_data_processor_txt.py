@@ -51,7 +51,7 @@ def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
 
     This Test checks the removal of the leading regex in the log file
     inserted by the queens logger. The "filtered" queens log files is
-    compared to the original fourc log file.
+    compared to the original 4C log file.
     """
     file_path_fourc_log = relative_path_from_queens(
         "tests/unit_tests/data_processor/fourc_example_log.txt"

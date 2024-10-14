@@ -1,4 +1,4 @@
-"""Fourc geometry handling."""
+"""4C geometry handling."""
 
 # pylint: disable=too-many-lines
 import copy
@@ -14,7 +14,7 @@ from queens.utils.logger_settings import log_init_args
 
 
 class FourcDatExternalGeometry(ExternalGeometry):
-    """Class to read in external geometries based on fourc dat files.
+    """Class to read in external geometries based on 4C dat files.
 
     Attributes:
         path_to_dat_file (str): Path to dat file from which the *external_geometry_obj* should be
@@ -103,7 +103,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
         associated_material_numbers_geometric_set=None,
         random_fields=None,
     ):
-        """Initialise fourc external geometry.
+        """Initialize 4C external geometry.
 
         Args:
             input_template (str): Path to dat file from which the external_geometry_obj should be
@@ -973,13 +973,13 @@ class FourcDatExternalGeometry(ExternalGeometry):
                                                 coordinate matrix) for the depicted dimension of the
                                                 Dirichlet DOF.
             fun_1 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a fourc specific
+                              associated dimension of the random field. This is a 4C specific
                               function that might, e.g., vary in time.
             fun_2 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a fourc specific
+                              associated dimension of the random field. This is a 4C specific
                               function that might, e.g., vary in time.
             fun_3 (np.array): Array containing integer identifiers for functions that are applied to
-                              associated dimension of the random field. This is a fourc specific
+                              associated dimension of the random field. This is a 4C specific
                               function that might, e.g., vary in time.
         """
         # take care of random dirichlet fields

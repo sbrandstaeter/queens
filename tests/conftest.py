@@ -221,7 +221,7 @@ def fixture_config_dir():
 
 @pytest.fixture(name="fourc_link_paths", scope="session")
 def fixture_fourc_link_paths(config_dir):
-    """Set symbolic links for fourc on testing machine."""
+    """Set symbolic links for 4C on testing machine."""
     fourc = config_dir / "4C"
     post_ensight = config_dir / "post_ensight"
     post_processor = config_dir / "post_processor"
@@ -230,7 +230,7 @@ def fixture_fourc_link_paths(config_dir):
 
 @pytest.fixture(name="fourc_build_paths_for_gitlab_runner", scope="session")
 def fixture_fourc_build_paths_for_gitlab_runner():
-    """Fourc build paths on testing machine."""
+    """4C build paths on testing machine."""
     return fourc_build_paths_from_home(Path.home())
 
 

@@ -1,11 +1,11 @@
-"""Pytest configuration for fourc integration tests."""
+"""Pytest configuration for 4C integration tests."""
 
 import pytest
 
 
 @pytest.fixture(name="setup_symbolic_links_fourc", autouse=True)
 def fixture_setup_symbolic_links_fourc(fourc_link_paths, fourc_build_paths_for_gitlab_runner):
-    """Set-up of fourc symbolic links.
+    """Set-up of 4C symbolic links.
 
     Args:
         fourc_link_paths (Path): destination for symbolic links to executables
@@ -25,12 +25,12 @@ def fixture_setup_symbolic_links_fourc(fourc_link_paths, fourc_build_paths_for_g
     ) = fourc_build_paths_for_gitlab_runner
     # check if symbolic links are existent
     try:
-        # create link to default fourc executable location if no link is available
+        # create link to default 4C executable location if no link is available
         if not dst_fourc.is_symlink():
             if not fourc.is_file():
                 raise FileNotFoundError(
-                    f"Failed to create link to default fourc location.\n"
-                    f"No fourc found under default location:\n"
+                    f"Failed to create link to default 4C location.\n"
+                    f"No 4C found under default location:\n"
                     f"\t{fourc}\n"
                 )
             dst_fourc.symlink_to(fourc)
