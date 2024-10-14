@@ -1,4 +1,4 @@
-"""Test remote fourc simulations with ensight data-processor."""
+"""Test remote 4C simulations with ensight data-processor."""
 
 import logging
 from pathlib import Path
@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 class TestDaskCluster:
-    """Test class collecting all test with Dask jobqueue clusters and fourc.
+    """Test class collecting all test with Dask jobqueue clusters and 4C.
 
     NOTE: we use a class here since our fixture are set to autouse, but we only want to call them
     for these tests.
@@ -89,20 +89,20 @@ class TestDaskCluster:
         fourc_example_expected_output,
         global_settings,
     ):
-        """Test remote fourc simulations with DASK jobqueue and MC iterator.
+        """Test remote 4C simulations with DASK jobqueue and MC iterator.
 
-        Test for remote fourc simulations on a remote cluster in combination
+        Test for remote 4C simulations on a remote cluster in combination
         with
         - DASK jobqueue cluster
         - Monte-Carlo (MC) iterator
-        - fourc ensight data-processor.
+        - 4C ensight data-processor.
 
 
         Args:
-            third_party_inputs (Path): Path to the fourc input files
+            third_party_inputs (Path): Path to the 4C input files
             cluster_settings (dict): Cluster settings
             remote_connection (RemoteConnection): Remote connection object
-            fourc_cluster_path (Path): paths to fourc executable on the cluster
+            fourc_cluster_path (Path): paths to 4C executable on the cluster
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
             global_settings (GlobalSettings): object containing experiment name and tmp_path
         """

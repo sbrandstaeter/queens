@@ -474,7 +474,7 @@ class DataProcessorEnsight(DataProcessor):
             external_geometry_obj (queens.fourc_dat_geometry)
 
         Returns:
-            dict: set with fourc topology
+            dict: set with 4C topology
         """
         # read in the external geometry
         external_geometry.main_run()

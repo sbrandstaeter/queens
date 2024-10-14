@@ -166,7 +166,7 @@ def fixture_remote_queens_repository(pytestconfig):
 
 @pytest.fixture(name="fourc_cluster_path", scope="session")
 def fixture_fourc_cluster_path(remote_connection):
-    """Paths to fourc executable on the clusters.
+    """Paths to 4C executable on the clusters.
 
     Checks also for existence of the executable.
     """
@@ -175,7 +175,7 @@ def fixture_fourc_cluster_path(remote_connection):
 
     fourc, _, _ = fourc_build_paths_from_home(remote_home)
 
-    # Check for existence of fourc on remote machine.
+    # Check for existence of 4C on remote machine.
     find_result = remote_connection.run(f"find {fourc}", in_stream=False)
     Path(find_result.stdout.rstrip())
 
@@ -184,7 +184,7 @@ def fixture_fourc_cluster_path(remote_connection):
 
 @pytest.fixture(name="fourc_example_expected_output")
 def fixture_fourc_example_expected_output():
-    """Expected outputs for the fourc example."""
+    """Expected outputs for the 4C example."""
     result = np.array(
         [
             [

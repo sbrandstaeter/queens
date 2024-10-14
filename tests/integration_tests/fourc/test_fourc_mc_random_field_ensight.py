@@ -1,4 +1,4 @@
-"""Test fourc with RF materials."""
+"""Test 4C with RF materials."""
 
 import numpy as np
 import pytest
@@ -31,7 +31,7 @@ def test_write_random_material_to_dat(
     expected_var,
     global_settings,
 ):
-    """Test fourc with random field for material parameters."""
+    """Test 4C with random field for material parameters."""
     dat_template = third_party_inputs / "fourc" / "coarse_plate_dirichlet_template.dat"
 
     dat_file_preprocessed = tmp_path / "coarse_plate_dirichlet_template.dat"

@@ -1,4 +1,4 @@
-"""Driver to run fourc."""
+"""Driver to run 4C."""
 
 from queens.drivers.jobscript_driver import JobscriptDriver
 from queens.utils.logger_settings import log_init_args
@@ -13,7 +13,7 @@ fi
 
 
 class FourcDriver(JobscriptDriver):
-    """Driver to run fourc."""
+    """Driver to run 4C."""
 
     @log_init_args
     def __init__(

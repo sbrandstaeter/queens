@@ -1,4 +1,4 @@
-"""Test fourc run."""
+"""Test 4C run."""
 
 import numpy as np
 
@@ -19,7 +19,7 @@ def test_fourc_mc(
     fourc_example_expected_output,
     global_settings,
 ):
-    """Test simple fourc run."""
+    """Test simple 4C run."""
     # generate json input file from template
     fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
     fourc_executable, _, _ = fourc_link_paths
