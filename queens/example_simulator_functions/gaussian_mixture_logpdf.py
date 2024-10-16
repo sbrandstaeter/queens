@@ -1,14 +1,11 @@
 """Weighted mixture of 2 multivariate Gaussian distributions.
 
-Example adapted from from [1], section 3.4.
+Example adapted from [1], section 3.4.
 
 [1]: Minson, S. E., Simons, M. and Beck, J. L. (2013)      ‘Bayesian
 inversion for finite fault earthquake source models I-theory and
 algorithm’,      Geophysical Journal International, 194(3), pp.
 1701–1726. doi: 10.1093/gji/ggt180.
-
-**TODO_doc**: In this module, reference [1] is defined twice, maybe one
-of them can be changed to [2]?
 """
 
 import numpy as np

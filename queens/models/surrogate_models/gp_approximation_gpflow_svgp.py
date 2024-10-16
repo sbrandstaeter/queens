@@ -1,4 +1,19 @@
-"""TODO_doc."""
+"""Module implementing a scalable GPFlow-based SVGP model.
+
+This module defines the `GPflowSVGPModel` class, which is designed to facilitate scalable Gaussian
+Process regression using variational inference as outlined by Hensman et al. (2015). The model
+leverages TensorFlow for optimization and supports minibatch training, making it suitable for large
+datasets.
+
+Key features include:
+- Configurable number of inducing points and minibatch size for efficient training.
+- Customizable options for training the locations of inducing points and the likelihood variance.
+- Scalable to high-dimensional input spaces with support for custom lengthscales.
+- Integration with various evaluation metrics and plotting options.
+
+The class provides methods for model setup, training, gradient evaluation, and prediction,
+allowing users to easily integrate the SVGP model into their machine learning workflows.
+"""
 
 import logging
 import os

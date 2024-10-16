@@ -17,7 +17,7 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
     """
 
     def __init__(self):
-        """TODO_doc."""
+        """Initialize ExternalGeometry."""
 
     def main_run(self):
         """Main routine of *external_geometry_obj* object."""

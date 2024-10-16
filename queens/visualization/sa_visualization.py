@@ -25,7 +25,7 @@ this.sa_visualization_instance = None
 
 
 def from_config_create(plotting_options):
-    """TODO_doc: add a one-line explanation.
+    """Create an SAVisualization instance from configuration.
 
     Module function that calls the class function *from_config_create* and
     creates instance of the SAVisualization class from the problem description.
@@ -83,7 +83,7 @@ def annotate_points(data):
 
 
 class SAVisualization:
-    """TODO_doc: add a one-line explanation.
+    """Visualization class for sensitivity analysis.
 
     Visualization class for sensitivity analysis that contains several
     plotting, storing and visualization methods that can be used anywhere in
@@ -105,7 +105,7 @@ class SAVisualization:
     plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
-        """TODO_doc.
+        """Initialize the SAVisualization.
 
         Args:
             saving_paths: TODO_doc
@@ -183,7 +183,7 @@ class SAVisualization:
             self.figures["bar"] = plt.gcf()
 
     def plot_si_scatter(self, results):
-        """TODO_doc: add a one-line explanation.
+        """Plot sensitivity indices as a scatter plot.
 
         Plot the sensitivity indices as scatter plot of *sigma* over
         *mu_star*.

@@ -40,7 +40,7 @@ def from_config_create(plotting_options):
 
 
 class BMFIAVisualization:
-    """TODO_doc: add a one-line explanation.
+    """Visualization class for BMFIA with plotting and saving capabilities.
 
     Visualization class for BMFIA that contains several plotting, storing
     and visualization methods that can be used anywhere in QUEENS.
@@ -61,7 +61,7 @@ class BMFIAVisualization:
     plt.rcParams.update({"font.size": 15})
 
     def __init__(self, paths, save_bools, plot_booleans):
-        """TODO_doc.
+        """Initialize the BMFIAVisualization.
 
         Args:
             paths: TODO_doc
@@ -91,7 +91,7 @@ class BMFIAVisualization:
         return cls(paths, save_bools, plot_booleans)
 
     def plot(self, z_train, Y_HF_train, regression_obj_lst):
-        """TODO_doc: add a one-line explanation.
+        """Plot probabilistic manifold and informative features.
 
         Plot the probabilistic manifold of high-fidelity, low-fidelity
         outputs and informative features of the input space, depending on the
@@ -113,7 +113,7 @@ class BMFIAVisualization:
                 _save_plot(self.save_bools[0], self.paths[0])
 
     def plot_posterior_from_samples(self, samples, weights, dim_labels_lst):
-        """TODO_doc: add a one-line explanation.
+        """Visualize the posterior distribution or marginals for posteriors.
 
         Visualize the multi-fidelity posterior distribution (up to 2D) or
         its marginals for higher dimensional posteriors.
@@ -151,7 +151,7 @@ class BMFIAVisualization:
 
 
 def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
-    r"""TODO_doc: add a one-line explanation.
+    r"""Plot multi-fidelity dependencies with optional informative features.
 
     Plot the multi-fidelity dependency in :math:`\Omega_{y_{lf}\times
     y_{hf}}` or in :math:`\Omega_{y_{lf}\times y_{hf}\times \gamma_1}`
@@ -175,7 +175,7 @@ def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
 
 
 def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
-    """TODO_doc: add a one-line explanation.
+    """Plot 3D dependencies of low-fidelity and high-fidelity outputs.
 
     Plot the 3D-dependency meaning the LF-HF dependency with one more
     informative feature.

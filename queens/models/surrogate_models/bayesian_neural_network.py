@@ -379,7 +379,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         return output
 
     def predict_f(self, x_test, full_cov=False):
-        """TODO_doc: add a one-line explanation.
+        """Predict the posterior statistics of the latent function 'f'.
 
         Predict the posterior mean, variance or covariance of the posterior
         distribution w.r.t. the latent function 'f' at test points *x_test*.
@@ -416,9 +416,9 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """TODO_doc: add a one-line explanation.
+        """Predict posterior samples of the latent function 'f'.
 
-        Sample the latent function (without noise), that is in this this
+        Sample the latent function (without noise), that is in this
         case realizations of the mean predictions of the Bayesian neural
         network which are themselves uncertain.
 
@@ -440,7 +440,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         return samples
 
     def predict_y_samples(self, x_test, num_samples):
-        """TODO_doc: add a one-line explanation.
+        """Sample from the posterior distribution of 'y'.
 
         Sampling from the posterior (w.r.t. *y*) that combines epistemic and
         aleatory uncertainty. This will generally lead to noisy samples in
