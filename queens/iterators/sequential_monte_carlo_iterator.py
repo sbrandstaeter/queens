@@ -179,7 +179,7 @@ class SequentialMonteCarloIterator(Iterator):
             sample_batch (np.array): Batch of samples
 
         Returns:
-            log_likelihood: TODO_doc
+            log_likelihood (np.array): Logarithm of likelihood for the sample batch.
         """
         log_likelihood = self.model.evaluate(sample_batch)["result"]
         return log_likelihood
@@ -241,10 +241,11 @@ class SequentialMonteCarloIterator(Iterator):
         """Calculate predicted Effective Sample Size at *gamma_new*.
 
         Args:
-            gamma_new: TODO_doc
-            gamma_old: TODO_doc
+            gamma_new (float): New gamma value.
+            gamma_old (float): Previous gamma value.
+
         Returns:
-            ess: TODO_doc
+            ess (float): Effective sample size for the new gamma value.
         """
         weights_new = self.calc_new_weights(gamma_new, gamma_old)
         ess = smc_utils.calc_ess(weights_new)
@@ -258,9 +259,10 @@ class SequentialMonteCarloIterator(Iterator):
         This ensures only a small reduction of the ESS.
 
         Args:
-            gamma_cur: TODO_doc
+            gamma_cur (float): Current gamma value.
+
         Returns:
-            gamma_new: TODO_doc
+            gamma_new (float): Updated gamma value.
         """
         zeta = 0.95
 
@@ -309,7 +311,7 @@ class SequentialMonteCarloIterator(Iterator):
         """Update the current gamma value and store old value.
 
         Args:
-            gamma_new: TODO_doc
+            gamma_new (float): New gamma value to update.
         """
         self.gamma_cur = gamma_new
         self.gammas.append(self.gamma_cur)
@@ -318,7 +320,7 @@ class SequentialMonteCarloIterator(Iterator):
         """Update the weights to their new values.
 
         Args:
-            weights_new: TODO_doc
+            weights_new (np.array): New weights for the particles.
         """
         self.weights = weights_new
 
@@ -330,7 +332,7 @@ class SequentialMonteCarloIterator(Iterator):
         particles with large weights (see 2.2.1 in [2]).
 
         Returns:
-            TODO_doc
+            Tuple of updated particles, resampled weights, log-likelihood, and log-prior.
         """
         # draw from multinomial distribution to decide
         # the frequency of individual particles

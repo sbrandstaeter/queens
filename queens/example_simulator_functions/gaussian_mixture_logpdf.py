@@ -37,7 +37,7 @@ def gaussian_mixture_4d_logpdf(samples):
 
     Used as a basic test function for MCMC and SMC methods.
 
-    The log likelihood is defined as (see [1]):
+    The log likelihood is defined as (see [2]):
 
     :math:`f({x}) =\log \left( w_1 \frac{1}{\sqrt{(2 \pi)^k |\Sigma_1|}}
     \exp \left[-\frac{1}{2}(x-\mu_1)^T\Sigma_1^{-1}(x-\mu_1) \right]+ w_2
@@ -48,7 +48,7 @@ def gaussian_mixture_4d_logpdf(samples):
         numpy.array: The logpdf evaluated at *x*
 
     References:
-        [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
+        [2] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
     return GAUSSIAN_MIXTURE.logpdf(samples)
 

@@ -40,7 +40,7 @@ def convert_to_dict(values):
     """Convert values to dictionary with plot keys.
 
     Args:
-        values: TODO_doc
+        values (list): List of values to be converted.
 
     Returns:
         plot_dict (dict): Data as dictionary with plot keys
@@ -94,7 +94,7 @@ class SAVisualization:
        should_be_saved (dict): Dict of booleans to save plots or not.
        should_be_displayed (dict): Dict of booleans for determining whether individual plots
                                    should be displayed or not.
-       figures: TODO_doc
+       figures (dict): Dictionary to hold figures for displaying later.
 
     Returns:
         SAVisualization (obj): Instance of the SAVisualization Class
@@ -108,9 +108,9 @@ class SAVisualization:
         """Initialize the SAVisualization.
 
         Args:
-            saving_paths: TODO_doc
-            save_plot: TODO_doc
-            display_plot: TODO_doc
+            saving_paths (dict): Dictionary of paths where plots will be saved
+            save_plot (dict): Dictionary of booleans indicating whether plots should be saved
+            display_plot (dict): Dictionary of booleans indicating whether plots should be displayed
         """
         self.saving_paths = saving_paths
         self.should_be_saved = save_plot

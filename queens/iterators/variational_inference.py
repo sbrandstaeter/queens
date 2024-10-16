@@ -57,7 +57,7 @@ class VariationalInferenceIterator(Iterator):
         variational_distribution (VariationalDistribution): Variational distribution object.
         n_sims (int): Number of probabilistic model calls.
         variational_params (np.array): Row vector containing the variational parameters.
-        elbo: TODO_doc
+        elbo: Evidence lower bound.
         nan_in_gradient_counter (int): Count how many times *NaNs* appeared in the gradient estimate
                                        in a row.
         iteration_data (CollectionObject): Object to store iteration data if desired.
