@@ -64,9 +64,9 @@ class BMFIAVisualization:
         """Initialize the BMFIAVisualization.
 
         Args:
-            paths: TODO_doc
-            save_bools: TODO_doc
-            plot_booleans: TODO_doc
+            paths (list): Paths to save the plots.
+            save_bools (list): Booleans indicating whether to save plots.
+            plot_booleans (list): Booleans indicating whether to plot data.
         """
         self.paths = paths
         self.save_bools = save_bools

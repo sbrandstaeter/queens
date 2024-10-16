@@ -110,7 +110,8 @@ class Parameters:
         """Draw samples from all parameters.
 
         Args:
-            num_samples: TODO_doc
+            num_samples (int): The number of samples to draw for each parameter.
+
         Returns:
             samples (np.ndarray): Drawn samples
         """
@@ -127,7 +128,10 @@ class Parameters:
         """Evaluate the logpdf summed over all parameters.
 
         Args:
-            samples: TODO_doc
+            samples (np.ndarray): Samples for which to evaluate the joint logpdf. Each row
+                                  represents a sample and each column corresponds to a parameter
+                                  dimension.
+
         Returns:
             logpdf (np.ndarray): logpdf summed over all parameters
         """
@@ -143,7 +147,10 @@ class Parameters:
         """Evaluate the gradient of the joint logpdf w.r.t. the samples.
 
         Args:
-            samples: TODO_doc
+            samples (np.ndarray): Samples for which to evaluate the gradient of the joint logpdf.
+                                  Each row represents a sample and each column corresponds to a
+                                  parameter dimension.
+
         Returns:
             grad_logpdf (np.ndarray): Gradient of the joint logpdf w.r.t. the samples
         """

@@ -103,11 +103,11 @@ class GridIteratorVisualization:
         """Initialize the GridIteratorVisualization.
 
         Args:
-            paths: TODO_doc
-            save_bools: TODO_doc
-            plot_booleans: TODO_doc
-            scale_types_list: TODO_doc
-            var_names_list: TODO_doc
+            paths (list): List of paths to save plots for different dimensions or grid settings.
+            save_bools (list): Booleans indicating whether to save plots for each dimension.
+            plot_booleans (list): Booleans indicating whether to plot data for each dimension.
+            scale_types_list (list): Scaling types (e.g., 'log10', 'lin') for each grid axis.
+            var_names_list (list): List of variable names for each grid dimension.
         """
         self.saving_paths_list = paths
         self.save_bools = save_bools
