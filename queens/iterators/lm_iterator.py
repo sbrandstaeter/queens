@@ -59,7 +59,7 @@ class LMIterator(Iterator):
         max_feval=1,
         verbose_output=False,
     ):
-        """TODO_doc.
+        """Initialize the LMIterator.
 
         Args:
             model (Model): Model to be evaluated by iterator

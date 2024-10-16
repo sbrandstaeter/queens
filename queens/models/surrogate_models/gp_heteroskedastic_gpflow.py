@@ -1,4 +1,4 @@
-"""TODO_doc."""
+"""Implementation of a heteroskedastic Gaussian process models using GPFlow."""
 
 import logging
 import os
@@ -125,7 +125,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         self.optimizer = self._build_optimizer()
 
     def train(self):
-        """TODO_doc: add a one-line explanation.
+        """Train the variational.
 
         Train the variational by minimizing the variational loss in
         variational EM step.
@@ -163,7 +163,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         raise NotImplementedError
 
     def predict(self, x_test, support=None, full_cov=False):
-        """TODO_doc: add a one-line explanation.
+        """Predict the posterior distribution at the given test inputs.
 
         Predict the posterior distribution at *Xnew* with respect to the
         data *y*.
@@ -184,7 +184,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """TODO_doc: add a one-line explanation.
+        """Compute the posterior distribution at test inputs considering 'y'.
 
         Compute the posterior distribution at *x_test* with respect to the
         data 'y'.
@@ -310,7 +310,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         # here we conduct a two step optimization
         @tf.function
         def optimization_step_fun():
-            """TODO_doc: add a one-line explanation.
+            """Perform a two-step variational EM for latent variable GPs.
 
             Two step variational Expectation-Maximization routine for latent
             variable GPs.

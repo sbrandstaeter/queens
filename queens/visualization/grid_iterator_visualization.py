@@ -26,7 +26,7 @@ this.grid_iterator_visualization_instance = None
 
 
 def from_config_create(plotting_options, grid_design):
-    """TODO_doc: add a one-line explanation.
+    """Create a GridIteratorVisualization instance from config.
 
     Module function that calls the class function *from_config_create* and
     creates instance of the GridIteratorVisualization class from the problem
@@ -100,7 +100,7 @@ class GridIteratorVisualization:
     plt.rcParams.update({"font.size": 22})
 
     def __init__(self, paths, save_bools, plot_booleans, scale_types_list, var_names_list):
-        """TODO_doc.
+        """Initialize the GridIteratorVisualization.
 
         Args:
             paths: TODO_doc
@@ -162,10 +162,7 @@ class GridIteratorVisualization:
             plt.show()
 
     def get_plotter(self, num_params):
-        """TODO_doc: add a one-line explanation.
-
-        Get the correct plotting function depending on the dimension of the
-        grid.
+        """Return the appropriate plotting function based on grid dimensions.
 
         Args:
             num_params (int): Number of grid-dimensions
@@ -255,7 +252,7 @@ class GridIteratorVisualization:
         fig.colorbar(surf, shrink=0.5, aspect=5)
 
     def _get_tick_formatter(self, axis_str):
-        """TODO_doc: add a one-line explanation.
+        """Return the appropriate tick formatter based on the axis scaling.
 
         Depending on the scaling of the grid axis, return an appropriate
         formatter for the axes ticks.

@@ -39,7 +39,7 @@ class MetropolisHastingsIterator(Iterator):
         num_samples (int): Number of samples per chain.
         proposal_distribution (obj): Proposal distribution.
         result_description (dict):  Description of desired results.
-        as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a rejuvenation
+        as_smc_rejuvenation_step (bool): Indicates whether this iterator is used as a rejuvenation
                                          step for a SMC iterator or as the main iterator itself.
         tune (bool): Tune the scale of covariance.
         scale_covariance (float): Scale of covariance matrix
