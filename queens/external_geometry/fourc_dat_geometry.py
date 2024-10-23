@@ -465,6 +465,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
         self.nodes_of_interest = list(set(nodes_of_interest))
 
     def _sort_node_coordinates(self):
+        """Sort node coordinates based on the node mesh."""
         self.node_coordinates["coordinates"] = [
             coord
             for _, coord in sorted(

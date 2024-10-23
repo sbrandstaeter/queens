@@ -218,6 +218,7 @@ class VariationalInferenceIterator(Iterator):
             _logger.info(self.variational_params)
 
     def _write_results(self):
+        """Write results to output file."""
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
             write_results(result_dict, self.global_settings.result_file(".pickle"))

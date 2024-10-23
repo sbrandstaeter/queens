@@ -721,8 +721,7 @@ class BMFMCModel(Model):
         Returns:
             random_fields_trunc_dict (dict): Dictionary containing samples of the random fields
               as well as their truncated basis
-            x_uncorr (np.array: Array containing the samples of remaining uncorrelated
-              random variables
+            x_uncorr (np.array): Samples of remaining uncorrelated random variables.
         """
         # determine uncorrelated random variables
         num_random_var = 0
@@ -828,11 +827,11 @@ def assemble_x_red_stdizd(x_uncorr, coef_mat):
     """Assemble and standardize the dimension-reduced input x_red.
 
     Args:
-        x_uncorr (np.array):
-        coef_mat (np.array):
+        x_uncorr (np.array): Samples of remaining uncorrelated random variables.
+        coef_mat (np.array): Optional coefficient matrix to concatenate.
 
     Returns:
-        X_red_test_stdizd (np.array):
+        X_red_test_stdizd (np.array): Standardized dimension-reduced input.
     """
     if coef_mat is not None:
         x_red = np.hstack((x_uncorr, coef_mat))
