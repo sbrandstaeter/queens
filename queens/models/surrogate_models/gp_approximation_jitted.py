@@ -186,7 +186,10 @@ class GPJittedModel(SurrogateModel):
         log_evidence_max = -np.inf
         log_evidence_history = []
         iterations = []
-        params_ev_max = k_mat_ev_max = k_mat_inv_ev_max = cholesky_k_mat_ev_max = None
+        params_ev_max = None
+        k_mat_ev_max = None
+        k_mat_inv_ev_max = None
+        cholesky_k_mat_ev_max = None
         for params in self.stochastic_optimizer:
             rel_l2_change_params = self.stochastic_optimizer.rel_l2_change
             iteration = self.stochastic_optimizer.iteration
