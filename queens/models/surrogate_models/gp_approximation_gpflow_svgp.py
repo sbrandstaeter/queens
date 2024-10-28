@@ -19,10 +19,10 @@ import logging
 import os
 
 import gpflow as gpf
-import keras  # Once we can upgrade tensorflow: import tf_keras as keras
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+import tf_keras as keras
 from gpflow.utilities import print_summary, set_trainable
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel

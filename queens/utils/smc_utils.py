@@ -154,7 +154,7 @@ class StaticStateSpaceModel(ssp.StaticModel):
         """
         raise NotImplementedError("StaticModel: logpyt not implemented")
 
-    def loglik(self, theta, t=None):
+    def loglik(self, theta, t=None):  # pylint: disable=unused-argument
         """Log. Likelihood function for *particles* SMC implementation.
 
         Args:

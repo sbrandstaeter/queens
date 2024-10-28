@@ -22,10 +22,10 @@ def fixture_input_file(request, input_dict, tmp_path):
     """Input files for testing."""
     file_type = request.param
     input_file_path = tmp_path / f"input_file.{file_type}"
-    if file_type == "json":
-        dumper = json.dump
-    elif file_type in ("yml", "yaml"):
+    if file_type in ("yml", "yaml"):
         dumper = yaml.dump
+    else:
+        dumper = json.dump
     with open(input_file_path, "w", encoding="utf-8") as stream:
         dumper(input_dict, stream)
     return input_file_path

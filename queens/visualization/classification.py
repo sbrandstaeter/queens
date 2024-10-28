@@ -185,7 +185,7 @@ def conditional_prediction_decorator(prediction_method, conditial_values):
     return predict
 
 
-def _check_boundary_response_method(estimator, response_method):
+def _check_boundary_response_method(estimator, response_method, _class_of_interest):
     """Get the classifier response function.
 
     We exploit this function to plot the conditional predictions by passing the conditional_values
@@ -194,6 +194,7 @@ def _check_boundary_response_method(estimator, response_method):
     Args:
         estimator (obj): Classifier
         response_method (list): conditional values
+        _class_of_interest (int, float, bool, str): The class considered when plotting the decision
 
     Returns:
         fun: prediction method
@@ -212,6 +213,7 @@ sklearn.inspection._plot.decision_boundary._num_features = lambda X: 2
 sklearn.inspection._plot.decision_boundary._check_boundary_response_method = (
     _check_boundary_response_method
 )
+sklearn.utils._response._check_response_method = lambda estimator, response_method: response_method
 DecisionBoundaryDisplay = sklearn.inspection._plot.decision_boundary.DecisionBoundaryDisplay
 # pylint: enable=protected-access
 

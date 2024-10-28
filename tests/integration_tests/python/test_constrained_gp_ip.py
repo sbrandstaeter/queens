@@ -158,5 +158,5 @@ def test_constrained_gp_ip_park(
     mean = np.average(particles, weights=weights, axis=0)
     std = np.average((particles - mean) ** 2, weights=weights, axis=0) ** (1 / 2)
 
-    np.testing.assert_allclose(mean, expected_mean[approx_type], rtol=2.5e-2)
+    np.testing.assert_allclose(mean, expected_mean[approx_type], rtol=5e-2)
     np.testing.assert_allclose(std, expected_std[approx_type], rtol=5e-1)

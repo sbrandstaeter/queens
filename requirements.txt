@@ -7,41 +7,40 @@
 absl-py==2.1.0
     # via
     #   chex
+    #   keras
     #   optax
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
-arviz==0.18.0
+arviz==0.20.0
     # via
     #   -r requirements.in
     #   pymc
 astunparse==1.6.3
     # via tensorflow
-autograd==1.6.2
+autograd==1.7.0
     # via -r requirements.in
-bcrypt==4.1.2
+bcrypt==4.2.0
     # via paramiko
-black==24.4.2
+black==24.10.0
     # via -r requirements.in
 bokeh==2.4.3
     # via -r requirements.in
-cachetools==5.3.3
-    # via
-    #   google-auth
-    #   pymc
-certifi==2024.2.2
+cachetools==5.5.0
+    # via pymc
+certifi==2024.8.30
     # via requests
-cffi==1.16.0
+cffi==1.17.1
     # via
     #   cryptography
     #   pynacl
-chaospy==4.3.13
+chaospy==4.3.17
     # via -r requirements.in
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
     # via requests
 check-shapes==1.1.1
     # via gpflow
-chex==0.1.7
+chex==0.1.87
     # via optax
 click==8.1.7
     # via
@@ -59,22 +58,22 @@ cons==0.4.6
     #   etuples
     #   minikanren
     #   pytensor
-contourpy==1.2.1
+contourpy==1.3.0
     # via matplotlib
-coverage[toml]==7.4.4
+coverage[toml]==7.6.2
     # via pytest-cov
-cryptography==42.0.5
+cryptography==43.0.1
     # via paramiko
 cycler==0.12.1
     # via matplotlib
-cython==0.29.35
+cython==3.0.11
     # via -r requirements.in
-dask==2024.4.2
+dask==2024.9.1
     # via
     #   -r requirements.in
     #   dask-jobqueue
     #   distributed
-dask-jobqueue==0.8.5
+dask-jobqueue==0.9.0
     # via -r requirements.in
 decorator==5.1.1
     # via
@@ -84,70 +83,62 @@ deprecated==1.2.14
     # via
     #   fabric
     #   gpflow
-dill==0.3.8
+dill==0.3.9
     # via
     #   multiprocess
     #   pathos
-distributed==2024.4.2
+distributed==2024.9.1
     # via
     #   -r requirements.in
     #   dask-jobqueue
-diversipy==0.8
+diversipy==0.9
     # via -r requirements.in
 dm-tree==0.1.8
-    # via
-    #   arviz
-    #   chex
-    #   tensorflow-probability
-dropstackframe==0.1.0
+    # via tensorflow-probability
+dropstackframe==0.1.1
     # via check-shapes
+etils[epy]==1.9.4
+    # via optax
 etuples==0.3.9
     # via
     #   minikanren
     #   pytensor
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
     # via pytest
 execnet==2.1.1
     # via pytest-xdist
 fabric==3.2.2
     # via -r requirements.in
-filelock==3.13.4
+filelock==3.16.1
     # via pytensor
 flatbuffers==24.3.25
     # via tensorflow
-fonttools==4.51.0
+fonttools==4.54.1
     # via matplotlib
-fsspec==2024.3.1
+fsspec==2024.9.0
     # via dask
-future==1.0.0
-    # via autograd
-gast==0.5.4
+gast==0.6.0
     # via
     #   tensorflow
     #   tensorflow-probability
-gnuplotlib==0.41
+gnuplotlib==0.42
     # via -r requirements.in
-google-auth==2.29.0
-    # via
-    #   google-auth-oauthlib
-    #   tensorboard
-google-auth-oauthlib==1.2.0
-    # via tensorboard
 google-pasta==0.2.0
     # via tensorflow
-gpflow==2.9.1
+gpflow==2.9.2
     # via -r requirements.in
-grpcio==1.62.2
+grpcio==1.66.2
     # via
     #   tensorboard
     #   tensorflow
-h5netcdf==1.3.0
+h5netcdf==1.4.0
     # via arviz
-h5py==3.11.0
+h5py==3.12.1
     # via
     #   h5netcdf
+    #   keras
     #   tensorflow
-idna==3.7
+idna==3.10
     # via requests
 importlib-metadata==6.11.0
     # via
@@ -159,36 +150,37 @@ iniconfig==2.0.0
     # via pytest
 invoke==2.2.0
     # via fabric
-iteration-utilities==0.11.0
+iteration-utilities==0.13.0
     # via scikit-activeml
-jax==0.4.26
+jax==0.4.34
     # via
     #   -r requirements.in
     #   chex
     #   optax
-jaxlib==0.4.26
+jaxlib==0.4.34
     # via
     #   chex
+    #   jax
     #   optax
-jinja2==3.1.3
+jinja2==3.1.4
     # via
     #   -r requirements.in
     #   bokeh
     #   distributed
-joblib==1.2.0
+joblib==1.4.2
     # via
     #   particles
     #   scikit-activeml
     #   scikit-learn
-keras==2.15.0
+keras==3.6.0
     # via tensorflow
-kiwisolver==1.4.5
+kiwisolver==1.4.7
     # via matplotlib
-lark==1.1.9
+lark==1.2.2
     # via check-shapes
 libclang==18.1.1
     # via tensorflow
-llvmlite==0.40.1
+llvmlite==0.43.0
     # via numba
 locket==1.0.0
     # via
@@ -199,15 +191,17 @@ logical-unification==0.4.6
     #   cons
     #   minikanren
     #   pytensor
-markdown==3.6
+makefun==1.15.6
+    # via scikit-activeml
+markdown==3.7
     # via tensorboard
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.5
+markupsafe==3.0.1
     # via
     #   jinja2
     #   werkzeug
-matplotlib==3.7.5
+matplotlib==3.9.2
     # via
     #   -r requirements.in
     #   arviz
@@ -220,14 +214,15 @@ mdurl==0.1.2
     # via markdown-it-py
 minikanren==1.0.3
     # via pytensor
-ml-dtypes==0.3.2
+ml-dtypes==0.4.1
     # via
     #   jax
     #   jaxlib
+    #   keras
     #   tensorflow
 mock==5.1.0
     # via -r requirements.in
-msgpack==1.0.8
+msgpack==1.1.0
     # via distributed
 multipledispatch==1.0.0
     # via
@@ -235,19 +230,21 @@ multipledispatch==1.0.0
     #   gpflow
     #   logical-unification
     #   minikanren
-multiprocess==0.70.16
+multiprocess==0.70.17
     # via
     #   pathos
     #   salib
 mypy-extensions==1.0.0
     # via black
-numba==0.57.0
+namex==0.0.8
+    # via keras
+numba==0.60.0
     # via
     #   -r requirements.in
     #   particles
-numpoly==1.2.11
+numpoly==1.2.14
     # via chaospy
-numpy==1.23.5
+numpy==1.26.4
     # via
     #   -r requirements.in
     #   arviz
@@ -262,12 +259,12 @@ numpy==1.23.5
     #   h5py
     #   jax
     #   jaxlib
+    #   keras
     #   matplotlib
     #   ml-dtypes
     #   numba
     #   numpoly
     #   numpysane
-    #   opt-einsum
     #   optax
     #   pandas
     #   particles
@@ -287,15 +284,15 @@ numpy==1.23.5
     #   xarray-einstats
 numpysane==0.40
     # via gnuplotlib
-oauthlib==3.2.2
-    # via requests-oauthlib
-opt-einsum==3.3.0
+opt-einsum==3.4.0
     # via
     #   jax
     #   tensorflow
-optax==0.2.1
+optax==0.2.3
     # via -r requirements.in
-packaging==24.0
+optree==0.13.0
+    # via keras
+packaging==24.1
     # via
     #   arviz
     #   black
@@ -304,13 +301,15 @@ packaging==24.0
     #   distributed
     #   gpflow
     #   h5netcdf
+    #   keras
     #   matplotlib
     #   plotly
     #   pooch
     #   pytest
+    #   tensorboard
     #   tensorflow
     #   xarray
-pandas==1.5.3
+pandas==2.2.3
     # via
     #   -r requirements.in
     #   arviz
@@ -318,50 +317,44 @@ pandas==1.5.3
     #   salib
     #   seaborn
     #   xarray
-paramiko==3.4.0
+paramiko==3.5.0
     # via fabric
-partd==1.4.1
+partd==1.4.2
     # via dask
 particles==0.4
     # via -r requirements.in
-pathos==0.3.2
+pathos==0.3.3
     # via -r requirements.in
 pathspec==0.12.1
     # via black
-pillow==10.3.0
+pillow==10.4.0
     # via
     #   bokeh
     #   matplotlib
     #   pyvista
-platformdirs==4.2.2
+platformdirs==4.3.6
     # via
     #   black
     #   pooch
-plotly==5.21.0
+plotly==5.24.1
     # via -r requirements.in
 pluggy==1.5.0
     # via pytest
 pooch==1.8.2
     # via pyvista
-pox==0.3.4
+pox==0.3.5
     # via pathos
-ppft==1.7.6.8
+ppft==1.7.6.9
     # via pathos
-protobuf==4.25.3
+protobuf==4.25.5
     # via
     #   tensorboard
     #   tensorflow
-psutil==5.9.8
+psutil==6.0.0
     # via distributed
 py==1.11.0
     # via -r requirements.in
-pyasn1==0.6.0
-    # via
-    #   pyasn1-modules
-    #   rsa
-pyasn1-modules==0.4.0
-    # via google-auth
-pycodestyle==2.11.1
+pycodestyle==2.12.1
     # via pytest-codestyle
 pycparser==2.22
     # via cffi
@@ -369,17 +362,17 @@ pydoe==0.3.8
     # via -r requirements.in
 pyfiglet==1.0.2
     # via -r requirements.in
-pygments==2.17.2
+pygments==2.18.0
     # via rich
-pymc==5.13.1
+pymc==5.17.0
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
-pyparsing==3.1.2
+pyparsing==3.1.4
     # via matplotlib
-pytensor==2.20.0
+pytensor==2.25.5
     # via pymc
-pytest==8.1.1
+pytest==8.3.3
     # via
     #   -r requirements.in
     #   pytest-codestyle
@@ -392,43 +385,40 @@ pytest-cov==5.0.0
     # via -r requirements.in
 pytest-mock==3.14.0
     # via -r requirements.in
-pytest-xdist==3.5.0
+pytest-xdist==3.6.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
-pytz==2024.1
+pytz==2024.2
     # via pandas
 pyvista==0.44.1
     # via -r requirements.in
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   -r requirements.in
     #   bokeh
     #   dask
     #   distributed
-requests==2.31.0
+requests==2.32.3
     # via
     #   pooch
-    #   requests-oauthlib
-    #   tensorboard
-requests-oauthlib==2.0.0
-    # via google-auth-oauthlib
-rich==13.7.1
-    # via pymc
-rsa==4.9
-    # via google-auth
-salib==1.4.8
+    #   tensorflow
+rich==13.9.2
+    # via
+    #   keras
+    #   pymc
+salib==1.5.1
     # via -r requirements.in
-scikit-activeml==0.4.1
+scikit-activeml==0.5.2
     # via -r requirements.in
-scikit-learn==1.2.2
+scikit-learn==1.5.2
     # via
     #   -r requirements.in
     #   particles
     #   scikit-activeml
-scipy==1.10.1
+scipy==1.14.1
     # via
     #   -r requirements.in
     #   arviz
@@ -463,35 +453,39 @@ tabulate==0.9.0
     # via gpflow
 tblib==3.0.0
     # via distributed
-tenacity==8.2.3
+tenacity==9.0.0
     # via plotly
-tensorboard==2.15.2
+tensorboard==2.17.1
     # via tensorflow
 tensorboard-data-server==0.7.2
     # via tensorboard
-tensorflow==2.15.1
+tensorflow==2.17.0
     # via
     #   -r requirements.in
     #   gpflow
-tensorflow-estimator==2.15.0
+    #   tensorflow-probability
+    #   tf-keras
+tensorflow-io-gcs-filesystem==0.37.1
     # via tensorflow
-tensorflow-io-gcs-filesystem==0.36.0
-    # via tensorflow
-tensorflow-probability==0.23.0
+tensorflow-probability[tf]==0.24.0
     # via
     #   -r requirements.in
     #   gpflow
-termcolor==2.4.0
+termcolor==2.5.0
     # via tensorflow
-threadpoolctl==3.4.0
-    # via scikit-learn
-tomli==2.0.1
+tf-keras==2.17.0
+    # via tensorflow-probability
+threadpoolctl==3.5.0
+    # via
+    #   pymc
+    #   scikit-learn
+tomli==2.0.2
     # via
     #   -r requirements.in
     #   black
     #   coverage
     #   pytest
-toolz==0.12.1
+toolz==1.0.0
     # via
     #   chex
     #   dask
@@ -499,49 +493,53 @@ toolz==0.12.1
     #   logical-unification
     #   minikanren
     #   partd
-tornado==6.4
+tornado==6.4.1
     # via
     #   bokeh
     #   distributed
-tqdm==4.66.2
+tqdm==4.66.5
     # via -r requirements.in
-typing-extensions==4.11.0
+typing-extensions==4.12.2
     # via
     #   arviz
     #   black
     #   bokeh
     #   chex
+    #   etils
     #   gpflow
+    #   optree
     #   pymc
-    #   pytensor
     #   pyvista
+    #   rich
     #   tensorflow
-urllib3==2.2.1
+tzdata==2024.2
+    # via pandas
+urllib3==2.2.3
     # via
     #   distributed
     #   requests
-vtk==9.3.0
+vtk==9.3.1
     # via
     #   -r requirements.in
     #   pyvista
-werkzeug==3.0.2
+werkzeug==3.0.4
     # via tensorboard
-wheel==0.43.0
+wheel==0.44.0
     # via astunparse
-wrapt==1.14.1
+wrapt==1.16.0
     # via
     #   deprecated
     #   tensorflow
-xarray==2024.3.0
+xarray==2024.9.0
     # via
     #   -r requirements.in
     #   arviz
     #   xarray-einstats
-xarray-einstats==0.7.0
+xarray-einstats==0.8.0
     # via arviz
 zict==3.0.0
     # via distributed
-zipp==3.18.1
+zipp==3.20.2
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

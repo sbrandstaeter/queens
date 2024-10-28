@@ -181,13 +181,13 @@ class LogpdfGPModel(Model):
             scaler_y=self.scaler_y,
         )
 
-        if self.approx_type == "CFBGP":
-            eval_mean_and_std = vmap(eval_mean_and_std, in_axes=(None, 0, 0, 0))
-            generate_output_func = self.generate_output_cfbgp
-        elif self.approx_type == "CGPMAP-II":
-            generate_output_func = self.generate_output_cgpmap_2
-
         if self.approx_type in ["CFBGP", "CGPMAP-II"]:
+            if self.approx_type == "CFBGP":
+                eval_mean_and_std = vmap(eval_mean_and_std, in_axes=(None, 0, 0, 0))
+                generate_output_func = self.generate_output_cfbgp
+            else:
+                generate_output_func = self.generate_output_cgpmap_2
+
             self.jit_func_generate_output = jit(
                 partial(
                     generate_output_func,
@@ -201,7 +201,7 @@ class LogpdfGPModel(Model):
                 )
             )
 
-        if self.approx_type == "GPMAP-I":
+        else:
             self.jit_func_generate_output = jit(
                 partial(
                     self.generate_output_gpmap_1,

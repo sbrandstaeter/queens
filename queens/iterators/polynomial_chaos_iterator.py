@@ -67,12 +67,6 @@ class PolynomialChaosIterator(Iterator):
             seed (int, opt): Seed for random number generation
         """
         super().__init__(model, parameters, global_settings)
-        valid_approaches = ["pseudo_spectral", "collocation"]
-        if approach not in valid_approaches:
-            raise ValueError(
-                f"Approach '{approach}' unknown. Valid options are "
-                f"{', '.join(valid_approaches)}."
-            )
 
         if not isinstance(num_collocation_points, int) or num_collocation_points < 1:
             raise ValueError("Number of samples for the polynomial must be a positive integer!")
@@ -92,6 +86,11 @@ class PolynomialChaosIterator(Iterator):
                 raise ValueError(
                     f"Sparse input attribute needs to be set to true or false, not to {sparse}"
                 )
+        else:
+            raise ValueError(
+                f"Approach '{approach}' unknown. "
+                f"Valid options are 'pseudo_spectral' and 'collocation'."
+            )
 
         self.sampling_rule = get_option(
             valid_sampling_rules,
@@ -124,7 +123,7 @@ class PolynomialChaosIterator(Iterator):
         _logger.info("Polynomial chaos using a %s approach", self.polynomial_chaos_approach)
         if self.polynomial_chaos_approach == "collocation":
             polynomial_expansion, collocation_points = self._regression_based_pc()
-        elif self.polynomial_chaos_approach == "pseudo_spectral":
+        else:
             polynomial_expansion, collocation_points = self._projection_based_pc()
 
         mean = cp.E(polynomial_expansion, self.distribution)

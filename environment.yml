@@ -10,13 +10,13 @@ dependencies:
 # to ensure that performance optimized backends are used,
 # the following packages are installed from conda
 # for example BLAS libraries like Intel MKL for numpy
-  - cython==0.29.35
-  - numba==0.57.0
-  - numpy==1.23.5
-  - pandas==1.5.3
-  - scikit-learn==1.2.2
-  - scipy==1.10.1
-  - libopenblas==0.3.25
+  - cython==3.0.11
+  - numba==0.60.0
+  - numpy==1.26.4
+  - pandas==2.2.3
+  - scikit-learn==1.5.2
+  - scipy==1.14.1
+  - libopenblas==0.3.28
 # Only install pip-tools via pip itself since
 # all other pip dependencies should be managed
 # via pip-tools in the requirements.in files

@@ -84,6 +84,8 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
         h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, "1-sided", lb, ub)
     elif method == "3-point":
         h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, "2-sided", lb, ub)
+    else:
+        raise NotImplementedError(f"Method '{method}' is not implemented.")
 
     return h, use_one_sided
 
@@ -141,8 +143,8 @@ def get_positions(x0, method, rel_step, bounds):
             # f1 = fun(x1)
             # f2 = fun(x2)
             # df = f2 - f1
-        elif method == "cs":
-            raise NotImplementedError("Complex steps not implemented.")
+        else:
+            raise NotImplementedError(f"Method '{method}' is not implemented.")
 
         x1_stack.append(x1)
         if method == "3-point":
