@@ -17,6 +17,7 @@ from gpflow.functions import Function, MeanFunction
 
 from gpflow.kernels.base import Combination, Kernel
 
+from queens.distributions.uniform import UniformDistribution
 from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
 from queens.parameters.fields.random_fields import RandomField
 
@@ -295,9 +296,7 @@ class GPRRandomField(RandomField):
             samples (np.ndarray): Drawn samples
         """
 
-        mean_distribution = MeanFieldNormalDistribution(
-            mean=0, variance=1, dimension=self.dimension
-        )
+        mean_distribution = UniformDistribution(lower_bound=-1, upper_bound=1)
         return mean_distribution.draw(num_samples)
         # return np.zeros(num_samples, self.dimension)
 
