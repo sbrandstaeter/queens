@@ -58,9 +58,7 @@ class DifferentiableSimulationModelAdjoint(SimulationModel):
         """
         num_samples = samples.shape[0]
         # get last job_ids
-        last_job_ids = [
-            self.scheduler.latest_job_id - num_samples + i + 1 for i in range(num_samples)
-        ]
+        last_job_ids = [self.scheduler.next_job_id - num_samples + i for i in range(num_samples)]
         experiment_dir = self.scheduler.experiment_dir
 
         # write adjoint data for each sample to adjoint files in old job directories

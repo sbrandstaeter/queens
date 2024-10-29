@@ -22,9 +22,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                     The file prefix can contain BASIC regex expression
                                     and subdirectories. Examples are wildcards `*` or
                                     expressions like `[ab]`.
-        file_path (str): Actual path to the file of interest.
-        processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
-        raw_file_data (np.array): Raw data from file.
     """
 
     def __init__(

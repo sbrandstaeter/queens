@@ -18,8 +18,9 @@ _logger = logging.getLogger(__name__)
 class JobOptions:
     """Dataclass for job options.
 
-    All the attributes of this dataclass can be injected into input and jobscript files. The input
-    files dictionary will be flattened, such that the input files are injected by their key.
+    All the attributes of this dataclass can be injected into input and
+    jobscript files. The input files dictionary will be flattened, such
+    that the input files are injected by their key.
     """
 
     job_dir: Path
@@ -145,7 +146,6 @@ class JobscriptDriver(Driver):
             job_id, experiment_dir, experiment_name
         )
 
-        jobscript_file = job_dir / self.jobscript_file_name
         sample_dict = self.parameters.sample_as_dict(sample)
 
         metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
