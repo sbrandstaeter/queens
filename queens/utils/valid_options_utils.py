@@ -12,7 +12,8 @@ def get_option(options_dict, desired_option, error_message=""):
     Args:
         options_dict (dict): Dictionary with valid options and their value
         desired_option (str): Desired method key
-        error_message: TODO_doc
+        error_message (str, optional): Custom error message to be used if the *desired_option* is
+                                       not found. Defaults to an empty string.
 
     Returns:
         Value of the *desired_option*

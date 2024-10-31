@@ -14,23 +14,25 @@ class DataIterator(Iterator):
     """Basic Data Iterator to enable restarts from data.
 
     Attributes:
-        samples (np.array):         Array with all samples.
-        output (np.array):          Array with all model outputs.
-        eigenfunc: TODO_doc
-        path_to_data (string):      Path to pickle file containing data.
-        result_description (dict):  Description of desired results.
+        samples (np.array): Array with all samples.
+        output (np.array): Array with all model outputs.
+        eigenfunc (obj): Function for computing eigenfunctions or transformations
+                         applied to the data. This attribute is a placeholder and
+                         may be updated in future versions (refer to Issue #45).
+        path_to_data (string): Path to pickle file containing data.
+        result_description (dict): Description of desired results.
     """
 
     @log_init_args
     def __init__(self, path_to_data, result_description, global_settings, parameters=None):
-        """Initialise data iterator.
+        """Initialize the data iterator.
 
         Args:
-            path_to_data (string):      Path to pickle file containing data
-            result_description (dict):  Description of desired results        Args:
-            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                              and the output directory
-            parameters (Parameters, optional): Parameters object
+            path_to_data (string): Path to pickle file containing data.
+            result_description (dict): Description of desired results.
+            global_settings (GlobalSettings): Settings of the QUEENS experiment including its name
+                                              and the output directory.
+            parameters (Parameters, optional): Parameters object.
         """
         super().__init__(None, parameters, global_settings)
         self.samples = None

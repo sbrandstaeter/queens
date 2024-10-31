@@ -42,13 +42,14 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
 
 
 def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
-    """Generic tempering function.
+    """Perform generic tempering between two log-probability density functions.
 
-    It phases from one distribution (*pdf0*) to another (*pdf1*).
+    This function performs a linear interpolation between two log-probability density functions
+    based on a tempering parameter. The tempering parameter determines the weight given to each
+    log-probability density function in the transition from the initial distribution (*logpdf0*)
+    to the goal distribution (*logpdf1*).
 
-    Initial distribution: *pdf0*.
-
-    Goal distribution: *pdf1*.
+    The function handles the following scenarios:
 
     * tempering parameter = 0.0:
         We interpret this as "disregard contribution of the goal pdf".
@@ -67,11 +68,20 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
         a reasonable value. Therefore, we chose to exclude it here.
 
     Args:
-        logpdf0: TODO_doc
-        logpdf1: TODO_doc
-        tempering_parameter: TODO_doc
+        logpdf0 (float or np.array): Logarithm of the probability density function of the initial
+                                     distribution.
+        logpdf1 (float or np.array): Logarithm of the probability density function of the goal
+                                     distribution.
+        tempering_parameter (float): Parameter between 0 and 1 that controls the interpolation
+                                     between `logpdf0` and `logpdf1`. A value of 0.0 corresponds to
+                                     `logpdf0`, while a value of 1.0 corresponds to `logpdf1`.
+
     Returns:
-        TODO_doc
+        float or np.array: The tempered log-probability density function based on the
+                              `tempering_parameter`.
+
+    Raises:
+        ValueError: If either `logpdf0` or `logpdf1` is positive infinity (`+inf`).
     """
     # if either logpdf is positive infinite throw an error
     if np.isposinf(logpdf0).any() or np.isposinf(logpdf1).any():
@@ -89,14 +99,21 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
 
 
 def temper_factory(temper_type):
-    """Switch type of tempering function.
+    """Return the appropriate tempering function based on the specified type.
 
-    Return the respective tempering function.
+    The tempering function can be used for transitioning between different log-probability density
+    functions in various probabilistic models.
 
     Args:
-        temper_type: TODO_doc
+        temper_type (str): Type of the tempering function to return. Valid options are:
+            - "bayes": Returns the Bayes tempering function.
+            - "generic": Returns the generic tempering function.
+
     Returns:
-        TODO_doc
+        function: The corresponding tempering function based on `temper_type`.
+
+    Raises:
+        ValueError: If `temper_type` is not one of the valid options ("bayes", "generic").
     """
     if temper_type == "bayes":
         return temper_logpdf_bayes
@@ -110,14 +127,19 @@ def temper_factory(temper_type):
 
 
 def calc_ess(weights):
-    """Calculate Effective Sample Size from current weights.
+    """Calculate the Effective Sample Size (ESS) from the given weights.
 
-    We use the exp-log trick here to avoid numerical problems.
+    The Effective Sample Size (ESS) is a measure used to assess the quality of a set of weights
+    by indicating how many independent samples would be required to achieve the same level of
+    information as the current weighted samples. This is computed using the exp-log trick to
+    improve numerical stability.
 
     Args:
-        weights: TODO_doc
+        weights (np.array): An array of weights, typically representing the importance weights
+                            of samples in a weighted sampling scheme.
+
     Returns:
-        ess: TODO_doc
+        float: The Effective Sample Size (ESS) as calculated from the provided weights.
     """
     ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights**2)))
     return ess
@@ -173,7 +195,7 @@ class StaticStateSpaceModel(ssp.StaticModel):
         """Convert particles objects to numpy arrays.
 
         The *particles* library uses np.ndarrays with homemade variable dtypes.
-        We need to convert this into numpy array to work with queens.
+        We need to convert this into numpy arrays to work with queens.
 
         Args:
             theta (np.ndarray with homemade dtype): *Particle* variables object
@@ -190,7 +212,7 @@ class StaticStateSpaceModel(ssp.StaticModel):
         This method converts it back to the particles library type.
 
         Args:
-            samples (np.ndarray): Numpy array samples
+            samples (np.ndarray): Samples
 
         Returns:
             np.ndarray with homemade dtype: *Particle* variables object

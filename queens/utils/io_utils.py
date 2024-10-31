@@ -66,7 +66,7 @@ def write_to_csv(output_file_path, data, delimiter=","):
 
     Args:
         output_file_path (Path obj): Path to the file the data should be written to
-        data (np.array): Data in form of numpy arrays
+        data (np.array): Data that should be written to the csv file.
         delimiter (optional, str): Delimiter to separate individual data.
                                    Defaults to comma delimiter.
     """

@@ -4,14 +4,30 @@ import numpy as np
 
 
 def mh_select(log_acceptance_probability, current_sample, proposed_sample):
-    """Do Metropolis Hastings selection.
+    """Perform Metropolis-Hastings selection.
+
+    The Metropolis-Hastings algorithm is used in Markov Chain Monte Carlo (MCMC) methods to
+    accept or reject a proposed sample based on the log of the acceptance probability. This function
+    compares the acceptance probability with a random number between 0 and 1 to decide if each
+    proposed sample should replace the current sample.
+    If the random number is smaller than the acceptance probability, the proposed sample is
+    accepted. The function further checks whether the `log_acceptance_probability` is finite. If
+    it is infinite or NaN, the function will not accept the respective proposed sample.
 
     Args:
-        log_acceptance_probability: TODO_doc
-        current_sample: TODO_doc
-        proposed_sample: TODO_doc
+        log_acceptance_probability (np.array): Logarithm of the acceptance probability for each
+                                               sample. This represents the log of the ratio of the
+                                               probability densities of the proposed sample to the
+                                               current sample.
+        current_sample (np.array): The current sample values from the MCMC chain.
+        proposed_sample (np.array): The proposed sample values to be considered for acceptance.
+
     Returns:
-        TODO_doc
+        selected_samples (np.array): The sample values selected after the Metropolis-Hastings
+                                     step. If the proposed sample is accepted, it will be returned;
+                                     otherwise, the current sample is returned.
+        bool_idx (np.array): A boolean array indicating whether each proposed sample was accepted
+                             (`True`) or rejected (`False`).
     """
     isfinite = np.isfinite(log_acceptance_probability)
     accept = (
@@ -27,11 +43,12 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
 
 
 def tune_scale_covariance(scale_covariance, accept_rate):
-    r"""Tune the acceptance rate according to the last tuning interval.
+    r"""Adjust the covariance scaling factor based on the acceptance rate.
 
-    The goal is an acceptance rate within 20\% - 50\%.
-    The (acceptance) rate is adapted according to the following rule:
-
+    This function tunes the covariance scaling factor used in Metropolis-Hastings or similar MCMC
+    algorithms based on the observed acceptance rate of proposed samples. The goal is to maintain an
+    acceptance rate within the range of 20% to 50%, which is considered optimal for many MCMC
+    algorithms. The covariance scaling factor is adjusted according to the following rules:
 
         +------------------+-----------------------------+
         | Acceptance Rate  |  Variance adaptation factor |
@@ -49,18 +66,17 @@ def tune_scale_covariance(scale_covariance, accept_rate):
         |      >0.95       |              x 10           |
         +------------------+-----------------------------+
 
-    The implementation is modified from [1].
-
     Reference:
-    [1]: https://github.com/pymc-devs/pymc3/blob/master/pymc3/step_methods/metropolis.py
-
-    **TODO_doc:** The link is broken !
+    [1]: https://github.com/pymc-devs/pymc/blob/main/pymc/step_methods/metropolis.py
 
     Args:
-        scale_covariance: TODO_doc
-        accept_rate: TODO_doc
+        scale_covariance (float or np.array): The current covariance scaling factor for the proposal
+        distribution.
+        accept_rate (float or np.array): The observed acceptance rate of the proposed samples. This
+        value should be between 0 and 1.
+
     Returns:
-        scale_covariance: TODO_doc
+        np.array: The updated covariance scaling factor adjusted according to the acceptance rate.
     """
     scale_covariance = np.where(accept_rate < 0.001, scale_covariance * 0.1, scale_covariance)
     scale_covariance = np.where(

@@ -30,11 +30,11 @@ class PolynomialChaosIterator(Iterator):
         sampling_rule (dict): Rule according to which samples are drawn.
         polynomial_order (int): Order of polynomial expansion.
         result_description (dict): Description of desired results.
-        sparse (bool): For pseudo project, if *True* uses sparse collocation points.
+        sparse (bool): For pseudo-spectral, if *True* uses sparse collocation points.
         polynomial_chaos_approach (str): Approach for the polynomial chaos approach.
         distribution (cp.distribution): Joint input distribution.
-        samples: TODO_doc
-        result_dict: TODO_doc
+        samples: Sample points used in the computation.
+        result_dict: Dictionary storing results including expansion, mean, and covariance.
     """
 
     @log_init_args

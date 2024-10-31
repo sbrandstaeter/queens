@@ -59,8 +59,12 @@ def check_if_path_exists(path, error_message=""):
     Args:
         path (str): "Path" to be checked
         error_message (str,optional): If an additional message is desired
+
     Returns:
-        path_exists: TODO_doc
+        bool: `True` if the path exists, `False` otherwise.
+
+    Raises:
+        FileNotFoundError: If the path does not exist.
     """
     path_exists = Path(path).exists()
 

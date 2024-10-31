@@ -42,18 +42,12 @@ class FourcDatExternalGeometry(ExternalGeometry):
         node_coordinates (dict): Dictionary that holds the desired nodes as well as their
                                  corresponding geometric coordinates.
         element_centers (np.array): Array with center coordinates of elements.
-        element_topology (np.array): List of dictionaries per random field, which contain the
-                                     element topology associated with the random field,
-                                     respectively the geometric set where the field is defined
-                                     on. Element topology means here the mapping of nodes,
-                                     material and element number. (**TODO_doc:** element_topology
-                                     is defined twice)
-        element_topology (lst): List of topology of finite element types for each geometric set.
-                                (**TODO_doc:** element_topology is defined twice)
+        element_topology (lst): List of dictionaries containing element topology, including node
+                                mapping, materials, and element numbers.
         original_materials_in_dat (lst): List of original material numbers in dat template file.
         list_associated_material_numbers (lst): List of associated material numbers w.r.t. the
                                                 geometric sets of interest.
-        new_material_numbers: TODO_doc
+        new_material_numbers (lst): List of new material numbers to be used.
         random_dirich_flag (bool): Flag to check if a random Dirichlet BC exists.
         random_transport_dirich_flag (bool): Flag to check if a random transport Dirichlet
                                              BC exists.
