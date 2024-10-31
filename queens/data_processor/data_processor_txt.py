@@ -38,7 +38,7 @@ class DataProcessorTxt(DataProcessor):
         files_to_be_deleted_regex_lst=None,
         remove_logger_prefix_from_raw_data=True,
         logger_prefix=r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
-        r"queens\.drivers\.driver_\d - INFO -",
+        r"queens\.drivers\.driver_\d* - INFO -",
         max_file_size_in_mega_byte=200,
     ):
         """Instantiate data processor class for txt data.
