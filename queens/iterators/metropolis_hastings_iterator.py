@@ -35,29 +35,26 @@ class MetropolisHastingsIterator(Iterator):
     algorithm.
 
     Attributes:
-        num_chains (int): Number of independent chains.
-        num_samples (int): Number of samples per chain.
-        proposal_distribution (obj): Proposal distribution.
-        result_description (dict):  Description of desired results.
+        num_chains (int): Number of independent chains to run.
+        num_samples (int): Number of samples to draw per chain.
+        proposal_distribution (obj): Proposal distribution used for generating candidate samples.
+        result_description (dict): Description of the desired results.
         as_smc_rejuvenation_step (bool): Indicates whether this iterator is used as a rejuvenation
-                                         step for a SMC iterator or as the main iterator itself.
-        tune (bool): Tune the scale of covariance.
-        scale_covariance (float): Scale of covariance matrix
-                                  of gaussian proposal distribution.
-        num_burn_in (int): Number of burn-in samples.
-        temper: TODO_doc
-        gamma: TODO_doc
-        tune_interval (int): Tune the scale of the covariance every
-                             *tune_interval*-th step.
-        tot_num_samples (int): Total number of samples per chain, i.e.
-                               *initial* + *burn-in* + *chain*.
-        chains (numpy.array): Array with all samples.
-        log_likelihood (np.array): log of pdf of likelihood at samples.
-        log_prior (np.array): log of pdf of prior at samples.
-        log_posterior (np.array): log of pdf of posterior at samples.
-        seed (int): Seed for random number generator.
-        accepted (int): Number of accepted proposals.
-        accepted_interval: TODO_doc
+                                         step for an SMC iterator or as the main iterator itself.
+        tune (bool): Whether to tune the scale of the proposal distribution's covariance.
+        scale_covariance (float or np.array): Scale of covariance matrix.
+        num_burn_in (int): Number of initial samples to discard as burn-in.
+        temper (function): Tempering function used in the acceptance probability calculation.
+        gamma (float): Tempering parameter.
+        tune_interval (int): Interval for tuning the scale of the covariance matrix.
+        tot_num_samples (int): Total number of samples to be drawn per chain, including burn-in.
+        chains (np.array): Array storing all the samples drawn across all chains.
+        log_likelihood (np.array): Logarithms of the likelihood of the samples.
+        log_prior (np.array): Logarithms of the prior probabilities of the samples.
+        log_posterior (np.array): Logarithms of the posterior probabilities of the samples.
+        seed (int): Seed for random number generation.
+        accepted (np.array): Number of accepted proposals per chain.
+        accepted_interval (np.array): Number of proposals per chain in current tuning interval.
     """
 
     @log_init_args
@@ -95,8 +92,8 @@ class MetropolisHastingsIterator(Iterator):
                                                         proposal distribution.
             num_burn_in (int): Number of burn-in samples.
             num_chains (int): Number of independent chains.
-            as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a
-                                             rejuvenation step for a SMC iterator or as the main
+            as_smc_rejuvenation_step (bool): Indicates whether this iterator is used as a
+                                             rejuvenation step for an SMC iterator or as the main
                                              iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
@@ -148,10 +145,10 @@ class MetropolisHastingsIterator(Iterator):
         """Evaluate natural logarithm of prior at samples of chains.
 
         Args:
-            samples: TODO_doc
+            samples (np.array): Samples for which to evaluate the prior.
 
         Returns:
-            TODO_doc
+            np.array: Logarithms of the prior probabilities for each sample.
         """
         return self.parameters.joint_logpdf(samples).reshape(-1, 1)
 
@@ -159,10 +156,10 @@ class MetropolisHastingsIterator(Iterator):
         """Evaluate natural logarithm of likelihood at samples of chains.
 
         Args:
-            samples: TODO_doc
+            samples (np.array): Samples for which to evaluate the likelihood.
 
         Returns:
-            TODO_doc
+            np.array: Logarithms of the likelihood for each sample.
         """
         log_likelihood = self.model.evaluate(samples)["result"]
         return log_likelihood
@@ -171,7 +168,7 @@ class MetropolisHastingsIterator(Iterator):
         """Metropolis (Hastings) step.
 
         Args:
-            step_id: TODO_doc
+            step_id (int): Current step index for the MCMC run.
         """
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
@@ -223,11 +220,11 @@ class MetropolisHastingsIterator(Iterator):
         """Draw initial sample.
 
         Args:
-            initial_samples: TODO_doc
-            initial_log_like: TODO_doc
-            initial_log_prior: TODO_doc
-            gamma: TODO_doc
-            cov_mat: TODO_doc
+            initial_samples (np.array, optional): Initial samples for the chains.
+            initial_log_like (np.array, optional): Initial log-likelihood values.
+            initial_log_prior (np.array, optional): Initial log-prior values.
+            gamma (float, optional): Tempering parameter for the posterior calculation.
+            cov_mat (np.array, optional): Covariance matrix for the proposal distribution.
         """
         if not self.as_smc_rejuvenation_step:
             _logger.info("Initialize Metropolis-Hastings run.")

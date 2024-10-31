@@ -92,9 +92,7 @@ class BMFMCModel(Model):
         m_f_mc (np.array): Vector of posterior mean values of multi-fidelity mapping
                            corresponding to the Monte-Carlo input *Z_mc* according to
                            :math:`\mathrm{m}_{f^*}(Z^*)`.
-        var_y_mc: TODO_doc (*var_f_mc* is not an attribute, and *var_y_mc* is not explained,
-                  should *var_f_mc* be renamed to *var_y_mc*?)
-        var_f_mc (np.array): Vector of posterior variance of multi-fidelity mapping
+        var_y_mc (np.array): Vector of posterior variance of multi-fidelity mapping
                              corresponding to the Monte-Carlo input *Z_mc* according to
                              :math:`\mathrm{m}_{f^*}(Z^*)`.
         p_yhf_mean (np.array): Vector that contains the mean approximation of the HF
@@ -119,7 +117,7 @@ class BMFMCModel(Model):
                                             intermediate solution and should be moved to the
                                             variables module! The current solution works so far
                                             only for one random field!
-        eigenvals: TODO_doc
+        eigenvals: Eigenvalues corresponding to the eigenfunctions.
         f_mean_train (np.array): Vector of predicted mean values of multi-fidelity mapping
                                  corresponding to the training input *Z_train* according to
                                  :math:`\mathrm{m}_{f^*}(Z)`.
@@ -158,33 +156,40 @@ class BMFMCModel(Model):
         path_to_lf_mc_data=None,
         path_to_hf_mc_reference_data=None,
     ):
-        r"""Initialize BMFMC model.
+        r"""Initialize the Bayesian Multi-Fidelity Monte-Carlo (BMFMC) Model.
+
+        Initializes the BMFMC model by setting up data iterators, configuring features, and
+        preparing various components required for the BMFMC analysis.
 
         Args:
-            parameters (obj): Parameters object
-            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                  and the output directory
-            probabilistic_mapping (obj): Instance of the probabilistic mapping, which models the
-                                             probabilistic dependency between high-fidelity model,
-                                             low-fidelity models and informative input features.
-            features_config (str): strategy that will be used to calculate the low-fidelity features
-                                   :math:`Z_{\text{LF}}`: `opt_features`, `no_features` or
-                                   `man_features`
-            predictive_var (bool): Boolean flag that triggers the computation of the posterior
-                                   variance
-                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
-                                   if set to True. (default value: False)
-            BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                    True (default value: False)
-            y_pdf_support_max (float): Max value of pdf support used in this analysis
-            y_pdf_support_min (float): Min value of pdf support used in this analysis
-            X_cols (list): for `man_features`, columns of X-matrix that should be used as an
-                           informative feature
-            num_features (int): for `opt_features`, number of features to be used
-            hf_model (model): model for high-fidelity data
-            path_to_lf_mc_data (str): path to low fidelity monte carlo data
-            path_to_hf_mc_reference_data (str): path to high fidelity monte carlo reference data
+            parameters (Parameters): Parameters object.
+            global_settings (GlobalSettings): Settings for the QUEENS experiment, including its name
+                                              and output directory.
+            probabilistic_mapping (obj): Instance of the probabilistic mapping object that models
+                                         the probabilistic dependency between high-fidelity and
+                                         low-fidelity models along with informative input features.
+            features_config (str): Strategy used to calculate low-fidelity features
+                                   :math:`Z_{\text{LF}}`. Possible values are `opt_features`
+                                   (optimal features), `no_features`, or `man_features` (manual
+                                   features).
+            predictive_var (bool): Boolean flag that determines whether to compute the posterior
+                                   variance :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{
+                                   D})\right]`.
+            BMFMC_reference (bool): Boolean flag that triggers the BMFMC solution without
+                                    informative features :math:`\boldsymbol{\gamma}` for
+                                    comparison.
+            y_pdf_support_max (float): Maximum value for the probability density function (PDF)
+                                       support used in this analysis.
+            y_pdf_support_min (float): Minimum value for the PDF support used in this analysis.
+            X_cols (list, optional): For `man_features`, list of columns from the X-matrix to be
+                                     used as informative features.
+            num_features (int, optional): For `opt_features`, number of features to be used.
+            hf_model (model, optional): High-fidelity model used to run simulations and generate
+                                        training data.
+            path_to_lf_mc_data (str or list of str, optional): Path(s) to low-fidelity MC data
+                                                               files.
+            path_to_hf_mc_reference_data (str, optional): Path to high-fidelity MC reference data
+                                                          file.
         """
         # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and # pylint: disable=fixme
         #  random fields is prone to errors and should be changed! The implementation should
@@ -241,41 +246,66 @@ class BMFMCModel(Model):
         super().__init__()
 
     def evaluate(self, samples):
-        """Evaluate.
+        """Evaluate the Bayesian Multi-Fidelity Monte-Carlo (BMFMC) model.
 
-        Construct the probabilistic mapping between HF model and LF features
-        and evaluate the BMFMC routine. This evaluation consists of two steps:
+        This method evaluates the BMFMC routine by performing two main tasks:
 
-            #. Evaluate the probabilistic mapping for LF Monte Carlo Points and the LF training
-               points.
-            #. Use the previous result to actually evaluate the BMFMC posterior statistics.
+        1. **Probabilistic Mapping Evaluation**: Evaluates the probabilistic mapping for both the LF
+                                                 Monte Carlo points and the LF training points.
+        2. **BMFMC Posterior Statistics Evaluation**: Uses the results from the probabilistic
+                                                      mapping to compute the BMFMC posterior
+                                                      statistics.
 
         Args:
-            samples: TODO_doc
+            samples (any type): Currently not used.
 
         Returns:
-            output (dict): Dictionary containing the core results and some additional quantities
-
-                *  Z_mc: LF-features Monte-Carlo data
-                *  m_f_mc: posterior mean values of probabilistic mapping (*f* )
-                   for LF Monte-Carlo inputs (*Y_LF_mc* or *Z_mc*)
-                *  var_y_mc: posterior variance of probabilistic mapping (*f* ) for LF
-                   Monte-Carlo inputs (*Y_LF_mc* or *Z_mc*)
-                *  y_pdf_support: pdf support used in this analysis
-                *  p_yhf_mean: Posterior mean prediction of HF output pdf
-                *  p_yhf_var: Posterior variance prediction of HF output pdf
-                *  p_yhf_mean_BMFMC: Reference without features, posterior mean
-                   prediction of HF output pdf
-                *  p_yhf_var_BMMFMC: Reference without features, posterior variance
-                   prediction of HF output pdf
-                *  p_ylf_mc: For illustration purpose, output pdf of LF model
-                *  p_yhf_mc: For benchmarking, output pdf of HF model based on kde
-                   estimate for full Monte-Carlo simulation on HF model
-                *  Z_train: LF feature vector for training of the probabilistic mapping
-                *  Y_HF_train: Outputs of the high-fidelity model that correspond to
-                   the training inputs *X_train* such that :math:`Y_{HF}=y_{HF}(X)`
-                *  X_train: Corresponding input for the simulations that are used to
-                   train the probabilistic mapping
+            output (dict): A dictionary containing the results of the evaluation. The dictionary
+                           includes:
+                - **Z_mc**: (np.array) Low-fidelity features Monte-Carlo data used in the
+                                       evaluation.
+                - **m_f_mc**: (np.array) Posterior mean values of the probabilistic mapping
+                                         (denoted *f*) for LF Monte-Carlo inputs. These values
+                                         represent the mean predictions based on the Monte-Carlo
+                                         simulations.
+                - **var_y_mc**: (np.array) Posterior variance of the probabilistic mapping
+                                           (denoted *f*) for LF Monte-Carlo inputs. These values
+                                           indicate the uncertainty associated with the mean
+                                           predictions.
+                - **y_pdf_support**: (np.array) Support grid for the probability density function
+                                                (PDF) of the HF output used in this analysis.
+                                                This provides the range over which the PDF is
+                                                evaluated.
+                - **p_yhf_mean**: (np.array) Posterior mean prediction of the HF output PDF,
+                                             representing the expected values of the HF output
+                                             given the model and data.
+                - **p_yhf_var**: (np.array) Posterior variance prediction of the HF output PDF,
+                                            indicating the uncertainty in the HF output predictions.
+                - **p_yhf_mean_BMFMC**: (np.array or None) Reference posterior mean prediction of
+                                                           the HF output PDF without using
+                                                           informative features, for comparison
+                                                           purposes. This value is calculated if
+                                                           `self.no_features_comparison_bool` is
+                                                           True.
+                - **p_yhf_var_BMFMC**: (np.array or None) Reference posterior variance prediction of
+                                                          the HF output PDF without using
+                                                          informative features, for comparison
+                                                          purposes. This value is calculated if
+                                                          `self.no_features_comparison_bool` is
+                                                          True.
+                - **p_ylf_mc**: (np.array) Kernel density estimate of the LF model output PDF, used
+                                           for illustration purposes.
+                - **p_yhf_mc**: (np.array) Kernel density estimate of the HF model output PDF based
+                                           on a full Monte-Carlo simulation. Used for benchmarking
+                                           and comparison.
+                - **Z_train**: (np.array) LF feature vector used for training the probabilistic
+                                          mapping. This contains the features that were used to
+                                          fit the model.
+                - **X_train**: (np.array) Input matrix for simulations used to train the
+                                          probabilistic mapping, corresponding to the training data.
+                - **Y_HF_train**: (np.array) Outputs of the high-fidelity model corresponding to the
+                                             training inputs *X_train*, representing the HF
+                                             output values used for model fitting.
         """
         p_yhf_mean_BMFMC = None
         p_yhf_var_BMFMC = None
@@ -776,21 +806,20 @@ class BMFMCModel(Model):
         return x_uncorr, random_fields_trunc_dict
 
 
-# --------------------------- functions ------------------------------------------------------
 def project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
     """Project samples on truncated basis.
 
-    Project the high-dimensional samples of the random field on the
-    truncated bases to yield the projection coefficients of the series
-    expansion that serve as a new reduced representation of the random fields.
+    Project the high-dimensional samples of the random field on the truncated bases to yield the
+    projection coefficients of the series expansion that serve as a new reduced representation of
+    the random fields.
 
     Args:
-        truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases
-        num_samples (int): Number of Monte-Carlo samples
+        truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases.
+        num_samples (int): Number of Monte-Carlo samples.
 
     Returns:
         coefs_mat (np.array): Matrix containing the reduced representation of all random fields
-                              stacked together along the columns
+                              stacked together along the columns.
     """
     coefs_mat = np.empty((num_samples, 0))
 
@@ -801,7 +830,6 @@ def project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
     return coefs_mat
 
 
-# ---------------- Some private helper functions ------------------------------------------------
 def linear_scale_a_to_b(data_a, data_b):
     """Scale linearly.
 

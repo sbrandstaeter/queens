@@ -379,8 +379,7 @@ class DataProcessorEnsight(DataProcessor):
                                         be extracted
 
         Returns:
-            interpolated_data (np.array): Numpy array with solution data interpolated to
-                                          respective coordinates.
+            interpolated_data (np.array): Solution data interpolated to respective coordinates.
         """
         # -- create vtk point object from experimental coordinates --
         vtk_points_obj = vtk.vtkPoints()

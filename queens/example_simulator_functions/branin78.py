@@ -10,27 +10,22 @@ import numpy as np
 
 
 def branin78_lofi(x1, x2):
-    """Low-fidelity fidelity Branin function.
+    """Compute the value of the low-fidelity Branin function.
 
-    Compute the value of a medium-fidelity version of the Branin function as described
-    in [1]. The corresponding high- and low-fidelity versions are implemented
-    in *branin_hifi* and *branin_lofi*, respectively.
-
-    **TODO_doc:** Shouldn't the previous sentence be: 'The corresponding high- and medium-fidelity
-    versions are implemented in *branin_hifi* and *branin_medfi*, respectively.'
+    This function computes the value of a low-fidelity version of the Branin function,
+    using a medium-fidelity variant as described in [1]. The corresponding high- and
+    medium-fidelity versions are implemented in *branin_hifi* and *branin_medfi*, respectively.
 
     Args:
-        x1 (float): First input parameter
-        x2 (float): Second input parameter
+        x1 (float): First input parameter.
+        x2 (float): Second input parameter.
 
     Returns:
-        float: Value of low-fidelity Branin function
-
+        float: Value of the low-fidelity Branin function.
 
     References:
-        [1] Perdikaris, P. et al., 2017. Nonlinear information fusion algorithms
-            for data-efficient multi-fidelity modelling.
-            Proceedings of the Royal Society of London A: Mathematical,
+        [1] Perdikaris, P. et al., 2017. Nonlinear information fusion algorithms for data-efficient
+            multi-fidelity modelling. Proceedings of the Royal Society of London A: Mathematical,
             Physical and Engineering Sciences, 473(2198), pp.20160751–16.
     """
     y = branin78_medfi(1.2 * (x1 + 2.0), 1.2 * (x2 + 2.0)) - 3.0 * x2 + 1.0

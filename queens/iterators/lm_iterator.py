@@ -14,32 +14,34 @@ _logger = logging.getLogger(__name__)
 
 
 class LMIterator(Iterator):
-    """Iterator for deterministic optimization problems.
+    """Iterator for Levenberg-Marquardt deterministic optimization problems.
 
-    Levenberg Marquardt iterator in the style of 4C *gen_inv_analysis*.
-
-    Parts of this class are boldly stolen from *optimization_iterator*.
-    we need to take control of the details, although it is less flexible it is far more
-    simple. (**TODO_doc**: reformulate this sentence.)
+    Implements the Levenberg-Marquardt algorithm for optimization, adapted from the
+    4C `gen_inv_analysis` approach. This class focuses on a simplified yet controlled
+    optimization process.
 
     Attributes:
-        initial_guess: TODO_doc
-        bounds: TODO_doc
-        havebounds: TODO_doc
-        param_current: TODO_doc
-        jac_rel_step: TODO_doc
-        max_feval: TODO_doc
-        result_description: TODO_doc
-        jac_abs_step: TODO_doc
-        reg_param: TODO_doc
-        init_reg: TODO_doc
-        update_reg: TODO_doc
-        tolerance: TODO_doc
-        verbose_output: TODO_doc
-        iter_opt: TODO_doc
-        lowesterror (float): The lowest error achieved during optimization. Initialized to None.
-        param_opt (np.ndarray): The optimized parameter values corresponding to the lowest error.
-        solution (np.array): The solution achieved by the optimization process.
+        initial_guess (np.ndarray): Initial guess for the optimization parameters.
+        bounds (tuple): Tuple specifying the lower and upper bounds for parameters. If None, no
+                        bounds are applied.
+        havebounds (bool): Flag indicating if bounds are provided.
+        param_current (np.ndarray): Current parameter values being optimized.
+        jac_rel_step (float): Relative step size used for finite difference approximation of the
+                              Jacobian.
+        max_feval (int): Maximum number of allowed function evaluations.
+        result_description (dict): Configuration for result file handling and plotting.
+        jac_abs_step (float): Absolute step size used for finite difference approximation of the
+                              Jacobian.
+        reg_param (float): Regularization parameter for the Levenberg-Marquardt algorithm.
+        init_reg (float): Initial value for the regularization parameter.
+        update_reg (str): Strategy for updating the regularization parameter ("res" for
+                          residual-based, "grad" for gradient-based).
+        tolerance (float): Convergence tolerance for the optimization process.
+        verbose_output (bool): If True, provides detailed output during optimization.
+        iter_opt (int): The iteration number at which the lowest error was achieved.
+        lowesterror (float or None): The minimum error encountered during the optimization process.
+        param_opt (np.ndarray): Parameter values corresponding to the minimum error.
+        solution (np.ndarray): The final optimized parameter values.
     """
 
     @log_init_args
@@ -59,24 +61,25 @@ class LMIterator(Iterator):
         max_feval=1,
         verbose_output=False,
     ):
-        """Initialize the LMIterator.
+        """Initializes the Levenberg-Marquardt iterator.
 
         Args:
-            model (Model): Model to be evaluated by iterator
-            parameters (Parameters): Parameters object
-            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                              and the output directory
-            result_description: TODO_doc
-            initial_guess: TODO_doc
-            bounds: TODO_doc
-            jac_rel_step: TODO_doc
-            jac_abs_step: TODO_doc
-            init_reg: TODO_doc
-            update_reg: TODO_doc
-            convergence_tolerance: TODO_doc
-            max_feval: TODO_doc
-            lowesterror (float or None): The lowest error achieved during optimization.
-            verbose_output: TODO_doc
+            model (Model): Model to be optimized.
+            parameters (Parameters): Object containing parameter settings.
+            global_settings (GlobalSettings): Configuration settings for the QUEENS experiment.
+            result_description (dict): Description and configuration for result handling and
+                                       plotting.
+            initial_guess (np.ndarray, optional): Initial guess for optimization parameters.
+            bounds (tuple, optional): Tuple of lower and upper bounds for parameters. If None, no
+                                      bounds are used.
+            jac_rel_step (float, optional): Relative step size for finite difference approximation.
+            jac_abs_step (float, optional): Absolute step size for finite difference approximation.
+            init_reg (float, optional): Initial regularization parameter.
+            update_reg (str, optional): Strategy for updating the regularization parameter ("res" or
+                                        "grad").
+            convergence_tolerance (float, optional): Convergence tolerance for the optimization.
+            max_feval (int, optional): Maximum number of function evaluations allowed.
+            verbose_output (bool, optional): If True, enables verbose output during optimization.
         """
         super().__init__(model, parameters, global_settings)
 

@@ -25,17 +25,16 @@ class SobolIndexIterator(Iterator):
     Attributes:
         seed (int): Seed for random number generator.
         num_samples (int): Number of samples.
-        calc_second_order (bool): Calculate second-order sensitivities.
-        num_bootstrap_samples (int): Number of bootstrap samples.
-        confidence_level (float): The confidence interval level.
-        result_description (dict): TODO_doc
-        samples (np.array): Array with all samples.
-        output (dict): Dict with all outputs corresponding to
-                       samples.
+        calc_second_order (bool): Whether to calculate second-order sensitivities.
+        num_bootstrap_samples (int): Number of bootstrap samples for confidence intervals.
+        confidence_level (float): Confidence level for the intervals.
+        result_description (dict): Description of the desired results.
+        samples (np.array): Samples used for analysis.
+        output (dict): Model outputs corresponding to samples.
         salib_problem (dict): Problem definition for SALib.
         num_params (int): Number of parameters.
-        parameter_names (list): List with parameter names.
-        sensitivity_indices (dict): Dictionary with sensitivity indices.
+        parameter_names (list): List of parameter names.
+        sensitivity_indices (dict): Sensitivity indices from Sobol analysis.
     """
 
     @log_init_args
@@ -54,16 +53,15 @@ class SobolIndexIterator(Iterator):
         """Initialize Saltelli SALib iterator object.
 
         Args:
-            model (Model): Model to be evaluated by iterator
-            parameters (Parameters): Parameters object
-            global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                              and the output directory
-            seed (int): Seed for random number generation
-            num_samples (int): Number of desired (random) samples
-            calc_second_order (bool): Calculate second-order sensitivities
-            num_bootstrap_samples (int): Number of bootstrap samples
-            confidence_level (float): The confidence interval level
-            result_description (dict): Dictionary with desired result description
+            model (Model): Model to be evaluated by iterator.
+            parameters (Parameters): Parameters object.
+            global_settings (GlobalSettings): Experiment settings with name and output directory.
+            seed (int): Seed for random number generation.
+            num_samples (int): Number of random samples.
+            calc_second_order (bool): Whether to calculate second-order sensitivities.
+            num_bootstrap_samples (int): Number of bootstrap samples.
+            confidence_level (float): Confidence level for intervals.
+            result_description (dict): Description of the desired results.
         """
         super().__init__(model, parameters, global_settings)
 

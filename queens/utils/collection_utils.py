@@ -6,11 +6,8 @@ from queens.utils.print_utils import get_str_table
 class CollectionObject:
     """Collection object which stores data.
 
-    This object can be index by iteration i: *collection_object[i]* but also using the collected
+    This object can be indexed by iteration i: *collection_object[i]* but also using the collected
     fields *collection_object.field1*.
-
-    Attributes:
-        TODO_doc: Lists of the data that is stored in the object
     """
 
     def __init__(self, *field_names):

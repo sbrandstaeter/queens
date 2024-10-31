@@ -312,11 +312,12 @@ class HeteroskedasticGPModel(SurrogateModel):
         def optimization_step_fun():
             """Perform a two-step variational EM for latent variable GPs.
 
-            Two step variational Expectation-Maximization routine for latent
-            variable GPs.
-
-            Returns:
-                optimization_step_fun: TODO_doc
+            This function performs variational Expectation-Maximization using two different
+            optimization routines:
+            1. Natural Gradient Optimization: Minimizes the loss function with respect to the
+               variational variables.
+            2. Adam Optimization: Minimizes the loss function with respect to the Adam-specific
+               variables.
             """
             natgrad_opt.minimize(loss_fn, variational_vars)
             adam_opt.minimize(loss_fn, adam_vars)
