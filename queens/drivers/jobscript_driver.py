@@ -83,6 +83,8 @@ class JobscriptDriver(Driver):
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh').
         raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
                                                  exit code.
+        job_timeout (int | None): Timeout for jobs in seconds. Jobs will be terminated after
+                                  timeout seconds. Default is None meaning no timeout is used.
     """
 
     @log_init_args
@@ -92,6 +94,7 @@ class JobscriptDriver(Driver):
         input_templates,
         jobscript_template,
         executable,
+        job_timeout=None,
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
@@ -107,6 +110,8 @@ class JobscriptDriver(Driver):
             jobscript_template (str, Path): Path to jobscript template or read-in jobscript
                                             template.
             executable (str, Path): Path to main executable of respective software.
+            job_timeout (int, opt): Timeout for jobs in seconds. Jobs will be terminated after
+                                    timeout seconds. Default is None meaning no timeout is used.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
@@ -129,6 +134,8 @@ class JobscriptDriver(Driver):
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
         self.raise_error_on_jobscript_failure = raise_error_on_jobscript_failure
+
+        self.job_timeout = job_timeout
 
     @staticmethod
     def create_input_templates_dict(input_templates):
@@ -289,6 +296,7 @@ class JobscriptDriver(Driver):
         process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
             raise_error_on_subprocess_failure=False,
+            timeout=self.job_timeout,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
             raise SubprocessError.construct_error_from_command(

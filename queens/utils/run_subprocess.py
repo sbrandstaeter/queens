@@ -31,6 +31,7 @@ def run_subprocess(
     raise_error_on_subprocess_failure=True,
     additional_error_message=None,
     allowed_errors=None,
+    timeout=None,
 ):
     """Run a system command outside of the Python script.
 
@@ -40,6 +41,7 @@ def run_subprocess(
         raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
         additional_error_message (str, optional): Additional error message to be displayed
         allowed_errors (lst, optional): List of strings to be removed from the error message
+        timeout (int, optional): Terminate process after timeout seconds
     Returns:
         process_returncode (int): code for success of subprocess
         process_id (int): unique process id, the subprocess was assigned on computing machine
@@ -48,7 +50,7 @@ def run_subprocess(
     """
     process = start_subprocess(command)
 
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(timeout=timeout)
     process_id = process.pid
     process_returncode = process.returncode
 
