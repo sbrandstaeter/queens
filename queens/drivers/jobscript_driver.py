@@ -16,6 +16,7 @@
 
 
 import logging
+from asyncio import timeout
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,7 +26,7 @@ from queens.utils.injector import inject, inject_in_template
 from queens.utils.io_utils import read_file
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
-from queens.utils.run_subprocess import run_subprocess_with_logging
+from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -235,8 +236,8 @@ class JobscriptDriver(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = "bash " + str(jobscript_file)
-            self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
+            execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
+            self._run_executable(execute_cmd)
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -279,23 +280,14 @@ class JobscriptDriver(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file, error_file
 
-    def _run_executable(self, job_id, execute_cmd, log_file, error_file, verbose=False):
+    def _run_executable(self, execute_cmd):
         """Run executable.
 
         Args:
-            job_id (int): Job ID.
             execute_cmd (str): Executed command.
-            log_file (Path): Path to log file.
-            error_file (Path): Path to error file.
-            verbose (bool, opt): Flag for additional streaming to terminal.
         """
-        process_returncode, _, stdout, stderr = run_subprocess_with_logging(
+        process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
-            terminate_expression="PROC.*ERROR",
-            logger_name=__name__ + f"_{job_id}",
-            log_file=str(log_file),
-            error_file=str(error_file),
-            streaming=verbose,
             raise_error_on_subprocess_failure=False,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
