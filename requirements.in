@@ -14,7 +14,7 @@ scipy==1.14.1
 dask
 distributed # dask.distributed
 dask-jobqueue
-bokeh<3 # for dask dashboard
+bokeh>3 # for dask dashboard
 fabric  # for ssh connection
 
 # Others
