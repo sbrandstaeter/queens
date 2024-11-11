@@ -1,26 +1,29 @@
 """Gaussian process implementation in GPFlow."""
 
 import logging
-import os
+from typing import TYPE_CHECKING
 
-import gpflow as gpf
 import numpy as np
-import tensorflow as tf
 import tensorflow_probability as tfp
-from gpflow.utilities import print_summary, set_trainable
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 from queens.utils.logger_settings import log_init_args
+from queens.utils.tensorflow_utils import configure_tensorflow
 
 _logger = logging.getLogger(__name__)
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress warnings
 
-# Use GPU acceleration
-if tf.test.gpu_device_name() != "/device:GPU:0":
-    _logger.info("WARNING: GPU device not found.")
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import gpflow as gpf
+    import tensorflow as tf
 else:
-    _logger.info("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
+    from queens.utils.import_utils import LazyLoader
+
+    tf = LazyLoader("tensorflow")
+    gpf = LazyLoader("gpflow")
+
+    configure_tensorflow(tf)
 
 
 class GPFlowRegressionModel(SurrogateModel):
@@ -133,7 +136,7 @@ class GPFlowRegressionModel(SurrogateModel):
 
         if not self.train_likelihood_variance:
             self.model.likelihood.variance.assign(1.1e-6)  # small value for numerical stability
-            set_trainable(self.model.likelihood.variance, False)
+            gpf.utilities.set_trainable(self.model.likelihood.variance, False)
 
         self.model.kernel.lengthscales = set_transform_function(
             self.model.kernel.lengthscales, tfp.bijectors.Exp()
@@ -176,7 +179,7 @@ class GPFlowRegressionModel(SurrogateModel):
 
         self.assign_hyperparameters(hyperparameters, transform=True)
 
-        print_summary(self.model)
+        gpf.utilities.print_summary(self.model)
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.

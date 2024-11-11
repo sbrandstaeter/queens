@@ -1,28 +1,32 @@
 """Implementation of a Bayesian Neural Network."""
 
 import logging
-import os
+from typing import TYPE_CHECKING
 
 import numpy as np
-import tensorflow as tf
 import tensorflow_probability as tfp
-import tf_keras as keras
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
+from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
 
 _logger = logging.getLogger(__name__)
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
-keras.backend.set_floatx("float64")
 
-# Use GPU acceleration if possible
-if tf.test.gpu_device_name() != "/device:GPU:0":
-    _logger.info("WARNING: GPU device not found.")
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import tensorflow as tf
+    import tf_keras as keras
 else:
-    _logger.info("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
+    from queens.utils.import_utils import LazyLoader
+
+    tf = LazyLoader("tensorflow")
+    keras = LazyLoader("tf_keras")
+
+    configure_tensorflow(tf)
+    configure_keras(keras)
 
 
 class GaussianBayesianNeuralNetworkModel(SurrogateModel):

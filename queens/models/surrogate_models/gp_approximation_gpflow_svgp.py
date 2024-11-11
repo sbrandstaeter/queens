@@ -16,23 +16,31 @@ allowing users to easily integrate the SVGP model into their machine learning wo
 """
 
 import logging
-import os
+from typing import TYPE_CHECKING
 
-import gpflow as gpf
 import numpy as np
-import tensorflow as tf
 import tensorflow_probability as tfp
-import tf_keras as keras
-from gpflow.utilities import print_summary, set_trainable
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 from queens.utils.logger_settings import log_init_args
+from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
 
-# suppress tensorflow warnings
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 _logger = logging.getLogger(__name__)
-tf.get_logger().setLevel(logging.ERROR)
+
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import gpflow as gpf
+    import tensorflow as tf
+else:
+    from queens.utils.import_utils import LazyLoader
+
+    tf = LazyLoader("tensorflow")
+    keras = LazyLoader("tf_keras")
+    gpf = LazyLoader("gpflow")
+
+    configure_tensorflow(tf)
+    configure_keras(keras)
 
 
 class GPflowSVGPModel(SurrogateModel):
@@ -151,7 +159,7 @@ class GPflowSVGPModel(SurrogateModel):
                         training_loss().numpy(),
                     )
 
-            print_summary(self.model[i])
+            gpf.utilities.print_summary(self.model[i])
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.
@@ -282,13 +290,13 @@ class GPflowSVGPModel(SurrogateModel):
             )
 
             if not self.train_inducing_points_location:
-                gpf.set_trainable(self.model[i].inducing_variable, False)
+                gpf.utilities.set_trainable(self.model[i].inducing_variable, False)
 
             if not self.train_likelihood_variance:
                 self.model[i].likelihood.variance.assign(
                     1.1e-6
                 )  # small value for numerical stability
-                set_trainable(self.model[i].likelihood.variance, False)
+                gpf.utilities.set_trainable(self.model[i].likelihood.variance, False)
 
             self.model[i].kernel.lengthscales = set_transform_function(
                 self.model[i].kernel.lengthscales,

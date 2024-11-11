@@ -1,22 +1,32 @@
 """Implementation of a heteroskedastic Gaussian process models using GPFlow."""
 
 import logging
-import os
+from typing import TYPE_CHECKING
 
-import gpflow as gpf
 import numpy as np
-import tensorflow as tf
 import tensorflow_probability as tfp
-import tf_keras as keras
-from gpflow.utilities import print_summary
 from sklearn.cluster import KMeans
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
+from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 _logger = logging.getLogger(__name__)
-tf.get_logger().setLevel(logging.ERROR)
+
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import gpflow as gpf
+    import tensorflow as tf
+    import tf_keras as keras
+else:
+    from queens.utils.import_utils import LazyLoader
+
+    tf = LazyLoader("tensorflow")
+    keras = LazyLoader("tf_keras")
+    gpf = LazyLoader("gpflow")
+
+    configure_tensorflow(tf)
+    configure_keras(keras)
 
 
 class HeteroskedasticGPModel(SurrogateModel):
@@ -282,7 +292,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         )
 
         _logger.info("The GPFlow model used in this analysis is constructed as follows:")
-        print_summary(self.model)
+        gpf.utilities.print_summary(self.model)
         _logger.info("\n")
 
     def _build_optimizer(self):
