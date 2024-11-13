@@ -1,30 +1,33 @@
 """Gaussian Neural Network regression model."""
 
 import logging
-import os
+from typing import TYPE_CHECKING
 
 import numpy as np
-import tensorflow as tf
 import tensorflow_probability as tfp
-import tf_keras as keras
 
 from queens.models.surrogate_models.surrogate_model import SurrogateModel
 from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
+from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
 from queens.utils.valid_options_utils import get_option
 from queens.visualization.gaussian_neural_network_vis import plot_loss
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tfd = tfp.distributions
-Dense = keras.layers.Dense
-keras.backend.set_floatx("float64")
-_logger = logging.getLogger(__name__)
-
-# Use GPU acceleration if possible
-if tf.test.gpu_device_name() != "/device:GPU:0":
-    _logger.debug("WARNING: GPU device not found.")
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import tensorflow as tf
+    import tf_keras as keras
 else:
-    _logger.debug("SUCCESS: Found GPU: %s", tf.test.gpu_device_name())
+    from queens.utils.import_utils import LazyLoader
+
+    tf = LazyLoader("tensorflow")
+    keras = LazyLoader("tf_keras")
+
+    configure_tensorflow(tf)
+    configure_keras(keras)
+
+_logger = logging.getLogger(__name__)
 
 
 class GaussianNeuralNetworkModel(SurrogateModel):
@@ -153,7 +156,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
         output_dim = self.y_train.shape[1]
 
         dense_architecture = [
-            Dense(
+            keras.layers.Dense(
                 int(num_nodes),
                 activation=activation,
                 kernel_initializer=self.kernel_initializer,
@@ -165,7 +168,7 @@ class GaussianNeuralNetworkModel(SurrogateModel):
 
         # Gaussian output layer
         output_layer = [
-            Dense(
+            keras.layers.Dense(
                 2 * output_dim,
                 activation="linear",
             ),

@@ -77,3 +77,33 @@ def get_module_class(module_options, valid_types, module_type_specifier="type"):
         module_class = get_option(valid_types, module_type)
 
     return module_class
+
+
+class LazyLoader:
+    """Lazy loader for modules that take long to load.
+
+    Inspired from https://stackoverflow.com/a/78312617
+    """
+
+    def __init__(self, module_name):
+        """Initialize the loader.
+
+        Args:
+            module_name (str): name of the module to be imported
+        """
+        self._module_name = module_name
+        self._module = None
+
+    def __getattr__(self, attr):
+        """Get attribute.
+
+        Args:
+            attr (str): Attribute name
+
+        Returns:
+            obj: attribute
+        """
+        if self._module is None:
+            self._module = importlib.import_module(self._module_name)
+
+        return getattr(self._module, attr)

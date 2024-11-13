@@ -1,8 +1,17 @@
 """Utilis for gpflow."""
 
-import gpflow as gpf
+from typing import TYPE_CHECKING
+
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import gpflow as gpf
+else:
+    from queens.utils.import_utils import LazyLoader
+
+    gpf = LazyLoader("gpflow")
 
 
 def init_scaler(unscaled_data):
