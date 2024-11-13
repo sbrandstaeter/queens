@@ -16,11 +16,7 @@ class LocalScheduler(DaskScheduler):
 
     @log_init_args
     def __init__(
-        self,
-        experiment_name,
-        num_jobs=1,
-        num_procs=1,
-        restart_workers=False,
+        self, experiment_name, num_jobs=1, num_procs=1, restart_workers=False, verbose=True
     ):
         """Initialize local scheduler.
 
@@ -30,6 +26,7 @@ class LocalScheduler(DaskScheduler):
             num_procs (int, opt): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
@@ -50,6 +47,7 @@ class LocalScheduler(DaskScheduler):
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,
+            verbose=verbose,
         )
 
     def restart_worker(self, worker):

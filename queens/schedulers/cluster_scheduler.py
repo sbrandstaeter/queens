@@ -69,6 +69,7 @@ class ClusterScheduler(DaskScheduler):
         cluster_internal_address=None,
         restart_workers=False,
         allowed_failures=5,
+        verbose=True,
     ):
         """Init method for the cluster scheduler.
 
@@ -88,6 +89,7 @@ class ClusterScheduler(DaskScheduler):
             restart_workers (bool): If true, restart workers after each finished job. For larger
                                     jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         self.remote_connection = remote_connection
         self.remote_connection.open()
@@ -190,6 +192,7 @@ class ClusterScheduler(DaskScheduler):
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,
+            verbose=verbose,
         )
 
     def restart_worker(self, worker):

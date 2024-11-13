@@ -19,7 +19,6 @@ class PoolScheduler(Scheduler):
 
     Attributes:
         pool (pathos pool): Multiprocessing pool.
-        verbose (bool): Verbosity of evaluations.
     """
 
     @log_init_args
@@ -29,15 +28,15 @@ class PoolScheduler(Scheduler):
         Args:
             experiment_name (str): name of the current experiment
             num_jobs (int, opt): Maximum number of parallel jobs
-            verbose (bool, opt): verbosity of evaluations
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_directory(experiment_name=experiment_name),
             num_jobs=num_jobs,
+            verbose=verbose,
         )
         self.pool = create_pool(num_jobs)
-        self.verbose = verbose
 
     def evaluate(self, samples, driver, job_ids=None):
         """Submit jobs to driver.
