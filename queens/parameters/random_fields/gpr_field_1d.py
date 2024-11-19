@@ -20,16 +20,13 @@ from typing import Iterable, List, Optional, Sequence, Union
 import gpflow
 import numpy as np
 import tensorflow as tf
-from check_shapes import check_shape as cs
-from check_shapes import check_shapes, inherit_check_shapes
+from check_shapes import inherit_check_shapes
 from gpflow.base import Parameter, TensorType
 from gpflow.config import default_int
 from gpflow.functions import Function, MeanFunction
 from gpflow.kernels.base import Combination, Kernel
 from gpflow.utilities import positive
-from scipy.spatial.distance import pdist, squareform
 
-from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.parameters.random_fields._random_field import RandomField
 
 _logger = logging.getLogger(__name__)
@@ -169,40 +166,22 @@ class DamagedBeam(MeanFunction, Function):
 
 
 class GPRRandomField1D(RandomField):
-    """Karhunen Loeve RandomField class.
+    """Gaussian Random Field with GPFlow.
 
     Attributes:
-            nugget_variance (float): Nugget variance for the random field (lower bound for
-                                        diagonal values of the covariance matrix).
-            explained_variance (float): Explained variance by the eigen decomposition.
             std (float): Hyperparameter for standard-deviation of random field
             corr_length (float): Hyperparameter for the correlation length
-            cut_off (float): Lower value limit of covariance matrix entries
-            mean (np.array): Mean at coordinates of random field, can be a single constant
-            cov_matrix (np.array): Covariance matrix to compute eigendecomposition on
-            eigenbasis (np.array): Eigenvectors of covariance matrix, weighted by the eigenvalues
-            eigenvalues (np.array): Eigenvalues of covariance matrix
-            eigenvectors (np.array): Eigenvectors of covariance matrix
-            dimension (int): Dimension of the latent space
     """
 
     def __init__(
         self,
         coords,
-        mean=0.0,
         std=1.0,
-        std_peak=10,
         corr_length=0.3,
-        explained_variance=None,
-        latent_dimension=None,
-        cut_off=0.0,
         kernel="RBF",
         customkernel=None,
-        nu=1.5,
-        alpha=1.0,
         X=[],
         y=[],
-        noise_std=1e-5,
         fit=False,
         mu=0,
         sigma=0,
@@ -216,38 +195,24 @@ class GPRRandomField1D(RandomField):
 
         Args:
             coords (dict): Dictionary with coordinates of discretized random field and the
-            mean (np.array): Mean at coordinates of random field, can be a single constant
             std (float): Hyperparameter for standard-deviation of random field
             corr_length (float): Hyperparameter for the correlation length
-            explained_variance (float): Explained variance of by the eigen decomposition,
-                                        mutually exclusive argument with latent_dimension
-            latent_dimension (int): Dimension of the latent space,
-                                    mutually exclusive argument with explained_variance
-            cut_off (float): Lower value limit of covariance matrix entries
         """
         super().__init__(coords)
-        self.nugget_variance = 1e-9
-        self.explained_variance = explained_variance
+
+        self.sample_coords = np.stack(
+            (self.coords["coords"][:, 0]),
+            axis=-1,
+        ).reshape(
+            -1, 1
+        )[:, None]
+        self.dimension = self.sample_coords.shape[1]
         self.std = std
-        self.std_peak = std_peak
         self.corr_length = corr_length
-        self.cut_off = cut_off
-        self.mean = mean
-        self.cov_matrix = None
-        self.eigenbasis = None
-        self.eigenvalues = None
-        self.eigenvectors = None
         self.kernel = kernel
-        self.nu = nu
-        self.alpha = alpha
         self.X = X
         self.y = y
-        self.noise_std = noise_std
         self.fit = fit
-        if (latent_dimension is None and explained_variance is None) or (
-            latent_dimension is not None and explained_variance is not None
-        ):
-            raise KeyError("Specify either dimension or explained variance")
         if kernel == "RBF":
             self.kernel = gpflow.kernels.RBF(variance=self.std**2, lengthscales=self.corr_length)
         if kernel == "Matern":
@@ -258,15 +223,11 @@ class GPRRandomField1D(RandomField):
             self.kernel = gpflow.kernels.SquaredExponential(
                 variance=self.std**2, lengthscales=self.corr_length
             )
-        if customkernel != None:
+        if customkernel is not None:
             self.kernel = customkernel
 
         if kernel != "RBF" and kernel != "Matern" and kernel != "SE" and customkernel == None:
             raise KeyError("Kernel must be RBF, Matern, or SE (Squared Exponential)")
-        if latent_dimension is not None:
-            self.dimension = latent_dimension
-        else:
-            self.dimension = None
 
         damaged_beam = DamagedBeam(
             mu=mu,
@@ -277,8 +238,6 @@ class GPRRandomField1D(RandomField):
             jump=jump,
             width=width,
         )
-        self.calculate_covariance_matrix()
-        self.eigendecomp_cov_matrix()
         if self.fit == True:
             self.distribution = gpflow.models.GPR(
                 (X, y), kernel=self.kernel, mean_function=damaged_beam
@@ -301,9 +260,7 @@ class GPRRandomField1D(RandomField):
         Returns:
             samples (np.ndarray): Drawn samples
         """
-        mean_distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
-        return mean_distribution.draw(num_samples)
-        # return np.zeros(num_samples, self.dimension)
+        return np.arange(start=0, stop=num_samples, dtype=int)[:, None]
 
     def logpdf(self, samples):
         """Get joint logpdf of latent space.
@@ -338,14 +295,8 @@ class GPRRandomField1D(RandomField):
         Returns:
             samples_expanded (np.ndarray): Expanded representation of sample
         """
-        sample_coords = np.stack(
-            (self.coords["coords"][:, 0]),
-            axis=-1,
-        ).reshape(
-            -1, 1
-        )[:, None]
         samples_expanded = np.array(
-            self.distribution.predict_f_samples(sample_coords, num_samples=1)
+            self.distribution.predict_f_samples(self.sample_coords, num_samples=1)
         ).reshape(1, -1)
         return samples_expanded
 
@@ -359,48 +310,4 @@ class GPRRandomField1D(RandomField):
             latent_grad (np.ndarray): Graident of the field with respect to the latent
             parameters
         """
-        latent_grad = np.matmul(upstream_gradient, self.eigenbasis)
-        return latent_grad
-
-    def calculate_covariance_matrix(self):
-        """Calculate discretized covariance matrix.
-
-        Based on the kernel description of the random field, build its
-        covariance matrix using the external geometry and coordinates.
-        """
-        # assume squared exponential kernel
-        distance = squareform(pdist(self.coords["coords"], "sqeuclidean"))
-        # covariance = * np.exp(-distance / (2 * self.corr_length**2))
-        covariance = np.array(self.kernel(self.coords["coords"]))
-        covariance[covariance < self.cut_off] = 0
-        self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)
-
-    def eigendecomp_cov_matrix(self):
-        """Decompose and then truncate the random field.
-
-        According to desired variance fraction that should be
-        covered/explained by the truncation.
-        """
-        # compute eigendecomposition
-        eig_val, eig_vec = np.linalg.eigh(self.cov_matrix)
-        eigenvalues = np.flip(eig_val)
-        eigenvectors = np.flip(eig_vec, axis=1)
-
-        if self.dimension is None:
-            eigenvalues_normed = eigenvalues / np.sum(eigenvalues)
-            dimension = (np.cumsum(eigenvalues_normed) < self.explained_variance).argmin() + 1
-            if dimension == 1 and eigenvalues_normed[0] <= self.explained_variance:
-                raise ValueError("Expansion failed.")
-
-            self.dimension = dimension
-
-        # truncated eigenfunction base
-        self.eigenvalues = eigenvalues[: self.dimension]
-        self.eigenvectors = eigenvectors[:, : self.dimension]
-
-        if self.explained_variance is None:
-            self.explained_variance = np.sum(self.eigenvalues) / np.sum(eigenvalues)
-            _logger.info("Explained variance is %f", self.explained_variance)
-
-        # weight the eigenbasis with the eigenvalues
-        self.eigenbasis = self.eigenvectors * np.sqrt(self.eigenvalues)
+        raise NotImplementedError
