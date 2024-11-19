@@ -18,7 +18,7 @@ BACI_BUILD_DIR="$(dirname {{ executable }})"
 
 INPUT={{ input_file }}
 BACI_OUTPUT_DIR={{ output_dir }}
-OUTPUTPREFIX="$(basename {{ output_file }})"
+OUTPUT_PREFIX="$(basename {{ output_file }})"
 
 
 ##########################################
