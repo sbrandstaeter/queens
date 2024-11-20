@@ -16,9 +16,9 @@
 
 
 import logging
-from asyncio import timeout
 from dataclasses import dataclass
 from pathlib import Path
+from subprocess import TimeoutExpired
 
 from queens.drivers.driver import Driver
 from queens.utils.exceptions import SubprocessError
@@ -243,8 +243,18 @@ class JobscriptDriver(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
-            self._run_executable(execute_cmd)
+            try:
+                execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
+                self._run_executable(execute_cmd)
+            except TimeoutExpired as timeout_expired_error:
+                _logger.warning("Job %d timed out:", job_id)
+                _logger.warning("%s", timeout_expired_error)
+                with error_file.open("a") as file:
+                    file.write(f"Job {job_id} timed out:\n")
+                    file.write(f"{timeout_expired_error}")
+                results = (None, None)
+                metadata.outputs = results
+                return results
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
