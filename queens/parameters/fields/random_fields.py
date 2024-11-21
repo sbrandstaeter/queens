@@ -22,10 +22,16 @@ class RandomField(metaclass=abc.ABCMeta):
             coords (dict): Dictionary with coordinates of discretized random field and the
                            corresponding keys
         """
+        # ensure that coordinates are an ndarray
+        if not isinstance(coords["coords"], np.ndarray):
+            coords["coords"] = np.array(coords["coords"])
+
+        # ensure correct shape:
+        # convert coords to a 2D column vector if necessary
+        if coords["coords"].ndim == 1:
+            coords["coords"] = np.atleast_2d(coords["coords"]).T
+
         self.coords = coords
-        # check if coords are 1D vector
-        if np.array(coords["coords"]).ndim == 1:
-            self.coords["coords"] = np.array(coords["coords"]).reshape((len(coords["coords"])), 1)
 
         self.dim_coords = len(coords["keys"])
         self.dimension = None
