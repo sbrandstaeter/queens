@@ -117,8 +117,6 @@ class DamagedBeam(MeanFunction, Function):
         sigma: TensorType = None,
         relative_peak: TensorType = None,
         offset: TensorType = None,
-        jump: TensorType = None,
-        scale: TensorType = None,
         width: TensorType = None,
     ) -> None:
         super().__init__()
@@ -127,16 +125,12 @@ class DamagedBeam(MeanFunction, Function):
         sigma = np.ones(1) if sigma is None else sigma
         relative_peak = np.ones(1) if relative_peak is None else relative_peak
         offset = np.zeros(1) if offset is None else offset
-        jump = np.zeros(1) if jump is None else jump
-        scale = np.ones(1) if scale is None else scale
         width = np.zeros(1) if width is None else width
 
         self.mu = Parameter(mu)
         self.sigma = Parameter(sigma)
         self.relative_peak = Parameter(relative_peak)
         self.offset = Parameter(offset)
-        self.jump = Parameter(jump)
-        self.scale = Parameter(scale)
         self.width = Parameter(width)
 
     @inherit_check_shapes
@@ -187,8 +181,6 @@ class GPRRandomField1D(RandomField):
         sigma=0,
         relative_peak=0,
         offset=0,
-        scale=0,
-        jump=0,
         width=0,
     ):
         """Initialize GPR object.
@@ -200,12 +192,7 @@ class GPRRandomField1D(RandomField):
         """
         super().__init__(coords)
 
-        self.sample_coords = np.stack(
-            (self.coords["coords"][:, 0]),
-            axis=-1,
-        ).reshape(
-            -1, 1
-        )[:, None]
+        self.sample_coords = self.coords["coords"]
         self.dimension = self.sample_coords.shape[1]
         self.std = std
         self.corr_length = corr_length
@@ -234,8 +221,6 @@ class GPRRandomField1D(RandomField):
             sigma=sigma,
             relative_peak=relative_peak,
             offset=offset,
-            scale=scale,
-            jump=jump,
             width=width,
         )
         if self.fit == True:
