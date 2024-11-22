@@ -4,6 +4,8 @@ import abc
 
 import numpy as np
 
+from queens.utils.numpy_utils import at_least_2d
+
 
 class RandomField(metaclass=abc.ABCMeta):
     """RandomField meta class.
@@ -23,13 +25,11 @@ class RandomField(metaclass=abc.ABCMeta):
                            corresponding keys
         """
         # ensure that coordinates are an ndarray
-        if not isinstance(coords["coords"], np.ndarray):
-            coords["coords"] = np.array(coords["coords"])
+        coords["coords"] = np.array(coords["coords"], copy=False)
 
         # ensure correct shape:
         # convert coords to a 2D column vector if necessary
-        if coords["coords"].ndim == 1:
-            coords["coords"] = np.atleast_2d(coords["coords"]).T
+        coords["coords"] = at_least_2d(coords["coords"])
 
         self.coords = coords
 
