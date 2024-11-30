@@ -18,20 +18,23 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_dir (Path): Path to QUEENS experiment directory.
         num_jobs (int): Maximum number of parallel jobs
         next_job_id (int): Next job ID.
+        verbose (bool): Verbosity of evaluations
     """
 
-    def __init__(self, experiment_name, experiment_dir, num_jobs):
+    def __init__(self, experiment_name, experiment_dir, num_jobs, verbose=True):
         """Initialize scheduler.
 
         Args:
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
             num_jobs (int): Maximum number of parallel jobs
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         self.experiment_name = experiment_name
         self.experiment_dir = experiment_dir
         self.num_jobs = num_jobs
         self.next_job_id = 0
+        self.verbose = verbose
 
     @abc.abstractmethod
     def evaluate(self, samples, driver, job_ids=None):

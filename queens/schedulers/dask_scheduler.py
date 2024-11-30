@@ -9,6 +9,7 @@ import tqdm
 from dask.distributed import as_completed
 
 from queens.schedulers.scheduler import Scheduler
+from queens.utils.print_utils import get_str_table
 
 _logger = logging.getLogger(__name__)
 
@@ -25,7 +26,14 @@ class DaskScheduler(Scheduler):
     """
 
     def __init__(
-        self, experiment_name, experiment_dir, num_jobs, num_procs, client, restart_workers
+        self,
+        experiment_name,
+        experiment_dir,
+        num_jobs,
+        num_procs,
+        client,
+        restart_workers,
+        verbose=True,
     ):
         """Initialize scheduler.
 
@@ -36,9 +44,13 @@ class DaskScheduler(Scheduler):
             num_procs (int): number of processors per job
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             restart_workers (bool): If true, restart workers after each finished job
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         super().__init__(
-            experiment_name=experiment_name, experiment_dir=experiment_dir, num_jobs=num_jobs
+            experiment_name=experiment_name,
+            experiment_dir=experiment_dir,
+            num_jobs=num_jobs,
+            verbose=verbose,
         )
         self.num_procs = num_procs
         self.client = client
@@ -79,6 +91,9 @@ class DaskScheduler(Scheduler):
             experiment_name=self.experiment_name,
         )
 
+        # The theoretical number of sequential jobs
+        num_sequential_jobs = int(np.ceil(len(samples) / self.num_jobs))
+
         results = {future.key: None for future in futures}
         with tqdm.tqdm(total=len(futures)) as progressbar:
             for future in as_completed(futures):
@@ -87,6 +102,23 @@ class DaskScheduler(Scheduler):
                 if self.restart_workers:
                     worker = list(self.client.who_has(future).values())[0]
                     self.restart_worker(worker)
+
+            if self.verbose:
+                elapsed_time = progressbar.format_dict["elapsed"]
+                averaged_time_per_job = elapsed_time / num_sequential_jobs
+
+                run_time_dict = {
+                    "number of jobs": len(samples),
+                    "number of parallel jobs": self.num_jobs,
+                    "number of procs": self.num_procs,
+                    "total elapsed time": f"{elapsed_time:.3e}s",
+                    "average time per parallel job": f"{averaged_time_per_job:.3e}s",
+                }
+                _logger.info(
+                    get_str_table(
+                        f"Batch summary for jobs {min(job_ids)} - {max(job_ids)}", run_time_dict
+                    )
+                )
 
         result_dict = {"result": [], "gradient": []}
         for result in results.values():
