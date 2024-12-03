@@ -73,6 +73,46 @@ class LogLinearLearningRateDecay(LearningRateDecay):
         return learning_rate
 
 
+class StepwiseLearningRateDecay(LearningRateDecay):
+    """Step-wise learning rate decay.
+
+    Attributes:
+        decay_factor (float): Decay factor
+        decay_interval (int): Decay interval
+        iteration (int): Iteration number
+    """
+
+    def __init__(self, decay_factor, decay_interval):
+        """Initialize StepwiseLearningRateDecay.
+
+        Args:
+            decay_factor (float): Decay factor
+            decay_interval (int): Decay interval
+        """
+        self.decay_factor = decay_factor
+        self.decay_interval = decay_interval
+        self.iteration = 0
+
+    def __call__(self, learning_rate, params, gradient):
+        """Adapt learning rate.
+
+        Args:
+            learning_rate (float): Current learning rate
+            params (np.array): Current parameters
+            gradient (np.array): Current gradient
+
+        Returns:
+            learning_rate (float): Adapted learning rate
+        """
+        if self.iteration >= self.decay_interval:
+            learning_rate *= self.decay_factor
+            self.iteration = 0
+            _logger.info("learning_rate=%.2e", learning_rate)
+        else:
+            self.iteration += 1
+        return learning_rate
+
+
 class DynamicLearningRateDecay:
     """Dynamic learning rate decay.
 
