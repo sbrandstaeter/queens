@@ -69,25 +69,22 @@ class MonteCarloIterator(Iterator):
 
                 # ----------------------------- WIP PLOT OPTIONS ----------------------------
                 if self.result_description["plot_results"] is True:
+                    _, ax = plt.subplots(figsize=(6, 4))
+
                     # Check for dimensionality of the results
-                    plt.rcParams["mathtext.fontset"] = "cm"
-                    plt.rcParams.update({"font.size": 23})
-                    _, ax = plt.subplots()
-
-                    if results["raw_output_data"]["result"][0].shape[0] > 1:
-                        for ele in results["raw_output_data"]["result"]:
-                            ax.plot(ele[:, 0], ele[:, 1])
-
-                        ax.set_xlabel(r"t [s]")
-                        ax.set_ylabel(r"$C_L(t)$")
+                    if results["raw_output_data"]["result"].shape[1] == 1:
+                        data = results["raw_output_data"]["result"]
+                        ax.hist(data, bins="auto")
+                        ax.set_xlabel(r"Output")
+                        ax.set_ylabel(r"Count [-]")
+                        plt.tight_layout()
+                        plt.savefig(self.global_settings.result_file(".png"))
                         plt.show()
                     else:
-                        data = results["raw_output_data"]["result"]
-                        ax.hist(data, bins=200)
-                        ax.set_xlabel(r"Count [-]")
-                        ax.set_xlabel(r"$C_L(t)$")
-                        plt.show()
-        # else:
+                        _logger.warning(
+                            "Plotting is not implemented yet for a multi-dimensional model output"
+                        )
+
         _logger.debug("Size of inputs %s", self.samples.shape)
         _logger.debug("Inputs %s", self.samples)
         _logger.debug("Size of outputs %s", self.output["result"].shape)
