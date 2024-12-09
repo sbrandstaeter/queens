@@ -7,4 +7,4 @@ Installation
 ------------
 For a quick installation guide, QUEENS users should refer to our `README.md <https://github.com/queens-py/queens/blob/main/README.md>`_.
 
-QUEENS contributors first need to follow this installation guide and then consult the instructions in our `CONTRIBUTING.md <https://github.com/queens-py/queens/blob/main/CONTRIBUTING.md>`_.
+QUEENS contributors should follow the installation guide and the instructions in our `CONTRIBUTING.md <https://github.com/queens-py/queens/blob/main/CONTRIBUTING.md>`_.
