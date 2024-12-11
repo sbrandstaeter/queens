@@ -12,6 +12,7 @@ pre-commit-hooks>=4.4.0
 liccheck
 sphinx
 nbsphinx
+pydata-sphinx-theme
 pandoc
 pip-tools
 commitizen>=3.12.0
