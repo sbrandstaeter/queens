@@ -19,6 +19,7 @@ import logging
 import time
 
 import numpy as np
+import pandas as pd
 import tqdm
 from dask.distributed import as_completed
 
@@ -139,7 +140,8 @@ class Dask(Scheduler):
             # We should remove this squeeze! It is only introduced for consistency with old test.
             result_dict["result"].append(np.atleast_1d(np.array(result[0]).squeeze()))
             result_dict["gradient"].append(result[1])
-        result_dict["result"] = np.array(result_dict["result"])
+        result_df = pd.DataFrame(result_dict["result"], dtype="float")
+        result_dict["result"] = result_df.values
         result_dict["gradient"] = np.array(result_dict["gradient"])
         return result_dict
 
