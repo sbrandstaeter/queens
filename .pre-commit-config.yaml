@@ -17,6 +17,13 @@ repos:
         entry: check-added-large-files
         language: python
         types: [text]
+      - id: check-license-header
+        name: check for correct license header
+        entry: licenseheaders
+        args: ["-t", "license_header.tmpl", '--files']
+        language: python
+        types: ["python"]
+        pass_filenames: true
       - id: pydocstyle
         name: pydocstyle
         entry: pydocstyle
