@@ -1,0 +1,6 @@
+header: # <1>
+  license:
+    content: | # <5>
+{{ license_header | indent(6, true) | safe }}
+  paths: # <7>
+    - '**/*.py'
