@@ -238,7 +238,7 @@ code_analysis:
     # create an rc file for the license header check
     - python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
     # use https://github.com/apache/skywalking-eyes to check for correct license headers
-    - docker run -it --rm -v $(pwd):/github/workspace apache/skywalking-eyes -c .licenserc.yaml header check | tee track_license_header_check.txt 2>&1
+    - docker run --rm -v $(pwd):/github/workspace apache/skywalking-eyes -c .licenserc.yaml header check | tee track_license_header_check.txt 2>&1
     - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt 2>&1
     - pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
     - python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
