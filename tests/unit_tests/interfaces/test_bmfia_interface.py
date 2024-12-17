@@ -194,7 +194,7 @@ def test_init():
 def test__init__():
     """Test the instantiation of the interface object."""
     instantiate_probabilistic_mappings = BmfiaInterface.instantiate_per_coordinate
-    num_processors_multi_processing = 3
+    num_processors_multi_processing = 2
     evaluate_method = BmfiaInterface.evaluate_per_coordinate
     evaluate_and_gradient_method = BmfiaInterface.evaluate_and_gradient_per_coordinate
     update_mappings_method = BmfiaInterface.update_mappings_per_coordinate
@@ -245,7 +245,7 @@ def test_build_approximation(
         return_value=dummy_plot_instance,
     )
 
-    default_bmfia_interface.num_processors_multi_processing = 3
+    default_bmfia_interface.num_processors_multi_processing = 2
 
     # Test with wrong input dimensions (2D Tensor) --> ValueError
     with pytest.raises(IndexError):
@@ -371,7 +371,7 @@ def test_train_probabilistic_mappings_in_parallel(
 
     # test with valid configuration
     num_coords = Z_LF_train.T.shape[0]
-    num_processors_multi_processing = 3
+    num_processors_multi_processing = 2
     return_state_list = BmfiaInterface.train_probabilistic_mappings_in_parallel(
         num_coords, num_processors_multi_processing, default_probabilistic_obj_lst
     )

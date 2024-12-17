@@ -74,7 +74,7 @@ def test_bmfia_smc_park(
         coordinate_labels=["x3", "x4"],
     )
     mf_interface = BmfiaInterface(
-        num_processors_multi_processing=4,
+        num_processors_multi_processing=2,
         probabilistic_mapping_type="per_coordinate",
     )
     stochastic_optimizer = Adam(
@@ -181,7 +181,7 @@ def test_bmfia_rpvi_gp_park(
         coordinate_labels=["x3", "x4"],
     )
     mf_interface = BmfiaInterface(
-        num_processors_multi_processing=4,
+        num_processors_multi_processing=2,
         probabilistic_mapping_type="per_coordinate",
     )
     stochastic_optimizer = Adam(
