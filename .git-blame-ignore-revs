@@ -41,3 +41,5 @@ ae98261320487d7a32e4557553e52d9463e0678f
 5f40982bdaa7dcf24f80e3372d6980250e0491b2
 # Apply string normalization of black formatter to code base
 bca2e54a0b42ce0b1a639e2ed42fbbcf0dc30bf0
+# Add license and copyright header
+c952316244d961ed4177cce2f6bf9eef46d4fde5
