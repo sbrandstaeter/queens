@@ -94,10 +94,3 @@ def main():
 # Example usage
 if __name__ == "__main__":
     main()
-## Define file paths and placeholder
-# template_file = ".gitlab/pipeline_utils/.licenserc_template.yaml"
-# text_file = "license_header.tmpl"
-# output_file = ".licenserc.yaml"
-# placeholder = "license_header"
-
-# render_template(template_file, text_file, output_file, placeholder)
