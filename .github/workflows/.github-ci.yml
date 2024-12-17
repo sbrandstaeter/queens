@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
+      - uses: mpi4py/setup-mpi@v1
       - name: build
         run: |
           $PYTHON_PACKAGE_MANAGER env create -f environment.yml
