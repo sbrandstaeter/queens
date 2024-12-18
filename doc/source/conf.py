@@ -1,5 +1,3 @@
-"""Configuration file for the Sphinx documentation builder."""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
