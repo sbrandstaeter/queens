@@ -10,16 +10,25 @@ on: [push]
 
 jobs:
   run_tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c:latest
+      # options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
-      - uses: mpi4py/setup-mpi@v1
       - name: build
         run: |
+          pwd
+          echo ~
+          whoami
+          ls /home
+          ls /home/user
+          ln -s home/user/4C/build/4C config/4C
+          ls config/
           $PYTHON_PACKAGE_MANAGER env create -f environment.yml
           $PYTHON_PACKAGE_MANAGER activate queens
           pip install -e .[develop]
@@ -37,4 +46,4 @@ jobs:
       - name: tests
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
-          pytest -v -m "unit_tests or integration_tests" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes --junitxml=test_junit.xml
+          pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes --junitxml=test_junit.xml
