@@ -23,6 +23,7 @@ from queens.utils.path_utils import (
     PATH_TO_SOURCE,
     check_if_path_exists,
     create_folder_if_not_existent,
+    is_empty,
     relative_path_from_queens,
     relative_path_from_source,
 )
@@ -111,3 +112,34 @@ def test_relative_path_from_queens():
     assert extract_last_dirs(path_from_queens, num_dirs) == extract_last_dirs(
         current_folder, num_dirs
     )
+
+
+def test_is_empty_with_empty_string():
+    """Expected True for an empty string."""
+    assert is_empty("")
+
+
+def test_is_empty_with_non_empty_string():
+    """Expected False for a non-empty string."""
+    assert not is_empty("not_empty")
+
+
+def test_is_empty_with_path_object():
+    """Expected False for a Path object."""
+    assert not is_empty(Path("/some/path"))
+
+
+def test_is_empty_with_empty_list():
+    """Expected True for an empty list."""
+    assert is_empty([])
+
+
+def test_is_empty_with_non_empty_list():
+    """Expected False for a non-empty list."""
+    assert not is_empty(["item"])
+
+
+def test_is_empty_with_invalid_type():
+    """Expected TypeError for invalid type."""
+    with pytest.raises(TypeError, match="paths must be a string, a Path object, or a list."):
+        is_empty(123)  # Integer input to trigger TypeError

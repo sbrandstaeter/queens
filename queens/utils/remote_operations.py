@@ -28,7 +28,7 @@ import cloudpickle
 from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
-from queens.utils.path_utils import PATH_TO_QUEENS
+from queens.utils.path_utils import PATH_TO_QUEENS, is_empty
 from queens.utils.rsync import assemble_rsync_command
 from queens.utils.run_subprocess import start_subprocess
 
@@ -240,27 +240,30 @@ class RemoteConnection(Connection):
             exclude (str, list): options to exclude
             filters (str): filters for rsync
         """
-        host = f"{self.user}@{self.host}"
-        _logger.debug("Copying from %s to %s", source, destination)
-        remote_shell_command = None
-        if self.gateway is not None:
-            remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
-            _logger.debug("Using remote shell command %s", remote_shell_command)
-        rsync_cmd = assemble_rsync_command(
-            source,
-            destination,
-            verbose=verbose,
-            archive=True,
-            exclude=exclude,
-            filters=filters,
-            rsh=remote_shell_command,
-            host=host,
-            rsync_options=["--out-format='%n'", "--checksum"],
-        )
-        # Run rsync command
-        result = self.local(rsync_cmd, in_stream=False)
-        _logger.debug(result.stdout)
-        _logger.debug("Copying complete.")
+        if not is_empty(source):
+            host = f"{self.user}@{self.host}"
+            _logger.debug("Copying from %s to %s", source, destination)
+            remote_shell_command = None
+            if self.gateway is not None:
+                remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
+                _logger.debug("Using remote shell command %s", remote_shell_command)
+            rsync_cmd = assemble_rsync_command(
+                source,
+                destination,
+                verbose=verbose,
+                archive=True,
+                exclude=exclude,
+                filters=filters,
+                rsh=remote_shell_command,
+                host=host,
+                rsync_options=["--out-format='%n'", "--checksum"],
+            )
+            # Run rsync command
+            result = self.local(rsync_cmd, in_stream=False)
+            _logger.debug(result.stdout)
+            _logger.debug("Copying complete.")
+        else:
+            _logger.debug("List of source files was empty. Did not copy anything.")
 
     def build_remote_environment(
         self,

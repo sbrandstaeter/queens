@@ -86,3 +86,14 @@ def check_if_path_exists(path, error_message=""):
         raise FileNotFoundError(error_message + f"\nPath {path} does not exist.")
 
     return path_exists
+
+
+def is_empty(paths):
+    """Check whether paths is empty.
+
+    Args:
+        paths (str, Path, list): (list of) path like objects
+    """
+    if not isinstance(paths, (str, Path, list)):
+        raise TypeError("paths must be a string, a Path object, or a list.")
+    return not bool(paths)

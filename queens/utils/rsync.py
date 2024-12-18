@@ -14,9 +14,13 @@
 #
 """Rsync utils."""
 
+import logging
 from pathlib import Path
 
+from queens.utils.path_utils import is_empty
 from queens.utils.run_subprocess import run_subprocess
+
+_logger = logging.getLogger(__name__)
 
 
 def assemble_rsync_command(
@@ -100,16 +104,19 @@ def rsync(
         host (str): host where to copy the files to
         rsync_options (list): additional rsync options
     """
-    command = assemble_rsync_command(
-        source=source,
-        destination=destination,
-        archive=archive,
-        exclude=exclude,
-        filters=filters,
-        verbose=verbose,
-        rsh=rsh,
-        host=host,
-        rsync_options=rsync_options,
-    )
+    if not is_empty(source):
+        command = assemble_rsync_command(
+            source=source,
+            destination=destination,
+            archive=archive,
+            exclude=exclude,
+            filters=filters,
+            verbose=verbose,
+            rsh=rsh,
+            host=host,
+            rsync_options=rsync_options,
+        )
 
-    run_subprocess(command)
+        run_subprocess(command)
+    else:
+        _logger.debug("List of source files was empty. Did not copy anything.")
