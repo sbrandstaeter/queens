@@ -2,7 +2,6 @@
 ---
 #---------------------------------------------------------------------------------------------------
 env:
-  UBUNTU_TESTS: "1"  # Run integration and unit tests on Ubuntu machines
   TEST_TIMING_OPTION: ""  # Set the option if local test should be timed or not. Default is off.
   PYTHON_PACKAGE_MANAGER: "conda"  # Python package manager to create the python environments
 name: github_ci
@@ -10,7 +9,7 @@ name: github_ci
 on: [push]
 
 jobs:
-  build:
+  run_tests:
     runs-on: ubuntu-20.04
     defaults:
       run:
