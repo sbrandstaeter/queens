@@ -16,6 +16,7 @@
 
 import abc
 import logging
+from pathlib import Path
 
 _logger = logging.getLogger(__name__)
 
@@ -38,6 +39,11 @@ class Driver(metaclass=abc.ABCMeta):
         self.parameters = parameters
         if files_to_copy is None:
             files_to_copy = []
+        if not isinstance(files_to_copy, list):
+            raise TypeError("files_to_copy must be a list")
+        for file_to_copy in files_to_copy:
+            if not isinstance(file_to_copy, (str, Path)):
+                raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
     @abc.abstractmethod

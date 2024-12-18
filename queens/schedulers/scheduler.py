@@ -67,8 +67,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         """Copy file to experiment directory.
 
         Args:
-            paths (Path, list): paths to files or directories that should be copied to experiment
-                                directory
+            paths (str, Path, list): paths to files or directories that should be copied to
+                                     experiment directory
         """
         destination = f"{self.experiment_dir}/"
         rsync(paths, destination)
