@@ -6,7 +6,7 @@ env:
   PYTHON_PACKAGE_MANAGER: "conda"  # Python package manager to create the python environments
 name: github_ci
 
-on: [push]
+on: [pull_request]
 
 jobs:
   run_tests:
