@@ -27,7 +27,6 @@ jobs:
           ln -s /home/user/4C/build/4C config/4C
           ln -s /home/user/4C/build/post_ensight config/post_ensight
           ln -s /home/user/4C/build/post_processor config/post_processor
-          # /usr/bin/mpirun --bind-to none --use-hwthread-cpus -np 2 config/4C /home/user/4C/tests/input_files/solid_runtime_hex8.dat out
           $PYTHON_PACKAGE_MANAGER env create -f environment.yml
           $PYTHON_PACKAGE_MANAGER activate queens
           pip install -e .[develop]
