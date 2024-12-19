@@ -64,6 +64,7 @@ def test_fourc_mc(
         input_templates=fourc_input_file_template,
         executable=fourc_executable,
         data_processor=data_processor,
+        mpi_cmd="/usr/bin/mpirun --bind-to none --use-hwthread-cpus",
     )
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = MonteCarloIterator(
