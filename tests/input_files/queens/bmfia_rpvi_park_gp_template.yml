@@ -67,7 +67,7 @@ mf_approx:
   stochastic_optimizer_name: gp_optimizer
 bmfia_interface:
   type: bmfia_interface
-  num_processors_multi_processing: 4
+  num_processors_multi_processing: 2
   probabilistic_mapping_type: per_coordinate
 bmfia_iterator:
   type: bmfia
