@@ -2,9 +2,9 @@
 This is a simple test that tests the extrapolation of stressees from Gauss points to nodes for a
 hex8 discretization
 
-4C git SHA1: b23a601ba839ee3749c44a8d4436fb7c509f9d69
--------------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+tested date: 19.12.2024
+-------------------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -29,7 +29,7 @@ NAME                            Structure_Solver
 SOLVER                          Superlu
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     1
 RESTARTEVRY                     1
@@ -85,4 +85,3 @@ NODE 12 COORD 2.0 1.0 1.0
 ------------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear
 2 SOLID HEX8 5 9 10 6 7 11 12 8 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

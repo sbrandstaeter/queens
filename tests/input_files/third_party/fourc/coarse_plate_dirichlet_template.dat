@@ -11,8 +11,8 @@ created by pre_exodus
 DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
---------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+--------------------------------------------------------PROBLEM TYPE
+PROBLEMTYPE                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
@@ -23,7 +23,7 @@ STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics
+DYNAMICTYPE                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     0
 NLNSOL                          fullnewton
@@ -484,5 +484,3 @@ NODE       121 COORD -1.2500000000000000e+01 -1.2500000000000000e+01  0.00000000
 ---------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------ELECTROMAGNETIC ELEMENTS
 -------------------------------------------------------ARTERY ELEMENTS
----------------------------------------------------------------END
-// END
