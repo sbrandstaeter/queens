@@ -14,6 +14,8 @@
 #
 """Test 4C with RF materials."""
 
+import logging
+
 import numpy as np
 import pytest
 
@@ -26,7 +28,10 @@ from queens.models.simulation_model import SimulationModel
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
-from queens.utils.io_utils import load_result
+from queens.utils.config_directories import experiment_directory
+from queens.utils.io_utils import load_result, read_file
+
+_logger = logging.getLogger(__name__)
 
 
 class DummyKLField(KarhunenLoeveRandomField):
@@ -128,9 +133,20 @@ def test_write_random_material_to_dat(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    # Check if we got the expected results
-    np.testing.assert_array_almost_equal(results["mean"], expected_mean, decimal=8)
-    np.testing.assert_array_almost_equal(results["var"], expected_var, decimal=8)
+    try:
+        # Check if we got the expected results
+        np.testing.assert_array_almost_equal(results["mean"], expected_mean, decimal=8)
+        np.testing.assert_array_almost_equal(results["var"], expected_var, decimal=8)
+    except (AssertionError, KeyError) as error:
+        experiment_dir = experiment_directory(global_settings.experiment_name)
+        job_dir = experiment_dir / "0"
+        _logger.info(list(job_dir.iterdir()))
+        output_dir = job_dir / "output"
+        _logger.info(list(output_dir.iterdir()))
+
+        _logger.info(read_file(output_dir / "test_write_random_material_to_dat_0.err"))
+        _logger.info(read_file(output_dir / "test_write_random_material_to_dat_0.log"))
+        raise error
 
 
 @pytest.fixture(name="expected_mean")

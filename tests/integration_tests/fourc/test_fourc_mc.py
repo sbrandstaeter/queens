@@ -14,6 +14,8 @@
 #
 """Test 4C run."""
 
+import logging
+
 import numpy as np
 
 from queens.data_processor.data_processor_pvd import DataProcessorPvd
@@ -24,7 +26,10 @@ from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
-from queens.utils.io_utils import load_result
+from queens.utils.config_directories import experiment_directory
+from queens.utils.io_utils import load_result, read_file
+
+_logger = logging.getLogger(__name__)
 
 
 def test_fourc_mc(
@@ -76,7 +81,18 @@ def test_fourc_mc(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    # assert statements
-    np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
-    )
+    try:
+        # assert statements
+        np.testing.assert_array_almost_equal(
+            results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
+        )
+    except (AssertionError, KeyError) as error:
+        experiment_dir = experiment_directory(global_settings.experiment_name)
+        job_dir = experiment_dir / "0"
+        _logger.info(list(job_dir.iterdir()))
+        output_dir = job_dir / "output"
+        _logger.info(list(output_dir.iterdir()))
+
+        _logger.info(read_file(output_dir / "test_fourc_mc_0.err"))
+        _logger.info(read_file(output_dir / "test_fourc_mc_0.log"))
+        raise error
