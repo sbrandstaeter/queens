@@ -29,8 +29,7 @@ Go over all the following points, and put an `X` in all the boxes that apply. If
 - [ ] My commit messages mention the appropriate issue numbers (advised but optional).
 - [ ] I mention the appropriate issue numbers in this PR.
 - [ ] I updated documentation where necessary.
-- [ ] I updated the README.md where necessary
-- [ ] I have added as (few,) small and fast tests as possible to cover my changes.
+- [ ] I have added tests to cover my changes.
 
 ## Additional Information
 <!--
