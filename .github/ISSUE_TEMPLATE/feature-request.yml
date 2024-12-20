@@ -1,5 +1,5 @@
 name: Issue
-description:
+description: A problem, feature request, or task to be addressed in the project.
 title: "<Please write a comprehensive title>"
 
 body:
