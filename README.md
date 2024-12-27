@@ -1,9 +1,9 @@
 
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/d155bc658c3f3f24984a2905e92c45781be84ee2/logo/queens_logo_night.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/d155bc658c3f3f24984a2905e92c45781be84ee2/logo/queens_logo_day.svg">
-  <img alt="QUEENS logo" src="https://raw.githubusercontent.com/queens-py/queens-design/d155bc658c3f3f24984a2905e92c45781be84ee2/logo/queens_logo_night.svg" width="300">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_day.svg">
+  <img alt="QUEENS logo" src="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg" width="300">
 </picture>
 </div>
 
