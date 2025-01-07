@@ -113,7 +113,7 @@ class StepwiseLearningRateDecay(LearningRateDecay):
         return learning_rate
 
 
-class DynamicLearningRateDecay:
+class DynamicLearningRateDecay(LearningRateDecay):
     """Dynamic learning rate decay.
 
     Attributes:
