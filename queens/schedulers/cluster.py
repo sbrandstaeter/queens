@@ -31,7 +31,7 @@ _logger = logging.getLogger(__name__)
 VALID_WORKLOAD_MANAGERS = {
     "slurm": {
         "dask_cluster_cls": SLURMCluster,
-        "job_extra_directives": lambda nodes, cores: f"--ntasks={nodes * cores}",
+        "job_extra_directives": lambda nodes, cores: f"--nodes={nodes} --ntasks-per-node={cores}",
         "job_directives_skip": [
             "#SBATCH -n 1",
             "#SBATCH --mem=",
