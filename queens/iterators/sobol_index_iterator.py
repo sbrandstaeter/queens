@@ -41,7 +41,7 @@ class SobolIndexIterator(Iterator):
         num_samples (int): Number of samples.
         calc_second_order (bool): Whether to calculate second-order sensitivities.
         skip_values (int or None): Number of points in Sobol' sequence to skip, ideally a value of
-                                   base 2 (default: 1024)
+                                   base 2 (default: 1024).
         num_bootstrap_samples (int): Number of bootstrap samples for confidence intervals.
         confidence_level (float): Confidence level for the intervals.
         result_description (dict): Description of the desired results.
@@ -80,7 +80,7 @@ class SobolIndexIterator(Iterator):
             confidence_level (float): Confidence level for intervals.
             result_description (dict): Description of the desired results.
             skip_values (int or None): Number of points in Sobol' sequence to skip, ideally a value
-                                       of base 2 (default: 1024)
+                                       of base 2 (default: 1024).
         """
         super().__init__(model, parameters, global_settings)
 
