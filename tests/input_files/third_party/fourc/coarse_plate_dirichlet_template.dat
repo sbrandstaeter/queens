@@ -23,9 +23,9 @@ STRUCT_STRAIN                   Yes
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYPE                      Statics
-RESULTSEVRY                     1
-RESTARTEVRY                     0
+DYNAMICTYPE                     Statics
+RESULTSEVERY                    1
+RESTARTEVERY                    0
 NLNSOL                          fullnewton
 TIMESTEP                        0.025
 NUMSTEP                         40
@@ -41,7 +41,7 @@ TOLDISP                         1.0E-06
 TOLRES                          1.0E-06
 MAXITER                         200
 UZAWAPARAM                      1.0
-RESEVRYERGY			1
+RESEVERYERGY                    1
 -------------------------------------------------------------------SOLVER 1
 NAME                            No_Name
 SOLVER                          UMFPACK
