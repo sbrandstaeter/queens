@@ -53,6 +53,7 @@ pip install -e .
 ## :crown: Workflow example
 
 Let's consider a parallelized Monte Carlo simulation of the [Ishigami function](https://www.sfu.ca/~ssurjano/ishigami.html):
+<!---example marker, do not remove this comment-->
 ```python
 from queens.distributions import BetaDistribution, NormalDistribution, UniformDistribution
 from queens.drivers import FunctionDriver
@@ -93,6 +94,7 @@ if __name__ == "__main__":
     # Start QUEENS run
     run_iterator(iterator, global_settings=global_settings)
 ```
+<!---example marker, do not remove this comment-->
 
 <div align="center">
 <img src="readme_images/monte_carlo_uq.png" alt="QUEENS logo" width="500"/>
