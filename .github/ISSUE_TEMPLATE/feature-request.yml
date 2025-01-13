@@ -8,6 +8,11 @@ body:
       label: "Description of the Issue:"
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: >
+        Please remember to assign at least the mandatory labels:
+        status, topic, and type.
   - type: textarea
     attributes:
       label: "Proposed Solution:"
