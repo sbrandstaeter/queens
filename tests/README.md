@@ -16,23 +16,23 @@ Therefore, we test the QUEENS code base
 ## :running_woman: Running tests
 QUEENS is tested using [pytest](https://docs.pytest.org/en/stable/index.html). For a comprehensive list of pytest commands, see [here](https://docs.pytest.org/en/stable/how-to/usage.html). Some additional useful commands to test QUEENS are listed in the following:
 
-| Description | Command |
-| ----------- | ----------- |
-| Test parallelly using pytest-xdist | `pytest -n <num_workers>` |
-| Test with verbose output | `pytest -ra -v` |
-| Test with logging output | `pytest -o log_cli=true --log-cli-level=INFO` |
-| Generate a coverage report | `pytest --cov-report=html --cov` |
-| Test only the last failed | `pytest --lf` |
+| Test                          | Command                                       |
+| ----------------------------- | --------------------------------------------- |
+| In parallel with pytest-xdist | `pytest -n <num_workers>`                     |
+| With verbose output           | `pytest -ra -v`                               |
+| With logging output           | `pytest -o log_cli=true --log-cli-level=INFO` |
+| With coverage report          | `pytest --cov-report=html --cov`              |
+| Only the last failed          | `pytest --lf`                                 |
 
 ### :bookmark: Pytest markers
 In QUEENS, tests are organized using pytest markers. This allows you to run all tests in a group with a single command:
 
-| Description| Command   |
-| ----------- | ----------- |
-| Unit tests | `pytest -m unit_tests` |
-| Integration tests without 4C | `pytest -m integration_tests` |
-| Integration tests with 4C (see below) | `pytest -m integration_tests_fourc` |
-|Get a list of all available markers| `pytest --markers` |
+| Description                     | Command                             |
+| ------------------------------- | ----------------------------------- |
+| Unit tests                      | `pytest -m unit_tests`              |
+| Integration tests               | `pytest -m integration_tests`       |
+| 4C integration test (see below) | `pytest -m integration_tests_fourc` |
+| List markers                    | `pytest --markers`                  |
 
 ### :four_leaf_clover: Integration tests with 4C
 For the integration tests in QUEENS that require the multiphysics simulation framework [4C](https://github.com/4C-multiphysics/4C), the user needs to create a **symbolic link** to the 4C-executable and store it under `<queens-base-dir>/config`:
