@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -15,8 +15,8 @@
 """Models.
 
 The model package contains several types of models to be used in the
-context of UQ. Within QUEENS, the model class of object holds and stores
-the input and output data, and can evaluate itself to produce data.
+context of multi-query analysis. Within QUEENS, the model returns its
+evaluations and possibly gradients.
 """
 
 from queens.models.bmfmc_model import BMFMCModel

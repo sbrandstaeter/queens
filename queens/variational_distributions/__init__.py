@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,7 +12,10 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Variational distributions init."""
+"""Variational distributions.
+
+A probability distributions package for variational inference.
+"""
 
 from queens.variational_distributions.full_rank_normal import FullRankNormalVariational
 from queens.variational_distributions.joint import JointVariational

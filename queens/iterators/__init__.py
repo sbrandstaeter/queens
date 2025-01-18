@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -14,12 +14,10 @@
 #
 """Iterators.
 
-The iterator package contains the implementation of several UQ and
-optimization methods, each of which is implemented in their own iterator
-class. The iterator is therefor one of the central building blocks, as
-the iterators orchestrate the evaluations on one or multiple models.
-QUEENS also permits nesting of iterators to enable hierarchical methods
-or surrogate based UQ approaches.
+The iterator package contains methods for parameters studies,
+uncertainty quantification, sensitivity analysis, Bayesian inverse
+analysis, and optimization. These methods iterate on QUEENS models in a
+multi-query fashion.
 """
 
 from queens.iterators.black_box_variational_bayes import BBVIIterator

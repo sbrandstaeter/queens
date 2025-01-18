@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,9 +12,10 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""External geometry module.
+"""External geometry.
 
-Read in external geometry to QUEENS.
+Read in external geometry from simulation software to QUEENS for
+preprocessing.
 """
 
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
