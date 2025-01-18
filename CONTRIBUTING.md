@@ -56,7 +56,7 @@ The code checks are conducted with [Pylint](https://pylint.org/),
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
 is checked with [ruff](https://github.com/astral-sh/ruff).
 Complete and meaningful docstrings are required as they are used to generate the
-[documentation](#reading-and-writing-documentation).
+[documentation](#book-documentation).
 
 #### Commit messages
 Please provide meaningful commit messages based on the

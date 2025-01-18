@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -26,8 +26,8 @@
 import sys
 from pathlib import Path
 
-# sys.path.insert(0, str(Path('.')resolve))
-sys.path.insert(0, str(Path("../../").resolve))
+sys.path.insert(0, str(Path("../../").resolve()))
+sys.path.append(str(Path("_ext").resolve()))
 
 # -- General configuration ------------------------------------------------
 
@@ -48,6 +48,8 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.napoleon",
     "nbsphinx",
+    "queens_sphinx_extension",
+    "myst_parser",
 ]
 
 # Custom command to make the returns in the docstring behave like the parameter/argument section.
@@ -151,8 +153,8 @@ html_theme = "pydata_sphinx_theme"
 #
 html_theme_options = {
     "logo": {
-        "image_light": "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_day.svg",
-        "image_dark": "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg",
+        "image_light": "images/queens_logo_day.svg",
+        "image_dark": "images/queens_logo_night.svg",
     }
 }
 
@@ -182,7 +184,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
