@@ -32,9 +32,11 @@ have to solve them yourself.
 
 ### 1. Install QUEENS in developer mode
 Install QUEENS as described in the [README.md](README.md) and run:
+<!---installation_develop marker, do not remove this comment-->
 ```
 pip install -e .[develop]
 ```
+<!---installation_develop marker, do not remove this comment-->
 
 ### 2. Configure our git-hooks
 To help you write style-compliant code, we use the [pre-commit](https://pre-commit.com/) package to manage all our git
