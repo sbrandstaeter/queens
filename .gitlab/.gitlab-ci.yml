@@ -2,6 +2,12 @@
 ---
 #---------------------------------------------------------------------------------------------------
 variables:
+  LNM_TESTS:
+    value: "1"
+    description: "Run cluster tests at LNM"
+  IMCS_TESTS:
+    value: "1"
+    description: "Run cluster tests at IMCS"
   LNM_REMOTE_PYTHON:
     value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on LNM clusters"
@@ -59,12 +65,16 @@ lnm-build_conda_env:
     - .build_conda_env
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-build_conda_env:
   extends:
     - .build_conda_env
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster:
   stage: build
@@ -86,6 +96,8 @@ thought-build_conda_env:
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 charon-build_conda_env:
   extends:
@@ -95,6 +107,8 @@ charon-build_conda_env:
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
 
 #----------------------------------------------------------------------------------------------
 .build_4C:
@@ -113,6 +127,8 @@ thought-build_4C:
     PRESET_4C: "lnm_thought"
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 charon-build_4C:
   extends:
@@ -124,6 +140,8 @@ charon-build_4C:
     PRESET_4C: "imcs_charon"
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Cluster tests
@@ -162,6 +180,8 @@ lnm-cluster_tests:
     - thought-build_4C
   tags:
     - lnm-ubuntu
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-cluster_tests:
   extends:
@@ -172,8 +192,11 @@ imcs-cluster_tests:
   needs:
     - imcs-build_conda_env
     - charon-build_conda_env
+    - charon-build_4C
   tags:
     - imcs-ubuntu
+  rules:
+    - if: $IMCS_TESTS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
@@ -194,6 +217,8 @@ lnm-remove_conda_env:
     - lnm-build_conda_env
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-remove_conda_env:
   extends:
@@ -202,6 +227,8 @@ imcs-remove_conda_env:
     - imcs-build_conda_env
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Remove conda env and repository on cluster
@@ -221,6 +248,8 @@ thought-cluster-remove_conda_env:
     REMOTE_ADDRESS: "thought"
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 charon-cluster-remove_conda_env:
   extends:
@@ -231,3 +260,5 @@ charon-cluster-remove_conda_env:
     REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
