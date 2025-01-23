@@ -15,9 +15,31 @@
 """Extract QUEENS example from the readme."""
 
 
+from pathlib import Path
+
 from queens.utils.path_utils import relative_path_from_queens
 
-EXAMPLE_MARKER = "<!---example marker, do not remove this comment-->"
+
+def extract_from_markdown_file_by_marker(marker_name, md_file):
+    """Extract section from an markdown file.
+
+    Args:
+        marker_name (str): Name of the section to extract.
+        md_file (str, pathlib.Path): Path to the markdown file
+
+    Returns:
+        str: section as string
+    """
+    marker = f"<!---{marker_name} marker, do not remove this comment-->"
+
+    # Split the example in the readme using the marker
+    text = Path(md_file).read_text(encoding="utf-8").split(marker)
+
+    # Only one example should appear
+    if len(text) != 3:
+        raise ValueError(f"Could not extract the section marked with '{marker}' from {md_file}!")
+
+    return text[1]
 
 
 def get_queens_example_from_readme(output_dir):
@@ -28,16 +50,8 @@ def get_queens_example_from_readme(output_dir):
     """
     readme_path = relative_path_from_queens("README.md")
 
-    # Split the example in the readme using the marker
-    text = readme_path.read_text().split(EXAMPLE_MARKER)
-
-    # Only one example should appear
-    if len(text) != 3:
-        raise ValueError("Could not extract the example from the readme!")
-
-    # Extract the source
     example_source = (
-        text[1]
+        extract_from_markdown_file_by_marker("example", readme_path)
         .replace("```python", "")
         .replace("```", "")
         .replace('output_dir="."', f'output_dir="{output_dir}"')

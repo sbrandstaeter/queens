@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 # Copyright (c) 2025, QUEENS contributors.
@@ -13,20 +12,27 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Drivers.
+"""This is a custom extension to create files for sphinx using python."""
 
-This package contains a set of driver scripts, which are used to make
-the actual call to the simulation software.
-"""
+import os
+import sys
 
-from queens.drivers.fourc_driver import FourcDriver
-from queens.drivers.function_driver import FunctionDriver
-from queens.drivers.jobscript_driver import JobscriptDriver
-from queens.drivers.mpi_driver import MpiDriver
+from sphinx.application import Sphinx
 
-VALID_TYPES = {
-    "fourc": FourcDriver,
-    "mpi": MpiDriver,
-    "jobscript": JobscriptDriver,
-    "function": FunctionDriver,
-}
+sys.path.insert(0, os.path.abspath("."))
+
+import create_documentation_files  # pylint: disable=wrong-import-position
+
+
+def run_custom_code(app: Sphinx):  # pylint: disable=unused-argument
+    """Run the custom code."""
+    create_documentation_files.main()
+
+
+def setup(app: Sphinx):  # pylint: disable=unused-argument
+    """Setup up sphinx app."""
+    app.connect("builder-inited", run_custom_code)
+    return {
+        "version": "0.1",
+        "parallel_read_safe": True,
+    }

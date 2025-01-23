@@ -32,9 +32,11 @@ have to solve them yourself.
 
 ### 1. Install QUEENS in developer mode
 Install QUEENS as described in the [README.md](README.md) and run:
+<!---installation_develop marker, do not remove this comment-->
 ```
 pip install -e .[develop]
 ```
+<!---installation_develop marker, do not remove this comment-->
 
 ### 2. Configure our git-hooks
 To help you write style-compliant code, we use the [pre-commit](https://pre-commit.com/) package to manage all our git
@@ -54,7 +56,7 @@ The code checks are conducted with [Pylint](https://pylint.org/),
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
 is checked with [ruff](https://github.com/astral-sh/ruff).
 Complete and meaningful docstrings are required as they are used to generate the
-[documentation](#reading-and-writing-documentation).
+[documentation](#book-documentation).
 
 #### Commit messages
 Please provide meaningful commit messages based on the

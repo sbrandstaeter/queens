@@ -1,0 +1,16 @@
+Modules Overview
+================
+
+Here, we present a brief overview of the fundamental modules of QUEENS.
+
+{% for module in modules %}
+{{ module["name"] }}
+{{ "-"*len(module["name"]) }}
+
+.. toctree::
+   :maxdepth: 1
+
+   {{ module["module"] }}
+
+{{ module["description"] }}
+{% endfor %}

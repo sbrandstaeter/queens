@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -17,10 +17,6 @@
 
 This package contains a set of so-called interfaces. The purpose of an
 interface is essentially the mapping of inputs to outputs.
-
-The mapping is made by passing the inputs further down to a
-*regression_approximation* or a *mf_regression_approximation*, both of
-which essentially then evaluate a regression model themselves.
 """
 
 from queens.interfaces.bmfia_interface import BmfiaInterface

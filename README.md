@@ -1,10 +1,11 @@
-
 <div align="center">
+
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_day.svg">
-  <img alt="QUEENS logo" src="https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg" width="300">
+  <source media="(prefers-color-scheme: dark)" srcset="doc/source/images/queens_logo_night.svg">
+  <source media="(prefers-color-scheme: light)" srcset="doc/source/images/queens_logo_day.svg">
+  <img alt="QUEENS logo" src="doc/source/images/queens_logo_night.svg" width="300">
 </picture>
+
 </div>
 
 <div align="center">
@@ -24,8 +25,11 @@
 
 </div>
 
+<!---description marker, do not remove this comment-->
 QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**ystems) is a Python framework for solver-independent multi-query analyses of large-scale computational models.
+<!---description marker, do not remove this comment-->
 
+<!---capabilities marker, do not remove this comment-->
 :chart_with_upwards_trend: **QUEENS** offers a large collection of cutting-edge algorithms for deterministic and probabilistic analyses such as:
 * parameter studies and identification
 * sensitivity analysis
@@ -38,17 +42,22 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 * robust data, resource, and error management
 * easy switching between analysis types
 * smooth scaling from laptop to HPC cluster
+<!---capabilities marker, do not remove this comment-->
 
 ## :rocket: Getting started
 
+<!---prerequisites marker, do not remove this comment-->
 >**Prerequisites**: Unix system and environment management system (we recommend [miniforge](https://conda-forge.org/download/))
+<!---prerequisites marker, do not remove this comment-->
 
+<!---installation marker, do not remove this comment-->
 Clone the QUEENS repository to your local machine. Navigate to its base directory, then:
 ```
 conda env create
 conda activate queens
 pip install -e .
 ```
+<!---installation marker, do not remove this comment-->
 
 ## :crown: Workflow example
 
@@ -97,7 +106,7 @@ if __name__ == "__main__":
 <!---example marker, do not remove this comment-->
 
 <div align="center">
-<img src="readme_images/monte_carlo_uq.png" alt="QUEENS logo" width="500"/>
+<img src="doc/source/images/monte_carlo_uq.png" alt="QUEENS example" width="500"/>
 </div>
 
 ## :busts_in_silhouette: Contributing
@@ -107,6 +116,7 @@ Your contributions are welcome! Please follow our [contributing guidelines](http
 ## :page_with_curl: How to cite
 If you use QUEENS in your work, please cite the relevant method papers and
 
+<!---citation marker, do not remove this comment-->
 ```bib
 @misc{queens,
   author       = {QUEENS},
@@ -115,6 +125,9 @@ If you use QUEENS in your work, please cite the relevant method papers and
   howpublished = {\url{https://www.queens-py.org}}
 }
 ```
+<!---citation marker, do not remove this comment-->
 
 ## :woman_judge: License
+<!---license marker, do not remove this comment-->
 Licensed under GNU LGPL-3.0 (or later). See [LICENSE](LICENSE).
+<!---license marker, do not remove this comment-->

@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -15,7 +15,7 @@
 """Example simulator functions.
 
 This package contains a set of example simulator functions, which can be
-used as benchmark.
+used for benchmarking.
 """
 
 from queens.example_simulator_functions.agawal09 import agawal09a

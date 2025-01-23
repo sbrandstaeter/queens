@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,7 +12,11 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Global Settings module."""
+"""Global Settings.
+
+This module provides a context for QUEENS runs with exit functionality
+for logging and working with remote resources.
+"""
 
 import logging
 from pathlib import Path
