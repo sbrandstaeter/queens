@@ -2,30 +2,12 @@
 ---
 #---------------------------------------------------------------------------------------------------
 variables:
-  UBUNTU_TESTS:
+  LNM_TESTS:
     value: "1"
-    description: "Run integration and unit tests on Ubuntu machines"
-  TEST_TIMING_OPTION:
-    value: ""
-    options:
-      - ""
-      - "--test-timing"
-    description: "Set the option if local test should be timed or not. Default is off."
-  CLUSTER_TESTS:
+    description: "Run cluster tests at LNM"
+  IMCS_TESTS:
     value: "1"
-    description: "Run cluster tests"
-  BENCHMARKS:
-    value: "0"
-    description: "Run benchmarks"
-  UPDATE_REQUIREMENTS:
-    value: "0"
-    description: "Update requirements for QUEENS and create a MR"
-  UPDATE_CHANGELOG:
-    value: ""
-    description: "Update changelog for QUEENS manually and create a MR"
-  PYTEST_OPTIONAL_PARAMETERS:
-    value: ""
-    description: "Additional pytest options for the ubuntu pytest run"
+    description: "Run cluster tests at IMCS"
   LNM_REMOTE_PYTHON:
     value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on LNM clusters"
@@ -40,10 +22,7 @@ variables:
 #---------------------------------------------------------------------------------------------------
 stages:
   - build
-  - codechecks
   - tests
-  - badges
-  - pages
   - cleanup
 #---------------------------------------------------------------------------------------------------
 # Define general workflow
@@ -51,58 +30,22 @@ stages:
 # in order to run at all any pipeline has to fulfill one of the  following conditions
 workflow:
   rules:
-    # check for draft status
-    - if: '$CI_MERGE_REQUEST_TITLE =~ /^(\[Draft\]|\(Draft\)|Draft:)/'
-      when: never
-    # for merge requests
-    - if: $CI_MERGE_REQUEST_IID
-    # for tags
-    - if: $CI_COMMIT_TAG
-    # for the master branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     # if manually triggered with the web interface's "run pipeline"
     - if: '$CI_PIPELINE_SOURCE == "web"'
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
-.ubuntu_build_conditions:
-  rules:
-    - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1") || ($BENCHMARKS == "1")
-#----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
     - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
     # This ensures that the correct queens source is used
     - pip install -e .[develop]
     - echo Queens source for testing is $(pip list | grep -o '/.*')
-  rules:
-    - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
-#----------------------------------------------------------------------------------------------
-.default_test_conditions:
-  rules:
-    - if: $UBUNTU_TESTS == "1"
-#----------------------------------------------------------------------------------------------
-.default_test_conditions_default_branch:
-  rules:
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
-#----------------------------------------------------------------------------------------------
-.codechecks_settings:
-  before_script:
-    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
-  rules:
-    - !reference [.default_test_conditions, rules]
-  stage: codechecks
-  needs:
-    - imcs-build_conda_env
-  tags:
-    - imcs-codechecks
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
 .build_conda_env:
   stage: build
-  rules:
-    - !reference [.ubuntu_build_conditions, rules]
   before_script:
     - 'echo "Using python environment manager: `$PYTHON_PACKAGE_MANAGER --version`"'
   script:
@@ -122,35 +65,28 @@ lnm-build_conda_env:
     - .build_conda_env
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-build_conda_env:
   extends:
     - .build_conda_env
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
 #----------------------------------------------------------------------------------------------
 .build_conda_env_cluster:
   stage: build
-  rules:
-    - if: $CLUSTER_TESTS == "1"
   script:
     - ENV_PREFIX=queens-$CI_PIPELINE_ID
-    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.10 cloudpickle fabric
+    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.11 cloudpickle fabric
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
     - python queens/utils/remote_build.py
       --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
       $PYTHON_PACKAGE_MANAGER
-
-#bruteforce-build_conda_env:
-#  extends:
-#    - .build_conda_env_cluster
-#  variables:
-#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
-#    REMOTE_PYTHON: $LNM_REMOTE_PYTHON
-#  tags:
-#    - lnm-build
 
 thought-build_conda_env:
   extends:
@@ -160,6 +96,8 @@ thought-build_conda_env:
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 charon-build_conda_env:
   extends:
@@ -169,176 +107,48 @@ charon-build_conda_env:
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
+
 #----------------------------------------------------------------------------------------------
-simple_build: # Environment that does not require all queens dependencies
+.build_4C:
   stage: build
   script:
-    # create a simple environment to use for updates etc
-    - $PYTHON_PACKAGE_MANAGER create -n simple-env python==3.10 -y
-  rules:
-    - if: $UPDATE_REQUIREMENTS == "1"
-    - if: $CI_COMMIT_TAG
-    - if: $UPDATE_CHANGELOG
+    - ssh queens@$REMOTE_ADDRESS "$LOAD_MODULES cd ~/workspace; rm -rf fourc_source;
+      rm -rf fourc_build; git clone https://github.com/4C-multiphysics/4C.git fourc_source;
+      mkdir fourc_build; cd fourc_build; cmake --preset=$PRESET_4C ../fourc_source; ninja -j 8 full"
+
+thought-build_4C:
+  extends:
+    - .build_4C
+  variables:
+    LOAD_MODULES: ""
+    REMOTE_ADDRESS: "thought"
+    PRESET_4C: "lnm_thought"
   tags:
     - lnm-build
-
-update_requirements:
-  stage: build
-  script:
-    - cd $CI_PROJECT_DIR
-    - $PYTHON_PACKAGE_MANAGER activate simple-env
-    - pip install pip-tools
-    - pip-compile --upgrade --resolver=backtracking requirements.in --output-file requirements.txt
-    - pip-compile --upgrade --resolver=backtracking dev-requirements.in --output-file dev-requirements.txt
-    # create a branch and merge request
-    - NEW_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
-    - FILES="requirements.txt dev-requirements.txt"
-    - 'COMMIT_MESSAGE="build: update requirements based on pip-tools"'
-    - MR_TITLE="Pip-tools update $(date '+%Y-%m-%d')"
-    - source $CI_PROJECT_DIR/.gitlab/pipeline_utils/create_merge_request.sh
-  needs:
-    - simple_build
   rules:
-    - if: $UPDATE_REQUIREMENTS == "1"
-  tags:
-    - lnm-build
+    - if: $LNM_TESTS == "1"
 
-update_changelog:
-  stage: build
-  script:
-    - cd $CI_PROJECT_DIR
-    - $PYTHON_PACKAGE_MANAGER activate simple-env
-    - pip install python-gitlab
-    # update changelog
-    - FILES=$CI_PROJECT_DIR/CHANGELOG.md
-    - python $CI_PROJECT_DIR/.gitlab/pipeline_utils/update_changelog.py $GIT_PUSH_TOKEN $CI_PROJECT_ID $FILES
-    # create a branch and merge request
-    - NEW_BRANCH_NAME="update-changelog"
-    - 'COMMIT_MESSAGE="docs: update changelog"'
-    - MR_TITLE="Update changelog"
-    - source $CI_PROJECT_DIR/.gitlab/pipeline_utils/create_merge_request.sh
-  needs:
-    - simple_build
+charon-build_4C:
+  extends:
+    - .build_4C
+  variables:
+    LOAD_MODULES: "source /etc/profile.d/modules.sh;
+                   source /home/opt/cluster_tools/core/load_baci_environment.sh;"
+    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
+    PRESET_4C: "imcs_charon"
+  tags:
+    - imcs-build
   rules:
-    - if: $CI_COMMIT_TAG
-    - if: $UPDATE_CHANGELOG
-  tags:
-    - lnm-build
-#---------------------------------------------------------------------------------------------------
-# Jobs of stage: codechecks
-#---------------------------------------------------------------------------------------------------
-code_analysis:
-  # code analysis
-  extends:
-    - .codechecks_settings
-  stage: codechecks
-  script:
-    - isort --check-only queens tests > track_isort.txt 2>&1
-    - black --check queens tests > track_black.txt 2>&1
-    # create an rc file for the license header check
-    - python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
-    # use https://github.com/apache/skywalking-eyes to check for correct license headers
-    - docker run --rm -v $(pwd):/github/workspace apache/skywalking-eyes -c .licenserc.yaml header check | tee track_license_header_check.txt 2>&1
-    - pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt 2>&1
-    - pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
-    - python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
-    - pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt 2>&1
-  artifacts:
-    name: "$CI_JOB_NAME-$CI_JOB_ID"
-    paths:
-      - track_license_header_check.txt
-      - track_pylint.txt
-      - track_isort.txt
-      - track_black.txt
-      - track_pydocstyle.txt
-      - pylint_codeclimate.json
-    reports:
-      codequality: pylint_codeclimate.json
-    when: always
-    expire_in: 4 weeks
-#----------------------------------------------------------------------------------------------
-documentation:
-  # build the documentation
-  extends:
-    - .codechecks_settings
-  stage: codechecks
-  script:
-    - sphinx-apidoc -o doc/source queens -f -M
-    - cd doc
-    # "make html" triggers:
-    - sphinx-build -b html -d build/doctrees   source build/html
-  artifacts:
-    name: sphinx_documentation
-    paths:
-      - doc/build/html
-    when: on_success
-    expire_in: 3 days
-#----------------------------------------------------------------------------------------------
-license_check:
-  # check license compliance
-  extends:
-    - .codechecks_settings
-  stage: codechecks
-  script:
-    - liccheck -s lic_strategy.ini  -r requirements.txt
-#---------------------------------------------------------------------------------------------------
-# Jobs of stage: tests
-#---------------------------------------------------------------------------------------------------
-# Ubuntu tests
-#---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite:
-  extends:
-    - .ubuntu_settings
-  stage: tests
-  rules:
-    - !reference [.default_test_conditions, rules]
-  script:
-    - "echo TEST_TIMING_OPTION: $TEST_TIMING_OPTION"
-    - "echo PYTEST_OPTIONAL_PARAMETERS: $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes $PYTEST_OPTIONAL_PARAMETERS --junitxml=test_junit.xml
-  coverage: '/TOTAL.*\s+(\d+%)/'
-  artifacts:
-    name: $CI_PIPELINE_ID-ubuntu_test_suite
-    paths:
-      - html_coverage_report
-      - test_junit.xml
-      - xml_coverage_report.xml
-    reports:
-      junit: test_junit.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: xml_coverage_report.xml
-    when: on_success
-    expire_in: 3 days
+    - if: $IMCS_TESTS == "1"
 
-lnm-ubuntu_full_test_suite:
-  extends:
-    - .ubuntu_full_test_suite
-  needs:
-    - lnm-build_conda_env
-  tags:
-    - lnm-ubuntu
-
-imcs-ubuntu_full_test_suite:
-  extends:
-    - .ubuntu_full_test_suite
-  needs:
-    - imcs-build_conda_env
-  tags:
-    - imcs-ubuntu
-#---------------------------------------------------------------------------------------------------
-# Weekly tests
 #---------------------------------------------------------------------------------------------------
 # Cluster tests
-#---------------------------------------------------------------------------------------------------
-.cluster_tests_conditions:
-  rules:
-    - if: $CLUSTER_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 .cluster_tests:
   extends:
     - .ubuntu_settings
-    - .cluster_tests_conditions
   stage: tests
   script:
     - pytest tests/integration_tests/cluster/
@@ -366,10 +176,12 @@ lnm-cluster_tests:
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
     - lnm-build_conda_env
-    # - bruteforce-build_conda_env
     - thought-build_conda_env
+    - thought-build_4C
   tags:
     - lnm-ubuntu
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-cluster_tests:
   extends:
@@ -380,128 +192,12 @@ imcs-cluster_tests:
   needs:
     - imcs-build_conda_env
     - charon-build_conda_env
+    - charon-build_4C
   tags:
     - imcs-ubuntu
-#---------------------------------------------------------------------------------------------------
-# Benchmarks
-#---------------------------------------------------------------------------------------------------
-benchmarks:
-  stage: tests
-  extends:
-    - .ubuntu_settings
   rules:
-    - if: $BENCHMARKS == "1"
-  script:
-    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS --color=yes
-  needs:
-    - lnm-build_conda_env
-  tags:
-    - lnm-ubuntu
+    - if: $IMCS_TESTS == "1"
 
-#---------------------------------------------------------------------------------------------------
-# Jobs of stage: badges
-#---------------------------------------------------------------------------------------------------
-# Basic setting to trigger the creation of a documentation badge in a downstream project
-.trigger_documentation_badge:
-  stage: badges
-  needs: ["documentation"]
-  rules:
-    - !reference [.default_test_conditions_default_branch, rules]
-  trigger:
-    project: queens_community/queens_badges/documentation-badge
-#---------------------------------------------------------------------------------------------------
-# Create documentation badge in case of a successful documentation job
-trigger_documentation_badge_success:
-  extends:
-    - .trigger_documentation_badge
-  when: on_success
-  variables:
-    SUCCESS_DOCUMENTATION_BUILD: "1"
-#---------------------------------------------------------------------------------------------------
-# Create documentation badge in case of a failed documentation job
-trigger_documentation_badge_fail:
-  extends:
-    - .trigger_documentation_badge
-  when: on_failure
-  variables:
-    SUCCESS_DOCUMENTATION_BUILD: "0"
-#---------------------------------------------------------------------------------------------------
-# Basic setting to trigger the creation of a benchmarks badge in a downstream project
-.trigger_benchmarks_badge:
-  stage: badges
-  needs: ["benchmarks"]
-  rules:
-    - if: ($BENCHMARKS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
-  trigger:
-    project: queens_community/queens_badges/benchmarks-badge
-#---------------------------------------------------------------------------------------------------
-# Create benchmarks badge in case of a successful benchmarks job
-trigger_benchmarks_badge_success:
-  extends:
-    - .trigger_benchmarks_badge
-  when: on_success
-  variables:
-    SUCCESS_BENCHMARKS_PIPELINE: "1"
-#---------------------------------------------------------------------------------------------------
-# Create benchmarks badge in case of a failed benchmarks job
-trigger_benchmarks_badge_fail:
-  extends:
-    - .trigger_benchmarks_badge
-  when: on_failure
-  variables:
-    SUCCESS_BENCHMARKS_PIPELINE: "0"
-#---------------------------------------------------------------------------------------------------
-# Basic setting to trigger the creation of a cluster badge in a downstream project
-.trigger_cluster_badge:
-  extends:
-    - .cluster_tests_conditions
-  stage: badges
-  # needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
-  needs: ["imcs-cluster_tests"]
-  rules:
-    - if: ($CLUSTER_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
-  trigger:
-    project: queens_community/queens_badges/cluster-badge
-#---------------------------------------------------------------------------------------------------
-# Create cluster badge in case of a successful cluster job
-trigger_cluster_badge_success:
-  extends:
-    - .trigger_cluster_badge
-  when: on_success
-  variables:
-    SUCCESS_CLUSTER_PIPELINE: "1"
-#---------------------------------------------------------------------------------------------------
-# Create cluster badge in case of a failed cluster job
-trigger_cluster_badge_fail:
-  extends:
-    - .trigger_cluster_badge
-  when: on_failure
-  variables:
-    SUCCESS_CLUSTER_PIPELINE: "0"
-#---------------------------------------------------------------------------------------------------
-# Jobs of stage: pages
-#---------------------------------------------------------------------------------------------------
-pages:
-  # used to deploy the coverage report and the documentation to GitLab pages
-  # job name has to be pages and triggers deploy stage
-  stage: pages
-  rules:
-    - !reference [.default_test_conditions_default_branch, rules]
-  dependencies:
-    - documentation
-    - lnm-ubuntu_full_test_suite
-  script:
-    - mkdir public
-    - mv html_coverage_report public/coverage_report
-    - mv doc/build/html public/docs
-  artifacts:
-    # store the public path in artifact
-    # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
-    # the content of the below artifact is published on GitLab Pages
-    paths:
-      - public
-  tags:
-    - lnm-ubuntu
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
 #---------------------------------------------------------------------------------------------------
@@ -513,8 +209,6 @@ pages:
   when: always
   variables:
     GIT_STRATEGY: none
-  rules:
-    - !reference [.ubuntu_build_conditions, rules]
 
 lnm-remove_conda_env:
   extends:
@@ -523,6 +217,8 @@ lnm-remove_conda_env:
     - lnm-build_conda_env
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 imcs-remove_conda_env:
   extends:
@@ -531,6 +227,9 @@ imcs-remove_conda_env:
     - imcs-build_conda_env
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
+
 #---------------------------------------------------------------------------------------------------
 # Remove conda env and repository on cluster
 .remove_conda_env_cluster:
@@ -539,18 +238,6 @@ imcs-remove_conda_env:
     - ssh queens@$REMOTE_ADDRESS "$PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID;
       rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID"
   when: always
-  rules:
-    - if: $CLUSTER_TESTS == "1"
-
-#bruteforce-cluster-remove_conda_env:
-#  extends:
-#    - .remove_conda_env_cluster
-#  dependencies:
-#    - bruteforce-build_conda_env
-#  variables:
-#    REMOTE_ADDRESS: 'bruteforce.lnm.ed.tum.de'
-#  tags:
-#    - lnm-build
 
 thought-cluster-remove_conda_env:
   extends:
@@ -561,6 +248,8 @@ thought-cluster-remove_conda_env:
     REMOTE_ADDRESS: "thought"
   tags:
     - lnm-build
+  rules:
+    - if: $LNM_TESTS == "1"
 
 charon-cluster-remove_conda_env:
   extends:
@@ -571,3 +260,5 @@ charon-cluster-remove_conda_env:
     REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
   tags:
     - imcs-build
+  rules:
+    - if: $IMCS_TESTS == "1"
