@@ -37,6 +37,7 @@ def fixture_default_sobol_index_iterator(
         num_bootstrap_samples=1000,
         confidence_level=0.95,
         result_description={},
+        skip_values=1024,
     )
     return my_iterator
 

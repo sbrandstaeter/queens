@@ -68,6 +68,7 @@ def test_sobol_indices_ishigami_gp(global_settings):
         model=gpflow_regression_model,
         parameters=parameters,
         global_settings=global_settings,
+        skip_values=1024,
     )
 
     # Actual analysis
