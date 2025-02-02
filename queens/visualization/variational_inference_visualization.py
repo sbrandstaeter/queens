@@ -52,10 +52,6 @@ class VIVisualization:
        fig_convergence_plots (matplotlib figure): Figure for the convergence plot.
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 10})
-
     def __init__(self, path, save_bool, plot_boolean, axs_convergence_plots, fig_convergence_plots):
         """Initialize visualization object.
 

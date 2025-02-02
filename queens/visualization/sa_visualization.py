@@ -29,11 +29,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from matplotlib import style
 
-cycle_colors = sns.color_palette()
-style.use("seaborn-v0_8")
 this = sys.modules[__name__]
 this.sa_visualization_instance = None
 
@@ -113,10 +109,6 @@ class SAVisualization:
     Returns:
         SAVisualization (obj): Instance of the SAVisualization Class
     """
-
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
         """Initialize the SAVisualization.

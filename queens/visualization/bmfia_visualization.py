@@ -69,11 +69,6 @@ class BMFIAVisualization:
         BMFIAVisualization (obj): Instance of the BMFIAVisualization Class
     """
 
-    # some overall class states
-    plt.rcParams.update(plt.rcParamsDefault)
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 15})
-
     def __init__(self, paths, save_bools, plot_booleans):
         """Initialize the BMFIAVisualization.
 

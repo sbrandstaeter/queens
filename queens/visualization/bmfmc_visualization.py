@@ -78,10 +78,6 @@ class BMFMCVisualization:
         BMFMCVisualization (obj): Instance of the BMFMCVisualization Class
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 28})
-
     def __init__(
         self, paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
     ):

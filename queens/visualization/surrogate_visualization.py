@@ -30,14 +30,10 @@ Attributes:
 import sys
 from pathlib import Path
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import style
 from matplotlib.cm import ScalarMappable
 
-matplotlib.use("agg")
-style.use("seaborn-v0_8")
 this = sys.modules[__name__]
 this.surrogate_visualization_instance = None
 
@@ -89,12 +85,6 @@ class SurrogateVisualization:
     Returns:
         SAVisualization (obj): Instance of the SurrogateVisualization Class
     """
-
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams["font.sans-serif"] = "Arial"
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
         """Initialize the SurrogateVisualization object.

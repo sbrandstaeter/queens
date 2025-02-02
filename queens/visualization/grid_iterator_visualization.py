@@ -109,10 +109,6 @@ class GridIteratorVisualization:
         GridIteratorVisualization (obj): Instance of the GridIteratorVisualization Class
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 22})
-
     def __init__(self, paths, save_bools, plot_booleans, scale_types_list, var_names_list):
         """Initialize the GridIteratorVisualization.
 
