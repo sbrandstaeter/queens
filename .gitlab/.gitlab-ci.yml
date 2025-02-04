@@ -31,7 +31,8 @@ stages:
 workflow:
   rules:
     # if manually triggered with the web interface's "run pipeline"
-    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
