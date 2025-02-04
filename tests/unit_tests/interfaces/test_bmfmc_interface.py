@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.interfaces.bmfmc_interface import BmfmcInterface
+from queens.models.bmfmc_model import BmfmcInterface
 
 # pylint: disable=invalid-name
 

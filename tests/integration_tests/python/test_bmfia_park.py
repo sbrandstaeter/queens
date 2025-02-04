@@ -20,12 +20,14 @@ import pytest
 from queens.distributions.normal import NormalDistribution
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.function_driver import FunctionDriver
-from queens.interfaces.bmfia_interface import BmfiaInterface
 from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
-from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
+from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
+    BMFGaussianModel,
+    BmfiaInterface,
+)
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
 from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel

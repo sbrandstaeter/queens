@@ -22,7 +22,6 @@ from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from queens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
 from queens.drivers.driver import Driver
 from queens.external_geometry import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
-from queens.interfaces import VALID_TYPES as VALID_INTERFACE_TYPES
 from queens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
 from queens.iterators.iterator import Iterator
 from queens.models import VALID_TYPES as VALID_MODEL_TYPES
@@ -54,7 +53,6 @@ VALID_TYPES = {
     **VALID_DRIVER_TYPES,
     **VALID_EXPERIMENTAL_DATA_READER_TYPES,
     **VALID_EXTERNAL_GEOMETRY_TYPES,
-    **VALID_INTERFACE_TYPES,
     **VALID_ITERATIVE_AVERAGING_TYPES,
     **VALID_ITERATOR_TYPES,
     **VALID_MODEL_TYPES,

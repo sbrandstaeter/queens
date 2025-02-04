@@ -20,7 +20,7 @@ import time
 import numpy as np
 import pytest
 
-from queens.interfaces.bmfia_interface import BmfiaInterface
+from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BmfiaInterface
 from queens.utils.exceptions import InvalidOptionError
 
 
@@ -232,12 +232,12 @@ def test_build_approximation(
     approx = "dummy_approx"
 
     mock_train_parallel = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface."
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface."
         "train_probabilistic_mappings_in_parallel",
         return_value=dummy_lst,
     )
     mock_optimize_state = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface."
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface."
         "set_optimized_state_of_probabilistic_mappings"
     )
     mocker.patch(
@@ -331,11 +331,13 @@ def test_instantiate_per_time_step(mocker, dummy_reg_obj):
     approx = dummy_reg_obj
 
     mp_1 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".check_coordinates_return_dimensions",
         return_value=(num_coords, t_size),
     )
     mp_2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".prepare_z_lf_for_time_steps",
         return_value=z_lf_array_out,
     )
 
@@ -367,7 +369,9 @@ def test_train_probabilistic_mappings_in_parallel(
     """Test the parallel training of the mappings."""
     Z_LF_train = np.zeros((1, 2, 3))
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
-    mocker.patch("queens.interfaces.bmfia_interface.get_context", MyContext)
+    mocker.patch(
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.get_context", MyContext
+    )
 
     # test with valid configuration
     num_coords = Z_LF_train.T.shape[0]
@@ -541,15 +545,18 @@ def test_evaluate_per_time_step(default_probabilistic_obj_lst, mocker):
 
     # mock check coordinate compliance
     mp1 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".check_coordinates_return_dimensions",
         return_value=(1, 2),
     )
     mp2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".prepare_z_lf_for_time_steps",
         return_value=z_lf_array,
     )
     mp3 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.iterate_over_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".iterate_over_time_steps",
         return_value=(default_mean, default_variance, None, None),
     )
 
@@ -748,15 +755,18 @@ def test_evaluate_and_gradient_per_time_step(default_bmfia_interface, mocker):
 
     # mock check coordinate compliance
     mp1 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".check_coordinates_return_dimensions",
         return_value=(1, 2),
     )
     mp2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".prepare_z_lf_for_time_steps",
         return_value=z_lf_array,
     )
     mp3 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.iterate_over_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".iterate_over_time_steps",
         return_value=(default_mean, default_variance, default_grad_mean, default_grad_variance),
     )
 
@@ -886,11 +896,13 @@ def test_update_mappings_per_time_step(dummy_reg_obj, mocker):
     coords_mat = np.array([[0, 1], [0, 1]])
 
     mp_1 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.check_coordinates_return_dimensions",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".check_coordinates_return_dimensions",
         return_value=(num_coords, t_size),
     )
     mp_2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.prepare_z_lf_for_time_steps",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".prepare_z_lf_for_time_steps",
         return_value=z_lf_array_out,
     )
 

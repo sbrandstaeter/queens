@@ -21,8 +21,10 @@ import numpy as np
 import pytest
 from mock import Mock, patch
 
-from queens.interfaces.bmfia_interface import BmfiaInterface
-from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
+from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
+    BMFGaussianModel,
+    BmfiaInterface,
+)
 from queens.models.simulation_model import SimulationModel
 
 
@@ -298,7 +300,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
         return_value=(z_mat),
     )
     mp2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.evaluate",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface.evaluate",
         return_value=(m_f_mat, var_y_mat),
     )
 
@@ -370,7 +372,8 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
         return_value=z_mat,
     )
     mp2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.evaluate_and_gradient",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".evaluate_and_gradient",
         return_value=(m_f_mat, var_y_mat, grad_m_f_mat, grad_var_y_mat),
     )
 
@@ -476,7 +479,8 @@ def test_build_approximation(default_bmfia_iterator, default_interface, mocker):
         return_value=(z_train, y_hf_train),
     )
     mo_2 = mocker.patch(
-        "queens.interfaces.bmfia_interface.BmfiaInterface.build_approximation",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
+        ".build_approximation",
         return_value=None,
     )
 
