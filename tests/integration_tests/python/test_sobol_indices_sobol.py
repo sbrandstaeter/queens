@@ -61,6 +61,7 @@ def test_sobol_indices_sobol(global_settings):
         model=model,
         parameters=parameters,
         global_settings=global_settings,
+        skip_values=1024,
     )
 
     # Actual analysis
