@@ -154,9 +154,7 @@ def test_init(global_settings, mocker, settings_probab_mapping, parameters):
     y_pdf_support = np.linspace(-1, 1, 200)
 
     mp1 = mocker.patch("queens.models.model.Model.__init__")
-    mp2 = mocker.patch(
-        "queens.interfaces.bmfmc_interface.BmfmcInterface.__init__", return_value=None
-    )
+    mp2 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.__init__", return_value=None)
     approx = "dummy_approx"
     model = BMFMCModel(
         parameters=parameters,
@@ -255,9 +253,7 @@ def test_run_BMFMC(mocker, default_bmfmc_model):
     """Test running BMFMC model."""
     mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.build_approximation")
     mp2 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics")
-    mp3 = mocker.patch(
-        "queens.interfaces.bmfmc_interface.BmfmcInterface.evaluate", return_value=(1, 1)
-    )
+    mp3 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.evaluate", return_value=(1, 1))
 
     default_bmfmc_model.Z_mc = np.array([[1, 1]])
     default_bmfmc_model.Z_train = np.array([[1, 1]])
@@ -272,9 +268,7 @@ def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
     """Test running BMFMC model without features."""
     mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.build_approximation")
     mp2 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics")
-    mp3 = mocker.patch(
-        "queens.interfaces.bmfmc_interface.BmfmcInterface.evaluate", return_value=(1, 1)
-    )
+    mp3 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.evaluate", return_value=(1, 1))
 
     default_bmfmc_model.Y_LFs_mc = np.array([[1, 1]])
     default_bmfmc_model.Y_LFs_train = np.array([[1, 1]])
@@ -348,7 +342,7 @@ def test_build_approximation(mocker, default_bmfmc_model):
     """Test training of surrogate model."""
     mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.get_hf_training_data")
     mp2 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.set_feature_strategy")
-    mp3 = mocker.patch("queens.interfaces.bmfmc_interface.BmfmcInterface.build_approximation")
+    mp3 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.build_approximation")
 
     default_bmfmc_model.eval_fit = "kfold"
     default_bmfmc_model.build_approximation(approx_case=True)
@@ -404,9 +398,7 @@ def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
     """Test calculation of posterior variance of HF density prediction."""
     np.random.seed(1)
     K = np.random.rand(10, 10)
-    mp1 = mocker.patch(
-        "queens.interfaces.bmfmc_interface.BmfmcInterface.evaluate", return_value=(None, K)
-    )
+    mp1 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.evaluate", return_value=(None, K))
     default_bmfmc_model.var_y_mc = np.ones((10, 1))
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
     default_bmfmc_model.m_f_mc = np.atleast_2d(np.linspace(0, 10.0, 10)).T
@@ -544,9 +536,9 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
 
 def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model):
     """Test update of probabilistic mapping."""
-    mp1 = mocker.patch("queens.interfaces.bmfmc_interface.BmfmcInterface.build_approximation")
+    mp1 = mocker.patch("queens.models.bmfmc_model.BmfmcInterface.build_approximation")
     mp2 = mocker.patch(
-        "queens.interfaces.bmfmc_interface.BmfmcInterface.evaluate",
+        "queens.models.bmfmc_model.BmfmcInterface.evaluate",
         return_value=(np.array([1.0, 1.1]), np.array([2.0, 2.1])),
     )
 

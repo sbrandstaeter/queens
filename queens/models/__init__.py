@@ -23,7 +23,10 @@ from queens.models.differentiable_simulation_model_adjoint import (
     DifferentiableSimulationModelAdjoint,
 )
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
-from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
+from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
+    BMFGaussianModel,
+    BmfiaInterface,
+)
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.bayesian_neural_network import (
@@ -40,6 +43,7 @@ VALID_TYPES = {
     "bmfmc_model": BMFMCModel,
     "gaussian": GaussianLikelihood,
     "bmf_gaussian": BMFGaussianModel,
+    "bmfia_interface": BmfiaInterface,
     "differentiable_simulation_model_fd": DifferentiableSimulationModelFD,
     "differentiable_simulation_model_adjoint": DifferentiableSimulationModelAdjoint,
     "heteroskedastic_gp": HeteroskedasticGPModel,
