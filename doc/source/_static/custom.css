@@ -1,0 +1,21 @@
+/* Use QUEENS colors. */
+html[data-theme="light"] {
+    --pst-color-primary: #5cbbfeff;
+    --pst-color-secondary: #5cbbfeff;
+}
+
+/* Use QUEENS colors. */
+html[data-theme="dark"] {
+    --pst-color-primary: #5cbbfeff;
+    --pst-color-secondary: #5cbbfeff;
+}
+
+a {
+    text-decoration: none;
+    /* Remove the underline from links. */
+}
+
+a:hover {
+    text-decoration: underline;
+    /* Underline links when howering. */
+}

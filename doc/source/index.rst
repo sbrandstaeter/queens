@@ -1,15 +1,19 @@
+.. title:: QUEENS documentation
+
 Welcome to the QUEENS' documentation!
 =====================================
 
-**Some useful links**:
+Useful links
+------------
 
 * `Repository on GitHub <https://github.com/queens-py/queens>`_
 * `Website <https://www.queens-py.org/>`_
 
 
+Contents
+--------
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
    intro
    overview
@@ -18,9 +22,8 @@ Welcome to the QUEENS' documentation!
    queens
 
 
-
-Indices and tables
-==================
+Indices
+-------
 
 * :ref:`genindex`
 * :ref:`modindex`

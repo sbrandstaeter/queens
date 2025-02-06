@@ -155,7 +155,21 @@ html_theme_options = {
     "logo": {
         "image_light": "images/queens_logo_day.svg",
         "image_dark": "images/queens_logo_night.svg",
-    }
+    },
+    "icon_links": [
+        {
+            "name": "queens-py.org",
+            "url": "https://queens-py.org",
+            "icon": "fa-solid fa-globe",
+            "type": "fontawesome",
+        },
+        {
+            "name": "GitHub",
+            "url": "https://github.com/queens-py/queens",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -164,7 +178,7 @@ html_theme_options = {
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'queens v0.1'
+html_title = "QUEENS documentation"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -184,7 +198,10 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
+html_static_path = ["_static"]
+html_css_files = [
+    "custom.css",  # Add your custom CSS file here
+]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
