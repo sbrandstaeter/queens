@@ -140,11 +140,11 @@ class BMFMCVisualization:
             )
 
             # --------- Plot the posterior variance -----------------------------------------
-            if self.predictive_var is True:
+            if self.predictive_var:
                 _plot_pdf_var(output)
 
             # ---- plot the BMFMC reference without features
-            if self.no_features_ref is True:
+            if self.no_features_ref:
                 _plot_pdf_no_features(output, posterior_variance=self.predictive_var)
 
             # ---- some further settings for the axes ---------------------------------------
@@ -186,7 +186,7 @@ class BMFMCVisualization:
             if manifold_plotter is not None:
                 manifold_plotter(output, Y_LFs_mc, Y_HF_mc, Y_HF_train)
 
-            if self.animation_bool is True:
+            if self.animation_bool:
                 _animate_3d(output, Y_HF_mc, self.paths[1])
 
             if self.save_bools[1] is not None:
@@ -492,7 +492,7 @@ def _save_plot(save_bool, path):
     Returns:
         Saved plot.
     """
-    if save_bool is True:
+    if save_bool:
         plt.savefig(path, dpi=300)
 
 
@@ -525,5 +525,5 @@ def _plot_pdf_no_features(output, posterior_variance=False):
     )
 
     # plot the bmfmc var
-    if posterior_variance is True:
+    if posterior_variance:
         _plot_pdf_var(output, reference_str="_BMFMC")

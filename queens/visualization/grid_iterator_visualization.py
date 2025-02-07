@@ -273,5 +273,5 @@ def _save_plot(save_bool, path):
     Returns:
         Saved plot.
     """
-    if save_bool is True:
+    if save_bool:
         plt.savefig(path, dpi=300)

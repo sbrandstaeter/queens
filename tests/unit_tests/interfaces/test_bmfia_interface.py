@@ -501,11 +501,11 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker):
 
     np.testing.assert_array_equal(map_1.predict.call_args[0][0], z_lf.T[0, :, :])
     assert map_1.predict.call_args[1]["support"] == support
-    assert map_1.predict.call_args[1]["gradient_bool"] is False
+    assert not map_1.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(map_2.predict.call_args[0][0], z_lf.T[1, :, :])
     assert map_2.predict.call_args[1]["support"] == support
-    assert map_2.predict.call_args[1]["gradient_bool"] is False
+    assert not map_2.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(mean, np.array([[1, 3], [2, 4]]))
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))
@@ -671,11 +671,11 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
 
     np.testing.assert_array_equal(map_1.predict.call_args[0][0], Z_LF.T[0, :, :])
     assert map_1.predict.call_args[1]["support"] == support
-    assert map_1.predict.call_args[1]["gradient_bool"] is True
+    assert map_1.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(map_2.predict.call_args[0][0], Z_LF.T[1, :, :])
     assert map_2.predict.call_args[1]["support"] == support
-    assert map_2.predict.call_args[1]["gradient_bool"] is True
+    assert map_2.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(mean, np.array([[1, 3], [2, 4]]))
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))

@@ -120,7 +120,7 @@ class SurrogateVisualization:
             self.plot_2d(surrogate_model)
 
         # show all result plots in the end
-        if any(self.should_be_displayed.values()) is True:
+        if any(self.should_be_displayed.values()):
             self._display_plots()
 
     def _display_plots(self):

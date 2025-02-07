@@ -87,7 +87,7 @@ class BMFIAVisualization:
         Returns:
             Plots of the probabilistic manifold
         """
-        if self.plot_booleans[0] is True:
+        if self.plot_booleans[0]:
             plot_model_dependency(z_train, Y_HF_train, regression_obj_lst)
             if self.save_bools[0] is not None:
                 _save_plot(self.save_bools[0], self.paths[0])
@@ -106,7 +106,7 @@ class BMFIAVisualization:
             dim_labels_lst (lst): List with labels/naming of the involved dimensions.
                                 Order of the list corresponds to order of columns in sample matrix.
         """
-        if self.plot_booleans[1] is True:
+        if self.plot_booleans[1]:
             if samples.shape[1] > 2:
                 raise RuntimeError(
                     f"At the moment we only support posterior plots up to two dimensions. "

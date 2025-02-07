@@ -287,6 +287,6 @@ class BMFMCIterator(Iterator):
                 self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
             )
 
-        if self.result_description["write_results"] is True:
+        if self.result_description["write_results"]:
             results = process_outputs(self.output, self.result_description)
             write_results(results, self.global_settings.result_file(".pickle"))

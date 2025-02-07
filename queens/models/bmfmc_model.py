@@ -23,7 +23,6 @@ from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 import queens.utils.pdf_estimation as est
-from queens.interfaces.bmfmc_interface import BmfmcInterface
 from queens.iterators.data_iterator import DataIterator
 from queens.models.model import Model
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField as RandomField
@@ -328,7 +327,7 @@ class BMFMCModel(Model):
         self.compute_pymc_reference()
 
         # ------------------ STANDARD BMFMC (no additional features) for comparison ----------------
-        if self.no_features_comparison_bool is True:
+        if self.no_features_comparison_bool:
             p_yhf_mean_BMFMC, p_yhf_var_BMFMC = self.run_BMFMC_without_features()
 
         # ------------------- Generalized BMFMC with features --------------------------------------
@@ -515,7 +514,7 @@ class BMFMCModel(Model):
         self.get_hf_training_data()
 
         # ----- train regression model on the data ----------------------------------------
-        if approx_case is True:
+        if approx_case:
             self.set_feature_strategy()
             self.interface.build_approximation(self.Z_train, self.Y_HF_train)
         else:

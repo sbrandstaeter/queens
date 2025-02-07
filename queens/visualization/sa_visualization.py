@@ -134,7 +134,7 @@ class SAVisualization:
         self.plot_si_scatter(results)
 
         # show all result plots in the end
-        if any(self.should_be_displayed.values()) is True:
+        if any(self.should_be_displayed.values()):
             self._display_plots()
 
     def plot_si_bar(self, results):
@@ -211,5 +211,5 @@ class SAVisualization:
         Returns:
             Saved plot.
         """
-        if self.should_be_saved[key] is True:
+        if self.should_be_saved[key]:
             plt.savefig(self.saving_paths[key], dpi=300)

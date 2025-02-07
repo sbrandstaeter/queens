@@ -190,10 +190,10 @@ def test_init(global_settings, mocker, settings_probab_mapping, parameters):
     assert model.var_y_mc is None
     assert model.p_yhf_mean is None
     assert model.p_yhf_var is None
-    assert model.predictive_var_bool is True
+    assert model.predictive_var_bool
     assert model.p_yhf_mc is None
     assert model.p_ylf_mc is None
-    assert model.no_features_comparison_bool is False
+    assert not model.no_features_comparison_bool
     assert model.eigenfunc_random_fields is None
     assert model.eigenvals is None
     assert model.f_mean_train is None
