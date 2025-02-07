@@ -12,33 +12,12 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""A module that provides utilities and a class for visualization in VI.
+"""A module that provides utilities and a class for visualization in VI."""
 
-It is designed such that the VIVisualization class needs only to be
-initialized once and can then be accessed and modified in the entire
-project.
-
-In this context "this" is a pointer to the module object instance itself
-and can be compared to the "self" keyword in classes.
-"""
-
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-this = sys.modules[__name__]
-this.vi_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Calls *from_config_create* and creates a singleton like object.
-
-    Args:
-        plotting_options (dict): Dictionary containing the plotting options
-    """
-    this.vi_visualization_instance = VIVisualization.from_config_create(plotting_options)
 
 
 class VIVisualization:

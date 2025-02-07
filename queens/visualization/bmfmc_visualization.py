@@ -14,49 +14,16 @@
 #
 """Visualization for BMFMC-UQ.
 
-A module that provides utilities and a class for visualization in BMFMC-UQ.
-It is designed such that the BMFMCVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
+A module that provides utilities and a class for visualization in BMFMC-
+UQ.
 """
 
 # pylint: disable=invalid-name
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-
-this = sys.modules[__name__]
-this.bmfmc_visualization_instance = None
-
-
-def from_config_create(plotting_options, predictive_var, BMFMC_reference):
-    r"""Create class from config.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the BMFMCVisualization class from the problem
-    description.
-
-    Args:
-        plotting_options (dict): Plotting options
-        predictive_var (bool): Boolean flag that triggers the computation of the posterior
-                                   variance
-                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
-                                   if set to True. (default value: False)
-        BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                True (default value: False)
-    """
-    this.bmfmc_visualization_instance = BMFMCVisualization.from_config_create(
-        plotting_options, predictive_var, BMFMC_reference
-    )
 
 
 class BMFMCVisualization:

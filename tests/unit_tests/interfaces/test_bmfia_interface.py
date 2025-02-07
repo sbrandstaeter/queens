@@ -114,20 +114,6 @@ class MyContext:
         self.dummy = 0
 
 
-@pytest.fixture(name="dummy_plot_instance")
-def fixture_dummy_plot_instance():
-    """Quick fake plotting object."""
-
-    class my_plot:
-        """Fake plot class."""
-
-        def plot(self):
-            """Fake plot method."""
-
-    my_plot_obj = my_plot()
-    return my_plot_obj
-
-
 # ---- Actual unit_tests ------------------------------
 def test_init():
     """Test from config create method."""
@@ -219,9 +205,7 @@ def test__init__():
     assert interface.coords_mat is None
 
 
-def test_build_approximation(
-    default_bmfia_interface, mocker, default_probabilistic_obj_lst, dummy_plot_instance
-):
+def test_build_approximation(default_bmfia_interface, mocker, default_probabilistic_obj_lst):
     """Test the set-up / build of the probabilistic regression models."""
     z_lf_train = np.zeros((2, 30))
     y_hf_train = np.zeros((2, 25))
@@ -239,10 +223,6 @@ def test_build_approximation(
     mock_optimize_state = mocker.patch(
         "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface."
         "set_optimized_state_of_probabilistic_mappings"
-    )
-    mocker.patch(
-        "queens.visualization.bmfia_visualization.bmfia_visualization_instance",
-        return_value=dummy_plot_instance,
     )
 
     default_bmfia_interface.num_processors_multi_processing = 2

@@ -14,43 +14,15 @@
 #
 """Visualization of surrogate models.
 
-A module that provides utilities and a class for visualization of surrogate
-models.
-
-It is designed such that the SurrogateVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    surrogate_visualization_instance (obj): Instance of the SAVisualization class
+A module that provides utilities and a class for visualization of
+surrogate models.
 """
 
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.cm import ScalarMappable
-
-this = sys.modules[__name__]
-this.surrogate_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Create the SurrogateVisualization object.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the SurrogateVisualization class from the problem
-    description.
-
-    Args:
-        plotting_options (dict): Dictionary containing the plotting_options
-    """
-    this.surrogate_visualization_instance = SurrogateVisualization.from_config_create(
-        plotting_options
-    )
 
 
 def convert_to_dict(values):

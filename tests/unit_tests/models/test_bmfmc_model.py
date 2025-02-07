@@ -503,18 +503,15 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
     np.random.seed(1)
     x_red = np.hstack((np.random.random((20, 1)), y_LFS_mc_stdized))
 
-    mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.input_dim_red", return_value=x_red)
-    mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance",
-    )
+    visualization = Mock()
 
-    mp2 = mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance"
-        ".plot_feature_ranking"
-    )
+    mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.input_dim_red", return_value=x_red)
+    mp2 = mocker.patch.object(visualization, "plot_feature_ranking")
     mp3 = mocker.patch(
         "queens.models.bmfmc_model.StandardScaler.fit_transform", return_value=y_LFS_mc_stdized
     )
+
+    default_bmfmc_model.visualization = visualization
 
     def linear_scale_dummy(a, b):  # pylint: disable=unused-argument
         return a

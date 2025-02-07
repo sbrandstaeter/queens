@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 import queens.utils.pdf_estimation as est
-import queens.visualization.bmfmc_visualization as qvis
+from queens.interfaces.bmfmc_interface import BmfmcInterface
 from queens.iterators.data_iterator import DataIterator
 from queens.models.model import Model
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField as RandomField
@@ -142,6 +142,7 @@ class BMFMCModel(Model):
         training_indices (np.array): Vector with indices to select the training data subset from
                                      the larger data set of Monte-Carlo data.
         uncertain_parameters (obj): UncertainParameters object.
+        visualization (BMFMCVisualization): BMFMC visualization object.
 
     Returns:
         Instance of BMFMCModel
@@ -255,6 +256,7 @@ class BMFMCModel(Model):
         self.hf_data_iterator = hf_data_iterator
         self.training_indices = None
         self.uncertain_parameters = None
+        self.visualization = None
 
         super().__init__()
 
@@ -675,12 +677,10 @@ class BMFMCModel(Model):
             corr_coef_unnorm = np.abs(np.dot(x_iter_test.T, Y_LFS_mc_stdized))
 
             # --------- plot the rankings/scores for first iteration -------------------------------
-            if counter == 0:
-                ele = np.arange(1, x_iter_test.shape[1] + 1)
-                if qvis.bmfmc_visualization_instance:
-                    qvis.bmfmc_visualization_instance.plot_feature_ranking(
-                        ele, corr_coef_unnorm, counter
-                    )
+            if self.visualization:
+                if counter == 0:
+                    ele = np.arange(1, x_iter_test.shape[1] + 1)
+                    self.visualization.plot_feature_ranking(ele, corr_coef_unnorm, counter)
             # --------------------------------------------------------------------------------------
 
             # select input feature with the highest score

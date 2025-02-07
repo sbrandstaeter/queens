@@ -12,20 +12,9 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Provide utilities and a class for visualization in BMFIA analysis.
-
-It is designed such that the BMFIAVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    bmfia_visualization_instance (obj): Instance of the BMFIAVisualization class
-"""
+"""Provide utilities and a class for visualization in BMFIA analysis."""
 
 # pylint: disable=invalid-name
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -33,24 +22,6 @@ import numpy as np
 import plotly.graph_objects as go
 import seaborn as sns
 from plotly.subplots import make_subplots
-
-this = sys.modules[__name__]
-this.bmfia_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Call the class function `from_config_create`.
-
-    It creates an instance of the BMFIAVisualization class
-    from the problem description.
-
-    Args:
-        plotting_options (dict): Dictionary with plotting options
-
-    Returns:
-        None
-    """
-    this.bmfia_visualization_instance = BMFIAVisualization.from_config_create(plotting_options)
 
 
 class BMFIAVisualization:
