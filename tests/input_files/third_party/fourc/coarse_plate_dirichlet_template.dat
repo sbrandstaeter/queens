@@ -247,7 +247,6 @@ NODE    118 DSURFACE 1
 NODE    119 DSURFACE 1
 NODE    120 DSURFACE 1
 NODE    121 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  1.2500000000000000e+01  1.2500000000000000e+01  0.0000000000000000e+00
 NODE         2 COORD  1.0000000000000000e+01  1.2500000000000000e+01  0.0000000000000000e+00
@@ -471,13 +470,3 @@ NODE       121 COORD -1.2500000000000000e+01 -1.2500000000000000e+01  0.00000000
    98 MEMBRANE4 QUAD4  107 108 119 118    MAT 10 KINEM nonlinear THICK 2.5 STRESS_STRAIN plane_stress
    99 MEMBRANE4 QUAD4  108 109 120 119    MAT 10 KINEM nonlinear THICK 2.5 STRESS_STRAIN plane_stress
    100 MEMBRANE4 QUAD4  109 110 121 120    MAT 10 KINEM nonlinear THICK 2.5 STRESS_STRAIN plane_stress
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
----------------------------------------------------ELECTROMAGNETIC ELEMENTS
--------------------------------------------------------ARTERY ELEMENTS
