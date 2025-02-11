@@ -16,11 +16,8 @@
 
 import functools
 import inspect
-import io
 import logging
-import re
 import sys
-import time
 
 from queens.utils.print_utils import get_str_table
 

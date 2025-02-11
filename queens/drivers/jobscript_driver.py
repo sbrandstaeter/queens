@@ -16,7 +16,6 @@
 
 
 import logging
-from asyncio import timeout
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -237,7 +236,7 @@ class JobscriptDriver(Driver):
 
         with metadata.time_code("run_jobscript"):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
-            self._run_executable(execute_cmd)
+            self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -280,10 +279,11 @@ class JobscriptDriver(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file, error_file
 
-    def _run_executable(self, execute_cmd):
+    def _run_executable(self, job_id, execute_cmd):
         """Run executable.
 
         Args:
+            job_id (int): Job ID.
             execute_cmd (str): Executed command.
         """
         process_returncode, _, stdout, stderr = run_subprocess(
