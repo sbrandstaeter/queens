@@ -31,9 +31,7 @@ jobs:
           sudo apt-get install -y rsync
       - name: Create links to 4C
         run: |
-          ln -s /home/user/4C/build/4C config/4C
-          ln -s /home/user/4C/build/post_ensight config/post_ensight
-          ln -s /home/user/4C/build/post_processor config/post_processor
+          ln -s /home/user/4C/build/ config/4C_build
       - name: Create Python environment
         id: environment
         uses: ./.github/actions/create_python_environment

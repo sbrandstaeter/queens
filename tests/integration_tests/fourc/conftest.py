@@ -89,13 +89,10 @@ def fixture_setup_symbolic_links_fourc(fourc_link_paths, fourc_build_paths_for_g
         raise FileNotFoundError(
             "Please make sure to make the missing executable available under the given "
             "path OR\n"
-            "make sure the symbolic link under the config directory points to an "
-            "existing file! \n"
-            "You can create the necessary symbolic links on Linux via:\n"
+            "make sure the symbolic link in the config directory points to the build directory of "
+            "4C! \n"
+            "You can create the necessary symbolic link on Linux via:\n"
             "-------------------------------------------------------------------------\n"
-            "ln -s <path/to/fourc> <QUEENS_BaseDir>/config/4C\n"
-            "ln -s <path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight\n"
-            "ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n"
+            "ln -s <path-to-4C-build-directory> <queens-base-dir>/config/4C_build\n"
             "-------------------------------------------------------------------------\n"
-            "...and similar for the other links."
         ) from error
