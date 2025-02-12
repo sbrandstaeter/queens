@@ -200,7 +200,7 @@ class JobscriptDriver(Driver):
         Returns:
             Result and potentially the gradient.
         """
-        job_dir, output_dir, output_file, input_files, log_file, error_file = self._manage_paths(
+        job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
 
@@ -235,7 +235,7 @@ class JobscriptDriver(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
+            execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
@@ -258,7 +258,6 @@ class JobscriptDriver(Driver):
             output_file (Path): Path to output file(s).
             input_files (dict): Dict with name and path of the input file(s).
             log_file (Path): Path to log file.
-            error_file (Path): Path to error file.
         """
         job_dir = experiment_dir / str(job_id)
         output_dir = job_dir / "output"
@@ -275,9 +274,8 @@ class JobscriptDriver(Driver):
             input_files[input_template_name] = job_dir / input_file_str
 
         log_file = output_dir / (output_prefix + ".log")
-        error_file = output_dir / (output_prefix + ".err")
 
-        return job_dir, output_dir, output_file, input_files, log_file, error_file
+        return job_dir, output_dir, output_file, input_files, log_file
 
     def _run_executable(self, job_id, execute_cmd):
         """Run executable.
