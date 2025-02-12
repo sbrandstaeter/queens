@@ -19,7 +19,7 @@ This test uses the Rosenbrock residual function.
 
 import numpy as np
 
-from queens.distributions.free import FreeVariable
+from queens.distributions.free_variable import FreeVariable
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator

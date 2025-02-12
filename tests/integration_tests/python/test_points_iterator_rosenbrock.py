@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.free import FreeVariable
+from queens.distributions.free_variable import FreeVariable
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.rosenbrock60 import rosenbrock60
 from queens.iterators.points_iterator import PointsIterator

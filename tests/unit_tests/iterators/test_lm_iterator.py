@@ -22,7 +22,7 @@ import plotly.express as px
 import pytest
 from mock import Mock
 
-from queens.distributions.free import FreeVariable
+from queens.distributions.free_variable import FreeVariable
 from queens.iterators.lm_iterator import LMIterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters

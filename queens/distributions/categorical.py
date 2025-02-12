@@ -22,13 +22,13 @@ import logging
 
 import numpy as np
 
-from queens.distributions.distributions import Distribution
+from queens.distributions.distribution import Distribution
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class CategoricalDistribution(Distribution):
+class Categorical(Distribution):
     """General categorical distribution.
 
     Attributes:

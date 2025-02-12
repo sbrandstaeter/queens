@@ -17,7 +17,7 @@
 import numpy as np
 import pandas as pd
 
-from queens.distributions.free import FreeVariable
+from queens.distributions.free_variable import FreeVariable
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.lm_iterator import LMIterator
 from queens.main import run_iterator
