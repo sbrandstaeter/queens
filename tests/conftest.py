@@ -17,7 +17,6 @@
 import getpass
 import logging
 import socket
-from pathlib import Path
 from time import perf_counter
 
 import numpy as np
@@ -27,7 +26,6 @@ from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
 from queens.utils.path_utils import relative_path_from_queens, relative_path_from_source
-from test_utils.integration_tests import fourc_build_paths_from_home
 
 _logger = logging.getLogger(__name__)
 
@@ -236,16 +234,11 @@ def fixture_config_dir():
 @pytest.fixture(name="fourc_link_paths", scope="session")
 def fixture_fourc_link_paths(config_dir):
     """Set symbolic links for 4C on testing machine."""
-    fourc = config_dir / "4C"
-    post_ensight = config_dir / "post_ensight"
-    post_processor = config_dir / "post_processor"
+    fourc_build_dir = config_dir / "4C_build"
+    fourc = fourc_build_dir / "4C"
+    post_ensight = fourc_build_dir / "post_ensight"
+    post_processor = fourc_build_dir / "post_processor"
     return fourc, post_ensight, post_processor
-
-
-@pytest.fixture(name="fourc_build_paths_for_gitlab_runner", scope="session")
-def fixture_fourc_build_paths_for_gitlab_runner():
-    """4C build paths on testing machine."""
-    return fourc_build_paths_from_home(Path.home())
 
 
 @pytest.fixture(name="example_simulator_fun_dir", scope="session")

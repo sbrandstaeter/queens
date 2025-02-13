@@ -18,84 +18,46 @@ import pytest
 
 
 @pytest.fixture(name="setup_symbolic_links_fourc", autouse=True)
-def fixture_setup_symbolic_links_fourc(fourc_link_paths, fourc_build_paths_for_gitlab_runner):
+def fixture_setup_symbolic_links_fourc(fourc_link_paths):
     """Set-up of 4C symbolic links.
 
     Args:
-        fourc_link_paths (Path): destination for symbolic links to executables
-        fourc_build_paths_for_gitlab_runner (Path): Several paths that are needed to build symbolic
-                                                links to executables
+        fourc_link_paths (Path): Symbolic links to 4C executables.
     """
-    (
-        dst_fourc,
-        dst_post_ensight,
-        dst_post_processor,
-    ) = fourc_link_paths
-
     (
         fourc,
         post_ensight,
         post_processor,
-    ) = fourc_build_paths_for_gitlab_runner
+    ) = fourc_link_paths
+
     # check if symbolic links are existent
     try:
-        # create link to default 4C executable location if no link is available
-        if not dst_fourc.is_symlink():
-            if not fourc.is_file():
-                raise FileNotFoundError(
-                    f"Failed to create link to default 4C location.\n"
-                    f"No 4C found under default location:\n"
-                    f"\t{fourc}\n"
-                )
-            dst_fourc.symlink_to(fourc)
-        # create link to default post_ensight location if no link is available
-        if not dst_post_ensight.is_symlink():
-            if not post_ensight.is_file():
-                raise FileNotFoundError(
-                    f"Failed to create link to default post_ensight location.\n"
-                    f"No post_ensight found under default location:\n"
-                    f"\t{post_ensight}\n"
-                )
-            dst_post_ensight.symlink_to(post_ensight)
-        # create link to default post_processor location if no link is available
-        if not dst_post_processor.is_symlink():
-            if not post_processor.is_file():
-                raise FileNotFoundError(
-                    f"Failed to create link to default post_processor location.\n"
-                    f"No post_processor found under default location:\n"
-                    f"\t{post_processor}\n"
-                )
-            dst_post_processor.symlink_to(post_processor)
-
         # check if existing link to fourc works and points to a valid file
-        if not dst_fourc.resolve().exists():
+        if not fourc.resolve().exists():
             raise FileNotFoundError(
-                f"The following link seems to be dead: {dst_fourc}\n"
-                f"It points to (non-existing): {dst_fourc.resolve()}\n"
+                f"The following link seems to be dead: {fourc}\n"
+                f"It points to (non-existing): {fourc.resolve()}\n"
             )
         # check if existing link to post_ensight works and points to a valid file
-        if not dst_post_ensight.resolve().exists():
+        if not post_ensight.resolve().exists():
             raise FileNotFoundError(
-                f"The following link seems to be dead: {dst_post_ensight}\n"
-                f"It points to: {dst_post_ensight.resolve()}\n"
+                f"The following link seems to be dead: {post_ensight}\n"
+                f"It points to: {post_ensight.resolve()}\n"
             )
         # check if existing link to post_processor works and points to a valid file
-        if not dst_post_processor.resolve().exists():
+        if not post_processor.resolve().exists():
             raise FileNotFoundError(
-                f"The following link seems to be dead: {dst_post_processor}\n"
-                f"It points to: {dst_post_processor.resolve()}\n"
+                f"The following link seems to be dead: {post_processor}\n"
+                f"It points to: {post_processor.resolve()}\n"
             )
     except FileNotFoundError as error:
         raise FileNotFoundError(
             "Please make sure to make the missing executable available under the given "
             "path OR\n"
-            "make sure the symbolic link under the config directory points to an "
-            "existing file! \n"
-            "You can create the necessary symbolic links on Linux via:\n"
+            "make sure the symbolic link in the config directory points to the build directory of "
+            "4C! \n"
+            "You can create the necessary symbolic link on Linux via:\n"
             "-------------------------------------------------------------------------\n"
-            "ln -s <path/to/fourc> <QUEENS_BaseDir>/config/4C\n"
-            "ln -s <path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight\n"
-            "ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n"
+            "ln -s <path-to-4C-build-directory> <queens-base-dir>/config/4C_build\n"
             "-------------------------------------------------------------------------\n"
-            "...and similar for the other links."
         ) from error
