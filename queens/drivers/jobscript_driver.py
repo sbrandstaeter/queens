@@ -25,7 +25,7 @@ from queens.utils.injector import inject, inject_in_template
 from queens.utils.io_utils import read_file
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
-from queens.utils.run_subprocess import run_subprocess_with_logging
+from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -200,7 +200,7 @@ class JobscriptDriver(Driver):
         Returns:
             Result and potentially the gradient.
         """
-        job_dir, output_dir, output_file, input_files, log_file, error_file = self._manage_paths(
+        job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
 
@@ -235,8 +235,8 @@ class JobscriptDriver(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = "bash " + str(jobscript_file)
-            self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
+            execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
+            self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -258,7 +258,6 @@ class JobscriptDriver(Driver):
             output_file (Path): Path to output file(s).
             input_files (dict): Dict with name and path of the input file(s).
             log_file (Path): Path to log file.
-            error_file (Path): Path to error file.
         """
         job_dir = experiment_dir / str(job_id)
         output_dir = job_dir / "output"
@@ -275,27 +274,18 @@ class JobscriptDriver(Driver):
             input_files[input_template_name] = job_dir / input_file_str
 
         log_file = output_dir / (output_prefix + ".log")
-        error_file = output_dir / (output_prefix + ".err")
 
-        return job_dir, output_dir, output_file, input_files, log_file, error_file
+        return job_dir, output_dir, output_file, input_files, log_file
 
-    def _run_executable(self, job_id, execute_cmd, log_file, error_file, verbose=False):
+    def _run_executable(self, job_id, execute_cmd):
         """Run executable.
 
         Args:
             job_id (int): Job ID.
             execute_cmd (str): Executed command.
-            log_file (Path): Path to log file.
-            error_file (Path): Path to error file.
-            verbose (bool, opt): Flag for additional streaming to terminal.
         """
-        process_returncode, _, stdout, stderr = run_subprocess_with_logging(
+        process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
-            terminate_expression="PROC.*ERROR",
-            logger_name=__name__ + f"_{job_id}",
-            log_file=str(log_file),
-            error_file=str(error_file),
-            streaming=verbose,
             raise_error_on_subprocess_failure=False,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
