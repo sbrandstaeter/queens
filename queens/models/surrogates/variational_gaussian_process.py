@@ -14,10 +14,10 @@
 #
 """Module implementing a scalable GPFlow-based SVGP model.
 
-This module defines the `GPflowSVGPModel` class, which is designed to facilitate scalable Gaussian
-Process regression using variational inference as outlined by Hensman et al. (2015). The model
-leverages TensorFlow for optimization and supports minibatch training, making it suitable for large
-datasets.
+This module defines the `VariationalGaussianProcess` class, which is designed to facilitate scalable
+Gaussian Process regression using variational inference as outlined by Hensman et al. (2015). The
+model leverages TensorFlow for optimization and supports minibatch training, making it suitable for
+large datasets.
 
 Key features include:
 - Configurable number of inducing points and minibatch size for efficient training.
@@ -35,7 +35,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import tensorflow_probability as tfp
 
-from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 from queens.utils.logger_settings import log_init_args
 from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
@@ -57,7 +57,7 @@ else:
     configure_keras(keras)
 
 
-class GPflowSVGPModel(SurrogateModel):
+class VariationalGaussianProcess(Surrogate):
     """Class for creating SVGP regression model based on GPFlow.
 
     **Key reference:**

@@ -31,7 +31,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class BMFMCModel(Model):
+class BMFMC(Model):
     r"""Bayesian multi-fidelity Monte-Carlo model.
 
     Bayesian multi-fidelity Monte-Carlo model for uncertainty quantification, which is a
@@ -142,9 +142,6 @@ class BMFMCModel(Model):
                                      the larger data set of Monte-Carlo data.
         uncertain_parameters (obj): UncertainParameters object.
         visualization (BMFMCVisualization): BMFMC visualization object.
-
-    Returns:
-        Instance of BMFMCModel
 
     References:
         [1] Nitzler, J., Biehler, J., Fehn, N., Koutsourelakis, P.-S. and Wall, W.A. (2020),
