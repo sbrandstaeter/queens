@@ -19,7 +19,7 @@ import pytest
 from queens.iterators.data import Data
 from queens.main import run_iterator
 from queens.parameters.parameters import Parameters
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 
 
 def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):

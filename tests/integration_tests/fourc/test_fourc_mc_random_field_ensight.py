@@ -29,7 +29,7 @@ from queens.parameters.parameters import Parameters
 from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
 from queens.schedulers.local import Local
 from queens.utils.config_directories import experiment_directory
-from queens.utils.io_utils import load_result, read_file
+from queens.utils.io import load_result, read_file
 
 _logger = logging.getLogger(__name__)
 

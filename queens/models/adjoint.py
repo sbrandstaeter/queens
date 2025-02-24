@@ -18,7 +18,7 @@ import logging
 
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
-from queens.utils.io_utils import write_to_csv
+from queens.utils.io import write_to_csv
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

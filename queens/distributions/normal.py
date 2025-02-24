@@ -19,7 +19,7 @@ import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distribution import Continuous
-from queens.utils import numpy_utils
+from queens.utils import numpy as numpy_utils
 from queens.utils.logger_settings import log_init_args
 
 

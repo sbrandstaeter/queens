@@ -23,7 +23,7 @@ from tqdm import tqdm
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
-from queens.utils.pool_utils import create_pool
+from queens.utils.pool import create_pool
 
 _logger = logging.getLogger(__name__)
 

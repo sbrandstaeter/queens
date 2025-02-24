@@ -30,7 +30,7 @@ from queens.distributions import beta, lognormal, normal, uniform
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
-from queens.utils.valid_options_utils import get_option
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

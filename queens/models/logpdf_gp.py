@@ -28,8 +28,8 @@ from scipy import stats
 
 from queens.models.model import Model
 from queens.utils import jax_minimize_wrapper
-from queens.utils.gpf_utils import init_scaler
-from queens.utils.numpy_utils import safe_cholesky
+from queens.utils.gpflow import init_scaler
+from queens.utils.numpy import safe_cholesky
 
 _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)

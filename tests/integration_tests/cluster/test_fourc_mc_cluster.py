@@ -29,7 +29,7 @@ from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.utils import config_directories
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
     THOUGHT_CLUSTER_TYPE,

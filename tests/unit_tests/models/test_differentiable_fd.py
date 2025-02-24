@@ -20,7 +20,7 @@ from mock import Mock
 
 from queens.models.finite_difference import FiniteDifference
 from queens.models.model import Model
-from queens.utils.valid_options_utils import InvalidOptionError
+from queens.utils.valid_options import InvalidOptionError
 
 
 # ------------------ some fixtures ------------------------------- #

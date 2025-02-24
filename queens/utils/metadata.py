@@ -24,8 +24,8 @@ import yaml
 from pandas.io.json._normalize import nested_to_record
 
 from queens.utils.config_directories import job_dirs_in_experiment_dir
-from queens.utils.io_utils import to_dict_with_standard_types
-from queens.utils.print_utils import get_str_table
+from queens.utils.io import to_dict_with_standard_types
+from queens.utils.printing import get_str_table
 
 METADATA_FILENAME = "metadata"
 METADATA_FILETYPE = ".yaml"

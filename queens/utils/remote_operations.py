@@ -28,7 +28,7 @@ import cloudpickle
 from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
-from queens.utils.path_utils import PATH_TO_QUEENS, is_empty
+from queens.utils.path import PATH_TO_QUEENS, is_empty
 from queens.utils.rsync import assemble_rsync_command
 from queens.utils.run_subprocess import start_subprocess
 

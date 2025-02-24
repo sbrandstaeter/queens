@@ -27,7 +27,7 @@ from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.models.likelihoods.likelihood import Likelihood
 from queens.utils.ascii_art import print_bmfia_acceleration
 from queens.utils.logger_settings import log_init_args
-from queens.utils.valid_options_utils import get_option
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

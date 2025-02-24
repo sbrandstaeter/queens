@@ -20,7 +20,7 @@ from mock import Mock
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.models.simulation import Simulation
 from queens.utils.exceptions import InvalidOptionError
-from queens.utils.fcc_utils import (
+from queens.utils.from_config_create import (
     VALID_TYPES,
     check_for_reference,
     from_config_create_iterator,
@@ -104,7 +104,7 @@ def test_insert_new_obj(config_2, dummy_obj, inserted_config_2):
 
 def test_from_config_create_object_iterator(mocker, config_1, global_settings, parameters):
     """Test case for from_config_create_object function."""
-    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=MonteCarlo)
+    mp1 = mocker.patch("queens.utils.from_config_create.get_module_class", return_value=MonteCarlo)
     mp2 = mocker.patch("queens.iterators.monte_carlo.MonteCarlo.__init__", return_value=None)
     from_config_create_object(config_1, global_settings, parameters)
 
@@ -116,7 +116,7 @@ def test_from_config_create_object_iterator(mocker, config_1, global_settings, p
 
 def test_from_config_create_object_model(parameters, mocker, config_1):
     """Test case for from_config_create_object function."""
-    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=Simulation)
+    mp1 = mocker.patch("queens.utils.from_config_create.get_module_class", return_value=Simulation)
     mp2 = mocker.patch("queens.models.simulation.Simulation.__init__", return_value=None)
     from_config_create_object(config_1, parameters)
 

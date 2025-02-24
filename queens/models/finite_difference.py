@@ -21,7 +21,7 @@ import numpy as np
 from queens.models.simulation import Simulation
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
 from queens.utils.logger_settings import log_init_args
-from queens.utils.valid_options_utils import check_if_valid_options
+from queens.utils.valid_options import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 

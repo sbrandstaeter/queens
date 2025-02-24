@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from queens.utils.cli_utils import get_cli_options
+from queens.utils.cli import get_cli_options
 from queens.utils.exceptions import CLIError
 
 

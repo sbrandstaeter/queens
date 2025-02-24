@@ -17,7 +17,7 @@
 import pytest
 
 from queens.utils.exceptions import InvalidOptionError
-from queens.utils.valid_options_utils import check_if_valid_options, get_option
+from queens.utils.valid_options import check_if_valid_options, get_option
 
 
 def test_check_if_valid_options_valid(requested_options_valid, valid_options):

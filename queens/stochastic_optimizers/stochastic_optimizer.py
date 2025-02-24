@@ -19,9 +19,9 @@ import logging
 
 import numpy as np
 
-from queens.utils.iterative_averaging_utils import l1_norm, l2_norm, relative_change
-from queens.utils.print_utils import get_str_table
-from queens.utils.valid_options_utils import get_option
+from queens.utils.iterative_averaging import l1_norm, l2_norm, relative_change
+from queens.utils.printing import get_str_table
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

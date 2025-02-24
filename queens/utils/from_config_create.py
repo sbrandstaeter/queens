@@ -36,8 +36,8 @@ from queens.utils.exceptions import InvalidOptionError
 from queens.utils.experimental_data_reader import (
     VALID_TYPES as VALID_EXPERIMENTAL_DATA_READER_TYPES,
 )
-from queens.utils.import_utils import get_module_class
-from queens.utils.iterative_averaging_utils import VALID_TYPES as VALID_ITERATIVE_AVERAGING_TYPES
+from queens.utils.imports import get_module_class
+from queens.utils.iterative_averaging import VALID_TYPES as VALID_ITERATIVE_AVERAGING_TYPES
 from queens.utils.remote_operations import VALID_CONNECTION_TYPES
 from queens.variational_distributions import VALID_TYPES as VALID_VARIATIONAL_DISTRIBUTION_TYPES
 

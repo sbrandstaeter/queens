@@ -25,7 +25,7 @@ from queens.models import HeteroskedasticGaussianProcess
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 
 
 @pytest.mark.max_time_for_test(30)

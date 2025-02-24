@@ -17,7 +17,7 @@
 from queens.distributions import VALID_TYPES as distribution_types
 from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.parameters.random_fields.random_field import RandomField
-from queens.utils.import_utils import get_module_class
+from queens.utils.imports import get_module_class
 
 
 class PieceWise(RandomField):

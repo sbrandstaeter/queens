@@ -26,9 +26,9 @@ from queens.iterators.iterator import Iterator
 from queens.models.bmfmc import BMFMC
 from queens.parameters.random_fields.random_field import RandomField
 from queens.schedulers.scheduler import Scheduler
-from queens.utils.fcc_utils import VALID_TYPES, check_for_reference
-from queens.utils.import_utils import get_module_attribute, get_option
-from queens.utils.io_utils import load_input_file
+from queens.utils.from_config_create import VALID_TYPES, check_for_reference
+from queens.utils.imports import get_module_attribute, get_option
+from queens.utils.io import load_input_file
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ _logger = logging.getLogger(__name__)
 DEFAULT_IMPORTS = [
     "from queens.global_settings import GlobalSettings",
     "from queens.main import run_iterator",
-    "from queens.utils.io_utils import load_result",
+    "from queens.utils.io import load_result",
     "from queens.parameters.parameters import Parameters",
 ]
 GLOBAL_SETTINGS_CONTEXT = [

@@ -20,7 +20,7 @@
 import numpy as np
 import pytest
 
-from queens.utils.mcmc_utils import mh_select
+from queens.utils.mcmc import mh_select
 
 
 @pytest.fixture(name="acceptance_probability", scope="module")

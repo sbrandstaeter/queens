@@ -32,7 +32,7 @@ from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 
 
 def test_metropolis_hastings_multiple_chains_multivariate_gaussian(

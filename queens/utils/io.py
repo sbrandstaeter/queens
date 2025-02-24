@@ -20,7 +20,7 @@ from pathlib import Path
 import yaml
 
 from queens.utils.exceptions import FileTypeError
-from queens.utils.pickle_utils import load_pickle
+from queens.utils.pickle import load_pickle
 
 try:
     import simplejson as json

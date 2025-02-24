@@ -14,7 +14,7 @@
 #
 """Utils to collect data during iterative processes."""
 
-from queens.utils.print_utils import get_str_table
+from queens.utils.printing import get_str_table
 
 
 class CollectionObject:

@@ -46,7 +46,7 @@ import scipy
 
 from queens.iterators.iterator import Iterator
 from queens.iterators.metropolis_hastings import MetropolisHastings
-from queens.utils import smc_utils
+from queens.utils import sequential_monte_carlo as smc_utils
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 

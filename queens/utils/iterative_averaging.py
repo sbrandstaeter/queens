@@ -19,7 +19,7 @@ import abc
 import numpy as np
 
 from queens.utils.logger_settings import log_init_args
-from queens.utils.print_utils import get_str_table
+from queens.utils.printing import get_str_table
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):

@@ -28,7 +28,7 @@ from queens.iterators.grid import Grid
 from queens.iterators.iterator import Iterator
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 
 _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)

@@ -30,7 +30,7 @@ from queens.models.simulation import Simulation
 from queens.models.surrogates.gaussian_process import GaussianProcess
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from queens.utils.pdf_estimation import estimate_pdf
 
 

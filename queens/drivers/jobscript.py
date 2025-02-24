@@ -22,7 +22,7 @@ from pathlib import Path
 from queens.drivers.driver import Driver
 from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
-from queens.utils.io_utils import read_file
+from queens.utils.io import read_file
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
 from queens.utils.run_subprocess import run_subprocess

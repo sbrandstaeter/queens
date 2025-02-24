@@ -23,7 +23,7 @@ from sklearn.cluster import KMeans
 
 from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.logger_settings import log_init_args
-from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
+from queens.utils.tensorflow import configure_keras, configure_tensorflow
 
 _logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     import tensorflow as tf
     import tf_keras as keras
 else:
-    from queens.utils.import_utils import LazyLoader
+    from queens.utils.imports import LazyLoader
 
     tf = LazyLoader("tensorflow")
     keras = LazyLoader("tf_keras")

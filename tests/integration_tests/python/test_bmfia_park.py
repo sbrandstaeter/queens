@@ -32,7 +32,7 @@ from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from queens.variational_distributions import MeanFieldNormal
 
 

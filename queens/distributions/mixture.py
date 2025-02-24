@@ -21,7 +21,7 @@ from scipy.special import logsumexp
 
 from queens.distributions import VALID_TYPES
 from queens.distributions.distribution import Continuous
-from queens.utils.import_utils import get_module_class
+from queens.utils.imports import get_module_class
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

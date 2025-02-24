@@ -353,5 +353,5 @@ def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw
 def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
     """Test wrong output format."""
     default_data_processor.returned_filter_format = "stuff"
-    with pytest.raises(queens.utils.valid_options_utils.InvalidOptionError):
+    with pytest.raises(queens.utils.valid_options.InvalidOptionError):
         default_data_processor.filter_and_manipulate_raw_data(default_raw_data)

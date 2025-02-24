@@ -25,7 +25,7 @@ from queens.models.simulation import Simulation
 from queens.models.surrogates.variational_gaussian_process import VariationalGaussianProcess
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
 

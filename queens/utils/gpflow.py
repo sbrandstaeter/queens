@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 if TYPE_CHECKING:
     import gpflow as gpf
 else:
-    from queens.utils.import_utils import LazyLoader
+    from queens.utils.imports import LazyLoader
 
     gpf = LazyLoader("gpflow")
 

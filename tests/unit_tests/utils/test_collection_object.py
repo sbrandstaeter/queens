@@ -18,7 +18,7 @@ import logging
 
 import pytest
 
-from queens.utils.collection_utils import CollectionObject
+from queens.utils.collection import CollectionObject
 
 _logger = logging.getLogger(__name__)
 

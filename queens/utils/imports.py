@@ -19,8 +19,8 @@ import logging
 import sys
 from pathlib import Path
 
-from queens.utils.path_utils import check_if_path_exists
-from queens.utils.valid_options_utils import get_option
+from queens.utils.path import check_if_path_exists
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

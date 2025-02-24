@@ -17,7 +17,7 @@
 import pytest
 
 from queens.data_processors.txt import Txt
-from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.path import relative_path_from_queens
 
 
 @pytest.fixture(name="dummy_txt_file", scope="session")

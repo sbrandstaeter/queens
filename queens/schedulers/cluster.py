@@ -24,7 +24,7 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 from queens.schedulers.dask import Dask
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
-from queens.utils.valid_options_utils import get_option
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

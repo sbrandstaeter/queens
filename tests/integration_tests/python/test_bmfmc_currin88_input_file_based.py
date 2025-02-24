@@ -25,7 +25,7 @@ from scipy.stats import entropy
 
 from queens.main import run
 from queens.utils import injector
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from queens.utils.pdf_estimation import estimate_pdf
 
 

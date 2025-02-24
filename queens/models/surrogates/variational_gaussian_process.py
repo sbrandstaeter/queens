@@ -36,9 +36,9 @@ import numpy as np
 import tensorflow_probability as tfp
 
 from queens.models.surrogates.surrogate import Surrogate
-from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
+from queens.utils.gpflow import extract_block_diag, init_scaler, set_transform_function
 from queens.utils.logger_settings import log_init_args
-from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
+from queens.utils.tensorflow import configure_keras, configure_tensorflow
 
 _logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     import gpflow as gpf
     import tensorflow as tf
 else:
-    from queens.utils.import_utils import LazyLoader
+    from queens.utils.imports import LazyLoader
 
     tf = LazyLoader("tensorflow")
     keras = LazyLoader("tf_keras")

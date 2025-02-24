@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.utils.iterative_averaging_utils import (
+from queens.utils.iterative_averaging import (
     ExponentialAveraging,
     MovingAveraging,
     PolyakAveraging,

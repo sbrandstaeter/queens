@@ -26,9 +26,9 @@ from particles.smc_samplers import AdaptiveTempering
 
 from queens.distributions.distribution import Distribution
 from queens.iterators.iterator import Iterator
-from queens.utils import smc_utils
+from queens.utils import sequential_monte_carlo as smc_utils
 from queens.utils.logger_settings import log_init_args
-from queens.utils.print_utils import get_str_table
+from queens.utils.printing import get_str_table
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)

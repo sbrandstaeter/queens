@@ -18,7 +18,7 @@ import abc
 
 import numpy as np
 
-from queens.utils.numpy_utils import at_least_2d
+from queens.utils.numpy import at_least_2d
 
 
 class RandomField(metaclass=abc.ABCMeta):

@@ -27,7 +27,7 @@ from queens.parameters import Parameters
 from queens.schedulers import Local
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from queens.utils.run_subprocess import run_subprocess
 from queens.variational_distributions import FullRankNormal
 

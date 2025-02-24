@@ -17,7 +17,7 @@
 import logging
 from pathlib import Path
 
-from queens.utils.path_utils import create_folder_if_not_existent
+from queens.utils.path import create_folder_if_not_existent
 
 _logger = logging.getLogger(__name__)
 
