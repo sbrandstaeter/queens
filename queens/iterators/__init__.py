@@ -27,7 +27,7 @@ from queens.iterators.elementary_effects import ElementaryEffects
 from queens.iterators.grid import Grid
 from queens.iterators.hamiltonian_monte_carlo import HamiltonianMonteCarlo
 from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
-from queens.iterators.levenberg_marquardt import LevenbergMarquardt
+from queens.iterators.least_squares import LeastSquares
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
 from queens.iterators.monte_carlo import MonteCarlo
@@ -61,7 +61,7 @@ VALID_TYPES = {
     "points": Points,
     "bmfmc": BMFMC,
     "grid": Grid,
-    "lm": LevenbergMarquardt,
+    "least_squares": LeastSquares,
     "bbvi": BBVI,
     "bmfia": BMFIA,
     "rpvi": RPVI,

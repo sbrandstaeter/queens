@@ -15,15 +15,15 @@
 """Integration test for the Levenberg Marquardt iterator."""
 
 import numpy as np
-import pandas as pd
 
 from queens.distributions.free_variable import FreeVariable
 from queens.drivers.function import Function
-from queens.iterators.levenberg_marquardt import LevenbergMarquardt
+from queens.iterators.least_squares import LeastSquares
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
+from queens.utils.io import load_result
 
 
 def test_lm_rosenbrock_res(global_settings):
@@ -37,35 +37,25 @@ def test_lm_rosenbrock_res(global_settings):
     driver = Function(parameters=parameters, function="rosenbrock60_residual")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
-    iterator = LevenbergMarquardt(
-        jac_rel_step=1e-05,
-        jac_abs_step=0.001,
-        max_feval=99,
-        init_reg=0.01,
-        update_reg="grad",
-        convergence_tolerance=1e-06,
-        initial_guess=[0.9, 0.9],
-        result_description={"write_results": True, "plot_results": True},
+    iterator = LeastSquares(
         model=model,
         parameters=parameters,
         global_settings=global_settings,
+        initial_guess=[0.9, 0.9],
+        result_description={"write_results": True, "plot_results": True},
+        verbose_output=False,
+        max_feval=99,
+        algorithm="lm",
+        jac_method="2-point",
+        jac_rel_step=1e-05,
+        objective_and_jacobian=True,
     )
 
     # Actual analysis
     run_iterator(iterator, global_settings=global_settings)
 
     # Load results
-    result_file = global_settings.result_file(".csv")
-    data = pd.read_csv(
-        result_file,
-        sep="\t",
-    )
+    results = load_result(global_settings.result_file(".pickle"))
 
-    params = data.get("params").tail(1)
-    dfparams = params.str.extractall(r"([+-]?\d+\.\d*e?[+-]?\d*)")
-    dfparams = dfparams.astype(float)
-    numpyparams = dfparams.to_numpy()
-
-    np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
-
-    assert global_settings.result_file(".html").is_file()
+    np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-5)
+    np.testing.assert_allclose(results.fun, np.array([+0.0, +0.0]))

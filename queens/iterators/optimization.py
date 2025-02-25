@@ -18,7 +18,7 @@ import logging
 import time
 
 import numpy as np
-from scipy.optimize import Bounds, least_squares, minimize
+from scipy.optimize import Bounds, minimize
 from scipy.optimize._numdiff import _prepare_bounds
 
 from queens.iterators.iterator import Iterator
@@ -32,10 +32,10 @@ _logger = logging.getLogger(__name__)
 class Optimization(Iterator):
     """Iterator for deterministic optimization problems.
 
-    Based on the *scipy.optimize* optimization toolbox [1].
+    Based on the *scipy.optimize.minimize* optimization toolbox [1].
 
     References:
-        [1]: https://docs.scipy.org/doc/scipy/reference/optimize.html
+        [1]: https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
 
     Attributes:
         algorithm (str): String that defines the optimization algorithm to be used:
@@ -51,7 +51,6 @@ class Optimization(Iterator):
                                 Jacobian necessary
                          - SLSQP: Sequential Least Squares Programming minimization with bounds
                                   and constraints using Jacobian
-                         - LSQ: Nonlinear least squares with bounds using Jacobian
                          - COBYLA: Constrained Optimization BY Linear Approximation
                                    (no Jacobian)
                          - NELDER-MEAD: Downhill-simplex search method
@@ -92,12 +91,8 @@ class Optimization(Iterator):
         objective_and_jacobian (bool): If true, every time the objective is evaluated also the
                                        jacobian is evaluated. This leads to improved batching, but
                                        can lead to unnecessary evaluations of the jacobian during
-                                       line-search.
-                                       This option is only available for gradient methods. Default
-                                       for 'LSQ' is true, and false for remaining gradient methods.
-
-    Returns:
-        Optimization (obj): Instance of the Optimization
+                                       line-search. This option is only available for gradient
+                                       methods. Default is false.
     """
 
     @log_init_args
@@ -115,7 +110,7 @@ class Optimization(Iterator):
         algorithm="L-BFGS-B",
         jac_method="2-point",
         jac_rel_step=None,
-        objective_and_jacobian=None,
+        objective_and_jacobian=False,
     ):
         """Initialize an Optimization.
 
@@ -176,8 +171,7 @@ class Optimization(Iterator):
                                                 batching, but can lead to unnecessary evaluations of
                                                 the jacobian during line-search.
                                                 This option is only available for gradient methods.
-                                                Default for 'LSQ' is true, and false for remaining
-                                                gradient methods.
+                                                Default is false.
         """
         super().__init__(model, parameters, global_settings)
 
@@ -239,11 +233,6 @@ class Optimization(Iterator):
         self.objective_and_jacobian = objective_and_jacobian
         if self.algorithm in ["COBYLA", "NELDER-MEAD", "POWELL"]:
             self.objective_and_jacobian = False
-        if self.objective_and_jacobian is None:
-            if self.algorithm == "LSQ":
-                self.objective_and_jacobian = True
-            else:
-                self.objective_and_jacobian = False
 
     def objective(self, x0):
         """Evaluate objective function at *x0*.
@@ -325,18 +314,9 @@ class Optimization(Iterator):
         """Core run of Optimization iterator."""
         _logger.info("Welcome to Optimization core run.")
         start = time.time()
-        # nonlinear least squares with bounds using Jacobian
-        if self.algorithm == "LSQ":
-            self.solution = least_squares(
-                self.objective,
-                self.initial_guess,
-                jac=self.jacobian,
-                bounds=self.bounds,
-                max_nfev=self.max_feval,
-                verbose=int(self.verbose_output),
-            )
+
         # minimization with bounds using Jacobian
-        elif self.algorithm in {"L-BFGS-B", "TNC"}:
+        if self.algorithm in {"L-BFGS-B", "TNC"}:
             self.solution = minimize(
                 self.objective,
                 self.initial_guess,
@@ -390,9 +370,6 @@ class Optimization(Iterator):
     def post_run(self):
         """Analyze the resulting optimum."""
         _logger.info("The optimum:\n\t%s", self.solution.x)
-        if self.algorithm == "LSQ":
-            _logger.info("Optimality:\n\t%s", self.solution.optimality)
-            _logger.info("Cost:\n\t%s", self.solution.cost)
 
         if self.result_description:
             if self.result_description["write_results"]:
