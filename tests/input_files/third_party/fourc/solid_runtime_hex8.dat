@@ -4,7 +4,7 @@ hex8 discretization
 
 tested date: 19.12.2024
 -------------------------------------------------------------------PROBLEM TYPE
-PROBLEMTYPE                      Structure
+PROBLEMTYPE                     Structure
 ----------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
