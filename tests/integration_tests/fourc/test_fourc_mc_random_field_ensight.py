@@ -127,24 +127,22 @@ def test_write_random_material_to_dat(
         global_settings=global_settings,
     )
 
-    # Actual analysis
-    run_iterator(iterator, global_settings=global_settings)
-
-    # Load results
-    results = load_result(global_settings.result_file(".pickle"))
-
     try:
+        # Actual analysis
+        run_iterator(iterator, global_settings=global_settings)
+
+        # Load results
+        results = load_result(global_settings.result_file(".pickle"))
+
         # Check if we got the expected results
         np.testing.assert_array_almost_equal(results["mean"], expected_mean, decimal=8)
         np.testing.assert_array_almost_equal(results["var"], expected_var, decimal=8)
-    except (AssertionError, KeyError) as error:
+    except Exception as error:
         experiment_dir = experiment_directory(global_settings.experiment_name)
         job_dir = experiment_dir / "0"
         _logger.info(list(job_dir.iterdir()))
         output_dir = job_dir / "output"
         _logger.info(list(output_dir.iterdir()))
-
-        _logger.info(read_file(output_dir / "test_write_random_material_to_dat_0.err"))
         _logger.info(read_file(output_dir / "test_write_random_material_to_dat_0.log"))
         raise error
 

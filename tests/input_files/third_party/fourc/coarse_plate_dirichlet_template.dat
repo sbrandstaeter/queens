@@ -12,7 +12,7 @@ DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------PROBLEM TYPE
-PROBLEMTYPE                      Structure
+PROBLEMTYPE                     Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
@@ -30,7 +30,7 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.025
 NUMSTEP                         40
 MAXTIME                         1.0
-DAMPING                         no
+DAMPING                         None
 M_DAMP                          0.001
 K_DAMP                          0.001
 PREDICT                         ConstDisVelAcc

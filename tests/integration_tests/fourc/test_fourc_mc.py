@@ -75,24 +75,22 @@ def test_fourc_mc(
         global_settings=global_settings,
     )
 
-    # Actual analysis
-    run_iterator(iterator, global_settings=global_settings)
-
-    # Load results
-    results = load_result(global_settings.result_file(".pickle"))
-
     try:
+        # Actual analysis
+        run_iterator(iterator, global_settings=global_settings)
+
+        # Load results
+        results = load_result(global_settings.result_file(".pickle"))
+
         # assert statements
         np.testing.assert_array_almost_equal(
             results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
-    except (AssertionError, KeyError) as error:
+    except Exception as error:
         experiment_dir = experiment_directory(global_settings.experiment_name)
         job_dir = experiment_dir / "0"
         _logger.info(list(job_dir.iterdir()))
         output_dir = job_dir / "output"
         _logger.info(list(output_dir.iterdir()))
-
-        _logger.info(read_file(output_dir / "test_fourc_mc_0.err"))
         _logger.info(read_file(output_dir / "test_fourc_mc_0.log"))
         raise error
