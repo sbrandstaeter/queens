@@ -24,7 +24,7 @@ from mock import patch
 
 from queens.global_settings import GlobalSettings
 from queens.main import main, run
-from queens.utils.io_utils import load_input_file
+from queens.utils.io import load_input_file
 
 
 @pytest.fixture(name="input_file")

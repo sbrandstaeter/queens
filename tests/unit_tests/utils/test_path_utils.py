@@ -18,7 +18,7 @@ from pathlib import Path, PurePath
 
 import pytest
 
-from queens.utils.path_utils import (
+from queens.utils.path import (
     PATH_TO_QUEENS,
     PATH_TO_SOURCE,
     check_if_path_exists,

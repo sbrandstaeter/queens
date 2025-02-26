@@ -21,9 +21,9 @@ import logging
 import sys
 from pathlib import Path
 
-from queens.schedulers.cluster_scheduler import VALID_WORKLOAD_MANAGERS
+from queens.schedulers.cluster import VALID_WORKLOAD_MANAGERS
 from queens.utils.logger_settings import setup_basic_logging
-from queens.utils.valid_options_utils import get_option
+from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 

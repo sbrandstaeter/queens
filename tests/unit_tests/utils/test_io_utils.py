@@ -22,7 +22,7 @@ import pytest
 import yaml
 
 from queens.utils.exceptions import FileTypeError
-from queens.utils.io_utils import load_input_file, write_to_csv
+from queens.utils.io import load_input_file, write_to_csv
 
 
 @pytest.fixture(name="input_dict")

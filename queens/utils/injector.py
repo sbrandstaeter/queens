@@ -22,7 +22,7 @@ from pathlib import Path
 
 from jinja2 import Environment, StrictUndefined, Undefined
 
-from queens.utils.io_utils import read_file
+from queens.utils.io import read_file
 
 
 def render_template(params, template, strict=True):

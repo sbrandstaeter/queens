@@ -17,7 +17,7 @@
 
 from pathlib import Path
 
-from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.path import relative_path_from_queens
 
 
 def extract_from_markdown_file_by_marker(marker_name, md_file):

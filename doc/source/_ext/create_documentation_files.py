@@ -23,7 +23,7 @@ from pathlib import Path
 import requests
 
 from queens.utils.injector import inject
-from queens.utils.path_utils import relative_path_from_queens
+from queens.utils.path import relative_path_from_queens
 
 sys.path.insert(1, str(relative_path_from_queens("test_utils").resolve()))
 from get_queens_example_from_readme import (  # pylint: disable=import-error, wrong-import-position,wrong-import-order

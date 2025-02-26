@@ -19,7 +19,7 @@ import inspect
 import logging
 import sys
 
-from queens.utils.print_utils import get_str_table
+from queens.utils.printing import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
 

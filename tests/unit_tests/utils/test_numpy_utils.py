@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.utils.numpy_utils import at_least_2d, at_least_3d
+from queens.utils.numpy import at_least_2d, at_least_3d
 
 
 @pytest.fixture(name="arr_0d", scope="module")

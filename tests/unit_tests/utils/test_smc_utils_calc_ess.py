@@ -20,7 +20,7 @@
 import numpy as np
 import pytest
 
-from queens.utils import smc_utils
+from queens.utils import sequential_monte_carlo as smc_utils
 
 
 @pytest.fixture(name="num_particles", scope="module", params=[1, 10])

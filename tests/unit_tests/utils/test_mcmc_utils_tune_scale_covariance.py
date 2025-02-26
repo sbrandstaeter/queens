@@ -20,7 +20,7 @@
 import numpy as np
 import pytest
 
-from queens.utils.mcmc_utils import tune_scale_covariance
+from queens.utils.mcmc import tune_scale_covariance
 
 
 @pytest.fixture(

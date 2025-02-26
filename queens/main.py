@@ -23,9 +23,9 @@ import sys
 import time
 
 from queens.global_settings import GlobalSettings
-from queens.utils.cli_utils import get_cli_options, print_greeting_message
-from queens.utils.fcc_utils import from_config_create_iterator
-from queens.utils.io_utils import load_input_file
+from queens.utils.cli import get_cli_options, print_greeting_message
+from queens.utils.from_config_create import from_config_create_iterator
+from queens.utils.io import load_input_file
 
 _logger = logging.getLogger(__name__)
 

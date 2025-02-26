@@ -18,7 +18,7 @@ import logging
 
 import pyfiglet
 
-from queens.utils.print_utils import DEFAULT_OUTPUT_WIDTH
+from queens.utils.printing import DEFAULT_OUTPUT_WIDTH
 
 _logger = logging.getLogger(__name__)
 

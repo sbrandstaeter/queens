@@ -25,7 +25,7 @@ import pytest
 from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
-from queens.utils.path_utils import relative_path_from_queens, relative_path_from_source
+from queens.utils.path import relative_path_from_queens, relative_path_from_source
 
 _logger = logging.getLogger(__name__)
 

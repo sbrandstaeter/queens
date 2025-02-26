@@ -21,11 +21,11 @@ for logging and working with remote resources.
 import logging
 from pathlib import Path
 
-from queens.schedulers.dask_scheduler import SHUTDOWN_CLIENTS
+from queens.schedulers.dask import SHUTDOWN_CLIENTS
 from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.logger_settings import reset_logging, setup_basic_logging
-from queens.utils.path_utils import PATH_TO_QUEENS
-from queens.utils.print_utils import get_str_table
+from queens.utils.path import PATH_TO_QUEENS
+from queens.utils.printing import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)

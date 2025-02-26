@@ -20,7 +20,7 @@ This test is based on Sobol's G function and uses an input file.
 import numpy as np
 
 from queens.utils.input_to_script import create_script_from_input_file
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 from queens.utils.run_subprocess import run_subprocess
 
 

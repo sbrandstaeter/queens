@@ -17,7 +17,7 @@
 import logging
 from pathlib import Path
 
-from queens.utils.path_utils import is_empty
+from queens.utils.path import is_empty
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)

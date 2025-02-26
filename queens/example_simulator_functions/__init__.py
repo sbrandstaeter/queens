@@ -46,7 +46,7 @@ from queens.example_simulator_functions.rosenbrock60 import (
 )
 from queens.example_simulator_functions.sinus import sinus_test_fun
 from queens.example_simulator_functions.sobol_g_function import sobol_g_function
-from queens.utils.valid_options_utils import get_option
+from queens.utils.valid_options import get_option
 
 VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "agawal09a": agawal09a,
