@@ -19,8 +19,9 @@ import scipy.linalg
 import scipy.stats
 
 from queens.distributions.distribution import Continuous
-from queens.utils import numpy as numpy_utils
 from queens.utils.logger_settings import log_init_args
+from queens.utils.numpy_array import at_least_2d
+from queens.utils.numpy_linalg import safe_cholesky
 
 
 class Normal(Continuous):
@@ -41,7 +42,7 @@ class Normal(Continuous):
             covariance (array_like): covariance of the distribution
         """
         mean = np.array(mean).reshape(-1)
-        covariance = numpy_utils.at_least_2d(np.array(covariance))
+        covariance = at_least_2d(np.array(covariance))
 
         # sanity checks
         dimension = covariance.shape[0]
@@ -177,7 +178,7 @@ class Normal(Continuous):
             logpdf_const (float): Constant for evaluation of log pdf
         """
         dimension = covariance.shape[0]
-        low_chol = numpy_utils.safe_cholesky(covariance)
+        low_chol = safe_cholesky(covariance)
 
         # precision matrix Q and determinant of cov matrix
         chol_inv = np.linalg.inv(low_chol)
