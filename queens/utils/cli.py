@@ -23,10 +23,10 @@ from queens.utils import ascii_art
 from queens.utils.exceptions import CLIError
 from queens.utils.injector import inject
 from queens.utils.input_to_script import create_script_from_input_file
+from queens.utils.io import print_pickled_data
 from queens.utils.logger_settings import reset_logging, setup_cli_logging
 from queens.utils.metadata import write_metadata_to_csv
 from queens.utils.path import PATH_TO_QUEENS
-from queens.utils.pickle import print_pickled_data
 from queens.utils.printing import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
