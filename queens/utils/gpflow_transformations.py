@@ -16,7 +16,6 @@
 
 from typing import TYPE_CHECKING
 
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 # This allows autocomplete in the IDE
@@ -63,25 +62,3 @@ def set_transform_function(data, transform):
         name=data.name.split(":")[0],
         transform=transform,
     )
-
-
-def extract_block_diag(array, block_size):
-    """Extract block diagonals of square 2D Array.
-
-    Args:
-        array (np.ndarray): Square 2D array
-        block_size (int): Block size
-
-    Returns:
-        3D Array containing block diagonals
-    """
-    n_blocks = array.shape[0] // block_size
-
-    new_shape = (n_blocks, block_size, block_size)
-    new_strides = (
-        block_size * array.strides[0] + block_size * array.strides[1],
-        array.strides[0],
-        array.strides[1],
-    )
-
-    return np.lib.stride_tricks.as_strided(array, new_shape, new_strides)
