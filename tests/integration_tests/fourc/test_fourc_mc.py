@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.data_processors.pvd import Pvd
+from queens.data_processors.pvd_file import PvdFile
 from queens.distributions.uniform import Uniform
 from queens.drivers.fourc import Fourc
 from queens.iterators.monte_carlo import MonteCarlo
@@ -48,7 +48,7 @@ def test_fourc_mc(
     parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-    data_processor = Pvd(
+    data_processor = PvdFile(
         field_name="displacement",
         file_name_identifier=f"{global_settings.experiment_name}_*.pvd",
         file_options_dict={},

@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import queens.data_processors.csv
-from queens.data_processors.csv import Csv
+import queens.data_processors.csv_file
+from queens.data_processors.csv_file import CsvFile
 
 
 @pytest.fixture(name="dummy_csv_file", scope="session")
@@ -113,10 +113,10 @@ def fixture_default_data_processor(mocker):
     }
 
     mocker.patch(
-        ("queens.data_processors.csv.Csv.check_valid_filter_options"),
+        ("queens.data_processors.csv_file.CsvFile.check_valid_filter_options"),
         return_value=None,
     )
-    csv_instance = Csv(
+    csv_instance = CsvFile(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -155,11 +155,11 @@ def test_init(mocker):
     }
 
     mp = mocker.patch(
-        ("queens.data_processors.csv.Csv.check_valid_filter_options"),
+        ("queens.data_processors.csv_file.CsvFile.check_valid_filter_options"),
         return_value=None,
     )
 
-    my_data_processor = Csv(
+    my_data_processor = CsvFile(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -183,55 +183,57 @@ def test_init(mocker):
 
 def test_check_valid_filter_options_entire_file():
     """Test checking of valid filter options."""
-    Csv.check_valid_filter_options({"type": "entire_file"})
+    CsvFile.check_valid_filter_options({"type": "entire_file"})
 
     with pytest.raises(
         TypeError,
         match="For the filter type `entire_file`, you have to provide a dictionary of type "
-        f"{Csv.expected_filter_entire_file}.",
+        f"{CsvFile.expected_filter_entire_file}.",
     ):
-        Csv.check_valid_filter_options({"type": "entire_file", "tolerance": 0})
+        CsvFile.check_valid_filter_options({"type": "entire_file", "tolerance": 0})
 
 
 def test_check_valid_filter_options_by_range():
     """Test checking of valid filter by range options."""
-    Csv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0], "tolerance": 1.0})
+    CsvFile.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0], "tolerance": 1.0})
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_range`, you have to provide "
-            f"a dictionary of type {Csv.expected_filter_by_range}."
+            f"a dictionary of type {CsvFile.expected_filter_by_range}."
         ),
     ):
-        Csv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0]})
+        CsvFile.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0]})
 
 
 def test_check_valid_filter_options_by_row_index():
     """Test checking of valid filter by row index options."""
-    Csv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2]})
+    CsvFile.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2]})
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_row_index`, you have to provide "
-            f"a dictionary of type {Csv.expected_filter_by_row_index}."
+            f"a dictionary of type {CsvFile.expected_filter_by_row_index}."
         ),
     ):
-        Csv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2], "tolerance": 1.0})
+        CsvFile.check_valid_filter_options(
+            {"type": "by_row_index", "rows": [1, 2], "tolerance": 1.0}
+        )
 
 
 def test_check_valid_filter_options_by_target_values():
     """Test checking of valid filter by target values."""
-    Csv.check_valid_filter_options(
+    CsvFile.check_valid_filter_options(
         {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0], "tolerance": 1.0}
     )
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_target_values`, you have to provide "
-            f"a dictionary of type {Csv.expected_filter_by_target_values}."
+            f"a dictionary of type {CsvFile.expected_filter_by_target_values}."
         ),
     ):
-        Csv.check_valid_filter_options(
+        CsvFile.check_valid_filter_options(
             {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0]}
         )
 

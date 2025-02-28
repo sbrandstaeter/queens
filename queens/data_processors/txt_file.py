@@ -24,7 +24,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class Txt(DataProcessor):
+class TxtFile(DataProcessor):
     """Class for extracting data from txt files.
 
     Provides basic functionality for extracting data from txt files,
@@ -72,9 +72,6 @@ class Txt(DataProcessor):
             max_file_size_in_mega_byte (int):       Upper limit of the file size to be read into
                                                     memory in megabyte (MB). See comment above on
                                                     Potential Improvement.
-
-        Returns:
-            Instance of Txt class
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
@@ -119,7 +116,7 @@ class Txt(DataProcessor):
     def filter_and_manipulate_raw_data(self, raw_data):
         """Filter the raw data from the txt file.
 
-        The Txt class provides some basic filtering functionality,
+        The TxtFile class provides some basic filtering functionality,
         however it is up to the user to define the specifics of how the raw data
         should be filtered.
 

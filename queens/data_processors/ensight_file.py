@@ -26,7 +26,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class Ensight(DataProcessor):
+class EnsightFile(DataProcessor):
     """Class for data-processing ensight output.
 
     Attributes:
@@ -83,9 +83,6 @@ class Ensight(DataProcessor):
                                                  The paths can contain regex expressions.
             external_geometry (obj): QUEENS external geometry object
             experimental_data_reader (obj): Experimental data reader object
-
-        Returns:
-            Instance of Ensight class (obj)
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
@@ -313,7 +310,7 @@ class Ensight(DataProcessor):
                 experimental_coordinates_for_snapshot, axis=1
             )
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = Ensight._interpolate_vtk(
+        interpolated_data = EnsightFile._interpolate_vtk(
             experimental_coordinates_for_snapshot,
             vtk_data_obj,
             self.vtk_array_type,
@@ -366,7 +363,7 @@ class Ensight(DataProcessor):
         ]
 
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = Ensight._interpolate_vtk(
+        interpolated_data = EnsightFile._interpolate_vtk(
             geometric_set_coordinates,
             vtk_data_obj,
             self.vtk_array_type,

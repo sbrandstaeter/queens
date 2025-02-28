@@ -25,7 +25,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class Pvd(DataProcessor):
+class PvdFile(DataProcessor):
     """Class for extracting data from pvd.
 
     Attributes:
@@ -60,9 +60,6 @@ class Pvd(DataProcessor):
             block (int, optional): Considered block of MultiBlock data set (first block by default)
             point_data (bool, optional): Whether to extract point data (True) or cell data (False).
                                          Defaults to point data.
-
-        Returns:
-            Instance of Pvd class
         """
         super().__init__(
             file_name_identifier=file_name_identifier,

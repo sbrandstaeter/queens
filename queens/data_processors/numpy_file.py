@@ -24,7 +24,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class Numpy(DataProcessor):
+class NumpyFile(DataProcessor):
     """Class for extracting data from numpy binaries."""
 
     @log_init_args
@@ -43,9 +43,6 @@ class Numpy(DataProcessor):
             file_options_dict (dict): Dictionary with read-in options for the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-
-        Returns:
-            Instance of Numpy class
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
