@@ -23,7 +23,7 @@ import logging
 import numpy as np
 import pymc as pm
 
-from queens.iterators.pymc import PyMC, PymcDistributionWrapper
+from queens.iterators._pymc import PyMC, PymcDistributionWrapper
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

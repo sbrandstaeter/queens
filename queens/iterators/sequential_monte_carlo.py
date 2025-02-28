@@ -44,7 +44,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.utils import sequential_monte_carlo as smc_utils
 from queens.utils.logger_settings import log_init_args

@@ -24,8 +24,8 @@ import numpy as np
 from jax import jit
 from particles.resampling import stratified
 
+from queens.iterators._iterator import Iterator
 from queens.iterators.grid import Grid
-from queens.iterators.iterator import Iterator
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.utils.io import load_result

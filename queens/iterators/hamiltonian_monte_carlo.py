@@ -22,7 +22,7 @@ import logging
 
 import pymc as pm
 
-from queens.iterators.pymc import PyMC
+from queens.iterators._pymc import PyMC
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

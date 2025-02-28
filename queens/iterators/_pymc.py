@@ -26,7 +26,7 @@ import pytensor.tensor as pt
 from pytensor import Variable
 
 from queens.distributions import beta, exponential, lognormal, mean_field_normal, normal, uniform
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)

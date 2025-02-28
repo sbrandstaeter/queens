@@ -21,7 +21,7 @@ from datetime import timedelta
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
 
-from queens.schedulers.dask import Dask
+from queens.schedulers._dask import Dask
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import get_option

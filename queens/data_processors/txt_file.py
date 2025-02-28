@@ -18,7 +18,7 @@ import logging
 import re
 from pathlib import Path
 
-from queens.data_processors.data_processor import DataProcessor
+from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

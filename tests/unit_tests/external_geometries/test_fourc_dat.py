@@ -202,7 +202,7 @@ def test_init(mocker, tmp_path):
     surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
-    mp = mocker.patch("queens.external_geometries.external_geometry.ExternalGeometry.__init__")
+    mp = mocker.patch("queens.external_geometries._external_geometry.ExternalGeometry.__init__")
 
     path_to_preprocessed_dat_file = tmp_path / "preprocessed"
     random_fields = (

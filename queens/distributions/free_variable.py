@@ -14,7 +14,7 @@
 #
 """Free Variable."""
 
-from queens.distributions.distribution import Continuous
+from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
 
 

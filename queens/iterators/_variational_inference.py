@@ -20,7 +20,7 @@ import time
 
 import numpy as np
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.process_outputs import write_results
 from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 from queens.visualization.variational_inference_visualization import VIVisualization

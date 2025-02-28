@@ -18,7 +18,7 @@ import logging
 
 from dask.distributed import Client, LocalCluster
 
-from queens.schedulers.dask import Dask
+from queens.schedulers._dask import Dask
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
 

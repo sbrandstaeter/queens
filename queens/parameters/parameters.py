@@ -19,9 +19,9 @@ import logging
 import numpy as np
 
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
-from queens.distributions.distribution import Continuous
+from queens.distributions._distribution import Continuous
 from queens.parameters.random_fields import VALID_TYPES as VALID_FIELD_TYPES
-from queens.parameters.random_fields.random_field import RandomField
+from queens.parameters.random_fields._random_field import RandomField
 from queens.utils.imports import get_module_class
 from queens.utils.logger_settings import log_init_args
 

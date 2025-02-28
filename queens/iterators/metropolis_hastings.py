@@ -30,7 +30,7 @@ import numpy as np
 from tqdm import tqdm
 
 from queens.distributions.normal import Normal
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils import mcmc as mcmc_utils
 from queens.utils import sequential_monte_carlo as smc_utils
 from queens.utils.logger_settings import log_init_args

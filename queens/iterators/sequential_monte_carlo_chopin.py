@@ -24,8 +24,8 @@ from particles import collectors as col
 from particles import distributions as dists
 from particles.smc_samplers import AdaptiveTempering
 
-from queens.distributions.distribution import Distribution
-from queens.iterators.iterator import Iterator
+from queens.distributions._distribution import Distribution
+from queens.iterators._iterator import Iterator
 from queens.utils import sequential_monte_carlo as smc_utils
 from queens.utils.logger_settings import log_init_args
 from queens.utils.printing import get_str_table

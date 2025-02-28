@@ -20,7 +20,7 @@ import numpy as np
 import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
-from queens.data_processors.data_processor import DataProcessor
+from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

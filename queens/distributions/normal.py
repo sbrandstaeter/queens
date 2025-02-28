@@ -18,7 +18,7 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from queens.distributions.distribution import Continuous
+from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
 from queens.utils.numpy_array import at_least_2d
 from queens.utils.numpy_linalg import safe_cholesky

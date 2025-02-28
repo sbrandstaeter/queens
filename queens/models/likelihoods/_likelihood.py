@@ -18,7 +18,7 @@ import abc
 
 import numpy as np
 
-from queens.models.model import Model
+from queens.models._model import Model
 
 
 class Likelihood(Model):

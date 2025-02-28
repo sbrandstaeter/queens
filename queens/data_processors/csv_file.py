@@ -19,7 +19,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from queens.data_processors.data_processor import DataProcessor
+from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import get_option
 

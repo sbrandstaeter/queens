@@ -23,7 +23,7 @@ import shutil
 
 import numpy as np
 
-from queens.external_geometries.external_geometry import ExternalGeometry
+from queens.external_geometries._external_geometry import ExternalGeometry
 from queens.utils.logger_settings import log_init_args
 
 

@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from queens.models.model import Model
+from queens.models._model import Model
 from queens.utils.logger_settings import log_init_args
 
 

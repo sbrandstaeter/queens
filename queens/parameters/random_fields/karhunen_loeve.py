@@ -20,7 +20,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.parameters.random_fields.random_field import RandomField
+from queens.parameters.random_fields._random_field import RandomField
 
 _logger = logging.getLogger(__name__)
 

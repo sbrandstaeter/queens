@@ -137,7 +137,7 @@ def test_init(
     """Test the initialization of the Grid class."""
     # some default input for testing
     num_parameters = 2
-    mp = mocker.patch("queens.iterators.iterator.Iterator.__init__")
+    mp = mocker.patch("queens.iterators._iterator.Iterator.__init__")
     Grid.parameters = Mock()
     Grid.parameters.num_parameters = num_parameters
 

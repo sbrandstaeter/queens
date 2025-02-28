@@ -18,6 +18,7 @@ import logging
 import multiprocessing as mp
 import time
 
+from queens.iterators._iterator import Iterator
 from queens.iterators.sobol_index_gp_uncertainty_utils.estimator import (
     SobolIndexEstimator,
     SobolIndexEstimatorThirdOrder,
@@ -31,8 +32,6 @@ from queens.iterators.sobol_index_gp_uncertainty_utils.statistics import (
 )
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
-
-from .iterator import Iterator
 
 logging.getLogger("matplotlib").setLevel(logging.CRITICAL)
 _logger = logging.getLogger(__name__)

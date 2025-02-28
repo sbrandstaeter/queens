@@ -19,7 +19,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from queens.drivers.driver import Driver
+from queens.drivers._driver import Driver
 from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
 from queens.utils.io import read_file

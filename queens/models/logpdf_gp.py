@@ -26,7 +26,7 @@ import tensorflow_probability.substrates.jax as tfp
 from jax import jit, vmap
 from scipy import stats
 
-from queens.models.model import Model
+from queens.models._model import Model
 from queens.utils import jax_minimize_wrapper
 from queens.utils.gpflow_transformations import init_scaler
 from queens.utils.numpy_linalg import safe_cholesky
