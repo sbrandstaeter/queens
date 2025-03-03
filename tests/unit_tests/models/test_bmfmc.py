@@ -153,7 +153,7 @@ def test_init(global_settings, mocker, settings_probab_mapping, parameters):
     """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 200)
 
-    mp1 = mocker.patch("queens.models.model.Model.__init__")
+    mp1 = mocker.patch("queens.models._model.Model.__init__")
     mp2 = mocker.patch("queens.models.bmfmc.BmfmcInterface.__init__", return_value=None)
     approx = "dummy_approx"
     model = BMFMC(

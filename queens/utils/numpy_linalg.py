@@ -12,47 +12,13 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Numpy array utils."""
+"""Numpy linear algebra utils."""
 
 import logging
 
 import numpy as np
 
 _logger = logging.getLogger(__name__)
-
-
-def at_least_2d(arr):
-    """View input array as array with at least two dimensions.
-
-    Args:
-        arr (np.ndarray): Input array
-
-    Returns:
-        arr (np.ndarray): View of input array with at least two dimensions
-    """
-    if arr.ndim == 0:
-        return arr.reshape((1, 1))
-    if arr.ndim == 1:
-        return arr[:, np.newaxis]
-    return arr
-
-
-def at_least_3d(arr):
-    """View input array as array with at least three dimensions.
-
-    Args:
-        arr (np.ndarray): Input array
-
-    Returns:
-        arr (np.ndarray): View of input array with at least three dimensions
-    """
-    if arr.ndim == 0:
-        return arr.reshape((1, 1, 1))
-    if arr.ndim == 1:
-        return arr[:, np.newaxis, np.newaxis]
-    if arr.ndim == 2:
-        return arr[:, :, np.newaxis]
-    return arr
 
 
 def safe_cholesky(matrix, jitter_start_value=1e-10):

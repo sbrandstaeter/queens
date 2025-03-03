@@ -25,7 +25,7 @@ from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
 from queens.distributions.uniform import Uniform
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 from queens.visualization.sa_visualization import SAVisualization

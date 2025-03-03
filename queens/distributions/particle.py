@@ -19,7 +19,7 @@ import logging
 
 import numpy as np
 
-from queens.distributions.distribution import Discrete
+from queens.distributions._distribution import Discrete
 
 _logger = logging.getLogger(__name__)
 

@@ -12,57 +12,43 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Utilis for gpflow."""
-
-from typing import TYPE_CHECKING
+"""Numpy array utils."""
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-
-# This allows autocomplete in the IDE
-if TYPE_CHECKING:
-    import gpflow as gpf
-else:
-    from queens.utils.imports import LazyLoader
-
-    gpf = LazyLoader("gpflow")
 
 
-def init_scaler(unscaled_data):
-    r"""Initialize StandardScaler and scale data.
-
-    Standardize features by removing the mean and scaling to unit variance
-
-        :math:`scaled\_data = \frac{unscaled\_data - mean}{std}`
+def at_least_2d(arr):
+    """View input array as array with at least two dimensions.
 
     Args:
-        unscaled_data (np.ndarray): Unscaled data
+        arr (np.ndarray): Input array
 
     Returns:
-        scaler (StandardScaler): Standard scaler
-        scaled_data (np.ndarray): Scaled data
+        arr (np.ndarray): View of input array with at least two dimensions
     """
-    scaler = StandardScaler()
-    scaler.fit(unscaled_data)
-    scaled_data = scaler.transform(unscaled_data)
-    return scaler, scaled_data
+    if arr.ndim == 0:
+        return arr.reshape((1, 1))
+    if arr.ndim == 1:
+        return arr[:, np.newaxis]
+    return arr
 
 
-def set_transform_function(data, transform):
-    """Set transform function.
+def at_least_3d(arr):
+    """View input array as array with at least three dimensions.
 
     Args:
-        data (gpf.Parameter): Data to be transformed
-        transform (tfp.bijectors.Bijector): Transform function
+        arr (np.ndarray): Input array
 
     Returns:
-        gpf.Parameter with transform
+        arr (np.ndarray): View of input array with at least three dimensions
     """
-    return gpf.Parameter(
-        data,
-        name=data.name.split(":")[0],
-        transform=transform,
-    )
+    if arr.ndim == 0:
+        return arr.reshape((1, 1, 1))
+    if arr.ndim == 1:
+        return arr[:, np.newaxis, np.newaxis]
+    if arr.ndim == 2:
+        return arr[:, :, np.newaxis]
+    return arr
 
 
 def extract_block_diag(array, block_size):

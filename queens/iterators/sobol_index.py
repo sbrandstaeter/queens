@@ -23,7 +23,7 @@ from SALib.analyze import sobol
 from SALib.sample import saltelli
 
 from queens.distributions import lognormal, normal, uniform
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 

@@ -20,7 +20,7 @@ from functools import partial
 import numpy as np
 from tqdm import tqdm
 
-from queens.schedulers.scheduler import Scheduler
+from queens.schedulers._scheduler import Scheduler
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
 from queens.utils.pool import create_pool

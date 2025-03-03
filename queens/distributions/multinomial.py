@@ -17,7 +17,7 @@
 import numpy as np
 from scipy.stats import multinomial
 
-from queens.distributions.distribution import Discrete
+from queens.distributions._distribution import Discrete
 from queens.utils.logger_settings import log_init_args
 
 

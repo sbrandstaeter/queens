@@ -23,7 +23,7 @@ import logging
 import numpy as np
 from skactiveml.utils import MISSING_LABEL
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.ascii_art import print_classification
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results

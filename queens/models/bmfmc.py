@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 import queens.utils.pdf_estimation as est
 from queens.iterators.data import Data
-from queens.models.model import Model
+from queens.models._model import Model
 from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve as RandomField
 from queens.utils.logger_settings import log_init_args
 

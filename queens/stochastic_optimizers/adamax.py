@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.stochastic_optimizers.stochastic_optimizer import StochasticOptimizer
+from queens.stochastic_optimizers._stochastic_optimizer import StochasticOptimizer
 from queens.utils.iterative_averaging import ExponentialAveraging
 
 _logger = logging.getLogger(__name__)

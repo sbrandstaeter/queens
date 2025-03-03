@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from queens.variational_distributions.variational_distribution import Variational
+from queens.variational_distributions._variational_distribution import Variational
 
 
 class MixtureModel(Variational):

@@ -19,7 +19,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-from queens.models.model import Model
+from queens.models._model import Model
 
 
 class DummyModel(Model):

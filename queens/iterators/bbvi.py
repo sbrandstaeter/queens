@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.iterators.variational_inference import VALID_EXPORT_FIELDS, VariationalInference
+from queens.iterators._variational_inference import VALID_EXPORT_FIELDS, VariationalInference
 from queens.utils.collection import CollectionObject
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import check_if_valid_options

@@ -16,7 +16,7 @@
 
 import pytest
 
-from queens.data_processors.txt import Txt
+from queens.data_processors.txt_file import TxtFile
 from queens.utils.path import relative_path_from_queens
 
 
@@ -37,7 +37,7 @@ def fixture_default_data_processor():
 
     file_options_dict = {}
 
-    txt_instance = Txt(
+    txt_instance = TxtFile(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,

@@ -20,12 +20,12 @@ from pathlib import Path
 
 import black
 
-from queens.distributions.distribution import Continuous
-from queens.drivers.driver import Driver
-from queens.iterators.iterator import Iterator
+from queens.distributions._distribution import Continuous
+from queens.drivers._driver import Driver
+from queens.iterators._iterator import Iterator
 from queens.models.bmfmc import BMFMC
-from queens.parameters.random_fields.random_field import RandomField
-from queens.schedulers.scheduler import Scheduler
+from queens.parameters.random_fields._random_field import RandomField
+from queens.schedulers._scheduler import Scheduler
 from queens.utils.from_config_create import VALID_TYPES, check_for_reference
 from queens.utils.imports import get_module_attribute, get_option
 from queens.utils.io import load_input_file

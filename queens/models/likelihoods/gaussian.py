@@ -19,10 +19,10 @@ import warnings
 import numpy as np
 
 from queens.distributions.normal import Normal
-from queens.models.likelihoods.likelihood import Likelihood
+from queens.models.likelihoods._likelihood import Likelihood
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.logger_settings import log_init_args
-from queens.utils.numpy import add_nugget_to_diagonal
+from queens.utils.numpy_linalg import add_nugget_to_diagonal
 
 
 class Gaussian(Likelihood):

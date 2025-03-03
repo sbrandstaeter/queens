@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 
 import queens.schedulers.cluster as cluster_scheduler  # pylint: disable=consider-using-from-import
-from queens.data_processors.pvd import Pvd
+from queens.data_processors.pvd_file import PvdFile
 from queens.distributions.uniform import Uniform
 from queens.drivers import Jobscript
 from queens.iterators.monte_carlo import MonteCarlo
@@ -127,7 +127,7 @@ class TestDaskCluster:
         parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
         parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-        data_processor = Pvd(
+        data_processor = PvdFile(
             field_name="displacement",
             file_name_identifier="*.pvd",
             file_options_dict={},

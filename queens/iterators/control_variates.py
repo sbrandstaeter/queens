@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 

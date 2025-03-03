@@ -19,7 +19,7 @@ import logging
 import numpy as np
 import pytest
 
-from queens.data_processors.ensight import Ensight
+from queens.data_processors.ensight_file import EnsightFile
 from queens.drivers.fourc import Fourc
 from queens.external_geometries.fourc_dat import FourcDat
 from queens.iterators.monte_carlo import MonteCarlo
@@ -90,7 +90,7 @@ def test_write_random_material_to_dat(
         list_geometric_sets=["DSURFACE 1"],
         input_template=fourc_input_preprocessed,
     )
-    data_processor = Ensight(
+    data_processor = EnsightFile(
         file_name_identifier="*_structure.case",
         file_options_dict={
             "delete_field_data": False,

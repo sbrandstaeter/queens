@@ -17,7 +17,7 @@
 import logging
 import pickle
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 

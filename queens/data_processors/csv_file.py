@@ -19,14 +19,14 @@ import logging
 import numpy as np
 import pandas as pd
 
-from queens.data_processors.data_processor import DataProcessor
+from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
 
 
-class Csv(DataProcessor):
+class CsvFile(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
@@ -100,7 +100,7 @@ class Csv(DataProcessor):
                                                  The paths can contain regex expressions.
 
         Returns:
-            Instance of Csv class
+            Instance of CsvFile class
         """
         super().__init__(
             file_name_identifier=file_name_identifier,

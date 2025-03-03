@@ -20,9 +20,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 import tensorflow_probability as tfp
 
-from queens.models.surrogates.surrogate import Surrogate
+from queens.models.surrogates._surrogate import Surrogate
+from queens.utils.configure_tensorflow import configure_keras, configure_tensorflow
 from queens.utils.logger_settings import log_init_args
-from queens.utils.tensorflow import configure_keras, configure_tensorflow
 
 _logger = logging.getLogger(__name__)
 

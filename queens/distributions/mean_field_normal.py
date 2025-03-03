@@ -18,7 +18,7 @@ import numpy as np
 import scipy.stats
 from scipy.special import erf  # pylint:disable=no-name-in-module
 
-from queens.distributions.distribution import Continuous
+from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
 
 

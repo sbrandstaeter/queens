@@ -22,7 +22,7 @@ import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
-from queens.schedulers.scheduler import Scheduler
+from queens.schedulers._scheduler import Scheduler
 from queens.utils.printing import get_str_table
 
 _logger = logging.getLogger(__name__)

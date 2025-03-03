@@ -27,7 +27,7 @@ from chaospy.distributions.sampler.generator import (
 from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_location_rules
 
 from queens.distributions import beta, lognormal, normal, uniform
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 from queens.utils.valid_options import get_option

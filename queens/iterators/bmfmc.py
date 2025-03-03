@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from diversipy import psa_select
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 from queens.visualization.bmfmc_visualization import BMFMCVisualization

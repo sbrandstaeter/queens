@@ -20,7 +20,7 @@ import logging
 import numpy as np
 from sklearn.model_selection import KFold
 
-from queens.models.model import Model
+from queens.models._model import Model
 from queens.visualization.surrogate_visualization import SurrogateVisualization
 
 _logger = logging.getLogger(__name__)

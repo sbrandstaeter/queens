@@ -22,7 +22,7 @@ import logging
 
 import numpy as np
 
-from queens.distributions.distribution import Distribution
+from queens.distributions._distribution import Distribution
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)

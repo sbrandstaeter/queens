@@ -20,7 +20,7 @@ import numpy as np
 from scipy.special import logsumexp
 
 from queens.distributions import VALID_TYPES
-from queens.distributions.distribution import Continuous
+from queens.distributions._distribution import Continuous
 from queens.utils.imports import get_module_class
 from queens.utils.logger_settings import log_init_args
 

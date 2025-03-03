@@ -21,7 +21,7 @@ import numpy as np
 from scipy.optimize import Bounds, minimize
 from scipy.optimize._numdiff import _prepare_bounds
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
