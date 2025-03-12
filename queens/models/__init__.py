@@ -23,6 +23,7 @@ from queens.models.bmfmc import BMFMC
 from queens.models.finite_difference import FiniteDifference
 from queens.models.likelihoods.bmf_gaussian import BMFGaussian, BmfiaInterface
 from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.reinforcement_learning.reinforcement_learning import ReinforcementLearning
 from queens.models.simulation import Simulation
 from queens.models.surrogates.bayesian_neural_network import GaussianBayesianNeuralNetwork
 from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
@@ -45,4 +46,5 @@ VALID_TYPES = {
     "gp_jitted": JittedGaussianProcess,
     "gp_approximation_gpflow_svgp": VariationalGaussianProcess,
     "gaussian_nn": GaussianNeuralNetwork,
+    "reinforcement_learning": ReinforcementLearning,
 }
