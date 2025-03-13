@@ -35,6 +35,7 @@ from queens.iterators.nuts import NUTS
 from queens.iterators.optimization import Optimization
 from queens.iterators.points import Points
 from queens.iterators.polynomial_chaos import PolynomialChaos
+from queens.iterators.reinforcement_learning import ReinforcementLearning
 from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
@@ -66,4 +67,5 @@ VALID_TYPES = {
     "bmfia": BMFIA,
     "rpvi": RPVI,
     "classification": ClassificationIterator,
+    "reinforcement_learning": ReinforcementLearning,
 }
