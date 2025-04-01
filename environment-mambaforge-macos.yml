@@ -29,7 +29,7 @@ dependencies:
   - xarray  # Special array format
   - pyDOE  # design of experiments
   - SALib  # for sensitivity analysis
-  - vtk>=9.2.0  # vtk format handler
+  - vtk=9.3.1=qt_py311h7569219_208  # vtk format handler
   - pyvista
   - autograd  # wrapper around numpy for automated differentiation
   - chaospy  # polynomial chaos
@@ -44,6 +44,7 @@ dependencies:
   - tensorflow-probability
   - jax
   - pymc
+  - stable-baselines3
 
   # making fancy plots
   - matplotlib
@@ -76,11 +77,13 @@ dependencies:
   - pre-commit-hooks>=4.4.0
   - sphinx
   - nbsphinx
+  - pydata-sphinx-theme
   - pandoc
   - commitizen>=3.12.0
-  - pydocstyle>=6.3.0
   - docformatter>=1.5.1
   - yamllint>=1.19.0
+  - ruff
+  - myst-parser
 
 
   # These packages need to be installed via pip
@@ -95,3 +98,4 @@ dependencies:
       - pylint-exit
       - scikit-activeml>=0.4.1
       - chaospy>=4.3.13  # polynomial chaos
+      - licenseheaders
