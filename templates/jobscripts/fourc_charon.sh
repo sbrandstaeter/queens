@@ -2,8 +2,8 @@
 # Setup shell environment and start from home dir
 echo $HOME
 cd $HOME
-source /etc/profile.d/modules.sh
-source /home/opt/cluster_tools/core/load_baci_environment.sh
+
+source /home/cluster_tools/user/load_four_c_environment.sh
 
 module list
 ##########################################
@@ -12,12 +12,12 @@ module list
 #                                        #
 ##########################################
 
-RUN_BACI="ON"
+RUN_FOUR_C="ON"
 EXE={{ executable }}
-BACI_BUILD_DIR="$(dirname {{ executable }})"
+FOUR_C_BUILD_DIR="$(dirname {{ executable }})"
 
 INPUT={{ input_file }}
-BACI_OUTPUT_DIR={{ output_dir }}
+FOUR_C_OUTPUT_DIR={{ output_dir }}
 OUTPUT_PREFIX="$(basename {{ output_file }})"
 
 
@@ -53,7 +53,7 @@ RESTART_FROM_PREFIX="" 		# prefix typically s
 #################################################################
 
 # execute program
-source /home/opt/cluster_tools/core/charon_job_core
+source /home/cluster_tools/core/charon_job_core
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
