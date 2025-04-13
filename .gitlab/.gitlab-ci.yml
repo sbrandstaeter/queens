@@ -114,10 +114,28 @@ charon-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_4C:
   stage: build
+  variables:
+    SLURM_TIME: "01:00:00"
+    SLURM_CPUS: "8"
   script:
-    - ssh queens@$REMOTE_ADDRESS "$LOAD_MODULES cd ~/workspace; rm -rf fourc_source;
-      rm -rf fourc_build; git clone https://github.com/4C-multiphysics/4C.git fourc_source;
-      mkdir fourc_build; cd fourc_build; cmake --preset=$PRESET_4C ../fourc_source; ninja -j 8 full"
+    - |
+      ssh "queens@$REMOTE_HOST" "bash -lc 'srun \
+        --job-name="queens_ci_build_4c_$CI_PIPELINE_ID" \
+        --nodes=1 \
+        --ntasks-per-node=1 \
+        --cpus-per-task=$SLURM_CPUS \
+        --time=$SLURM_TIME \
+        --partition=$SLURM_PARTITION \
+        bash -c \" \
+          $LOAD_MODULES \
+          module list ; \
+          cd ~/workspace ; \
+          rm -rfv fourc_source fourc_build ; \
+          git clone --depth 1 https://github.com/4C-multiphysics/4C.git fourc_source ; \
+          mkdir fourc_build ; \
+          cd fourc_build ; \
+          cmake --preset=$PRESET_4C ../fourc_source ; \
+          ninja -j $SLURM_CPUS full \"'"
 
 thought-build_4C:
   extends:
@@ -135,8 +153,7 @@ charon-build_4C:
   extends:
     - .build_4C
   variables:
-    LOAD_MODULES: "source /etc/profile.d/modules.sh;
-                   source /home/opt/cluster_tools/core/load_baci_environment.sh;"
+    LOAD_MODULES: "source /home/cluster_tools/user/load_four_c_environment.sh;"
     REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
     PRESET_4C: "imcs_charon"
   tags:
