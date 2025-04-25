@@ -239,7 +239,7 @@ def test_evaluate(mocker, default_bmfmc_model):
         "X_train": np.array([1]),
         "Y_HF_train": np.array([1]),
     }
-    output = default_bmfmc_model.evaluate(None)
+    output = default_bmfmc_model.evaluate(np.array([[1]]))
 
     mp1.assert_called_once()
     mp2.assert_called_once()

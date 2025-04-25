@@ -73,7 +73,9 @@ def test_bbvi_density_match(
     variational_logpdf = variational_distr_obj.logpdf(
         opt_variational_params, opt_variational_samples
     )
-    target_logpdf = target_density("dummy", x=opt_variational_samples, pdf=False).flatten()
+    target_logpdf = target_density(
+        dummy_bbvi_instance, x=opt_variational_samples, pdf=False
+    ).flatten()
     kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
     # Test if KL divergence is not too large
     assert kl_divergence < 10**5
@@ -208,8 +210,9 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
     )
 
     # ------ other params ----------------------------------------------------------
-    model = namedtuple("model", "normal_distribution")(
-        normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0)
+    model = namedtuple("model", ("normal_distribution", "num_evaluations"))(
+        normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0),
+        num_evaluations=0,
     )
     global_settings = GlobalSettings(experiment_name, output_dir=tmp_path)
     random_seed = 1
@@ -260,6 +263,7 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
             output_array.append(mvn.pdf(value, mean=mean, cov=cov))
 
     output_array = np.array(output_array)
+    self.model = self.model._replace(num_evaluations=self.model.num_evaluations + len(x))
     return output_array
 
 

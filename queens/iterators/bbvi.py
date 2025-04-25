@@ -451,7 +451,7 @@ class BBVI(VariationalInference):
         self.iteration_data.add(
             samples=self.sample_set,
             weights=weights,
-            n_sims=self.n_sims,
+            n_sims=self.model.num_evaluations,
             likelihood_variance=self.model.normal_distribution.covariance,
         )
 
@@ -459,12 +459,10 @@ class BBVI(VariationalInference):
 
     def _sample_probabilistic_model(self):
         """Evaluate probabilistic model."""
-        # Increase model call counter
-        n_samples = self.n_samples_per_iter
-        self.n_sims += n_samples
-
         # Draw samples for the current iteration
-        self.sample_set = self.variational_distribution.draw(self.variational_params, n_samples)
+        self.sample_set = self.variational_distribution.draw(
+            self.variational_params, self.n_samples_per_iter
+        )
 
         # Calls the (unnormalized) probabilistic model
         self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(self.sample_set)
