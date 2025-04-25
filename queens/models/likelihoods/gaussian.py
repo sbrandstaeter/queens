@@ -114,7 +114,7 @@ class Gaussian(Likelihood):
         self.noise_var_iterative_averaging = noise_var_iterative_averaging
         self.normal_distribution = normal_distribution
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate likelihood with current set of input samples.
 
         Args:

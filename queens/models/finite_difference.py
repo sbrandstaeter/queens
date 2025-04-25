@@ -79,7 +79,7 @@ class FiniteDifference(Simulation):
             bounds = [-np.inf, np.inf]
         self.bounds = np.array(bounds)
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of input samples.
 
         Args:

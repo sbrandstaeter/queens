@@ -254,7 +254,7 @@ class BMFMC(Model):
 
         super().__init__()
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate the Bayesian Multi-Fidelity Monte-Carlo (BMFMC) model.
 
         This method evaluates the BMFMC routine by performing two main tasks:

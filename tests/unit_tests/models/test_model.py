@@ -25,7 +25,7 @@ from queens.models._model import Model
 class DummyModel(Model):
     """Dummy model class."""
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of samples."""
 
     def grad(self, samples, upstream_gradient):

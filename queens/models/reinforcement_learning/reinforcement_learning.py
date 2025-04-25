@@ -170,7 +170,7 @@ class ReinforcementLearning(Model):
             "the `grad` method in the child class."
         )
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate the model (agent) on the provided samples (observations).
 
         Delegates the call to :py:meth:`predict()` internally and stores the of

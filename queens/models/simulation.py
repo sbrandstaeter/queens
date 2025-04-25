@@ -41,7 +41,7 @@ class Simulation(Model):
         self.driver = driver
         self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of input samples.
 
         Args:
