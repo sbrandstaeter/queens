@@ -44,7 +44,8 @@ def load_pickle(file_path):
     if not file_path.is_file():
         raise FileNotFoundError(f"File {file_path} does not exist.")
     try:
-        data = pickle.load(file_path.open("rb"))
+        with open(file_path, "rb") as file:
+            data = pickle.load(file)
         return data
     except Exception as exception:
         raise IOError(f"Could not open the pickle file {file_path}") from exception
