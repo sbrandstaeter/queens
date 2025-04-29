@@ -41,6 +41,8 @@ def fixture_model():
 def test_init(model):
     """Test init."""
     assert model.response is None
+    assert model.num_evaluations == 0
+    assert model.num_gradient_evaluations == 0
     assert not model.evaluate_and_gradient_bool
 
 
@@ -58,10 +60,13 @@ def test_evaluate_and_gradient(model):
         )
     )
 
-    samples = np.random.random((3, 4))
-    with patch.object(DummyModel, "evaluate", new=model_eval):
+    num_samples = 3
+    samples = np.random.random((num_samples, 4))
+    with patch.object(DummyModel, "_evaluate", new=model_eval):
         model_out, model_grad = model.evaluate_and_gradient(samples, upstream_gradient=None)
         assert model.grad.call_count == 1
+        assert model.num_evaluations == num_samples
+        assert model.num_gradient_evaluations == num_samples
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)
         np.testing.assert_array_equal(
             model.grad.call_args.kwargs["upstream_gradient"], np.ones((samples.shape[0], 1))
@@ -76,6 +81,8 @@ def test_evaluate_and_gradient(model):
         upstream_ = np.random.random(samples.shape[0])
         model.evaluate_and_gradient(samples, upstream_gradient=upstream_)
         assert model.grad.call_count == 2
+        assert model.num_evaluations == 2 * num_samples
+        assert model.num_gradient_evaluations == 2 * num_samples
         np.testing.assert_array_equal(model.grad.call_args.args[0], samples)
         np.testing.assert_array_equal(
             model.grad.call_args.kwargs["upstream_gradient"], upstream_[:, np.newaxis]
