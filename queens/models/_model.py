@@ -30,6 +30,7 @@ class Model(metaclass=abc.ABCMeta):
     Attributes:
         response (dict): Response of the underlying model at input samples.
         num_evaluations (int): Number of model evaluations.
+        num_gradient_evaluations (int): Number of model gradient evaluations.
     """
 
     evaluate_and_gradient_bool = False
@@ -38,6 +39,7 @@ class Model(metaclass=abc.ABCMeta):
         """Init model object."""
         self.response = None
         self.num_evaluations = 0
+        self.num_gradient_evaluations = 0
 
     @final
     def evaluate(self, samples):
@@ -95,6 +97,7 @@ class Model(metaclass=abc.ABCMeta):
         """
         Model.evaluate_and_gradient_bool = True
         model_output = self.evaluate(samples)["result"]
+        self.num_gradient_evaluations += len(samples)
         if upstream_gradient is None:
             upstream_gradient = np.ones((samples.shape[0], 1))
         model_gradient = self.grad(
