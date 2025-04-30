@@ -255,8 +255,7 @@ class RPVI(VariationalInference):
         log_likelihood, grad_log_likelihood_x = self.model.evaluate_and_gradient(
             sample_batch.reshape(-1, self.num_parameters)
         )
-        self.n_sims += len(sample_batch)
-        self.iteration_data.add(n_sims=self.n_sims, samples=sample_batch)
+        self.iteration_data.add(n_sims=self.model.num_evaluations, samples=sample_batch)
         if hasattr(self.model, "normal_distribution"):
             self.iteration_data.add(likelihood_variance=self.model.normal_distribution.covariance)
         grad_log_likelihood_batch = self.parameters.latent_grad(grad_log_likelihood_x)

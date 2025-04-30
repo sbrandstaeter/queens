@@ -202,6 +202,7 @@ def target_density(
     """Target posterior density."""
     log_likelihood_output = likelihood.logpdf(samples)
     grad_log_likelihood = likelihood.grad_logpdf(samples)
+    self.num_evaluations += len(samples)
 
     return log_likelihood_output, grad_log_likelihood
 

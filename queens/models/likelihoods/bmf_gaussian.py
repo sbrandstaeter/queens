@@ -142,7 +142,7 @@ class BMFGaussian(Likelihood):
         self.num_refinement_samples = num_refinement_samples
         self.likelihood_evals_for_refinement = likelihood_evals_for_refinement
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables

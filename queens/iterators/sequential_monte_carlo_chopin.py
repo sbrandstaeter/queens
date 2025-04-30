@@ -50,7 +50,6 @@ class SequentialMonteCarloChopin(Iterator):
         seed (int): Seed for random number generator.
         num_particles (int): Number of particles.
         num_variables (int): Number of primary variables.
-        n_sims (int): Number of model calls.
         max_feval (int): Maximum number of model calls.
         prior (object): Particles Prior object.
         smc_obj (object): Particles SMC object.
@@ -99,7 +98,6 @@ class SequentialMonteCarloChopin(Iterator):
         self.seed = seed
         self.num_particles = num_particles
         self.num_variables = self.parameters.num_parameters
-        self.n_sims = 0
         self.max_feval = max_feval
         self.prior = None
         self.smc_obj = None
@@ -219,10 +217,9 @@ class SequentialMonteCarloChopin(Iterator):
 
         for _ in self.smc_obj:
             _logger.info(re.sub(r"t=.*?,", f"t={self.smc_obj.t -1},", str(self.smc_obj)))
-            self.n_sims = self.smc_obj.fk.model.n_sims
-            _logger.info("Total number of forward runs %s", self.n_sims)
+            _logger.info("Total number of forward runs %s", self.model.num_evaluations)
             _logger.info("-" * 70)
-            if self.n_sims >= self.max_feval:
+            if self.model.num_evaluations >= self.max_feval:
                 _logger.warning("Maximum number of model evaluations reached!")
                 _logger.warning("Stopping SMC...")
                 break
@@ -248,7 +245,7 @@ class SequentialMonteCarloChopin(Iterator):
                     "log_posterior": self.smc_obj.X.lpost,
                     "mean": mean,
                     "var": variance,
-                    "n_sims": self.n_sims,
+                    "n_sims": self.model.num_evaluations,
                 },
                 self.result_description,
             )

@@ -164,7 +164,6 @@ class StaticStateSpaceModel(ssp.StaticModel):
 
     Attributes:
         likelihood_model (object): Log-likelihood function.
-        n_sims (int): Number of model calls.
     """
 
     def __init__(self, likelihood_model, data=None, prior=None):
@@ -179,7 +178,6 @@ class StaticStateSpaceModel(ssp.StaticModel):
         # Data is always set to `Ǹone` as we let QUEENS handle the actual likelihood computation
         super().__init__(data=data, prior=prior)
         self.likelihood_model = likelihood_model
-        self.n_sims = 0
 
     def logpyt(self, theta, t):
         """Log-likelihood of Y_t, given parameter and previous datapoints.
@@ -202,7 +200,6 @@ class StaticStateSpaceModel(ssp.StaticModel):
         """
         x = self.particles_array_to_numpy(theta)
         # Increase the model counter
-        self.n_sims += len(x)
         return self.likelihood_model(x).flatten()
 
     def particles_array_to_numpy(self, theta):

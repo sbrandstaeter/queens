@@ -69,7 +69,6 @@ class VariationalInference(Iterator):
         num_parameters (int): Actual number of model input parameters that should be calibrated.
         stochastic_optimizer (obj): QUEENS stochastic optimizer object.
         variational_distribution (Variational): Variational distribution object.
-        n_sims (int): Number of probabilistic model calls.
         variational_params (np.array): Row vector containing the variational parameters.
         elbo: Evidence lower bound.
         nan_in_gradient_counter (int): Count how many times *NaNs* appeared in the gradient estimate
@@ -143,7 +142,6 @@ class VariationalInference(Iterator):
         self.num_parameters = self.parameters.num_parameters
         self.stochastic_optimizer = stochastic_optimizer
         self.variational_distribution = variational_distribution
-        self.n_sims = 0
         self.variational_params = None
         self.elbo = -np.inf
         self.nan_in_gradient_counter = 0
@@ -174,7 +172,7 @@ class VariationalInference(Iterator):
                 self._clearing_and_plots()
 
             # Stop the optimizer in case of too many simulations
-            if self.n_sims >= self.max_feval:
+            if self.model.num_evaluations >= self.max_feval:
                 break
 
             self.iteration_data.add(learning_rate=self.stochastic_optimizer.learning_rate)
@@ -183,7 +181,7 @@ class VariationalInference(Iterator):
 
         end = time.time()
 
-        if self.n_sims > self.max_feval:
+        if self.model.num_evaluations > self.max_feval:
             _logger.warning("Maximum probabilistic model calls reached")
         elif np.any(np.isnan(self.stochastic_optimizer.rel_l2_change)):
             _logger.warning("NaN(s) in the relative change of variational parameters")
@@ -221,7 +219,7 @@ class VariationalInference(Iterator):
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
         mean_change = self.stochastic_optimizer.rel_l2_change * 100
-        _logger.info("So far %s simulation runs", self.n_sims)
+        _logger.info("So far %s simulation runs", self.model.num_evaluations)
         _logger.info("L2 change of all variational parameters: %.4f %%", mean_change)
         _logger.info("The elbo is: %.2f", self.elbo)
         # Avoids a busy screen
@@ -341,7 +339,7 @@ class VariationalInference(Iterator):
             "final_elbo": self.elbo,
             "final_variational_parameters": self.variational_params,
             "batch_size": self.n_samples_per_iter,
-            "number_of_sim": self.n_sims,
+            "number_of_sim": self.model.num_evaluations,
             "natural_gradient": self.natural_gradient_bool,
             "fim_dampening": self.fim_dampening_bool,
             "variational_parameter_initialization": self.variational_params_initialization_approach,

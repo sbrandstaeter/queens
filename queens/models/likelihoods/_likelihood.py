@@ -41,7 +41,7 @@ class Likelihood(Model):
         self.y_obs = np.array(y_obs)
 
     @abc.abstractmethod
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of input samples.
 
         Args:

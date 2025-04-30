@@ -248,7 +248,7 @@ class LogpdfGP(Model):
         )
         return chol_k_train_train, v_train
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of input samples.
 
         Args:

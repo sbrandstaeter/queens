@@ -75,7 +75,7 @@ class Surrogate(Model):
         self.x_train = None
         self.y_train = None
 
-    def evaluate(self, samples):
+    def _evaluate(self, samples):
         """Evaluate model with current set of input samples.
 
         Args:
