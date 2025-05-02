@@ -1,4 +1,19 @@
-"""KL Random fields class."""
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (c) 2024-2025, QUEENS contributors.
+#
+# This file is part of QUEENS.
+#
+# QUEENS is free software: you can redistribute it and/or modify it under the terms of the GNU
+# Lesser General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version. QUEENS is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
+# should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
+# see <https://www.gnu.org/licenses/>.
+#
+
+"""GPR Random fields class."""
 
 import logging
 
@@ -17,9 +32,9 @@ from gpflow.functions import Function, MeanFunction
 
 from gpflow.kernels.base import Combination, Kernel
 
-from queens.distributions.uniform import UniformDistribution
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
-from queens.parameters.fields.random_fields import RandomField
+from queens.distributions.uniform import Uniform
+from queens.distributions.mean_field_normal import MeanFieldNormal
+from queens.parameters.random_fields._random_field import RandomField
 
 _logger = logging.getLogger(__name__)
 
@@ -296,7 +311,7 @@ class GPRRandomField(RandomField):
             samples (np.ndarray): Drawn samples
         """
 
-        mean_distribution = UniformDistribution(lower_bound=-1, upper_bound=1)
+        mean_distribution = Uniform(lower_bound=-1, upper_bound=1)
         return mean_distribution.draw(num_samples)
         # return np.zeros(num_samples, self.dimension)
 
@@ -334,7 +349,7 @@ class GPRRandomField(RandomField):
             samples_expanded (np.ndarray): Expanded representation of sample
         """
         sample_coords = np.stack(
-            (self.coords['coords'][:, 0], self.coords['coords'][:, 1], self.coords['coords'][:, 2]),
+            (self.coords["coords"][:, 0], self.coords["coords"][:, 1], self.coords["coords"][:, 2]),
             axis=-1,
         ).reshape(-1, 3)
         samples_expanded = np.array(
@@ -362,9 +377,9 @@ class GPRRandomField(RandomField):
         covariance matrix using the external geometry and coordinates.
         """
         # assume squared exponential kernel
-        distance = squareform(pdist(self.coords['coords'], 'sqeuclidean'))
+        distance = squareform(pdist(self.coords["coords"], "sqeuclidean"))
         # covariance = * np.exp(-distance / (2 * self.corr_length**2))
-        covariance = np.array(self.kernel(self.coords['coords']))
+        covariance = np.array(self.kernel(self.coords["coords"]))
         covariance[covariance < self.cut_off] = 0
         self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)
 

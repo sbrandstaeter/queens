@@ -620,14 +620,8 @@ class FourcDat(ExternalGeometry):
 
             # set number of new materials equal to length of element_topology of interest
             # TODO atm we just take the first list entry here and dont loop over several fields # pylint: disable=fixme
-<<<<<<< HEAD:queens/external_geometries/fourc_dat.py
             n_mats = len(self.element_topology[0]["element_number"])
 
-=======
-            n_mats = len(self.element_topology[0]['element_number'])
-            _logger = logging.getLogger(__name__)
-            _logger.info(self.list_associated_material_numbers)
->>>>>>> bfd4a48b (modify external geometry reader):queens/external_geometry/baci_dat_geometry.py
             # Check the largest material definition to avoid overwriting existing original_materials
             material_numbers_flat = [item for item in materials_copy]
             if material_numbers_flat:
