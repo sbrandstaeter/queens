@@ -119,7 +119,7 @@ charon-build_conda_env:
     SLURM_CPUS: "8"
   script:
     - |
-      ssh "queens@$REMOTE_HOST" "bash -lc 'srun \
+      COMMAND="bash -lc 'srun \
         --job-name="queens_ci_build_4c_$CI_PIPELINE_ID" \
         --nodes=1 \
         --ntasks-per-node=1 \
@@ -136,6 +136,8 @@ charon-build_conda_env:
           cd fourc_build ; \
           cmake --preset=$PRESET_4C ../fourc_source ; \
           ninja -j $SLURM_CPUS full \"'"
+    - echo $COMMAND
+    - ssh queens@$REMOTE_ADDRESS $COMMAND
 
 thought-build_4C:
   extends:
