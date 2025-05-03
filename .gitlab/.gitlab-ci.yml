@@ -11,9 +11,15 @@ variables:
   LNM_REMOTE_PYTHON:
     value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on LNM clusters"
+  LNM_REMOTE_ADDRESS:
+    value: "thought"
+    description: "Hostname of LNM cluster"
   IMCS_REMOTE_PYTHON:
     value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
     description: "Python path on IMCS clusters"
+  IMCS_REMOTE_ADDRESS:
+    value: "charon.bauv.unibw-muenchen.de"
+    description: "Hostname of IMCS cluster"
   PYTHON_PACKAGE_MANAGER:
     value: "mamba"
     description: "Python package manager to create the python environments"
@@ -93,7 +99,7 @@ thought-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: "thought"
+    REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   tags:
     - lnm-build
@@ -104,7 +110,7 @@ charon-build_conda_env:
   extends:
     - .build_conda_env_cluster
   variables:
-    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
+    REMOTE_ADDRESS: $IMCS_REMOTE_ADDRESS
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   tags:
     - imcs-build
@@ -141,7 +147,7 @@ thought-build_4C:
     - .build_4C
   variables:
     LOAD_MODULES: ""
-    REMOTE_ADDRESS: "thought"
+    REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
     PRESET_4C: "lnm_thought"
     SLURM_CPUS: "8"
     SLURM_TIME: "01:00:00"
@@ -155,11 +161,11 @@ charon-build_4C:
     - .build_4C
   variables:
     LOAD_MODULES: "source /home/cluster_tools/user/load_four_c_environment.sh;"
-    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
+    REMOTE_ADDRESS: $IMCS_REMOTE_ADDRESS
     PRESET_4C: "imcs_charon"
     SLURM_EXTRA_ARGUMENTS: "--partition='all'"
     SLURM_CPUS: "24"
-    SLURM_TIME: "01:00:00"
+    SLURM_TIME: "00:30:00"
   tags:
     - imcs-build
   rules:
@@ -267,7 +273,7 @@ thought-cluster-remove_conda_env:
   dependencies:
     - thought-build_conda_env
   variables:
-    REMOTE_ADDRESS: "thought"
+    REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
   tags:
     - lnm-build
   rules:
@@ -279,7 +285,7 @@ charon-cluster-remove_conda_env:
   dependencies:
     - charon-build_conda_env
   variables:
-    REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
+    REMOTE_ADDRESS: $IMCS_REMOTE_ADDRESS
   tags:
     - imcs-build
   rules:
