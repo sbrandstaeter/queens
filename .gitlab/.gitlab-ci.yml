@@ -114,10 +114,6 @@ charon-build_conda_env:
 #----------------------------------------------------------------------------------------------
 .build_4C:
   stage: build
-  variables:
-    SLURM_TIME: "01:00:00"
-    SLURM_CPUS: "8"
-    SLURM_PARTITION: "all"
   script:
     - |
       COMMAND="bash -lc 'srun \
@@ -126,7 +122,7 @@ charon-build_conda_env:
         --ntasks-per-node=1 \
         --cpus-per-task=$SLURM_CPUS \
         --time=$SLURM_TIME \
-        --partition=$SLURM_PARTITION \
+        $SLURM_EXTRA_ARGUMENTS \
         bash -c \" \
           $LOAD_MODULES \
           module list ; \
@@ -147,6 +143,8 @@ thought-build_4C:
     LOAD_MODULES: ""
     REMOTE_ADDRESS: "thought"
     PRESET_4C: "lnm_thought"
+    SLURM_CPUS: "8"
+    SLURM_TIME: "01:00:00"
   tags:
     - lnm-build
   rules:
@@ -159,6 +157,9 @@ charon-build_4C:
     LOAD_MODULES: "source /home/cluster_tools/user/load_four_c_environment.sh;"
     REMOTE_ADDRESS: "charon.bauv.unibw-muenchen.de"
     PRESET_4C: "imcs_charon"
+    SLURM_EXTRA_ARGUMENTS: "--partition='all'"
+    SLURM_CPUS: "24"
+    SLURM_TIME: "01:00:00"
   tags:
     - imcs-build
   rules:
