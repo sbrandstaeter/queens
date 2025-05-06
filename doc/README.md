@@ -1,6 +1,8 @@
 # :book: HTML documentation
 
-QUEENS uses [Sphinx](https://www.sphinx-doc.org/en/master/) to automatically build an html-documentation from the docstrings.
+We use [Sphinx](https://www.sphinx-doc.org/en/master/#) to generate the [QUEENS documentation](https://queens-py.github.io/queens). It automatically builds the html documentation from the docstrings.
+
+We believe that documentation is essential and therefore welcome any improvements :blush:
 
 ## :woman_teacher: Build the documentation
 
