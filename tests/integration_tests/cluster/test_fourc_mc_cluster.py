@@ -54,6 +54,15 @@ class TestDaskCluster:
     for these tests.
     """
 
+    def experiment_dir_on_cluster(self):
+        """Remote experiment path."""
+        return f"$HOME/{config_directories.BASE_DATA_DIR_FOR_TESTS}"
+
+    @pytest.fixture(name="patched_base_directory")
+    def fixture_patched_base_directory(self, pytest_id):
+        """Path of the tests on the remote cluster."""
+        return self.experiment_dir_on_cluster() + f"/{pytest_id}"
+
     @pytest.fixture(autouse=True)
     def mock_experiment_dir(self, monkeypatch, cluster_settings, patched_base_directory):
         """Mock the experiment directory on the cluster.
@@ -62,7 +71,7 @@ class TestDaskCluster:
         NOTE: It is necessary to mock the whole experiment_directory method.
         Otherwise, the mock is not loaded properly remote.
         This is in contrast to the local mocking where it suffices to mock
-        config_directories.EXPERIMENTS_BASE_FOLDER_NAME.
+        config_directories.BASE_DATA_DIR.
         Note that we also rely on this local mock here!
         """
 
@@ -82,17 +91,6 @@ class TestDaskCluster:
             cluster_settings["user"],
             cluster_settings["host"],
         )
-
-    def experiment_dir_on_cluster(self):
-        """Remote experiment path."""
-        return (
-            f"$HOME/{config_directories.BASE_DATA_DIR}/{config_directories.TESTS_BASE_FOLDER_NAME}"
-        )
-
-    @pytest.fixture(name="patched_base_directory")
-    def fixture_patched_base_directory(self, pytest_id):
-        """Path of the tests on the remote cluster."""
-        return self.experiment_dir_on_cluster() + f"/{pytest_id}"
 
     def test_fourc_mc_cluster(
         self,
