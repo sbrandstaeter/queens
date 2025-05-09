@@ -69,8 +69,10 @@ class TestDaskCluster:
         """
         return self.pytest_base_directory_on_cluster() + f"/{pytest_id}"
 
-    @pytest.fixture(autouse=True)
-    def mock_experiment_dir(self, monkeypatch, cluster_settings, queens_base_directory_on_cluster):
+    @pytest.fixture(name="mock_experiment_dir", autouse=True)
+    def fixture_mock_experiment_dir(
+        self, monkeypatch, cluster_settings, queens_base_directory_on_cluster
+    ):
         """Mock the experiment directory of a test on the cluster.
 
         NOTE: It is necessary to mock the whole experiment_directory method.
