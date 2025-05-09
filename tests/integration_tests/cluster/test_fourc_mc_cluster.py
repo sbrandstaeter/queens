@@ -195,7 +195,7 @@ class TestDaskCluster:
         command = (
             "find "
             + str(self.pytest_base_directory_on_cluster())
-            + " -mtime +7 -mindepth 1 -maxdepth 1 -type d -exec rm -rv {} \\;"
+            + " -mindepth 1 -maxdepth 1 -mtime +7 -type d -exec rm -rv {} \\;"
         )
         result = remote_connection.run(command, in_stream=False)
         _logger.debug("Deleting old simulation data:\n%s", result.stdout)
