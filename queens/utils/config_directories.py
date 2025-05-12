@@ -22,7 +22,6 @@ from queens.utils.path import create_folder_if_not_existent
 _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-experiments"
-BASE_DATA_DIR_FOR_TESTS = "queens-tests"
 
 
 def base_directory():

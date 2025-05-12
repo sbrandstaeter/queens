@@ -28,7 +28,6 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
-from queens.utils import config_directories
 from queens.utils.io import load_result
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
@@ -56,7 +55,7 @@ class TestDaskCluster:
 
     def pytest_base_directory_on_cluster(self):
         """Remote directory containing several pytest runs."""
-        return f"$HOME/{config_directories.BASE_DATA_DIR_FOR_TESTS}"
+        return "$HOME/queens-tests"
 
     @pytest.fixture(name="queens_base_directory_on_cluster")
     def fixture_queens_base_directory_on_cluster(self, pytest_id):
