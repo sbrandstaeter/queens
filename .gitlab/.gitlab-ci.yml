@@ -149,7 +149,7 @@ thought-build_4C:
     LOAD_MODULES: ""
     REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
     PRESET_4C: "lnm_thought"
-    SLURM_CPUS: "8"
+    SLURM_CPUS: "16"
     SLURM_TIME: "01:00:00"
   tags:
     - lnm-build
