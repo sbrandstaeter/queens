@@ -50,6 +50,10 @@ Install QUEENS as described in the [README.md](README.md) and run:
 ```
 pip install -e .[develop]
 ```
+or to do a safe develop install use:
+```
+pip install -e .[safe_develop]
+```
 <!---installation_develop marker, do not remove this comment-->
 
 #### 2. Configure our git-hooks
