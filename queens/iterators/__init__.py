@@ -18,9 +18,9 @@ Modules for parameter studies, uncertainty quantification, sensitivity
 analysis, Bayesian inverse analysis, and optimization.
 """
 
-from queens.iterators.bbvi import BBVI
-from queens.iterators.bmfia import BMFIA
-from queens.iterators.bmfmc import BMFMC
+# from queens.iterators.bbvi import BBVI
+# from queens.iterators.bmfia import BMFIA
+# from queens.iterators.bmfmc import BMFMC
 from queens.iterators.classification import ClassificationIterator
 from queens.iterators.data import Data
 from queens.iterators.elementary_effects import ElementaryEffects
@@ -35,12 +35,14 @@ from queens.iterators.nuts import NUTS
 from queens.iterators.optimization import Optimization
 from queens.iterators.points import Points
 from queens.iterators.polynomial_chaos import PolynomialChaos
-from queens.iterators.reinforcement_learning import ReinforcementLearning
-from queens.iterators.reparameteriztion_based_variational import RPVI
+
+# from queens.iterators.reinforcement_learning import ReinforcementLearning
+# from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.iterators.sobol_index import SobolIndex
-from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
+
+# from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
 from queens.iterators.sobol_sequence import SobolSequence
 
 VALID_TYPES = {
@@ -55,17 +57,17 @@ VALID_TYPES = {
     "elementary_effects": ElementaryEffects,
     "polynomial_chaos": PolynomialChaos,
     "sobol_indices": SobolIndex,
-    "sobol_indices_gp_uncertainty": SobolIndexGPUncertainty,
+    #    "sobol_indices_gp_uncertainty": SobolIndexGPUncertainty,
     "smc": SequentialMonteCarlo,
     "smc_chopin": SequentialMonteCarloChopin,
     "sobol_sequence": SobolSequence,
     "points": Points,
-    "bmfmc": BMFMC,
+    # "bmfmc": BMFMC,
     "grid": Grid,
     "least_squares": LeastSquares,
-    "bbvi": BBVI,
-    "bmfia": BMFIA,
-    "rpvi": RPVI,
+    #    "bbvi": BBVI,
+    # "bmfia": BMFIA,
+    # "rpvi": RPVI,
     "classification": ClassificationIterator,
-    "reinforcement_learning": ReinforcementLearning,
+    # "reinforcement_learning": ReinforcementLearning,
 }
