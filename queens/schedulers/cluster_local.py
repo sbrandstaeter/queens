@@ -20,8 +20,8 @@ from datetime import timedelta
 
 from dask.distributed import Client
 
-from queens.schedulers.cluster import VALID_WORKLOAD_MANAGERS, timedelta_to_str
 from queens.schedulers._dask import Dask
+from queens.schedulers.cluster import VALID_WORKLOAD_MANAGERS, timedelta_to_str
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.logger_settings import log_init_args
 from queens.utils.remote_operations import get_port
@@ -52,6 +52,7 @@ class ClusterLocal(Dask):
         cluster_internal_address=None,
         restart_workers=False,
         allowed_failures=5,
+        verbose=True,
     ):
         """Init method for the cluster scheduler.
 
@@ -70,6 +71,7 @@ class ClusterLocal(Dask):
             restart_workers (bool): If true, restart workers after each finished job. For larger
                                     jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
+            verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         experiment_dir = experiment_directory(experiment_name=experiment_name)
         _logger.debug(
@@ -177,6 +179,7 @@ class ClusterLocal(Dask):
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,
+            verbose=verbose,
         )
 
     def restart_worker(self, worker):
