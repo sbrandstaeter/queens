@@ -17,11 +17,14 @@
 import abc
 import logging
 import time
+import random
 
 import numpy as np
 import pandas as pd
 import tqdm
-from dask.distributed import as_completed
+from dask.distributed import as_completed, progress
+from distributed import WorkerPlugin
+
 
 from queens.schedulers._scheduler import Scheduler
 from queens.utils.printing import get_str_table
@@ -29,6 +32,24 @@ from queens.utils.printing import get_str_table
 _logger = logging.getLogger(__name__)
 
 SHUTDOWN_CLIENTS = []
+
+
+class ShutdownAfterFirstTask(WorkerPlugin):
+    def setup(self, worker):
+        self.worker = worker
+        self.has_shutdown = False
+
+    def transition(self, key, start, finish, *args, **kwargs):
+
+        # if start == "ready" and finish == "executing" and not self.has_shutdown:
+        #    self.worker.state = "closing"
+        if start == "executing" and finish == "memory" and not self.has_shutdown:
+            self.has_shutdown = True
+
+            async def shutdown():
+                await self.worker.close_gracefully(reason=f"Shutdown after task {key}")
+
+            self.worker.loop.call_later(2, shutdown)
 
 
 class Dask(Scheduler):
@@ -70,6 +91,11 @@ class Dask(Scheduler):
         self.num_procs = num_procs
         self.client = client
         self.restart_workers = restart_workers
+
+        # Register this plugin on all workers
+        if self.restart_workers:
+            self.client.register_plugin(ShutdownAfterFirstTask(), name="shutdown_after_one")
+
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
@@ -84,15 +110,13 @@ class Dask(Scheduler):
         Returns:
             result_dict (dict): Dictionary containing results
         """
-        if self.restart_workers:
-            # This is necessary, because the subprocess in the driver does not get killed
-            # sometimes when the worker is restarted.
-            def run_driver(*args, **kwargs):
-                time.sleep(5)
-                return driver.run(*args, **kwargs)
 
-        else:
-            run_driver = driver.run
+        # the initial batch can overwhelm the hardware infrastructue by starting many jobs at the same time
+        # -> introduce a random wait time for jobs to spread the load
+        def run_driver(*args, **kwargs):
+            random_wait_time = random.uniform(3, 7)
+            time.sleep(random_wait_time)
+            return driver.run(*args, **kwargs)
 
         if job_ids is None:
             job_ids = self.get_job_ids(len(samples))
@@ -109,34 +133,30 @@ class Dask(Scheduler):
         # The theoretical number of sequential jobs
         num_sequential_jobs = int(np.ceil(len(samples) / self.num_jobs))
 
-        results = {future.key: None for future in futures}
-        with tqdm.tqdm(total=len(futures)) as progressbar:
-            for future in as_completed(futures):
-                results[future.key] = future.result()
-                progressbar.update(1)
-                if self.restart_workers:
-                    worker = list(self.client.who_has(future).values())[0]
-                    self.restart_worker(worker)
+        start_time = time.time()
+        progress(futures)
+        results_values = self.client.gather(futures)
 
-            if self.verbose:
-                elapsed_time = progressbar.format_dict["elapsed"]
-                averaged_time_per_job = elapsed_time / num_sequential_jobs
+        if self.verbose:
+            elapsed_time = time.time() - start_time
+            averaged_time_per_job = elapsed_time / num_sequential_jobs
 
-                run_time_dict = {
-                    "number of jobs": len(samples),
-                    "number of parallel jobs": self.num_jobs,
-                    "number of procs": self.num_procs,
-                    "total elapsed time": f"{elapsed_time:.3e}s",
-                    "average time per parallel job": f"{averaged_time_per_job:.3e}s",
-                }
-                _logger.info(
-                    get_str_table(
-                        f"Batch summary for jobs {min(job_ids)} - {max(job_ids)}", run_time_dict
-                    )
+            run_time_dict = {
+                "number of jobs": len(samples),
+                "number of parallel jobs": self.num_jobs,
+                "number of procs": self.num_procs,
+                "total elapsed time": f"{elapsed_time:.3e}s",
+                "average time per parallel job": f"{averaged_time_per_job:.3e}s",
+            }
+            _logger.info(
+                get_str_table(
+                    f"Batch summary for jobs {min(job_ids)} - {max(job_ids)}", run_time_dict
                 )
+            )
 
         result_dict = {"result": [], "gradient": []}
-        for result in results.values():
+        # for result in results:
+        for result in results_values:
             # We should remove this squeeze! It is only introduced for consistency with old test.
             result_dict["result"].append(np.atleast_1d(np.array(result[0]).squeeze()))
             result_dict["gradient"].append(result[1])
