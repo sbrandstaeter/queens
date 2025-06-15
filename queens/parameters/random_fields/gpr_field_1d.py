@@ -23,7 +23,7 @@ import tensorflow as tf
 from check_shapes import inherit_check_shapes
 from gpflow.base import Parameter, TensorType
 from gpflow.config import default_int
-from gpflow.functions import Function, MeanFunction
+from gpflow.functions import Function, MeanFunction, Zero
 from gpflow.kernels.base import Combination, Kernel
 from gpflow.utilities import positive
 
@@ -216,7 +216,7 @@ class GPRRandomField1D(RandomField):
         if kernel != "RBF" and kernel != "Matern" and kernel != "SE" and customkernel == None:
             raise KeyError("Kernel must be RBF, Matern, or SE (Squared Exponential)")
 
-        damaged_beam = DamagedBeam(
+        mean_function = DamagedBeam(
             mu=mu,
             sigma=sigma,
             relative_peak=relative_peak,
@@ -225,17 +225,14 @@ class GPRRandomField1D(RandomField):
         )
         if self.fit == True:
             self.distribution = gpflow.models.GPR(
-                (X, y), kernel=self.kernel, mean_function=damaged_beam
+                (X, y), kernel=self.kernel, mean_function=mean_function
             )
         else:
             X = np.zeros((0, 1))
             y = np.zeros((0, 1))
             self.distribution = gpflow.models.GPR(
-                (X, y), kernel=self.kernel, mean_function=damaged_beam
+                (X, y), kernel=self.kernel, mean_function=mean_function
             )
-        # self.distribution = MeanFieldNormal(
-        #     mean=0, variance=1, dimension=self.dimension
-        # )
 
     def draw(self, num_samples):
         """Draw samples from the latent representation of the random field.
