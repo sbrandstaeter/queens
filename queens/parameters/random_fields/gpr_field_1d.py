@@ -1,24 +1,36 @@
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (c) 2024-2025, QUEENS contributors.
+#
+# This file is part of QUEENS.
+#
+# QUEENS is free software: you can redistribute it and/or modify it under the terms of the GNU
+# Lesser General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version. QUEENS is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
+# should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
+# see <https://www.gnu.org/licenses/>.
+#
 """KL Random fields class."""
 
 import logging
+from typing import Iterable, List, Optional, Sequence, Union
 
-import numpy as np
-from scipy.spatial.distance import pdist, squareform
-import tensorflow as tf
 import gpflow
-
-from typing import Optional, Sequence, List, Union, Iterable
-from check_shapes import inherit_check_shapes, check_shapes
+import numpy as np
+import tensorflow as tf
 from check_shapes import check_shape as cs
+from check_shapes import check_shapes, inherit_check_shapes
 from gpflow.base import Parameter, TensorType
-from gpflow.utilities import positive
 from gpflow.config import default_int
 from gpflow.functions import Function, MeanFunction
-
 from gpflow.kernels.base import Combination, Kernel
+from gpflow.utilities import positive
+from scipy.spatial.distance import pdist, squareform
 
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
-from queens.parameters.fields.random_fields import RandomField
+from queens.distributions.mean_field_normal import MeanFieldNormal
+from queens.parameters.random_fields._random_field import RandomField
 
 _logger = logging.getLogger(__name__)
 
@@ -32,8 +44,7 @@ class ChangePoint3D(Combination):
         switch_dim: int = 0,
         name: Optional[str] = None,
     ):
-        """
-        :param kernels: list of kernels defining the different regimes
+        """:param kernels: list of kernels defining the different regimes
         :param locations: list of change-point locations in the 1d input space
         :param steepness: the steepness parameter(s) of the sigmoids, this can be
             common between them or decoupled
@@ -278,7 +289,7 @@ class GPRRandomField1D(RandomField):
             self.distribution = gpflow.models.GPR(
                 (X, y), kernel=self.kernel, mean_function=damaged_beam
             )
-        # self.distribution = MeanFieldNormalDistribution(
+        # self.distribution = MeanFieldNormal(
         #     mean=0, variance=1, dimension=self.dimension
         # )
 
@@ -290,10 +301,7 @@ class GPRRandomField1D(RandomField):
         Returns:
             samples (np.ndarray): Drawn samples
         """
-
-        mean_distribution = MeanFieldNormalDistribution(
-            mean=0, variance=1, dimension=self.dimension
-        )
+        mean_distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
         return mean_distribution.draw(num_samples)
         # return np.zeros(num_samples, self.dimension)
 
@@ -331,7 +339,7 @@ class GPRRandomField1D(RandomField):
             samples_expanded (np.ndarray): Expanded representation of sample
         """
         sample_coords = np.stack(
-            (self.coords['coords'][:, 0]),
+            (self.coords["coords"][:, 0]),
             axis=-1,
         ).reshape(
             -1, 1
@@ -361,9 +369,9 @@ class GPRRandomField1D(RandomField):
         covariance matrix using the external geometry and coordinates.
         """
         # assume squared exponential kernel
-        distance = squareform(pdist(self.coords['coords'], 'sqeuclidean'))
+        distance = squareform(pdist(self.coords["coords"], "sqeuclidean"))
         # covariance = * np.exp(-distance / (2 * self.corr_length**2))
-        covariance = np.array(self.kernel(self.coords['coords']))
+        covariance = np.array(self.kernel(self.coords["coords"]))
         covariance[covariance < self.cut_off] = 0
         self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)
 
