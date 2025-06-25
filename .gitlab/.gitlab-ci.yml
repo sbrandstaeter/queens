@@ -90,7 +90,7 @@ imcs-build_conda_env:
     - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.11 cloudpickle fabric
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
     - pip install -e . --no-dependencies
-    - python queens/utils/remote_build.py
+    - python src/queens/utils/remote_build.py
       --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
       $PYTHON_PACKAGE_MANAGER

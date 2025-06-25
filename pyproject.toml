@@ -20,9 +20,6 @@ keywords = [
     "bayesian inference",
 ]
 
-[tool.setuptools.packages.find]
-include = ["queens.*", "queens"]
-
 [tool.setuptools.dynamic]
 version = { attr = "queens.__VERSION__" }
 dependencies = { file = ["requirements.in"] }
