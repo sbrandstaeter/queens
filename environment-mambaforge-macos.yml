@@ -29,7 +29,7 @@ dependencies:
   - xarray  # Special array format
   - pyDOE  # design of experiments
   - SALib  # for sensitivity analysis
-  - vtk=9.3.1=qt_py311h7569219_208  # vtk format handler
+  - vtk==9.3.1  # vtk format handler
   - pyvista
   - autograd  # wrapper around numpy for automated differentiation
   - chaospy  # polynomial chaos
