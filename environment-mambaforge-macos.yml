@@ -29,7 +29,7 @@ dependencies:
   - xarray  # Special array format
   - pyDOE  # design of experiments
   - SALib  # for sensitivity analysis
-  - vtk==9.3.1  # vtk format handler
+  - vtk  # vtk format handler
   - pyvista
   - autograd  # wrapper around numpy for automated differentiation
   - chaospy  # polynomial chaos
@@ -83,7 +83,10 @@ dependencies:
   - docformatter>=1.5.1
   - yamllint>=1.19.0
   - ruff
+  - nbstripout
   - myst-parser
+  - testbook
+  - ipykernel
 
 
   # These packages need to be installed via pip
