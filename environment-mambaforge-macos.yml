@@ -7,7 +7,7 @@ channels:
   # be listed explicitly here.
   - nodefaults
 dependencies:
-  - python==3.11
+  - python
   # to ensure that performance optimized backends are used,
   # the following packages are installed from conda
   # for example BLAS libraries like Intel MKL for numpy
@@ -69,6 +69,9 @@ dependencies:
   - pathos  # multiprocessing with more complex python objects
   - black>=24.4.2  # formatter for code created by QUEENS
 
+  # Tutorials
+  - scikit-fem
+
   # Development
   - pylint>=2.16
   - isort>=5.0
@@ -103,3 +106,5 @@ dependencies:
       - pylint-exit
       - scikit-activeml>=0.4.1
       - licenseheaders
+      # 4C
+      - fourcipp
