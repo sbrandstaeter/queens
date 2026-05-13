@@ -175,7 +175,7 @@ jobs:
         uses: apache/skywalking-eyes/header@v0.8.0
 
       - name: Check conventional commit messages
-        uses: webiny/action-conventional-commits@v1.3.0
+        uses: webiny/action-conventional-commits@v1.4.2
 
       - name: Run isort
         run: |
