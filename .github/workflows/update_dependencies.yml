@@ -106,7 +106,7 @@ jobs:
           title: Update dependencies
           body-path: pixi_update.md
           branch: update-dependencies
-          base: main
+          base: test-pixi-dependency-management
           labels: pixi
           delete-branch: true
           add-paths: |
