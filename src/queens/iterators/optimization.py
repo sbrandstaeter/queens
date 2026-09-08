@@ -251,7 +251,7 @@ class Optimization(Iterator):
         parameter_list = self.parameters.parameters_keys
         _logger.info(
             "The intermediate, iterated parameters %s are:\n\t%s\n"
-            " with intermediate objective values\n\t%s",
+            " with intermediate values of the objective function\n\t%s",
             parameter_list,
             x0,
             f0,
