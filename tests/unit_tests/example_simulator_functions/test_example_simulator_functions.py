@@ -74,9 +74,17 @@ TEST_DICT = {
         "input": {"x1": 0.6, "x2": 0.1},
         "desired_result": 11.06777716201019,
     },
+    "forrester": {
+        "input": {"x1": 0.384729},
+        "desired_result": 0.055001280435006634,
+    },
     "gardner14a": {
         "input": {"x1": 1.234, "x2": 0.666},
         "desired_result": np.array([0.32925795427636007, -0.32328956686350346]),
+    },
+    "goldstein_price": {
+        "input": {"x1": 0.5, "x2": -0.5},
+        "desired_result": 193.75,
     },
     "ishigami90": {
         "input": {"x1": 0.1, "x2": 0.23, "x3": 0.4, "p1": 7, "p2": 0.1},

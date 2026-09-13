@@ -22,7 +22,9 @@ from example_simulator_functions.agawal09 import agawal09a
 from example_simulator_functions.borehole83 import borehole83_hifi, borehole83_lofi
 from example_simulator_functions.branin78 import branin78_hifi, branin78_lofi, branin78_medfi
 from example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
+from example_simulator_functions.forrester import forrester
 from example_simulator_functions.gardner14a import gardner14a
+from example_simulator_functions.goldstein_price import goldstein_price
 from example_simulator_functions.ishigami90 import ishigami90
 from example_simulator_functions.ma09 import ma09
 from example_simulator_functions.oakley_ohagan04 import oakley_ohagan04
@@ -57,7 +59,9 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "branin78_hifi": branin78_hifi,
     "currin88_lofi": currin88_lofi,
     "currin88_hifi": currin88_hifi,
+    "forrester": forrester,
     "gardner14a": gardner14a,
+    "goldstein_price": goldstein_price,
     "ishigami90": ishigami90,
     "ma09": ma09,
     "oakley_ohagan04": oakley_ohagan04,
