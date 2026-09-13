@@ -34,7 +34,7 @@ def test_branin78_hifi_global_minima():
     np.testing.assert_allclose(result, expected, rtol=1e-10)
 
 
-def test_forrester__global_minima():
+def test_forrester_global_minima():
     """Test the one global minimum of the Forrester function."""
     expected = -6.020740055767083
 
