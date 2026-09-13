@@ -18,6 +18,7 @@ import numpy as np
 
 from example_simulator_functions.branin78 import branin78_hifi
 from example_simulator_functions.forrester import forrester
+from example_simulator_functions.goldstein_price import goldstein_price
 
 
 def test_branin78_hifi_global_minima():
@@ -39,4 +40,12 @@ def test_forrester_global_minima():
     expected = -6.020740055767083
 
     result = forrester(0.757248757841856)
+    np.testing.assert_allclose(result, expected, rtol=1e-10)
+
+
+def test_goldstein_price_global_minima():
+    """Test the one global minimum of the Goldstein-Price function."""
+    expected = 3.0
+
+    result = goldstein_price(0.0, -1.0)
     np.testing.assert_allclose(result, expected, rtol=1e-10)
