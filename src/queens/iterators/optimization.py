@@ -63,6 +63,7 @@ class OptimizationBase(Iterator, ABC):
         super().__init__(model, parameters, global_settings)
         self.result_description = result_description
         self.precalculated_positions = {"position": [], "output": []}
+        self.solution = None
 
     @abstractmethod
     def objective(self, x0):
@@ -75,17 +76,24 @@ class OptimizationBase(Iterator, ABC):
             float or np.ndarray: Objective value at *x0*.
         """
 
-    @abstractmethod
     def pre_run(self):
-        """Prepare the optimization run."""
+        """Pre run of Optimization iterator."""
+        _logger.info("Initialize Optimization run.")
 
     @abstractmethod
     def core_run(self):
         """Execute the optimizer-specific algorithm."""
 
-    @abstractmethod
     def post_run(self):
-        """Post-process the optimization result."""
+        """Analyze the resulting optimum."""
+        _logger.info("The optimum:\n\t%s", self.solution.x)
+
+        if self.result_description:
+            if self.result_description["write_results"]:
+                write_results(
+                    self.solution,
+                    self.global_settings.result_file(".pickle"),
+                )
 
     def eval_model(self, positions):
         """Evaluate model at defined positions.
@@ -330,7 +338,6 @@ class Optimization(OptimizationBase):
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
         self.verbose_output = verbose_output
-        self.solution = None
         self.objective_and_jacobian = objective_and_jacobian
         if self.algorithm in ["COBYLA", "NELDER-MEAD", "POWELL"]:
             self.objective_and_jacobian = False
@@ -407,10 +414,6 @@ class Optimization(OptimizationBase):
         f_perturbed = f_batch[1:].reshape(-1, f0.size)
         return f0, f_perturbed, delta_positions, use_one_sided
 
-    def pre_run(self):
-        """Pre run of Optimization iterator."""
-        _logger.info("Initialize Optimization run.")
-
     def core_run(self):
         """Core run of Optimization iterator."""
         _logger.info("Welcome to Optimization core run.")
@@ -476,14 +479,3 @@ class Optimization(OptimizationBase):
             )
         end = time.time()
         _logger.info("Optimization took %E seconds.", end - start)
-
-    def post_run(self):
-        """Analyze the resulting optimum."""
-        _logger.info("The optimum:\n\t%s", self.solution.x)
-
-        if self.result_description:
-            if self.result_description["write_results"]:
-                write_results(
-                    self.solution,
-                    self.global_settings.result_file(".pickle"),
-                )
