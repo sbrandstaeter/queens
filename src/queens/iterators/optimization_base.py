@@ -61,7 +61,7 @@ class OptimizationBase(Iterator, ABC):
         """
         super().__init__(model, parameters, global_settings)
         self.result_description = result_description
-        self.precalculated_positions = {"position": [], "output": []}
+        self.precalculated_positions = {"position": [], "objective": []}
         self.solution = None
 
     @abstractmethod
@@ -120,7 +120,7 @@ class OptimizationBase(Iterator, ABC):
             for position_id, output in zip(new_positions_batch_id, f_new):
                 f_batch[position_id] = output
             self.precalculated_positions["position"].extend(new_positions_to_evaluate)
-            self.precalculated_positions["output"].extend(f_new)
+            self.precalculated_positions["objective"].extend(f_new)
         f_batch = np.array(f_batch).squeeze()
         return f_batch
 
@@ -135,5 +135,5 @@ class OptimizationBase(Iterator, ABC):
         """
         for i, precalculated_position in enumerate(self.precalculated_positions["position"]):
             if np.equal(position, precalculated_position).all():
-                return self.precalculated_positions["output"][i]
+                return self.precalculated_positions["objective"][i]
         return None
