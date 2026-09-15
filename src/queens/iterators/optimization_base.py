@@ -75,14 +75,6 @@ class OptimizationBase(Iterator, ABC):
             float or np.ndarray: Objective value at *x0*.
         """
 
-    def pre_run(self) -> None:
-        """Pre run of Optimization iterator."""
-        _logger.info("Initialize Optimization run.")
-
-    @abstractmethod
-    def core_run(self) -> None:
-        """Execute the optimizer-specific algorithm."""
-
     def post_run(self) -> None:
         """Analyze the resulting optimum."""
         _logger.info("The optimum:\n\t%s", self.solution.x)
