@@ -19,7 +19,10 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
+from queens.global_settings import GlobalSettings
 from queens.iterators._iterator import Iterator
+from queens.models._model import Model
+from queens.parameters import Parameters
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
 
@@ -42,11 +45,11 @@ class OptimizationBase(Iterator, ABC):
     @log_init_args
     def __init__(
         self,
-        model,
-        parameters,
-        global_settings,
-        result_description,
-    ):
+        model: Model,
+        parameters: Parameters,
+        global_settings: GlobalSettings,
+        result_description: dict,
+    ) -> None:
         """Initialize the optimization iterator.
 
         Args:
@@ -72,15 +75,15 @@ class OptimizationBase(Iterator, ABC):
             float or np.ndarray: Objective value at *x0*.
         """
 
-    def pre_run(self):
+    def pre_run(self) -> None:
         """Pre run of Optimization iterator."""
         _logger.info("Initialize Optimization run.")
 
     @abstractmethod
-    def core_run(self):
+    def core_run(self) -> None:
         """Execute the optimizer-specific algorithm."""
 
-    def post_run(self):
+    def post_run(self) -> None:
         """Analyze the resulting optimum."""
         _logger.info("The optimum:\n\t%s", self.solution.x)
 
