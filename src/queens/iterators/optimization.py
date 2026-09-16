@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Deterministic optimization toolbox."""
+"""Deterministic Optimization toolbox."""
 
 import logging
 import time
@@ -21,15 +21,14 @@ import numpy as np
 from scipy.optimize import Bounds, minimize
 from scipy.optimize._numdiff import _prepare_bounds
 
-from queens.iterators._iterator import Iterator
+from queens.iterators.optimization_base import OptimizationBase
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
 from queens.utils.logger_settings import log_init_args
-from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
 
 
-class Optimization(Iterator):
+class Optimization(OptimizationBase):
     """Iterator for deterministic optimization problems.
 
     Based on the *scipy.optimize.minimize* optimization toolbox [1].
@@ -173,7 +172,7 @@ class Optimization(Iterator):
                                                 This option is only available for gradient methods.
                                                 Default is false.
         """
-        super().__init__(model, parameters, global_settings)
+        super().__init__(model, parameters, global_settings, result_description)
 
         initial_guess = np.atleast_1d(np.array(initial_guess))
 
@@ -226,10 +225,7 @@ class Optimization(Iterator):
         self.jac_method = jac_method
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
-        self.result_description = result_description
         self.verbose_output = verbose_output
-        self.precalculated_positions = {"position": [], "output": []}
-        self.solution = None
         self.objective_and_jacobian = objective_and_jacobian
         if self.algorithm in ["COBYLA", "NELDER-MEAD", "POWELL"]:
             self.objective_and_jacobian = False
@@ -312,10 +308,6 @@ class Optimization(Iterator):
         f_perturbed = f_batch[1:].reshape(-1, f0.size)
         return f0, f_perturbed, delta_positions, use_one_sided
 
-    def pre_run(self):
-        """Pre run of Optimization iterator."""
-        _logger.info("Initialize Optimization run.")
-
     def core_run(self):
         """Core run of Optimization iterator."""
         _logger.info("Welcome to Optimization core run.")
@@ -381,58 +373,3 @@ class Optimization(Iterator):
             )
         end = time.time()
         _logger.info("Optimization took %E seconds.", end - start)
-
-    def post_run(self):
-        """Analyze the resulting optimum."""
-        _logger.info("The optimum:\n\t%s", self.solution.x)
-
-        if self.result_description:
-            if self.result_description["write_results"]:
-                write_results(
-                    self.solution,
-                    self.global_settings.result_file(".pickle"),
-                )
-
-    def eval_model(self, positions):
-        """Evaluate model at defined positions.
-
-        Args:
-            positions (np.ndarray): Positions at which the model is evaluated
-
-        Returns:
-            f_batch (np.ndarray): Model response
-        """
-        positions = positions.reshape(-1, self.parameters.num_parameters)
-        f_batch = [None] * len(positions)
-        new_positions_to_evaluate = []
-        new_positions_batch_id = []
-        for i, position in enumerate(positions):
-            precalculated_output = self.check_precalculated(position)
-            if precalculated_output is None:
-                new_positions_to_evaluate.append(position)
-                new_positions_batch_id.append(i)
-            else:
-                f_batch[i] = precalculated_output
-        if new_positions_to_evaluate:
-            new_positions_to_evaluate = np.array(new_positions_to_evaluate)
-            f_new = self.model.evaluate(new_positions_to_evaluate)["result"]
-            for position_id, output in zip(new_positions_batch_id, f_new):
-                f_batch[position_id] = output
-            self.precalculated_positions["position"].extend(new_positions_to_evaluate)
-            self.precalculated_positions["output"].extend(f_new)
-        f_batch = np.array(f_batch).squeeze()
-        return f_batch
-
-    def check_precalculated(self, position):
-        """Check if the model was already evaluated at defined position.
-
-        Args:
-            position (np.ndarray): Position at which the model should be evaluated
-
-        Returns:
-            np.ndarray: Precalculated model response or *None*
-        """
-        for i, precalculated_position in enumerate(self.precalculated_positions["position"]):
-            if np.equal(position, precalculated_position).all():
-                return self.precalculated_positions["output"][i]
-        return None
