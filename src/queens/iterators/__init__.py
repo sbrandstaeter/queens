@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
     from queens.iterators.monte_carlo import MonteCarlo
     from queens.iterators.nuts import NUTS
-    from queens.iterators.optimization import Optimization
+    from queens.iterators.optimization import DeterministicOptimization
     from queens.iterators.points import Points
     from queens.iterators.polynomial_chaos import PolynomialChaos
     from queens.iterators.reinforcement_learning import ReinforcementLearning

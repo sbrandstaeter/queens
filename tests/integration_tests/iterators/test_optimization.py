@@ -19,7 +19,7 @@ import pytest
 
 from queens.distributions.free_variable import FreeVariable
 from queens.drivers.function import Function
-from queens.iterators.optimization import Optimization
+from queens.iterators.optimization import DeterministicOptimization
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
@@ -42,7 +42,7 @@ def test_optimization_rosenbrock(algorithm, global_settings):
     driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
-    iterator = Optimization(
+    iterator = DeterministicOptimization(
         algorithm=algorithm,
         initial_guess=[-3.0, -4.0],
         result_description={"write_results": True},
@@ -82,7 +82,7 @@ def test_optimization_paraboloid_constrained(algorithm, global_settings):
     driver = Function(parameters=parameters, function="paraboloid")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
-    iterator = Optimization(
+    iterator = DeterministicOptimization(
         initial_guess=[2.0, 0.0],
         algorithm=algorithm,
         result_description={"write_results": True, "plot_results": True},

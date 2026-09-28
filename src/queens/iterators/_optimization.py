@@ -29,7 +29,7 @@ from queens.utils.process_outputs import write_results
 _logger = logging.getLogger(__name__)
 
 
-class OptimizationBase(Iterator, ABC):
+class Optimization(Iterator, ABC):
     """Base class for optimization iterators.
 
     This class defines the interface that optimization iterators must implement and provides

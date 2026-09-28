@@ -21,14 +21,14 @@ import numpy as np
 from scipy.optimize import Bounds, minimize
 from scipy.optimize._numdiff import _prepare_bounds
 
-from queens.iterators.optimization_base import OptimizationBase
+from queens.iterators._optimization import Optimization
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class Optimization(OptimizationBase):
+class DeterministicOptimization(Optimization):
     """Iterator for deterministic optimization problems.
 
     Based on the *scipy.optimize.minimize* optimization toolbox [1].

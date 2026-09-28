@@ -19,13 +19,13 @@ import logging
 import numpy as np
 from scipy.optimize import Bounds, least_squares
 
-from queens.iterators.optimization import Optimization
+from queens.iterators.optimization import DeterministicOptimization
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class LeastSquares(Optimization):
+class LeastSquares(DeterministicOptimization):
     """Iterator for least-squares optimization.
 
     Based on the *scipy.optimize.least_squares* optimization toolbox [1].
