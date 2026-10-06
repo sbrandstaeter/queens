@@ -24,6 +24,8 @@ from typing import Any, Callable, ParamSpec, override
 from queens.utils.printing import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
+WORKER_LOGGER_NAME = f"{LIBRARY_LOGGER_NAME}.worker"
+WORKER_LOG_FILE_NAME = "worker.log"
 
 
 class LogFilter(logging.Filter):
@@ -281,3 +283,83 @@ def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
         method(*args, **kwargs)
 
     return wrapper
+
+
+def get_worker_logger(name: str | None = None) -> logging.Logger:
+    """Get a logger used on a scheduler's worker.
+
+    All worker loggers are children of one parent logger. The log file of the current job is
+    attached to this parent, such that all worker loggers write to it.
+
+    Args:
+        name: Name of the child logger. If None, the parent of all worker loggers is returned.
+
+    Returns:
+        logger: Logger instance.
+    """
+    if name is None:
+        return logging.getLogger(WORKER_LOGGER_NAME)
+    return logging.getLogger(f"{WORKER_LOGGER_NAME}.{name}")
+
+
+def get_logging_level(level: int | str) -> int:
+    """Get the numeric value of a logging level.
+
+    Args:
+        level: Logging level as number or as case-insensitive name, e.g., "INFO".
+
+    Returns:
+        Numeric logging level.
+    """
+    if isinstance(level, str):
+        level_names = logging.getLevelNamesMapping()
+        if level.upper() not in level_names:
+            raise ValueError(
+                f"Unknown logging level {level!r}. Valid levels are {list(level_names)}."
+            )
+        return level_names[level.upper()]
+    return level
+
+
+def reset_logger_on_worker() -> None:
+    """Remove and close the handlers of a job, e.g., its log file."""
+    logger = get_worker_logger()
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+        handler.close()
+
+
+def setup_logger_on_worker(log_dir: Path | None = None, level: int | str = logging.INFO) -> None:
+    """Set up the logging on a scheduler's worker for one job.
+
+    Args:
+        log_dir: Path to the directory for the log file of the job. If None, no file is written.
+        level: Logging level.
+    """
+    logger = get_worker_logger()
+    reset_logger_on_worker()
+
+    parent = logger.parent or logging.getLogger()
+    logging_is_set_up = parent.hasHandlers()
+
+    level = get_logging_level(level)
+    if logging_is_set_up:
+        # Do not hide messages that this process is set up to show, e.g., in debug mode
+        level = min(level, parent.getEffectiveLevel())
+    if logger.level != level:
+        logger.setLevel(level)
+
+    formatter = NewLineFormatter(
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
+    )
+
+    # Log to the stream if no logging is set up in this process, e.g., on a dask worker
+    if not logging_is_set_up:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+    if log_dir is not None:
+        file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)

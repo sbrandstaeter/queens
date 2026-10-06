@@ -15,9 +15,19 @@
 """QUEENS driver module base class."""
 
 import abc
+import logging
 from pathlib import Path
+from typing import final
 
 import numpy as np
+
+from queens.utils.config_directories import create_directory, current_job_directory
+from queens.utils.logger_settings import (
+    get_logging_level,
+    get_worker_logger,
+    reset_logger_on_worker,
+    setup_logger_on_worker,
+)
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -26,14 +36,28 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
+        worker_log_level (int): Logging level used on the worker
+        write_worker_log_files (bool): Switch on/off writing of worker logs to files (one per job)
+        logger_on_worker (logging.Logger): Logger instance used on the worker
     """
 
-    def __init__(self, parameters, files_to_copy=None):
+    def __init__(
+        self,
+        parameters,
+        files_to_copy=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
+    ):
         """Initialize Driver object.
 
         Args:
             parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
+            worker_log_level (int | str): Logging level used on the worker (default: logging.INFO).
+                                          Never higher than the level of the process, if its
+                                          logging is set up.
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         self.parameters = parameters
         if files_to_copy is None:
@@ -45,8 +69,47 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
-    @abc.abstractmethod
+        self.worker_log_level = get_logging_level(worker_log_level)
+        self.write_worker_log_files = write_worker_log_files
+        self.logger_on_worker = get_worker_logger(type(self).__name__)
+
+    @final
     def run(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Run driver.
+
+        Args:
+            sample (np.ndarray): Input sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
+
+        Returns:
+            Results
+        """
+        worker_log_dir = None
+        if self.write_worker_log_files:
+            worker_log_dir = current_job_directory(experiment_dir, job_id)
+            create_directory(worker_log_dir)
+        setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)
+
+        try:
+            return self._run(sample, job_id, num_procs, experiment_dir, experiment_name)
+        except Exception:
+            self.logger_on_worker.exception("Job %s failed.", job_id)
+            raise
+        finally:
+            reset_logger_on_worker()
+
+    @abc.abstractmethod
+    def _run(
         self,
         sample: np.ndarray,
         job_id: int,
@@ -60,8 +123,8 @@ class Driver(metaclass=abc.ABCMeta):
             sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
 
         Returns:
             Results
