@@ -223,7 +223,7 @@ class Jobscript(Driver):
 
         return jobscript_template
 
-    def _run(
+    def run(
         self,
         sample: np.ndarray,
         job_id: int,

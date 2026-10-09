@@ -82,7 +82,7 @@ def test_jobscript_driver_writes_worker_log(tmp_path, parameters, input_template
         worker_log_level="DEBUG",
     )
 
-    driver.run(np.array([1.0]), 7, 1, tmp_path, "experiment")
+    driver(np.array([1.0]), 7, 1, tmp_path, "experiment")
 
     job_dir = tmp_path / "7"
     log = (job_dir / "worker.log").read_text()
@@ -104,7 +104,7 @@ def test_failed_job_is_logged(tmp_path, parameters, input_template):
     )
 
     with pytest.raises(SubprocessError):
-        driver.run(np.array([1.0]), 7, 1, tmp_path, "experiment")
+        driver(np.array([1.0]), 7, 1, tmp_path, "experiment")
 
     log = (tmp_path / "7" / "worker.log").read_text()
     assert "Job 7 failed." in log
@@ -138,7 +138,7 @@ def test_worker_log_level_none_writes_no_file(tmp_path, parameters, input_templa
         worker_log_level=None,
     )
 
-    driver.run(np.array([1.0]), 7, 1, tmp_path, "experiment")
+    driver(np.array([1.0]), 7, 1, tmp_path, "experiment")
 
     assert driver.worker_log_level is None
     assert not (tmp_path / "7" / "worker.log").exists()
@@ -149,7 +149,7 @@ def test_function_driver_writes_no_worker_log_by_default(tmp_path):
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
     driver = Function(parameters=parameters, function="rosenbrock60")
 
-    driver.run(np.array([1.0, 1.0]), 1, 1, tmp_path, "experiment")
+    driver(np.array([1.0, 1.0]), 1, 1, tmp_path, "experiment")
 
     assert not list(tmp_path.iterdir())
 

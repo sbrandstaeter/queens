@@ -138,7 +138,7 @@ class Function(Driver):
 
         return reshaped_output_function
 
-    def _run(
+    def run(
         self,
         sample: np.ndarray,
         job_id: int,

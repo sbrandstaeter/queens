@@ -17,7 +17,6 @@
 import abc
 import logging
 from pathlib import Path
-from typing import final
 
 import numpy as np
 
@@ -70,7 +69,7 @@ class Driver(metaclass=abc.ABCMeta):
         )
         self.logger_on_worker = get_worker_logger(type(self).__name__)
 
-    @final
+    @abc.abstractmethod
     def run(
         self,
         sample: np.ndarray,
@@ -79,7 +78,30 @@ class Driver(metaclass=abc.ABCMeta):
         experiment_dir: Path,
         experiment_name: str,
     ) -> dict:
-        """Run driver.
+        """Abstract method for driver run.
+
+        The log file of the job is set up by __call__, i.e., when a scheduler runs the driver.
+
+        Args:
+            sample (np.ndarray): Input sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
+
+        Returns:
+            Results
+        """
+
+    def __call__(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Run the driver with the log file of the job.
 
         Args:
             sample (np.ndarray): Input sample
@@ -98,46 +120,9 @@ class Driver(metaclass=abc.ABCMeta):
         setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)
 
         try:
-            return self._run(sample, job_id, num_procs, experiment_dir, experiment_name)
+            return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
         except Exception:
             self.logger_on_worker.exception("Job %s failed.", job_id)
             raise
         finally:
             reset_logger_on_worker()
-
-    @abc.abstractmethod
-    def _run(
-        self,
-        sample: np.ndarray,
-        job_id: int,
-        num_procs: int,
-        experiment_dir: Path,
-        experiment_name: str,
-    ) -> dict:
-        """Abstract method for driver run.
-
-        Args:
-            sample (np.ndarray): Input sample
-            job_id (int): Job ID
-            num_procs (int): number of processors
-            experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): name of QUEENS experiment.
-
-        Returns:
-            Results
-        """
-
-    def __call__(self, sample, job_id, num_procs, experiment_dir, experiment_name):
-        """Abstract method for driver run.
-
-        Args:
-            sample (np.ndarray): Input sample
-            job_id (int): Job ID
-            num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-
-        Returns:
-            Result and potentially the gradient
-        """
-        return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
