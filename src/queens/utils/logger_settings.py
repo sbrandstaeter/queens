@@ -26,6 +26,8 @@ from queens.utils.printing import get_str_table
 LIBRARY_LOGGER_NAME = "queens"
 WORKER_LOGGER_NAME = f"{LIBRARY_LOGGER_NAME}.worker"
 WORKER_LOG_FILE_NAME = "worker.log"
+FILE_LOG_FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+FILE_LOG_DATE_FORMAT = "%m-%d %H:%M"
 
 
 class LogFilter(logging.Filter):
@@ -148,9 +150,7 @@ def setup_file_handler(logger: logging.Logger, log_file_path: Path) -> None:
         log_file_path: Path of the logging file
     """
     file_handler = logging.FileHandler(log_file_path, mode="w")
-    file_formatter = NewLineFormatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
-    )
+    file_formatter = NewLineFormatter(FILE_LOG_FORMAT, datefmt=FILE_LOG_DATE_FORMAT)
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logger.level)
     logger.addHandler(file_handler)
@@ -329,37 +329,28 @@ def reset_logger_on_worker() -> None:
         handler.close()
 
 
-def setup_logger_on_worker(log_dir: Path | None = None, level: int | str = logging.INFO) -> None:
-    """Set up the logging on a scheduler's worker for one job.
+def setup_logger_on_worker(log_dir: Path | None, level: int | str | None) -> None:
+    """Set up the log file of one job on a scheduler's worker.
 
     Args:
-        log_dir: Path to the directory for the log file of the job. If None, no file is written.
-        level: Logging level.
+        log_dir: Directory of the log file of the job.
+        level: Logging level of the log file. If log_dir or level is None, no file is written and
+               the worker loggers behave like all other loggers.
     """
     logger = get_worker_logger()
     reset_logger_on_worker()
 
-    parent = logger.parent or logging.getLogger()
-    logging_is_set_up = parent.hasHandlers()
+    if log_dir is None or level is None:
+        logger.setLevel(logging.NOTSET)
+        return
 
     level = get_logging_level(level)
-    if logging_is_set_up:
+    parent = logger.parent or logging.getLogger()
+    if parent.hasHandlers():
         # Do not hide messages that this process is set up to show, e.g., in debug mode
         level = min(level, parent.getEffectiveLevel())
-    if logger.level != level:
-        logger.setLevel(level)
+    logger.setLevel(level)
 
-    formatter = NewLineFormatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
-    )
-
-    # Log to the stream if no logging is set up in this process, e.g., on a dask worker
-    if not logging_is_set_up:
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-
-    if log_dir is not None:
-        file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME)
+    file_handler.setFormatter(NewLineFormatter(FILE_LOG_FORMAT, datefmt=FILE_LOG_DATE_FORMAT))
+    logger.addHandler(file_handler)

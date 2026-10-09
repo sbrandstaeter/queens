@@ -15,7 +15,6 @@
 """Function Driver."""
 
 import inspect
-import logging
 from pathlib import Path
 from typing import Any
 
@@ -44,8 +43,7 @@ class Function(Driver):
         parameters,
         function,
         external_python_module_function=None,
-        worker_log_level=logging.INFO,
-        write_worker_log_files=False,
+        worker_log_level=None,
     ):
         """Initialize Function object.
 
@@ -57,14 +55,12 @@ class Function(Driver):
                 method. If the function contains a `**kwargs` parameter, all the arguments will
                 be passed. Thus, these argument names should be avoided for non-related arguments.
             external_python_module_function (Path | str): Path to external module with function
-            worker_log_level (int | str): Logging level used on the worker (default: logging.INFO)
-            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
-                                           (default: False)
+            worker_log_level (int | str | None): Logging level of the job log files (default:
+                                                 None, i.e., no log files are written)
         """
         super().__init__(
             parameters=parameters,
             worker_log_level=worker_log_level,
-            write_worker_log_files=write_worker_log_files,
         )
         if external_python_module_function is None:
             if isinstance(function, str):

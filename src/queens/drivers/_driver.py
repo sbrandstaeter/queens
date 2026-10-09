@@ -36,8 +36,7 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
-        worker_log_level (int): Logging level used on the worker
-        write_worker_log_files (bool): Switch on/off writing of worker logs to files (one per job)
+        worker_log_level (int | None): Logging level of the job log files, None switches them off
         logger_on_worker (logging.Logger): Logger instance used on the worker
     """
 
@@ -46,18 +45,15 @@ class Driver(metaclass=abc.ABCMeta):
         parameters,
         files_to_copy=None,
         worker_log_level=logging.INFO,
-        write_worker_log_files=True,
     ):
         """Initialize Driver object.
 
         Args:
             parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
-            worker_log_level (int | str): Logging level used on the worker (default: logging.INFO).
-                                          Never higher than the level of the process, if its
-                                          logging is set up.
-            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
-                                           (default: True)
+            worker_log_level (int | str | None): Logging level of the log file written for each
+                                                 job (default: logging.INFO). None switches the
+                                                 log files off.
         """
         self.parameters = parameters
         if files_to_copy is None:
@@ -69,8 +65,9 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
-        self.worker_log_level = get_logging_level(worker_log_level)
-        self.write_worker_log_files = write_worker_log_files
+        self.worker_log_level = (
+            None if worker_log_level is None else get_logging_level(worker_log_level)
+        )
         self.logger_on_worker = get_worker_logger(type(self).__name__)
 
     @final
@@ -95,7 +92,7 @@ class Driver(metaclass=abc.ABCMeta):
             Results
         """
         worker_log_dir = None
-        if self.write_worker_log_files:
+        if self.worker_log_level is not None:
             worker_log_dir = current_job_directory(experiment_dir, job_id)
             create_directory(worker_log_dir)
         setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)

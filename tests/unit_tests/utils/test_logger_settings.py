@@ -56,7 +56,7 @@ def test_setup_logger_on_worker_one_file_per_job(tmp_path):
     job_dirs = [tmp_path / "1", tmp_path / "2"]
     for job_dir in job_dirs:
         job_dir.mkdir()
-        setup_logger_on_worker(log_dir=job_dir)
+        setup_logger_on_worker(log_dir=job_dir, level=logging.INFO)
         logger.info("message of job %s", job_dir.name)
     reset_logger_on_worker()
 
@@ -126,6 +126,22 @@ def test_invalid_worker_log_level(parameters):
     """Test that an invalid worker log level fails on initialization."""
     with pytest.raises(ValueError, match="Unknown logging level"):
         Function(parameters=parameters, function=lambda parameter_1: 1.0, worker_log_level="loud")
+
+
+def test_worker_log_level_none_writes_no_file(tmp_path, parameters, input_template):
+    """Test that worker_log_level=None switches the log file off."""
+    driver = Jobscript(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template="echo dummy",
+        executable="",
+        worker_log_level=None,
+    )
+
+    driver.run(np.array([1.0]), 7, 1, tmp_path, "experiment")
+
+    assert driver.worker_log_level is None
+    assert not (tmp_path / "7" / "worker.log").exists()
 
 
 def test_function_driver_writes_no_worker_log_by_default(tmp_path):

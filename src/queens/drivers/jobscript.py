@@ -125,7 +125,6 @@ class Jobscript(Driver):
         extra_options=None,
         raise_error_on_jobscript_failure=True,
         worker_log_level=logging.INFO,
-        write_worker_log_files=True,
     ):
         """Initialize Jobscript object.
 
@@ -143,15 +142,14 @@ class Jobscript(Driver):
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                 jobscript exit code.
-            worker_log_level (int | str): Logging level used on the worker (default: logging.INFO)
-            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
-                                           (default: True)
+            worker_log_level (int | str | None): Logging level of the job log files
+                                                 (default: logging.INFO). None switches
+                                                 them off.
         """
         super().__init__(
             parameters=parameters,
             files_to_copy=files_to_copy,
             worker_log_level=worker_log_level,
-            write_worker_log_files=write_worker_log_files,
         )
         self.input_templates = self.create_input_templates_dict(input_templates)
         self.jobscript_template = self.get_read_in_jobscript_template(jobscript_template)
