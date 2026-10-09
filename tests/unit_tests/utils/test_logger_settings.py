@@ -75,9 +75,7 @@ def test_jobscript_driver_writes_worker_log(tmp_path, parameters, input_template
         jobscript_template="echo dummy",
         executable="",
         data_processor=NumpyFile(
-            file_name_identifier="missing.npy",
-            file_options_dict={},
-            files_to_be_deleted_regex_lst=["*.log"],
+            file_name_identifier="missing.npy", files_to_be_deleted_regex_lst=["*.log"]
         ),
         worker_log_level="DEBUG",
     )
@@ -156,7 +154,7 @@ def test_function_driver_writes_no_worker_log_by_default(tmp_path):
 
 def test_data_processor_without_job_writes_no_file(tmp_path):
     """Test that a data processor outside of a job only reads."""
-    data_processor = NumpyFile(file_name_identifier="missing.npy", file_options_dict={})
+    data_processor = NumpyFile(file_name_identifier="missing.npy")
 
     assert data_processor.get_data_from_file(tmp_path) is None
     assert data_processor.get_data_from_file(tmp_path / "not_existing") is None

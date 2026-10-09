@@ -36,7 +36,7 @@ def fixture_driver(tmp_path):
         input_templates=input_template,
         jobscript_template="echo dummy",
         executable="",
-        data_processor=NumpyFile(file_name_identifier="missing.npy", file_options_dict={}),
+        data_processor=NumpyFile(file_name_identifier="missing.npy"),
         worker_log_level="DEBUG",
     )
 
