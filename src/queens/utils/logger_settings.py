@@ -322,11 +322,12 @@ def get_logging_level(level: int | str) -> int:
 
 
 def reset_logger_on_worker() -> None:
-    """Remove and close the handlers of a job, e.g., its log file."""
+    """Close the handlers of a job, e.g., its log file, and reset the level."""
     logger = get_worker_logger()
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
         handler.close()
+    logger.setLevel(logging.NOTSET)
 
 
 def setup_logger_on_worker(log_dir: Path | None, level: int | str | None) -> None:
@@ -341,16 +342,17 @@ def setup_logger_on_worker(log_dir: Path | None, level: int | str | None) -> Non
     reset_logger_on_worker()
 
     if log_dir is None or level is None:
-        logger.setLevel(logging.NOTSET)
         return
 
     level = get_logging_level(level)
     parent = logger.parent or logging.getLogger()
     if parent.hasHandlers():
-        # Do not hide messages that this process is set up to show, e.g., in debug mode
-        level = min(level, parent.getEffectiveLevel())
-    logger.setLevel(level)
+        # Do not hide messages from the handlers of this process, e.g., in debug mode
+        logger.setLevel(min(level, parent.getEffectiveLevel()))
+    else:
+        logger.setLevel(level)
 
-    file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME)
+    file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME, mode="w")
+    file_handler.setLevel(level)
     file_handler.setFormatter(NewLineFormatter(FILE_LOG_FORMAT, datefmt=FILE_LOG_DATE_FORMAT))
     logger.addHandler(file_handler)

@@ -52,7 +52,10 @@ def test_worker_log_per_job(scheduler_class, driver, tmp_path):
     )
     scheduler.copy_files_to_experiment_dir(driver.files_to_copy)
 
-    scheduler.evaluate(np.arange(NUM_JOBS, dtype=float).reshape(-1, 1), driver)
+    try:
+        scheduler.evaluate(np.arange(NUM_JOBS, dtype=float).reshape(-1, 1), driver)
+    finally:
+        scheduler.cleanup()
 
     for job_id in range(NUM_JOBS):
         job_dir = scheduler.experiment_dir / str(job_id)

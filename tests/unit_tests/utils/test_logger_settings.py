@@ -67,6 +67,32 @@ def test_setup_logger_on_worker_one_file_per_job(tmp_path):
         assert f"message of job {job_dir.name}" in log
 
 
+def test_setup_logger_on_worker_overwrites_log_file(tmp_path):
+    """Test that a rerun of a job starts a new log file."""
+    logger = get_worker_logger("test")
+    for run in range(2):
+        setup_logger_on_worker(log_dir=tmp_path, level=logging.INFO)
+        logger.info("run %s", run)
+    reset_logger_on_worker()
+
+    assert (tmp_path / "worker.log").read_text().count("run") == 1
+
+
+def test_file_level_is_kept_in_debug_mode(tmp_path):
+    """Test that the file keeps its level in debug mode."""
+    parent = get_worker_logger().parent
+    parent.setLevel(logging.DEBUG)
+    logger = get_worker_logger("test")
+    setup_logger_on_worker(log_dir=tmp_path, level=logging.INFO)
+    logger.debug("debug message")
+    logger.info("info message")
+    reset_logger_on_worker()
+
+    log = (tmp_path / "worker.log").read_text()
+    assert "info message" in log
+    assert "debug message" not in log
+
+
 def test_jobscript_driver_writes_worker_log(tmp_path, parameters, input_template):
     """Test that driver and data processor log to the job directory."""
     driver = Jobscript(
@@ -88,8 +114,9 @@ def test_jobscript_driver_writes_worker_log(tmp_path, parameters, input_template
     assert "Got result: None" in log
     # the worker log is not in the directory the data processor searches and cleans up
     assert not list((job_dir / "output").iterdir())
-    # the log file is released after the job
+    # the log file is released and the level is reset after the job
     assert not has_log_file(get_worker_logger())
+    assert get_worker_logger().level == logging.NOTSET
 
 
 def test_failed_job_is_logged(tmp_path, parameters, input_template):

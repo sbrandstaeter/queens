@@ -152,8 +152,8 @@ class Function(Driver):
             sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
 
         Returns:
             Result and potentially the gradient
