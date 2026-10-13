@@ -363,12 +363,12 @@ class Jobscript(Driver):
         if self.data_processor:
             result = self.data_processor(output_dir)
             results["result"] = result
-            self.logger_on_worker.debug("Got result: %s", result)
+            self.logger_on_worker.info("Got result: %s", result)
 
         if self.gradient_data_processor:
             gradient = self.gradient_data_processor(output_dir)
             results["gradient"] = gradient
-            self.logger_on_worker.debug("Got gradient: %s", gradient)
+            self.logger_on_worker.info("Got gradient: %s", gradient)
         return results
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):
